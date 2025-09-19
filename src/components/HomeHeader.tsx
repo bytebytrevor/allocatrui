@@ -4,12 +4,12 @@ import { motion } from "framer-motion";
 
 function HomeHeader() {
     return (
-        <header className="h-[100vh] bg-[#151515]">
+        <header className="min-h-screen bg-[#151515] rounded-b-[120px] pb-20 border-b-12">
             <HomeNav />
             <div className="container flex items-center justify-between px-4 mx-auto">
-                <div className="max-w-150">
+                <div>
                     <motion.h1
-                        className="text-[6rem] font-bold uppercase leading-24 mt-24"
+                        className="text-9xl text-[#D1D1D1]; font-black uppercase leading-28 mt-24 max-w-200"
                         initial={{ opacity: 0, x: -50 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: 0.2, duration: 0.8, ease: "easeInOut"}}
@@ -17,7 +17,7 @@ function HomeHeader() {
                         Allocatr for your every task
                     </motion.h1>
                     <motion.p
-                        className="text-2xl py-12"
+                        className="text-2xl py-12 max-w-150"
                         initial={{ opacity: 0, x: -50 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: 0.6, duration: 0.8, ease: "easeInOut"}}

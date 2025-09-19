@@ -4,7 +4,7 @@
 @custom-variant light (&:is(.light *));
 
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: Poppins, Avenir, Helvetica, Arial, sans-serif, system-ui;
   line-height: 1.5;
 
   color-scheme: dark light;
