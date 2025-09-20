@@ -1,4 +1,3 @@
-import { div } from "framer-motion/client";
 import Home from "./pages/Home";
 
 function App() {
@@ -10,4 +9,4 @@ function App() {
   );
 }
 
-export default App
+export default App;
