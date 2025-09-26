@@ -12,7 +12,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion"
 
-function Home() {
+function HomePage() {
 
     const { scrollYProgress } = useScroll();
     const scaleX = useSpring(scrollYProgress, {
@@ -155,4 +155,4 @@ function Home() {
     );
 }
 
-export default Home;
+export default HomePage;
