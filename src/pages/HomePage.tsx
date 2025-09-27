@@ -132,7 +132,7 @@ function HomePage() {
                     </section>
                 </div>
                         
-                <div className="container mx-auto">
+                <section className="container mx-auto">
                     <article className="mt-40">
                         <motion.h3
                             className="text-6xl font-semibold max-w-4xl"
@@ -146,10 +146,46 @@ function HomePage() {
                             delay={0.6}
                             text="Whether it’s a quick fix or a major project, every task matters. From simple jobs to complex endeavors, allocatr is the right place to connect with skilled professionals."
                         />
-                        <Button variant="outline" className="rounded-full my-12 w-[200px]">Post a job</Button>
-
+                        <Button className="rounded-full my-12 w-[200px]">Post a job</Button>
                     </article>
+                </section>
+
+                <div className="bg-white text-[#151515] mt-24 rounded-t-[120px] ">
+                    <section className="py-40">
+                        <article className="container mx-auto">
+                            <AnimatedHeading heading="Project Management Tools"/>
+                            <AnimatedText
+                                delay={0.4}
+                                text="Powerful tools to simplify your project management, giving you seamless collaboration and streamlined workflows to keep everything organized."
+                            />
+                        </article>
+
+                        <section className=" flex my-24">
+                            <div className="flex px-4">
+                                <div className="h-120 w-60 text-white bg-red-500 p-8 rounded-l-4xl">
+                                    <h3 className="text-4xl font-bold">24+</h3>
+                                    Lorem ipsum dolor, sit amet consectetur adipisicing
+                                </div>
+                                <div className={`h-120 w-60 bg-[url(src/assets/delivery-square.svg)] bg-no-repeat bg-cover bg-center p-8 rounded-r-4xl`}>
+                                  
+                                </div>
+                            </div>
+                            <div className="flex px-4">
+                                <div className="h-120 w-60 text-white bg-[#38D200] p-8 rounded-l-4xl">
+                                    <h3 className="text-4xl font-bold">100+</h3>
+                                    Lorem ipsum dolor, sit amet consectetur adipisicing
+                                </div>
+                                <div className={`h-120 w-60 bg-[url(src/assets/painting-square.svg)] bg-no-repeat bg-cover bg-center p-8 rounded-r-4xl`}>
+                                  
+                                </div>
+                            </div>
+                        </section>
+                    </section>
+
+
                 </div>
+
+
             </main>
         </>
     );

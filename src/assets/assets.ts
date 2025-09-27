@@ -6,6 +6,7 @@ import computerPhone from "./computer-phone.svg";
 import lShapeIcon from "./l-shape-icon.png";
 import crossShapeIcon from "./cross-shape-icon.png";
 import rhombusIcon from "./rhombus-icon.png";
+import deliverySquare from "./delivery-square.svg"
 
 export default {
     allocatrLightLogo,
@@ -15,5 +16,6 @@ export default {
     computerPhone,
     lShapeIcon,
     crossShapeIcon,
-    rhombusIcon
+    rhombusIcon,
+    deliverySquare
 }
