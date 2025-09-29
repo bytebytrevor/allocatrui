@@ -181,11 +181,7 @@ function HomePage() {
                             </div>
                         </section>
                     </section>
-
-
                 </div>
-
-
             </main>
         </>
     );
