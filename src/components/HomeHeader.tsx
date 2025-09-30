@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 
 function HomeHeader() {
     return (
-        <header className="min-h-screen bg-[#151515] rounded-b-[120px] pb-20 border-b-12">
+        <header className="min-h-screen bg-[#202020] rounded-b-[120px] pb-20 border-b-12">
             <HomeNav />
             <div className="container flex items-center justify-between px-4 mx-auto">
                 <div>

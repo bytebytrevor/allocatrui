@@ -5,6 +5,7 @@ import AllocatProfile from "./pages/AllocatProfile";
 import Dashboard from "./pages/Dashboard";
 import DashboardCalender from "./components/DashboardCalender";
 import ProjectManager from "./components/ProjectManager";
+import "./App.css";
 
 function App() {
 

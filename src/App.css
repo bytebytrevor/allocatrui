@@ -1,0 +1,13 @@
+.scrollbar-thin::-webkit-scrollbar {
+  width: 8px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent; 
+  margin: 4px; /* adds space above/below */
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: #555;
+  border-radius: 8px;
+  border: 2px solid transparent; /* creates spacing around thumb */
+  background-clip: content-box;
+}

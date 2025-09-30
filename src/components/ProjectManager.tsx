@@ -1,14 +1,21 @@
 import { Link } from "react-router-dom";
-import { ListTodoIcon } from "lucide-react";
 import ComboBox from "./ComboBox";
-import { Button } from "./ui/button";
-
-
+import TaskStatusBoard from "./TaskStatusBoard";
+import {tasks} from "../data/tasks";
 
 function ProjectManager() {
+    const completedTaskList = tasks.filter(task => task.status == "complete");
+    const activeTaskList = tasks.filter(task => task.status == "active");
+    const overdueTaskList = tasks.filter(task => task.status == "overdue");
+
+
+
+    console.log(completedTaskList);
+
     return (
-        <div className="w-full px-12">
-            <section className="flex justify-between">
+        <>
+        <div className="flex flex-col h-full pb-4">
+            <section className="flex justify-between pr-12 shrink-0">
                 <div className="flex flex-col space-y-4">
                     <span className="font-light">Select job</span>
                     <ComboBox />
@@ -19,21 +26,31 @@ function ProjectManager() {
                 </div>
             </section>
             
-            <section>
-                <section className="flex flex-col mt-8 h-60 max-h-full min-w-86 max-w-96 bg-[#202020] rounded-[6px] p-4">
-                    <h3 className="font-semibold">Completed</h3>               
-
-                    <div className="h-full flex flex-1 gap-x-4 items-center justify-center text-[#A4A4A4]">
-                        <ListTodoIcon />
-                        <small className="flex flex-col">
-                            No completed task yet
-                            <Link className="text-[#00B1EA]" to="">+ Click here to add</Link>
-                        </small>
-                    </div>                
-                </section>
+            <section className="flex-1 flex gap-6 overflow-y-auto scrollbar-thin">                
+                <TaskStatusBoard
+                    title="Completed"
+                    description="No completed tasks"
+                    linkText="+ Click here to add"
+                    tasks={completedTaskList}
+                />
+                <TaskStatusBoard
+                    title="In progress"
+                    description="You don't have any tasks"
+                    linkText="+ Click here to add"
+                    tasks={activeTaskList}
+                />
+                <TaskStatusBoard
+                    title="Overdue"
+                    description="No overdue tasks"
+                    linkText="+ Click here to add"
+                    tasks={overdueTaskList}
+                />
             </section>
+            
         </div>
-    )
+
+        </>
+    );
 }
 
 export default ProjectManager;
