@@ -6,28 +6,30 @@ import Dashboard from "./pages/Dashboard";
 import DashboardCalender from "./components/DashboardCalender";
 import ProjectManager from "./components/ProjectManager";
 import "./App.css";
+import DashboardMessaging from "./components/DashboardMessaging";
 
 function App() {
 
   const router = createBrowserRouter([
     {
       path: "/",
-      element: <HomePage />
+      Component: HomePage
     },
     {
       path: "/allocats/:profileId",
-      element: <AllocatProfile />
+      Component: AllocatProfile
     },
     {
       path: "/allocats",
-      element: <AllocatsSearch />
+      Component: AllocatsSearch
     },
     {
       path: "/dashboard",
-      element: <Dashboard />,
+      Component: Dashboard,
       children: [
         { index: true, Component: ProjectManager },
-        { path: "/dashboard/calender", Component: DashboardCalender }
+        { path: "/dashboard/calendar", Component: DashboardCalender },
+        { path: "/dashboard/messaging", Component: DashboardMessaging },
       ]
     }
   ])
