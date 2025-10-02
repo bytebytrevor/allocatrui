@@ -3,6 +3,8 @@ import ComboBox from "./ComboBox";
 import TaskStatusBoard from "./TaskStatusBoard";
 import {tasks} from "../data/tasks";
 import { Progress } from "./ui/progress";
+import { Button } from "./ui/button";
+import { Plus, PlusIcon } from "lucide-react";
 
 function ProjectManager() {
     const completedTaskList = tasks.filter(task => task.status == "complete");
@@ -24,7 +26,8 @@ function ProjectManager() {
                     <Progress value={68} className="h-4"/>
                 </div>
                 <div>
-                    <Link to="" className="font-medium">+ Add new job</Link>
+                    {/* <Link to="" className="font-medium">+ Add new job</Link> */}
+                    <Button className="bg-[#DEDA00] text-[#033D4F] rounded-full"><PlusIcon />Create new job</Button>
                 </div>
             </section>
             
@@ -45,7 +48,7 @@ function ProjectManager() {
                     title="Overdue"
                     description="No overdue tasks"
                     linkText="+ Click here to add"
-                    // tasks={overdueTaskList}
+                    tasks={overdueTaskList}
                 />
             </section>
             

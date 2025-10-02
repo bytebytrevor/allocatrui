@@ -7,13 +7,15 @@ import DashboardCalender from "./components/DashboardCalender";
 import ProjectManager from "./components/ProjectManager";
 import "./App.css";
 import DashboardMessaging from "./components/DashboardMessaging";
+import NotFoundErrorPage from "./components/NotFoundErrorPage";
 
 function App() {
 
   const router = createBrowserRouter([
-    {
+    {      
       path: "/",
-      Component: HomePage
+      Component: HomePage,
+      errorElement: <NotFoundErrorPage />
     },
     {
       path: "/allocats/:profileId",
