@@ -26,7 +26,6 @@ function ProjectManager() {
                     <Progress value={68} className="h-4"/>
                 </div>
                 <div>
-                    {/* <Link to="" className="font-medium">+ Add new job</Link> */}
                     <Button className="bg-[#DEDA00] text-[#033D4F] rounded-full"><PlusIcon />Create new job</Button>
                 </div>
             </section>
