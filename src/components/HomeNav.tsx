@@ -3,7 +3,7 @@ import assets from "@/assets/assets";
 
 function HomeNav() {
     return (
-        <nav className="container w-full flex items-center justify-between mx-auto px-4 py-6">
+        <nav className="container w-full flex items-center justify-between mx-auto px-4 py-2">
             <a href="/">
                 <img src={assets.allocatrNegLightLogo} alt="Allocatr logo" className="w-32" />
             </a>
