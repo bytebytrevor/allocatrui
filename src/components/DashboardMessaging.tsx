@@ -1,6 +1,6 @@
 function DashboardMessaging() {
     return (
-        <h1>Messaging</h1>
+        <h1 className="bg-destructive">Messaging</h1>
     )
 
 }

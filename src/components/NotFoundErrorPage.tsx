@@ -1,13 +1,13 @@
 import { Link } from "react-router-dom";
 import SpaceCat from "../assets/space-cat.svg";
-import HomeNav from "./HomeNav";
+import MainNav from "./MainNav";
 import { Button } from "./ui/button";
 
 function NotFoundErrorPage() {
     return (
         <div className="flex h-screen flex-col mx-0">            
             <header className="border-b">
-                <HomeNav />
+                <MainNav />
             </header>
             <div className="flex-1 flex h-full items-center justify-center content-center">
                 <div className="flex items-center gap-12 w-4xl">
@@ -17,7 +17,7 @@ function NotFoundErrorPage() {
                         <p className="">Looks like Schrödinger's cat fell off the map.. but don't worry, you haven't hit your 9th life just yet.</p>
                         <Button
                             asChild
-                            className=" bg-[#DEDA00] rounded-full text-[#033D4F]"
+                            className="rounded-full"
                         >
                             <Link to="/"> Respawn to Earth</Link>
                         </Button>                        

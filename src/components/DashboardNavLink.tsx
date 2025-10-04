@@ -9,9 +9,9 @@ type Props = {
 function DashboardNavLink({label, href, icon: Icon}: Props) {
     return (
         <NavLink
-            end={href === "/dashboard"}
+            end={href === "/dashboard/projects"}
             className={({ isActive }) => {
-                    return`flex gap-2 py-2 pl-4 ${isActive ? "bg-[#DEDA00] text-[#033D4F]" : ""}`
+                    return`flex gap-2 py-2 pl-4 ${isActive ? "bg-primary text-secondary" : ""}`
                 }
             }
             to={href}

@@ -1,3 +1,10 @@
+ :root {
+  --ring: oklch(0.556 0 0);
+  --accent: #202020;
+
+ }
+
+
 .scrollbar-thin::-webkit-scrollbar {
   width: 8px;
 }
@@ -10,4 +17,14 @@
   border-radius: 8px;
   border: 2px solid transparent; /* creates spacing around thumb */
   background-clip: content-box;
+}
+
+.search {  
+  box-sizing: border-box;
+  border: 2px solid var(--ring);
+  background-color: var(--accent);
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="oklch(0.556 0 0)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search-icon lucide-search"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>');
+  background-position: 10px 10px; 
+  background-repeat: no-repeat;
+  padding: 12px 20px 12px 40px;
 }

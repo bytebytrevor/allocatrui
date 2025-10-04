@@ -1,6 +1,6 @@
 import AnimatedHeading from "@/components/AnimatedHeading";
 import AnimatedText from "@/components/AnimatedText";
-import HomeHeader from "@/components/HomeHeader";
+import HomeHeader from "@/components/HeroMain";
 import assets from "@/assets/assets";
 import { Button } from "@/components/ui/button";
 import { motion, useScroll, useSpring, useTransform } from "framer-motion";
@@ -12,7 +12,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion"
 
-function HomePage() {
+function LandingPage() {
 
     const { scrollYProgress } = useScroll();
     const scaleX = useSpring(scrollYProgress, {
@@ -187,4 +187,4 @@ function HomePage() {
     );
 }
 
-export default HomePage;
+export default LandingPage;
