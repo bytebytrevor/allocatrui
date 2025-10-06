@@ -1,13 +1,12 @@
 import { Link } from "react-router-dom";
-import allocatrIcon from "../assets/icon-variant-02.svg";
+import allocatrLogoLight from "../assets/allocatr-neg-light.svg";
 import { BellIcon, EllipsisVerticalIcon, UserCircleIcon } from "lucide-react";
 
 function DashboardMainNav() {
     return (
         <nav className="flex items-center justify-between">
-            <Link to="/dashboard" className="flex items-center">
-                <img src={allocatrIcon} alt="Allocatr icon" className="w-8"/>
-                <h1 className="font-bold">Dashboard</h1>
+            <Link to="/dashboard/projects" className="flex items-center">
+                <img src={allocatrLogoLight} alt="Allocatr icon" className="w-24"/>
             </Link>
             <span className="flex items-center space-x-4">
                 <EllipsisVerticalIcon />
