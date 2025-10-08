@@ -2,8 +2,16 @@ import DashboardMainNav from "@/components/DashboardMainNav";
 import ProjectCard from "@/components/ProjectCard";
 import ProjectStatusBadge from "@/components/ProjectStatusBadge";
 import { Button } from "@/components/ui/button";
-import { ArrowDownNarrowWideIcon, CatIcon, CircleCheckBigIcon, HeartIcon, HeartOffIcon, History, Megaphone, MegaphoneIcon, PlusIcon, RotateCcwIcon, ViewIcon } from "lucide-react";
-import { Link } from "react-router-dom";
+import {
+    ArrowDownNarrowWideIcon,
+    CatIcon,
+    CircleCheckBigIcon,
+    HeartIcon,
+    History,
+    Megaphone,
+    PlusIcon,
+    RotateCcwIcon
+} from "lucide-react";
 
 function Projects() {
     return (
@@ -34,12 +42,12 @@ function Projects() {
                         </form>
                         <div className="flex items-center justify-between mt-12">
                             <div className="flex items-center gap-2">
-                                <ProjectStatusBadge label={"5 Active projects"} color={"primary"} bg={"primary"} icon={RotateCcwIcon} />
-                                <ProjectStatusBadge label={"5 Completed projects"} color={"accent-2"} bg={"accent-2"} icon={CircleCheckBigIcon} />
+                                <ProjectStatusBadge label={"5 Active"} color={"primary"} bg={"primary"} icon={RotateCcwIcon} />
+                                <ProjectStatusBadge label={"5 Completed"} color={"accent-2"} bg={"accent-2"} icon={CircleCheckBigIcon} />
                             </div>
                             <div className="flex">
-                                <Button variant="link" className="flex items-center gap-1 text-foreground"><History /> History</Button>
-                                <Button variant="link" className="flex items-center gap-1 text-foreground"><ArrowDownNarrowWideIcon /> Sort by name</Button>
+                                <Button variant="link" className="flex items-center gap-1 text-foreground"><History />History</Button>
+                                <Button variant="link" className="flex items-center gap-1 text-foreground"><ArrowDownNarrowWideIcon />Title</Button>
 
                             </div>
                         </div>
