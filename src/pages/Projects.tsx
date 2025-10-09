@@ -6,12 +6,16 @@ import {
     ArrowDownNarrowWideIcon,
     CatIcon,
     CircleCheckBigIcon,
+    ClockIcon,
     HeartIcon,
     History,
+    LightbulbIcon,
     Megaphone,
+    MessagesSquareIcon,
     PlusIcon,
     RotateCcwIcon
 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 function Projects() {
     return (
@@ -57,16 +61,39 @@ function Projects() {
                             <ProjectCard />
                         </div>                        
                     </section>
-                    <aside>
-                        <div className="flex items-start gap-2 w-sm bg-accent border px-6 py-10 rounded-[6px]">
+                    <aside className="flex flex-col space-y-4 w-lg">
+                        <article className="flex items-start gap-2 bg-accent border px-6 py-10 rounded-[6px]">
                             <span className=""><Megaphone size={40} /></span>
                             <div className="flex flex-col space-y-4">
                                 <h3 className="font-bold">Advert Heading</h3>
                                 <p>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Vero fugit doloremque eius placeat voluptatum, aliquam porro vitae repellat aperiam.</p>
 
-                                <Button className="rounded-full mt-4"><CatIcon />Add to favorites</Button>
+                                <Button className="rounded-full mt-4"><HeartIcon />Add to favorites</Button>
+                            </div>                            
+                        </article>
+                        <article className="bg-accent border p-6">
+                            <div className="flex gap-2">
+                            <span><LightbulbIcon /></span>
+                            <div className="flex flex-col space-y-2">
+                                <h3 className="font-bold">
+                                    Tip of the day
+                                </h3>
+                                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Accusamus, nulla natus corporis.</p>
+                                <Link className="text-accent-3" to="">Learn more</Link>
                             </div>
-                        </div>
+                            </div>
+                        </article>
+                        <article className="">
+                            <div className="flex gap-2">
+                            <span><MessagesSquareIcon /></span>
+                            <div className="flex flex-col space-y-2">
+                                <h3 className="font-bold">Jean sent you a message</h3>
+                                <small className="flex items-center gap-1 text-muted-foreground"><ClockIcon size={14} />3 hrs ago</small>
+                                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Accusamus, nulla natus corporis.</p>
+                                <Link className="text-accent-3" to="">View chat</Link>
+                            </div>
+                            </div>
+                        </article>
                     </aside>
                 </section>
             </main>
