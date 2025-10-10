@@ -1,7 +1,17 @@
 import { CalendarDaysIcon, EllipsisVerticalIcon } from "lucide-react";
 import { Progress } from "./ui/progress";
 
-function ProjectCard() {
+type Props = {
+    id: number;
+    title: string;
+    description: string;
+    createdAt: Date;
+    dueDuated: Date;
+    userId: string;
+    allocatId: string;
+}
+
+function ProjectCard(props: Props) {
     return (
         <div className="flex justify-between bg-accent p-4 border rounded-[6px]">
             <div className="w-xl">
