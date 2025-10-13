@@ -4,7 +4,6 @@ import ProjectStatusBadge from "@/components/ProjectStatusBadge";
 import { Button } from "@/components/ui/button";
 import {
     ArrowDownNarrowWideIcon,
-    CatIcon,
     CircleCheckBigIcon,
     ClockIcon,
     HeartIcon,
@@ -16,6 +15,7 @@ import {
     RotateCcwIcon
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { projects } from "@/data/projects";
 
 function Projects() {
     return (
@@ -56,9 +56,9 @@ function Projects() {
                             </div>
                         </div>
                         <div className="flex flex-col gap-2 my-6">
-                            <ProjectCard />
-                            <ProjectCard />
-                            <ProjectCard />
+                            {projects.map(project =>
+                                <ProjectCard props={project} />
+                            )}                            
                         </div>                        
                     </section>
                     <aside className="flex flex-col space-y-4 w-lg">
