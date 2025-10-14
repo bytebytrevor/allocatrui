@@ -1,18 +1,29 @@
+import  { projects } from "../data/projects";
 import ComboBox from "./ComboBox";
 import TaskStatusBoard from "./TaskStatusBoard";
-import {tasks} from "../data/tasks";
 import { Progress } from "./ui/progress";
 import { Button } from "./ui/button";
 import { PlusIcon } from "lucide-react";
+import { useParams } from "react-router-dom";
 
 function ProjectManager() {
-    const completedTaskList = tasks.filter(task => task.status == "complete");
-    const activeTaskList = tasks.filter(task => task.status == "active");
-    const overdueTaskList = tasks.filter(task => task.status == "overdue");
+    // Fetch tasks for this project from database
+    // useEffect(() => {
+    //   fetch(`/api/projects/${projectId}/tasks`)
+    //     .then(res => res.json())
+    //     .then(data => setTasks(data));
+    // }, [projectId]);
+
+    const params = useParams();
+
+    const projectTasks = projects.filter(project =>
+        project.id === params.projectId)[0].tasks;
 
 
-
-    console.log(completedTaskList);
+    const completedTaskList = projectTasks.filter(task => task.status == "completed");
+    const activeTaskList = projectTasks.filter(task => task.status == "active");
+    // const overdueTaskList = projectTasks.filter(task => task.status == "overdue");
+    const pendingTaskList = projectTasks.filter(task => task.status == "pending");
 
     return (
         <>
@@ -46,7 +57,8 @@ function ProjectManager() {
                         title="Overdue"
                         description="No overdue tasks"
                         linkText="+ Click here to add"
-                        tasks={overdueTaskList}
+                        // tasks={overdueTaskList}
+                        tasks={pendingTaskList}
                     />
                 </section>    
             </div> 

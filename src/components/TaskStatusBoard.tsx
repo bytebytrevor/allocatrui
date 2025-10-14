@@ -23,18 +23,18 @@ function TaskStatusBoard({title, description, linkText, tasks}: Props) {
                 </div>) : (
                 <section className="flex-1 overflow-y-auto max-h-full scrollbar-thin">
                     {tasks?.map(task => (
-                        <div className="bg-background my-1 p-2 shadow-md border rounded-[6px]">
+                        <div key={task.id} className="bg-background my-1 p-2 shadow-md border rounded-[6px]">
                             <div className="flex items-center justify-between">
                                 <div className="flex flex-col space-y-2">
                                     <h2 className="font-bold text-sm">{task.title}</h2>
                                     {/* <p className="text-xs">The description will go here. Go and add a description prop in Task type</p> */}
                                     <span className="flex gap-1 items-center text-xs text-muted-foreground">
                                         <CalendarDaysIcon size={14}/>
-                                        {new Date("12-17-2025").toDateString()}
+                                        Due {new Date(task.dueDate).toDateString()}
                                     </span>
                                 </div>
                                 <div className="flex items-center space-x-4">
-                                    {task.status == "complete" && <CircleCheckBigIcon size={16} className="text-accent-2"/>}
+                                    {task.status == "completed" && <CircleCheckBigIcon size={16} className="text-accent-2"/>}
                                     {task.status == "active" && <CircleDotIcon size={16} className="text-primary"/>}
                                     {task.status == "overdue" && <TriangleAlertIcon size={16} className="text-destructive"/>}
                                     <EllipsisVerticalIcon size={16} className="text-muted-foreground hover:text-foreground"/>

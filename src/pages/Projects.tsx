@@ -57,7 +57,7 @@ function Projects() {
                         </div>
                         <div className="flex flex-col gap-2 my-6">
                             {projects.map(project =>
-                                <ProjectCard props={project} />
+                                <ProjectCard key={project.id} props={project} />
                             )}                            
                         </div>                        
                     </section>

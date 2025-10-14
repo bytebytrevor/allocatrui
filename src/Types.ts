@@ -1,5 +1,5 @@
 export type Task = {
-    id: number;
+    id: string;
     title: string;
     description: string; 
     status: "pending" | "active" | "completed" | "cancelled" | "overdue";
@@ -43,4 +43,5 @@ export type Project = {
     budget?: number;
     currency?: string;
     attachments?: string[];
+    tasks: Task[]
 };
