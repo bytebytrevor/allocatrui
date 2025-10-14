@@ -1,7 +1,20 @@
 export type Task = {
     id: number;
     title: string;
-    status: "complete" | "active" | "overdue";
+    description: string; 
+    status: "pending" | "active" | "completed" | "cancelled" | "overdue";
+    createdAt: string;
+    updatedAt?: string;
+    startDate?: string;
+    dueDate: string;
+    completedAt?: string;
+    projectId: string;
+    allocatId?: string;
+    assignedById?: string;
+    attachments?: string[];
+    priority?: "low" | "medium" | "high" | "urgent";
+    isPublic: boolean;
+
 }
 
 export type Project = {
@@ -10,17 +23,17 @@ export type Project = {
     title: string;
     description: string;
     type?: string; // e.g., "home service", "digital", etc.
-    category?: string; // e.g., "plumbing", "babysitting", etc.
+    category: string; // e.g., "plumbing", "babysitting", etc.
     createdAt: string;
-    updatedAt?: string;
+    updatedAt: string;
     startDate?: string;
-    dueDate: string;
+    dueDate?: string;
     completedAt?: string;
     status: "pending" | "active" | "completed" | "cancelled" | "overdue";
     progress?: number; // percentage 0-100
     priority?: "low" | "medium" | "high" | "urgent";
     userId: string; // project owner
-    allocatId: string; // assigned Allocatr (worker)
+    allocatId?: string; // assigned Allocatr (worker)
     teamIds?: string[]; // optional team members
     tasksCount?: number;
     messagesCount?: number;
