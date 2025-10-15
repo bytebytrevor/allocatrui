@@ -9,7 +9,7 @@ type Props = {
 
 function ProjectCard({props}: Props) {
     return (
-        <Link to={props.id} className="flex justify-between bg-accent p-4 border rounded-[6px]">
+        <Link to={`${props.id}`} className="flex justify-between bg-accent p-4 border rounded-[6px]">
             <div className="w-xl">
                 <h3 className="font-bold text-xl"><span className="font-light">{props.projectCode}</span> {props.title}</h3> 
                 <span

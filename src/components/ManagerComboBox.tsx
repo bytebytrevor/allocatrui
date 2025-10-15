@@ -46,6 +46,7 @@ function ComboBox({projects, project, projectId}: Props) {
                     <CommandGroup>
                     {projects?.map((project) => (
                         <CommandItem
+                        className="rounded-[6px]"
                         key={project.title}
                         value={project.title}
                         onSelect={(currentValue) => {

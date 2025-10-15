@@ -300,5 +300,148 @@ export const projects: Project[] = [
           "isPublic": true
         }
       ]
-    }
+    },
+    {
+    "id": "9c22f4c1-3f2b-4b59-bd9d-7c0e45a04a9e",
+    "projectCode": "ALC-0009",
+    "title": "Allocatr Mobile App",
+    "description": "Develop the Allocatr mobile app to improve accessibility for both clients and skilled professionals.",
+    "type": "digital",
+    "category": "mobile development",
+    "createdAt": "2025-09-20T08:00:00Z",
+    "updatedAt": "2025-10-02T10:00:00Z",
+    "startDate": "2025-09-22T08:00:00Z",
+    "dueDate": "2025-12-15T17:00:00Z",
+    "status": "active",
+    "progress": 40,
+    "priority": "high",
+    "userId": "2b32f85e-9b51-4a8f-a52c-2a5f7e3db32a",
+    "allocatId": "3a4e2e61-29f5-47f7-b12b-6fd2b50c8da3",
+    "tasksCount": 4,
+    "messagesCount": 18,
+    "lastActivity": "2025-10-09T11:30:00Z",
+    "isPublic": true,
+    "allowBids": false,
+    "budget": 1800,
+    "currency": "USD",
+    "attachments": [],
+    "tasks": [
+      {
+        "id": "c4c7f2b1-bfa3-4cc3-b6ad-13f20c2fd6d7",
+        "title": "Setup mobile project structure",
+        "description": "Initialize React Native with Expo and link with the Allocatr backend API.",
+        "status": "completed",
+        "createdAt": "2025-09-21T09:00:00Z",
+        "dueDate": "2025-09-23T17:00:00Z",
+        "completedAt": "2025-09-23T16:00:00Z",
+        "projectId": "9c22f4c1-3f2b-4b59-bd9d-7c0e45a04a9e",
+        "priority": "medium",
+        "isPublic": true
+      },
+      {
+        "id": "8b18dc65-cc46-4f63-9ffb-b456d730f40e",
+        "title": "Design mobile UI screens",
+        "description": "Create login, dashboard, and project detail screens in Figma.",
+        "status": "active",
+        "createdAt": "2025-09-25T08:30:00Z",
+        "dueDate": "2025-10-05T17:00:00Z",
+        "projectId": "9c22f4c1-3f2b-4b59-bd9d-7c0e45a04a9e",
+        "priority": "high",
+        "isPublic": true
+      },
+      {
+        "id": "7b95e113-7d0f-4f61-b5a3-cb2e8b0d1dc2",
+        "title": "Implement authentication flow",
+        "description": "Integrate Google and Facebook login using OAuth 2.0.",
+        "status": "pending",
+        "createdAt": "2025-09-28T09:00:00Z",
+        "dueDate": "2025-10-10T17:00:00Z",
+        "projectId": "9c22f4c1-3f2b-4b59-bd9d-7c0e45a04a9e",
+        "priority": "urgent",
+        "isPublic": true
+      },
+      {
+        "id": "d1b80c7c-1a3d-4a90-96f7-89a5e168ee6a",
+        "title": "API integration testing",
+        "description": "Test backend endpoints for tasks and projects in mobile workflow.",
+        "status": "pending",
+        "createdAt": "2025-09-30T10:00:00Z",
+        "dueDate": "2025-10-12T17:00:00Z",
+        "projectId": "9c22f4c1-3f2b-4b59-bd9d-7c0e45a04a9e",
+        "priority": "medium",
+        "isPublic": true
+      }
+    ]
+  },
+  {
+    "id": "ad65b3e9-0b81-4f0e-9683-1f9f1a8fd14e",
+    "projectCode": "ALC-0010",
+    "title": "Allocatr Analytics Dashboard",
+    "description": "Build an analytics dashboard for project performance, completion rates, and active user tracking.",
+    "type": "digital",
+    "category": "data visualization",
+    "createdAt": "2025-09-25T08:00:00Z",
+    "updatedAt": "2025-10-05T09:00:00Z",
+    "startDate": "2025-09-27T08:00:00Z",
+    "dueDate": "2025-11-30T17:00:00Z",
+    "status": "pending",
+    "progress": 15,
+    "priority": "medium",
+    "userId": "3c92ef72-beb2-4baf-b3db-0e8b8941a2de",
+    "allocatId": "6db0df26-f1b0-4dc0-8b7f-92ff084e02c9",
+    "tasksCount": 4,
+    "messagesCount": 10,
+    "lastActivity": "2025-10-07T15:00:00Z",
+    "isPublic": false,
+    "allowBids": true,
+    "budget": 1200,
+    "currency": "USD",
+    "attachments": [],
+    "tasks": [
+      {
+        "id": "f9fdd63a-fb62-4b09-89a7-548fdff89b02",
+        "title": "Design dashboard wireframes",
+        "description": "Create modern UI mockups for visualizing analytics data in Figma.",
+        "status": "active",
+        "createdAt": "2025-09-27T09:00:00Z",
+        "dueDate": "2025-10-02T17:00:00Z",
+        "projectId": "ad65b3e9-0b81-4f0e-9683-1f9f1a8fd14e",
+        "priority": "medium",
+        "isPublic": false
+      },
+      {
+        "id": "2a3b2ff8-6b6c-4f0a-bb1d-d28a3a87676a",
+        "title": "Connect backend data",
+        "description": "Expose and integrate analytics data endpoints from Allocatr API.",
+        "status": "pending",
+        "createdAt": "2025-09-30T08:00:00Z",
+        "dueDate": "2025-10-10T17:00:00Z",
+        "projectId": "ad65b3e9-0b81-4f0e-9683-1f9f1a8fd14e",
+        "priority": "high",
+        "isPublic": false
+      },
+      {
+        "id": "b7a91a04-fb9f-43df-8094-1f1df50893a3",
+        "title": "Implement chart components",
+        "description": "Develop bar, line, and pie charts using Recharts library.",
+        "status": "pending",
+        "createdAt": "2025-10-02T09:00:00Z",
+        "dueDate": "2025-10-15T17:00:00Z",
+        "projectId": "ad65b3e9-0b81-4f0e-9683-1f9f1a8fd14e",
+        "priority": "high",
+        "isPublic": false
+      },
+      {
+        "id": "cbb7239f-b573-4623-8ef2-f7f10cba1c7c",
+        "title": "Setup dashboard authentication",
+        "description": "Secure the dashboard routes using JWT and role-based access.",
+        "status": "pending",
+        "createdAt": "2025-10-04T08:00:00Z",
+        "dueDate": "2025-10-18T17:00:00Z",
+        "projectId": "ad65b3e9-0b81-4f0e-9683-1f9f1a8fd14e",
+        "priority": "medium",
+        "isPublic": false
+      }
+    ]
+  }
 ];

@@ -4,14 +4,15 @@ type Props = {
     label: string;
     href: string;
     icon?: React.ElementType;
+    // projectId?: string;
 }
 
 function DashboardNavLink({label, href, icon: Icon}: Props) {
     return (
         <NavLink
-            end={href === "/dashboard/projects"}
+            end
             className={({ isActive }) => {
-                    return`flex gap-2 py-2 pl-4 ${isActive ? "bg-primary text-secondary" : ""}`
+                    return`flex items-center gap-2 py-2 pl-4 ${isActive ? "bg-primary text-secondary" : ""}`
                 }
             }
             to={href}

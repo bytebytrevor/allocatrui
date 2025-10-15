@@ -20,31 +20,33 @@ import { projects } from "@/data/projects";
 function Projects() {
     return (
         <>
-            <header className="px-4 py-2 border-b">
-                <DashboardMainNav />
+            <header className="border-b sticky top-0">
+                <DashboardMainNav> 
+                    <form action="" className="focus:outline-none focus:border-none focus:ring-0">
+                        <input
+                            type="text"
+                            name="searchProject"
+                            id="searchProject"
+                            placeholder="Search project..."
+                            className="search text-[.8rem] w-xl rounded-full focus:outline"
+                        />
+                    </form>                 
+                        
+                </DashboardMainNav>
             </header>
-            <main className="container flex-col my-8 mx-auto">
+            <main className="container mt-8 mx-auto">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
                         <h1 className="font-bold my-4">Hi Thelly!</h1>
                         <span className="">You have 5 active projects</span>
                     </div>
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center">
                         <Button className="rounded-full"><PlusIcon />New project</Button>
                     </div>
                 </div>
                 <section className="flex gap-12 justify-between w-full mt-8">
                     <section className="w-full">                    
-                        <form action="">
-                            <input
-                                type="text"
-                                name="searchProject"
-                                id="searchProject"
-                                placeholder="Search project..."
-                                className="search w-full rounded-full"
-                            />
-                        </form>
-                        <div className="flex items-center justify-between mt-12">
+                        <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                                 <ProjectStatusBadge label={"5 Active"} color={"primary"} bg={"primary"} icon={RotateCcwIcon} />
                                 <ProjectStatusBadge label={"5 Completed"} color={"accent-2"} bg={"accent-2"} icon={CircleCheckBigIcon} />
@@ -52,7 +54,6 @@ function Projects() {
                             <div className="flex">
                                 <Button variant="link" className="flex items-center gap-1 text-foreground"><History />History</Button>
                                 <Button variant="link" className="flex items-center gap-1 text-foreground"><ArrowDownNarrowWideIcon />Title</Button>
-
                             </div>
                         </div>
                         <div className="flex flex-col gap-2 my-6">
