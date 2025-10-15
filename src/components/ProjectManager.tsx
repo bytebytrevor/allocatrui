@@ -1,10 +1,10 @@
 import  { projects } from "../data/projects";
-import ComboBox from "./ComboBox";
 import TaskStatusBoard from "./TaskStatusBoard";
 import { Progress } from "./ui/progress";
 import { Button } from "./ui/button";
 import { PlusIcon } from "lucide-react";
 import { useParams } from "react-router-dom";
+import ManagerComboBox from "./ManagerComboBox";
 
 function ProjectManager() {
     // Fetch tasks for this project from database
@@ -16,14 +16,18 @@ function ProjectManager() {
 
     const params = useParams();
 
-    const projectTasks = projects.filter(project =>
-        project.id === params.projectId)[0].tasks;
+
+    const currentProject = projects?.find(project => (
+        project.id === params.projectId)
+    )
+
+    const projectTasks = currentProject?.tasks;
 
 
-    const completedTaskList = projectTasks.filter(task => task.status == "completed");
-    const activeTaskList = projectTasks.filter(task => task.status == "active");
-    // const overdueTaskList = projectTasks.filter(task => task.status == "overdue");
-    const pendingTaskList = projectTasks.filter(task => task.status == "pending");
+    const completedTaskList = projectTasks?.filter(task => task.status == "completed");
+    const activeTaskList = projectTasks?.filter(task => task.status == "active");
+    const overdueTaskList = projectTasks?.filter(task => task.status == "overdue");
+    // const pendingTaskList = projectTasks?.filter(task => task.status == "pending");
 
     return (
         <>
@@ -31,7 +35,7 @@ function ProjectManager() {
                 <section className="flex justify-between pr-12 pb-4 shrink-0">
                     <div className="flex flex-col space-y-4">
                         <span className="font-light">Select job</span>
-                        <ComboBox />
+                        <ManagerComboBox project={currentProject} projects={projects} />
                         <h2 className="text-2xl font-bold"><span className="font-light">P06J</span> Braids Installation</h2>
                         <Progress value={68} className="h-4"/>
                     </div>
@@ -57,8 +61,8 @@ function ProjectManager() {
                         title="Overdue"
                         description="No overdue tasks"
                         linkText="+ Click here to add"
-                        // tasks={overdueTaskList}
-                        tasks={pendingTaskList}
+                        tasks={overdueTaskList}
+                        // tasks={pendingTaskList}
                     />
                 </section>    
             </div> 

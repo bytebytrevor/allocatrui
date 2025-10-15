@@ -14,7 +14,6 @@ export type Task = {
     attachments?: string[];
     priority?: "low" | "medium" | "high" | "urgent";
     isPublic: boolean;
-
 }
 
 export type Project = {
