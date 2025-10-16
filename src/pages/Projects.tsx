@@ -20,7 +20,7 @@ import { projects } from "@/data/projects";
 function Projects() {
     return (
         <>
-            <header className="border-b sticky top-0">
+            <header className="sticky top-0 border-b">
                 <DashboardMainNav> 
                     <form action="" className="focus:outline-none focus:border-none focus:ring-0">
                         <input

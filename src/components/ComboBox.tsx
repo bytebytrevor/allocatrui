@@ -56,7 +56,7 @@ function ComboBox() {
                 </Button>
             </PopoverTrigger>
             <PopoverContent className="p-0 rounded-[6px]">
-                <Command className="rounded-[6px] w-full">
+                <Command className="rounded-[6px]">
                 <CommandInput placeholder="Search job..." />
                 <CommandList>
                     <CommandEmpty>No framework found.</CommandEmpty>

@@ -28,3 +28,11 @@
   background-repeat: no-repeat;
   padding: 5px 20px 5px 30px;
 }
+
+.new-project-bg {
+  background-image: url(./assets/manhattan.jpg);
+  background-repeat: no-repeat;
+  /* background-attachment: fixed; */
+  background-size: cover;
+  background-position: center;
+}
