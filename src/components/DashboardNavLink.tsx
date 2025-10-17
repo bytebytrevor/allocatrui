@@ -12,7 +12,13 @@ function DashboardNavLink({label, href, icon: Icon}: Props) {
         <NavLink
             end
             className={({ isActive }) => {
-                    return`flex items-center gap-2 py-2 pl-4 ${isActive ? "bg-primary text-secondary" : ""}`
+                return`flex items-center gap-2 py-2 pl-4 hover:bg-accent/40
+                    ${isActive
+                    ? 
+                        "text-primary font-semibold border-r-4 border-primary"
+                    :                        
+                        ""
+                    }`
                 }
             }
             to={href}

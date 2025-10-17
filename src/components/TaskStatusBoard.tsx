@@ -11,7 +11,7 @@ type Props = {
 
 function TaskStatusBoard({title, description, linkText, tasks}: Props) {
     return (               
-        <section className="flex flex-col mt-8 min-h-60 max-h-full min-w-86 max-w-96 bg-accent rounded-[6px] p-4">
+        <section className="flex flex-col mt-8 min-h-60 max-h-full min-w-86 max-w-96 bg-muted rounded-2xl p-4">
             <h3 className="font-semibold pb-2">{title}</h3> 
             {tasks == null || tasks?.length == 0 ? (  
                 <div className="flex-1 flex gap-x-4 items-center justify-center text-muted-foreground">
@@ -23,7 +23,7 @@ function TaskStatusBoard({title, description, linkText, tasks}: Props) {
                 </div>) : (
                 <section className="flex-1 overflow-y-auto max-h-full scrollbar-thin">
                     {tasks?.map(task => (
-                        <div key={task.id} className="bg-background my-1 p-2 shadow-md border rounded-[6px]">
+                        <div key={task.id} className="bg-background my-1 p-2 shadow-md rounded-[6px]">
                             <div className="flex items-center justify-between">
                                 <div className="flex flex-col space-y-2">
                                     <h2 className="font-bold text-sm">{task.title}</h2>

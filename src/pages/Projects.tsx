@@ -20,7 +20,7 @@ import { projects } from "@/data/projects";
 function Projects() {
     return (
         <>
-            <header className="sticky top-0 border-b">
+            <header className="sticky top-0 z-10 border-b">
                 <DashboardMainNav> 
                     <form action="" className="focus:outline-none focus:border-none focus:ring-0">
                         <input
@@ -56,30 +56,30 @@ function Projects() {
                                 <Button variant="link" className="flex items-center gap-1 text-foreground"><ArrowDownNarrowWideIcon />Title</Button>
                             </div>
                         </div>
-                        <div className="flex flex-col gap-2 my-6">
+                        <div className="flex flex-col gap-4 my-6">
                             {projects.map(project =>
                                 <ProjectCard key={project.id} props={project} />
                             )}                            
                         </div>                        
                     </section>
                     <aside className="flex flex-col space-y-4 w-lg">
-                        <article className="flex items-start gap-2 bg-accent border px-6 py-10 rounded-[6px]">
+                        <article className="flex items-start gap-2 bg-muted px-6 py-10 rounded-2xl">
                             <span className=""><Megaphone size={40} /></span>
                             <div className="flex flex-col space-y-4">
                                 <h3 className="font-bold">Advert Heading</h3>
-                                <p>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Vero fugit doloremque eius placeat voluptatum, aliquam porro vitae repellat aperiam.</p>
+                                <p className="text-[0.9rem]">Lorem, ipsum dolor sit amet consectetur adipisicing elit. Vero fugit doloremque eius placeat voluptatum, aliquam porro vitae repellat aperiam.</p>
 
                                 <Button className="rounded-full mt-4"><HeartIcon />Add to favorites</Button>
                             </div>                            
                         </article>
-                        <article className="bg-accent border p-6">
+                        <article className="bg-muted p-6 rounded-2xl">
                             <div className="flex gap-2">
                             <span><LightbulbIcon /></span>
                             <div className="flex flex-col space-y-2">
                                 <h3 className="font-bold">
                                     Tip of the day
                                 </h3>
-                                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Accusamus, nulla natus corporis.</p>
+                                <p className="text-[0.9rem]">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Accusamus, nulla natus corporis.</p>
                                 <Link className="text-accent-3" to="">Learn more</Link>
                             </div>
                             </div>
@@ -90,7 +90,7 @@ function Projects() {
                             <div className="flex flex-col space-y-2">
                                 <h3 className="font-bold">Jean sent you a message</h3>
                                 <small className="flex items-center gap-1 text-muted-foreground"><ClockIcon size={14} />3 hrs ago</small>
-                                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Accusamus, nulla natus corporis.</p>
+                                <p className="text-[0.9rem]">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Accusamus, nulla natus corporis.</p>
                                 <Link className="text-accent-3" to="">View chat</Link>
                             </div>
                             </div>

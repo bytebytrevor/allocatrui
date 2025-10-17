@@ -31,13 +31,13 @@ function ProjectManager() {
             <div className="flex-1 flex flex-col h-full pb-4">
                 <section className="flex justify-between pr-12 pb-4 shrink-0">
                     <div className="flex flex-col space-y-4">
-                        <span className="font-light">Select project</span>
+                        <span className="font-light text-sm">Select project</span>
                         <ManagerComboBox project={currentProject} projects={projects} />
-                        <h2 className="flex gap-2 items-center text-2xl font-bold">
+                        <h2 className="flex gap-2 items-center text-xl font-medium">
                             <span className="font-light">{currentProject?.projectCode}</span>
                             {currentProject?.title}
                         </h2>
-                        <Progress value={currentProject?.progress} className="h-4"/>
+                        <Progress value={currentProject?.progress} className="h-3"/>
                     </div>
                     <div>
                         <Button className="rounded-full"><PlusIcon />Create new job</Button>
