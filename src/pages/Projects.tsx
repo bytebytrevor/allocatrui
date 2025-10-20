@@ -1,14 +1,15 @@
 import DashboardMainNav from "@/components/DashboardMainNav";
 import ProjectCard from "@/components/ProjectCard";
-import ProjectStatusBadge from "@/components/ProjectStatusBadge";
 import { Button } from "@/components/ui/button";
 import {
     ArrowDownNarrowWideIcon,
     CircleCheckBigIcon,
+    CircleDotIcon,
     ClockIcon,
     HeartIcon,
     History,
     LightbulbIcon,
+    LoaderCircleIcon,
     Megaphone,
     MessagesSquareIcon,
     PlusIcon,
@@ -16,47 +17,51 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { projects } from "@/data/projects";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 
 function Projects() {
     return (
         <>
-            <header className="sticky top-0 z-10 border-b">
-                <DashboardMainNav> 
-                    <form action="" className="focus:outline-none focus:border-none focus:ring-0">
-                        <input
-                            type="text"
-                            name="searchProject"
-                            id="searchProject"
-                            placeholder="Search project..."
-                            className="search text-[.8rem] w-xl rounded-full focus:outline"
-                        />
-                    </form>                 
-                        
-                </DashboardMainNav>
+            <header className="sticky top-0 z-10">
+                <DashboardMainNav />
             </header>
             <main className="container mt-8 mx-auto">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
-                        <h1 className="font-bold my-4">Hi Thelly!</h1>
-                        <span className="">You have 5 active projects</span>
+                        <h1 className="font-bold">Hi Thelly!</h1>
+                        <span className="">You have 5 active projects</span>                        
                     </div>
                     <div className="flex items-center">
                         <Button className="rounded-full"><PlusIcon />New project</Button>
                     </div>
                 </div>
-                <section className="flex gap-12 justify-between w-full mt-8">
-                    <section className="w-full">                    
+                  
+                <section className="flex gap-12 justify-between w-full mt-8">                    
+                    <section className="w-full">
+                        <form action="" className="focus:outline-none focus:border-none focus:ring-0 mb-4">
+                            <Input
+                                name="searchProject"
+                                placeholder="Search project..."
+                                id="searchProject"
+                                className="search border-none rounded-full"
+                            />
+                        </form>                     
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                                <ProjectStatusBadge label={"5 Active"} color={"primary"} bg={"primary"} icon={RotateCcwIcon} />
-                                <ProjectStatusBadge label={"5 Completed"} color={"accent-2"} bg={"accent-2"} icon={CircleCheckBigIcon} />
+                                <Badge className="rounded-full bg-primary"><CircleDotIcon /> Active</Badge>
+                                <Badge className="rounded-full bg-muted text-white"><LoaderCircleIcon />Pending</Badge>
+                                <Badge className="rounded-full bg-muted text-white"><CircleCheckBigIcon /> Closed</Badge>
+                                {/* <Badge className="rounded-full bg-primary/20 text-primary"><CircleDotIcon /> Active</Badge>
+                                <Badge className="rounded-full bg-destructive/20 text-destructive"><LoaderCircleIcon />Pending</Badge>
+                                <Badge className="rounded-full bg-accent-2/20 text-accent-2"><CircleCheckBigIcon /> Closed</Badge> */}
                             </div>
                             <div className="flex">
                                 <Button variant="link" className="flex items-center gap-1 text-foreground"><History />History</Button>
                                 <Button variant="link" className="flex items-center gap-1 text-foreground"><ArrowDownNarrowWideIcon />Title</Button>
                             </div>
                         </div>
-                        <div className="flex flex-col gap-4 my-6">
+                        <div className="flex flex-col gap-4 mb-6 mt-2">
                             {projects.map(project =>
                                 <ProjectCard key={project.id} props={project} />
                             )}                            

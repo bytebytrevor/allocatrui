@@ -47,7 +47,7 @@ function ComboBox() {
                 variant="outline"
                 role="combobox"
                 aria-expanded={open}
-                className="w-[300px] justify-between rounded-full"
+                className="max-w-full justify-between rounded-full"
                 >
                 {value
                     ? frameworks.find((framework) => framework.value === value)?.label

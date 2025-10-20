@@ -9,7 +9,7 @@ function Dashboard() {
 
     return (
         <div className="flex flex-col h-screen">
-            <header className="mb-8 border-b">
+            <header className="mb-8">
                 <DashboardMainNav />
             </header>
             
