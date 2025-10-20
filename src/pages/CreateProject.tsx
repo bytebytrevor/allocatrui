@@ -16,11 +16,11 @@ function CreateProject() {
                 <DashboardMainNav />
             </header> */}
             
-            <main className="flex flex-col items-center justify-center w-full py-4">
+            <main className="flex flex-col h-screen items-center justify-center w-full py-4">
                 <section className="max-w-8xl">
                     <div className="flex drop-shadow-xl">
                         <div className="new-project-bg bg-secondary w-xs rounded-l-2xl"></div>
-                        <div className="bg-accent max-w-full rounded-r-2xl px-12 pt-6 pb-16" >
+                        <div className="max-w-full rounded-r-2xl px-12 pt-6 pb-16 bg-muted" >
                             <div className="flex items-center justify-between mb-8 pb-4 border-b">
                                 <h1>Hi <span className="font-bold">Thelly!</span></h1>
                                 <img src="/src/assets/allocatr-neg-light.svg" alt="" className="w-20" />

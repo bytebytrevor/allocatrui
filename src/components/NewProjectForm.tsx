@@ -65,6 +65,7 @@ function NewProjectForm() {
                                 aria-invalid={fieldState.invalid}
                                 placeholder="Car Window Repair"
                                 autoComplete="off"
+                                className="rounded-full border-none dark:bg-input"
                             />
                             {fieldState.invalid && (
                                 <FieldError errors={[fieldState.error]}/>

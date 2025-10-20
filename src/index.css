@@ -1,13 +1,15 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-@custom-variant light (&:is(.light *));
+/* @custom-variant light (&:is(.light *)); */
+@custom-variant dark (&:is(.dark *));
 
 :root {
   font-family: Poppins, Avenir, Helvetica, Arial, sans-serif, system-ui;
   line-height: 1.5;
 
-  color-scheme: dark light;
+  /* color-scheme: dark light; */
+  color-scheme: light dark;
   color: #FFFFFF;
   background-color: #151515;
   
