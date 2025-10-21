@@ -12,7 +12,7 @@ type Props = {
 function TaskStatusBoard({title, description, linkText, tasks}: Props) {
     return (               
         <section className="flex flex-col mt-8 min-h-60 max-h-full min-w-86 max-w-96 bg-muted rounded-2xl p-4">
-            <h3 className="font-semibold pb-2">{title}</h3> 
+            <h3 className="font-semibold text-xs text-foreground/80 pb-2">{title}</h3> 
             {tasks == null || tasks?.length == 0 ? (  
                 <div className="flex-1 flex gap-x-4 items-center justify-center text-muted-foreground">
                     <ListTodoIcon />

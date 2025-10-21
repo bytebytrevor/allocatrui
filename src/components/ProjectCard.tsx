@@ -2,6 +2,9 @@ import { CalendarDaysIcon, EllipsisVerticalIcon } from "lucide-react";
 import { Progress } from "./ui/progress";
 import type { Project } from "@/Types";
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
+
+const MotionLink = motion(Link);
 
 type Props = {
     props: Project
@@ -9,12 +12,18 @@ type Props = {
 
 function ProjectCard({props}: Props) {
     return (
-        <div className="bg-muted rounded-2xl p-2">
+        <div className="bg-muted rounded-2xl p-2 shadow-sm/25">
             <div className="flex items-center justify-between">
                 <h3 className="font-bold text-sm pl-2"><span className="font-light">{props.projectCode}</span> {props.title}</h3>
-                <EllipsisVerticalIcon size={36} className="text-white/20 hover:text-white p-2 hover:bg-background/40 rounded-full"/>
+                <EllipsisVerticalIcon size={36} className="text-foreground/50 hover:text-foreground p-2 hover:bg-background/40 rounded-full"/>
             </div> 
-            <Link to={`${props.id}`} className="flex justify-between bg-background p-4 mt-2 rounded-2xl">
+            <MotionLink
+                to={`${props.id}`}
+                className="flex justify-between bg-background p-4 mt-2 rounded-2xl"
+                whileHover={{ opacity: 0.7 }}
+                whileTap={{ scale: 0.96 }}
+                transition={{ duration: 0.2, ease: "easeInOut" }}
+            >
                 <div className="w-xl">
                     
                     <span
@@ -29,12 +38,9 @@ function ProjectCard({props}: Props) {
                         <span className="flex items-center font-semibold">Status: {props.status}</span>
                         <Progress value={props.progress} className="mt-1"/>
                         <p className="font-semibold text-sm pt-3">Allocat: <span className="font-normal">{props.projectCode}</span></p>
-                        {/* <p className="flex items-center gap-1 text-muted-foreground font-light">
-                            <CalendarDaysIcon size={16} />Due {new Date(props.dueDate ?? "").toDateString()}
-                        </p> */}
                     </div>                    
                 </div>
-            </Link>
+            </MotionLink>
         </div>
     );
 }

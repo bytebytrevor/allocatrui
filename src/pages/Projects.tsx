@@ -33,7 +33,7 @@ function Projects() {
                         <span className="">You have 5 active projects</span>                        
                     </div>
                     <div className="flex items-center">
-                        <Button variant="outline" className="rounded-full"><PlusIcon />New project</Button>
+                        <Button className="rounded-full"><PlusIcon />New project</Button>
                     </div>
                 </div>
                   
@@ -49,16 +49,16 @@ function Projects() {
                         </form>                     
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                                <Badge className="rounded-full bg-primary"><CircleDotIcon /> Active</Badge>
-                                <Badge className="rounded-full bg-muted text-white"><LoaderCircleIcon />Pending</Badge>
-                                <Badge className="rounded-full bg-muted text-white"><CircleCheckBigIcon /> Closed</Badge>
+                                <Badge className="rounded-full bg-muted-foreground text-background"><CircleDotIcon /> Active</Badge>
+                                <Badge className="rounded-full bg-muted text-foreground"><LoaderCircleIcon />Pending</Badge>
+                                <Badge className="rounded-full bg-muted text-foreground"><CircleCheckBigIcon /> Closed</Badge>
                             </div>
                             <div className="flex">
                                 <Button variant="link" className="flex items-center gap-1 text-foreground"><History />History</Button>
                                 <Button variant="link" className="flex items-center gap-1 text-foreground"><ArrowDownNarrowWideIcon />Title</Button>
                             </div>
                         </div>
-                        <div className="flex flex-col gap-4 mb-6 mt-2">
+                        <div className="flex flex-col  gap-4 mb-6 mt-2">
                             {projects.map(project =>
                                 <ProjectCard key={project.id} props={project} />
                             )}                            
@@ -71,7 +71,7 @@ function Projects() {
                                 <h3 className="font-bold">Advert Heading</h3>
                                 <p className="text-[0.9rem]">Lorem, ipsum dolor sit amet consectetur adipisicing elit. Vero fugit doloremque eius placeat voluptatum, aliquam porro vitae repellat aperiam.</p>
 
-                                <Button variant="outline" className="rounded-full mt-4"><HeartIcon />Add to favorites</Button>
+                                <Button className="rounded-full mt-4"><HeartIcon />Add to favorites</Button>
                             </div>                            
                         </article>
                         <article className="bg-muted p-6 rounded-2xl">
