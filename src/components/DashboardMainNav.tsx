@@ -9,7 +9,7 @@ type Props = {
 
 function DashboardMainNav({children}: Props) {
     return (
-        <nav className="flex items-center justify-between bg-background px-4 py-2">
+        <nav className="flex items-center justify-between bg-background border-b px-4 py-2">
             <Link to="/projects" className="flex items-center">
                 <img src={allocatrLogoLight} alt="Allocatr icon" className="w-24"/>
             </Link>

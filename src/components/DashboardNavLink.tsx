@@ -4,7 +4,6 @@ type Props = {
     label: string;
     href: string;
     icon?: React.ElementType;
-    // projectId?: string;
 }
 
 function DashboardNavLink({label, href, icon: Icon}: Props) {

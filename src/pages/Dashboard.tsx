@@ -14,7 +14,7 @@ function Dashboard() {
             </header>
             
             <main className="flex flex-1 gap-2 overflow-hidden"> 
-                    <aside className="flex flex-col bg-secondary min-w-[200px] text-lg font-light space- rounded-tr-4xl">
+                    <aside className="flex flex-col bg-secondary text-white min-w-[200px] text-lg font-light space- rounded-tr-4xl">
                         <span className="py-2 pl-4 space-y-12 font-medium">Title</span>
                         <DashboardNavLink href={`/projects/${params.projectId}`} icon={BlocksIcon} label="Manager" />
                         <DashboardNavLink href={`/projects/${params.projectId}/calendar`} icon={CalendarDaysIcon} label="Calendar" />

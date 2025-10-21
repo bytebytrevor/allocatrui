@@ -33,7 +33,7 @@ function Projects() {
                         <span className="">You have 5 active projects</span>                        
                     </div>
                     <div className="flex items-center">
-                        <Button className="rounded-full"><PlusIcon />New project</Button>
+                        <Button variant="outline" className="rounded-full"><PlusIcon />New project</Button>
                     </div>
                 </div>
                   
@@ -52,9 +52,6 @@ function Projects() {
                                 <Badge className="rounded-full bg-primary"><CircleDotIcon /> Active</Badge>
                                 <Badge className="rounded-full bg-muted text-white"><LoaderCircleIcon />Pending</Badge>
                                 <Badge className="rounded-full bg-muted text-white"><CircleCheckBigIcon /> Closed</Badge>
-                                {/* <Badge className="rounded-full bg-primary/20 text-primary"><CircleDotIcon /> Active</Badge>
-                                <Badge className="rounded-full bg-destructive/20 text-destructive"><LoaderCircleIcon />Pending</Badge>
-                                <Badge className="rounded-full bg-accent-2/20 text-accent-2"><CircleCheckBigIcon /> Closed</Badge> */}
                             </div>
                             <div className="flex">
                                 <Button variant="link" className="flex items-center gap-1 text-foreground"><History />History</Button>
@@ -74,7 +71,7 @@ function Projects() {
                                 <h3 className="font-bold">Advert Heading</h3>
                                 <p className="text-[0.9rem]">Lorem, ipsum dolor sit amet consectetur adipisicing elit. Vero fugit doloremque eius placeat voluptatum, aliquam porro vitae repellat aperiam.</p>
 
-                                <Button className="rounded-full mt-4"><HeartIcon />Add to favorites</Button>
+                                <Button variant="outline" className="rounded-full mt-4"><HeartIcon />Add to favorites</Button>
                             </div>                            
                         </article>
                         <article className="bg-muted p-6 rounded-2xl">
