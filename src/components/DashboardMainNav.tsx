@@ -11,7 +11,7 @@ type Props = {
 
 function DashboardMainNav({children}: Props) {       
     const [dark, setDark] = useState(false);
-    // const logo = dark ? allocatrLogoLight : allocatrLogoDark;
+    const logo = dark ? allocatrLogoLight : allocatrLogoDark;
 
     
     function toggleDarkMode() {     
@@ -28,7 +28,7 @@ function DashboardMainNav({children}: Props) {
     return (
         <nav className="flex items-center justify-between bg-background border-b px-4 py-2">
             <Link to="/projects" className="flex items-center">
-                <img src={dark ? allocatrLogoLight : allocatrLogoDark} alt="Allocatr icon" className="w-24"/>
+                <img src={logo} alt="Allocatr icon" className="w-24"/>
             </Link>
             <span>{children}</span>
             <span className="flex items-center space-x-4">

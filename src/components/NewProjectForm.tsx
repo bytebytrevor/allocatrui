@@ -10,6 +10,12 @@ import {
     FieldGroup,
     FieldLabel,
 } from "@/components/ui/field";
+import {
+    InputGroup,
+    InputGroupAddon,
+    InputGroupText,
+    InputGroupTextarea
+} from "@/components/ui/input-group"
 
 const formSchema = z.object({
     title: z
@@ -71,6 +77,36 @@ function NewProjectForm() {
                                 <FieldError errors={[fieldState.error]}/>
                             )}
                         </Field>                        
+                    )}
+                />
+                <Controller
+                    name="description"
+                    control={form.control}
+                    render={({field, fieldState}) => (
+                        <Field data-invalid={fieldState.invalid}>
+                            <FieldLabel>Description</FieldLabel>
+                            <InputGroup>
+                                <InputGroupTextarea
+                                    {...field}
+                                    id="description"
+                                    placeholder="Please tell more about your project."
+                                    rows={6}
+                                    className="min-h-24 resize-none"
+                                    arai-invalid={fieldState.invalid}
+                                />
+                                <InputGroupAddon align="block-end">
+                                    <InputGroupText className="tabular-nums">
+                                        {field.value.length}/1000 characters
+                                    </InputGroupText>
+                                </InputGroupAddon>
+                            </InputGroup>
+                            <FieldDescription>
+                                Include full details of what you want done, e.g. walk dog daily starting at 5pm.
+                            </FieldDescription>
+                            {fieldState.invalid && (
+                                <FieldError errors={[fieldState.error]} />
+                            )}
+                        </Field>
                     )}
                 />
             </FieldGroup>

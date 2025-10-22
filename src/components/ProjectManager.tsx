@@ -40,7 +40,7 @@ function ProjectManager() {
                         <Progress value={currentProject?.progress} className="h-3"/>
                     </div>
                     <div>
-                        <Button variant={"outline"} className="rounded-full"><PlusIcon />New project</Button>
+                        <Button className="rounded-full"><PlusIcon />New project</Button>
                     </div>
                 </section>
                 
