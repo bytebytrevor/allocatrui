@@ -1,29 +1,32 @@
 import { Link } from "react-router-dom";
 import allocatrLogoLight from "../assets/allocatr-neg-light.svg";
-import allocatrLogoDark from "../assets/allocatr-dark.svg";
-import { BellIcon, EllipsisVerticalIcon, UserCircleIcon } from "lucide-react";
+import allocatrLogoDark from "../assets/allocatr-dark-02.svg";
+import { BellIcon, EllipsisVerticalIcon, Moon, Sun, UserCircleIcon } from "lucide-react";
 import { useState, type ReactNode } from "react";
-import { Switch } from "./ui/switch";
+import { useEffect, } from "react";
 
 type Props = {
     children?: ReactNode;
 }
 
-function DashboardMainNav({children}: Props) {       
-    const [dark, setDark] = useState(false);
-    const logo = dark ? allocatrLogoLight : allocatrLogoDark;
+function DashboardMainNav({children}: Props) {      
+    const [theme, setTheme] = useState(
+        localStorage.getItem("theme") || "dark"
+    );
 
-    
-    function toggleDarkMode() {     
-        const html = document.querySelector('html');    
-        if (html?.classList.contains("dark")) {
-            html?.classList.remove("dark");
-            return false;
+    const logo = theme == "dark" ? allocatrLogoLight : allocatrLogoDark;
+
+    useEffect(() => {
+        const root = document.documentElement;
+        if (theme === "light") {
+        root.classList.add("light");
+        root.classList.remove("dark");
         } else {
-            html?.classList.add("dark");
-            return true;
-        }            
-    }
+        root.classList.add("dark");
+        root.classList.remove("light");
+        }
+        localStorage.setItem("theme", theme);
+    }, [theme]);
 
     return (
         <nav className="flex items-center justify-between bg-background border-b px-4 py-2">
@@ -32,7 +35,13 @@ function DashboardMainNav({children}: Props) {
             </Link>
             <span>{children}</span>
             <span className="flex items-center space-x-4">
-                <Switch onClick={() => setDark(toggleDarkMode())} />
+                <button
+                    onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                    className="p-1 rounded-full hover:bg-accent/20 transition-colors"
+                    >
+                    {/* {theme === "dark" ? "🌞" : "🌙"} */}
+                    {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
+                </button>
                 <EllipsisVerticalIcon />
                 <BellIcon />
                 <UserCircleIcon />

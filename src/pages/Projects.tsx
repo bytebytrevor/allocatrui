@@ -33,7 +33,7 @@ function Projects() {
                         <span className="">You have 5 active projects</span>                        
                     </div>
                     <div className="flex items-center">
-                        <Button className="rounded-full"><PlusIcon />New project</Button>
+                        <Button variant="outline" className="rounded-full"><PlusIcon />New project</Button>
                     </div>
                 </div>
                   

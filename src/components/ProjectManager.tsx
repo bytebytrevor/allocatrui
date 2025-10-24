@@ -31,7 +31,6 @@ function ProjectManager() {
             <div className="flex-1 flex flex-col h-full pb-4">
                 <section className="flex justify-between pr-12 pb-4 shrink-0">
                     <div className="flex flex-col space-y-4">
-                        <span className="font-light text-sm">Select project</span>
                         <ManagerComboBox project={currentProject} projects={projects} />
                         <h2 className="flex gap-2 items-center text-xl font-medium">
                             <span className="font-light">{currentProject?.projectCode}</span>
@@ -40,7 +39,7 @@ function ProjectManager() {
                         <Progress value={currentProject?.progress} className="h-3"/>
                     </div>
                     <div>
-                        <Button className="rounded-full"><PlusIcon />New project</Button>
+                        <Button variant="outline" className={"rounded-full" }><PlusIcon />New project</Button>
                     </div>
                 </section>
                 

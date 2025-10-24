@@ -3,6 +3,7 @@ import { Controller, useForm } from "react-hook-form";
 import * as z from "zod";
 import { toast } from "sonner";
 import { Input } from "./ui/input";
+import { projectTypes } from "@/data/projectTypes";
 import {
     Field,
     FieldDescription,
@@ -16,16 +17,32 @@ import {
     InputGroupText,
     InputGroupTextarea
 } from "@/components/ui/input-group"
+import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectLabel,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
+import { cn } from "@/lib/utils";
 
 const formSchema = z.object({
     title: z
         .string()
         .min(5, "Project title must be at least 5 characters.")
         .max(32, "Project title must be at most 32 characters."),
+    type: z
+        .string()
+        .nonempty("Please select a type."),
+    category: z
+        .string()
+        .nonempty("Please select a category"),
     description: z
         .string()
         .min(20, "Description must be at least 20 characters")
-        .max(500, "Description must be at most 500 characters")
+        .max(500, "Description must be at most 1000 characters")
 });
 
 
@@ -34,6 +51,7 @@ function NewProjectForm() {
         resolver: zodResolver(formSchema),
         defaultValues: {
             title: "",
+            type: "",
             description:"",
         },
     });
@@ -55,6 +73,8 @@ function NewProjectForm() {
             } as React.CSSProperties,
         });
     }
+
+    const selectedType: string = form.watch("type");
 
     return (
         <form id="new-project" onSubmit={form.handleSubmit(OnSubmit)}>
@@ -79,9 +99,103 @@ function NewProjectForm() {
                         </Field>                        
                     )}
                 />
-                {/* <Controller
-                
-                /> */}
+                <Controller
+                    name="type"
+                    control={form.control}
+                    render={({field, fieldState }) => (
+                        <Field data-invalid={fieldState.invalid}>
+                            <FieldLabel htmlFor="type">
+                                Type
+                            </FieldLabel>
+                            <Select
+                                onValueChange={field.onChange}
+                                value={field.value}
+                            >                                 
+                                <SelectTrigger
+                                    id="type"
+                                    className={cn(
+                                        "w-full rounded-full bg-input border-none transition-colors duration-300",
+                                        fieldState.invalid && "ring-1 ring-destructive"
+                                    )}
+                                >
+                                    <SelectValue placeholder="Select type" />
+                                </SelectTrigger>
+                                <SelectContent className="bg-background">
+                                    <SelectGroup>
+                                    {/* <SelectLabel>Project type</SelectLabel> */}
+                                    {Object.keys(projectTypes).map(type =>
+                                        <SelectItem
+                                            key={type}
+                                            value={type}
+                                        >
+                                            {type}
+                                        </SelectItem>
+                                    )}
+                                    </SelectGroup>
+                                </SelectContent>
+                            </Select>
+                            {fieldState.error && (
+                                <p className="text-destructive text-xs mt-1">
+                                    {fieldState.error.message}
+                                </p>
+                            )}                            
+                        </Field> 
+                    )}                
+                />
+                {/* CATEGORY SELECT */}
+                <Controller
+                    name="category"
+                    control={form.control}
+                    render={({ field, fieldState }) => {
+                    const availableCategories = selectedType
+                        ? projectTypes[selectedType]
+                        : []
+
+                    return (
+                        <Field data-invalid={fieldState.invalid}>
+                        <FieldLabel htmlFor="category">Category</FieldLabel>
+
+                        <Select
+                            onValueChange={field.onChange}
+                            value={field.value}
+                            disabled={!selectedType} // disable until type is chosen
+                        >
+                            <SelectTrigger
+                            id="category"
+                            className={cn(
+                                "w-full rounded-full bg-input border-none transition-colors duration-300",
+                                fieldState.invalid && "ring-1 ring-destructive"
+                            )}
+                            >
+                            <SelectValue placeholder="Select category" />
+                            </SelectTrigger>
+
+                            <SelectContent className="bg-background">
+                            <SelectGroup>
+                                {availableCategories.length > 0 ? (
+                                availableCategories.map((category: string) => (
+                                    <SelectItem key={category} value={category}>
+                                        {category}
+                                    </SelectItem>
+                                ))
+                                ) : (
+                                <p className="px-2 text-xs text-muted-foreground">
+                                    Select a type first
+                                </p>
+                                )}
+                            </SelectGroup>
+                            </SelectContent>
+                        </Select>
+
+                        {fieldState.error && (
+                            <p className="text-destructive text-xs mt-1">
+                            {fieldState.error.message}
+                            </p>
+                        )}
+                        </Field>
+                    )
+                    }}
+                />
                 <Controller
                     name="description"
                     control={form.control}

@@ -14,7 +14,7 @@ function DashboardNavLink({label, href, icon: Icon}: Props) {
                 return`flex items-center gap-2 py-2 pl-4 hover:bg-accent/40
                     ${isActive
                     ? 
-                        "text-primary font-semibold border-r-4 border-primary"
+                        "text-brand-primary font-semibold border-r-4 border-brand-primary"
                     :                        
                         ""
                     }`
