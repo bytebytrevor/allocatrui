@@ -11,11 +11,7 @@ import NewProjectForm from "@/components/NewProjectForm";
 
 function CreateProject() {
     return (
-        <>
-            {/* <header className="border-b">
-                <DashboardMainNav />
-            </header> */}
-            
+        <>            
             <main className="flex flex-col h-screen items-center justify-center w-full py-4">
                 <section className="max-w-8xl">
                     <div className="flex drop-shadow-xl">
