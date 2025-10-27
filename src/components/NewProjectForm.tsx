@@ -27,22 +27,30 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { cn } from "@/lib/utils";
+import { Button } from "./ui/button";
+import { Calendar28 } from "./DatePicker";
 
 const formSchema = z.object({
     title: z
         .string()
         .min(5, "Project title must be at least 5 characters.")
-        .max(32, "Project title must be at most 32 characters."),
+        .max(64, "Project title must be at most 64 characters."),
     type: z
         .string()
         .nonempty("Please select a type."),
     category: z
         .string()
         .nonempty("Please select a category"),
+    startDate: z
+        .date()
+        .nullable(),
+    endDate: z
+        .date()
+        .nullable(),
     description: z
         .string()
         .min(20, "Description must be at least 20 characters")
-        .max(500, "Description must be at most 1000 characters")
+        .max(2000, "Description must be at most 2000 characters")
 });
 
 
@@ -77,157 +85,193 @@ function NewProjectForm() {
     const selectedType: string = form.watch("type");
 
     return (
-        <form id="new-project" onSubmit={form.handleSubmit(OnSubmit)}>
-            <FieldGroup>
-                <Controller
-                    name="title"
-                    control={form.control}
-                    render={({field, fieldState}) => (
-                        <Field data-invalid={fieldState.invalid}>
-                            <FieldLabel htmlFor="project-title">Title</FieldLabel>
-                            <Input
-                                {...field}
-                                id="project-title"
-                                aria-invalid={fieldState.invalid}
-                                placeholder="Car Window Repair"
-                                autoComplete="off"
-                                className="rounded-full border-none dark:bg-input"
-                            />
-                            {fieldState.invalid && (
-                                <FieldError errors={[fieldState.error]}/>
-                            )}
-                        </Field>                        
-                    )}
-                />
-                <Controller
-                    name="type"
-                    control={form.control}
-                    render={({field, fieldState }) => (
-                        <Field data-invalid={fieldState.invalid}>
-                            <FieldLabel htmlFor="type">
-                                Type
-                            </FieldLabel>
+        <>
+            <form id="new-project" onSubmit={form.handleSubmit(OnSubmit)}>
+                <FieldGroup>
+                    <Controller
+                        name="title"
+                        control={form.control}
+                        render={({field, fieldState}) => (
+                            <Field data-invalid={fieldState.invalid}>
+                                <FieldLabel htmlFor="project-title">Title</FieldLabel>
+                                <Input
+                                    {...field}
+                                    id="project-title"
+                                    aria-invalid={fieldState.invalid}
+                                    placeholder="Car Window Repair"
+                                    autoComplete="off"
+                                    className="rounded-full border-none bg-input"
+                                />
+                                {fieldState.invalid && (
+                                    <FieldError errors={[fieldState.error]}/>
+                                )}
+                            </Field>                        
+                        )}
+                    />
+                    <Controller
+                        name="type"
+                        control={form.control}
+                        render={({field, fieldState }) => (
+                            <Field data-invalid={fieldState.invalid}>
+                                <FieldLabel htmlFor="type">
+                                    Type
+                                </FieldLabel>
+                                <Select
+                                    onValueChange={field.onChange}
+                                    value={field.value}
+                                >                                 
+                                    <SelectTrigger
+                                        id="type"
+                                        className={cn(
+                                            "w-full rounded-full bg-input border-none transition-colors duration-300",
+                                            fieldState.invalid && "ring-1 ring-destructive"
+                                        )}
+                                    >
+                                        <SelectValue placeholder="Select type" />
+                                    </SelectTrigger>
+                                    <SelectContent className="bg-background">
+                                        <SelectGroup>
+                                        {/* <SelectLabel>Project type</SelectLabel> */}
+                                        {Object.keys(projectTypes).map(type =>
+                                            <SelectItem
+                                                key={type}
+                                                value={type}
+                                                className="focus:bg-input"
+                                            >
+                                                {type}
+                                            </SelectItem>
+                                        )}
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
+                                {fieldState.error && (
+                                    <p className="text-destructive text-xs mt-1">
+                                        {fieldState.error.message}
+                                    </p>
+                                )}                            
+                            </Field> 
+                        )}                
+                    />
+                    {/* CATEGORY SELECT */}
+                    <Controller
+                        name="category"
+                        control={form.control}
+                        render={({ field, fieldState }) => {
+                        const availableCategories = selectedType
+                            ? projectTypes[selectedType]
+                            : []
+
+                        return (
+                            <Field data-invalid={fieldState.invalid}>
+                            <FieldLabel htmlFor="category">Category</FieldLabel>
+
                             <Select
                                 onValueChange={field.onChange}
                                 value={field.value}
-                            >                                 
+                                disabled={!selectedType} // disable until type is chosen
+                            >
                                 <SelectTrigger
-                                    id="type"
-                                    className={cn(
-                                        "w-full rounded-full bg-input border-none transition-colors duration-300",
-                                        fieldState.invalid && "ring-1 ring-destructive"
-                                    )}
+                                id="category"
+                                className={cn(
+                                    "w-full rounded-full bg-input border-none transition-colors duration-300",
+                                    fieldState.invalid && "ring-1 ring-destructive"
+                                )}
                                 >
-                                    <SelectValue placeholder="Select type" />
+                                <SelectValue placeholder="Select category" />
                                 </SelectTrigger>
+
                                 <SelectContent className="bg-background">
-                                    <SelectGroup>
-                                    {/* <SelectLabel>Project type</SelectLabel> */}
-                                    {Object.keys(projectTypes).map(type =>
+                                <SelectGroup>
+                                    {availableCategories.length > 0 ? (
+                                    availableCategories.map((category: string) => (
                                         <SelectItem
-                                            key={type}
-                                            value={type}
+                                            key={category}
+                                            value={category}
+                                            className="focus:bg-input"
                                         >
-                                            {type}
+                                            {category}
                                         </SelectItem>
+                                    ))
+                                    ) : (
+                                    <p className="px-2 text-xs text-muted-foreground">
+                                        Select a type first
+                                    </p>
                                     )}
-                                    </SelectGroup>
+                                </SelectGroup>
                                 </SelectContent>
                             </Select>
+
                             {fieldState.error && (
                                 <p className="text-destructive text-xs mt-1">
-                                    {fieldState.error.message}
+                                {fieldState.error.message}
                                 </p>
-                            )}                            
-                        </Field> 
-                    )}                
-                />
-                {/* CATEGORY SELECT */}
-                <Controller
-                    name="category"
-                    control={form.control}
-                    render={({ field, fieldState }) => {
-                    const availableCategories = selectedType
-                        ? projectTypes[selectedType]
-                        : []
-
-                    return (
-                        <Field data-invalid={fieldState.invalid}>
-                        <FieldLabel htmlFor="category">Category</FieldLabel>
-
-                        <Select
-                            onValueChange={field.onChange}
-                            value={field.value}
-                            disabled={!selectedType} // disable until type is chosen
-                        >
-                            <SelectTrigger
-                            id="category"
-                            className={cn(
-                                "w-full rounded-full bg-input border-none transition-colors duration-300",
-                                fieldState.invalid && "ring-1 ring-destructive"
                             )}
-                            >
-                            <SelectValue placeholder="Select category" />
-                            </SelectTrigger>
-
-                            <SelectContent className="bg-background">
-                            <SelectGroup>
-                                {availableCategories.length > 0 ? (
-                                availableCategories.map((category: string) => (
-                                    <SelectItem key={category} value={category}>
-                                        {category}
-                                    </SelectItem>
-                                ))
-                                ) : (
-                                <p className="px-2 text-xs text-muted-foreground">
-                                    Select a type first
-                                </p>
+                            </Field>
+                        )}}
+                    />
+                    <span className="flex gap-4">
+                        <Controller
+                            name="startDate"
+                            control={form.control}
+                            render={({field, fieldState}) =>
+                                <Field data-invalid={fieldState.invalid}>
+                                    <FieldLabel htmlFor="start-date">Start date</FieldLabel>
+                                    <Calendar28 />
+                                </Field>
+                            }
+                        />
+                        <Controller
+                            name="endDate"
+                            control={form.control}
+                            render={({field, fieldState}) =>
+                                <Field data-invalid={fieldState.invalid}>
+                                    <FieldLabel htmlFor="end-date">End date</FieldLabel>
+                                    <Calendar28 />
+                                </Field>
+                            }
+                        />
+                    </span>
+                    <Controller
+                        name="description"
+                        control={form.control}
+                        render={({field, fieldState}) => (
+                            <Field data-invalid={fieldState.invalid}>
+                                <FieldLabel>Description</FieldLabel>
+                                <InputGroup>
+                                    <InputGroupTextarea
+                                        {...field}
+                                        id="description"
+                                        placeholder="Please tell more about your project."
+                                        rows={6}
+                                        className="min-h-24 resize-none"
+                                        arai-invalid={fieldState.invalid}
+                                    />
+                                    <InputGroupAddon align="block-end">
+                                        <InputGroupText className="tabular-nums">
+                                            {field.value.length}/2000 characters
+                                        </InputGroupText>
+                                    </InputGroupAddon>
+                                </InputGroup>
+                                <FieldDescription>
+                                    Include full details of what you want done, e.g. walk dog daily starting at 5pm.
+                                </FieldDescription>
+                                {fieldState.invalid && (
+                                    <FieldError errors={[fieldState.error]} />
                                 )}
-                            </SelectGroup>
-                            </SelectContent>
-                        </Select>
-
-                        {fieldState.error && (
-                            <p className="text-destructive text-xs mt-1">
-                            {fieldState.error.message}
-                            </p>
+                            </Field>
                         )}
-                        </Field>
-                    )
-                    }}
-                />
-                <Controller
-                    name="description"
-                    control={form.control}
-                    render={({field, fieldState}) => (
-                        <Field data-invalid={fieldState.invalid}>
-                            <FieldLabel>Description</FieldLabel>
-                            <InputGroup>
-                                <InputGroupTextarea
-                                    {...field}
-                                    id="description"
-                                    placeholder="Please tell more about your project."
-                                    rows={6}
-                                    className="min-h-24 resize-none"
-                                    arai-invalid={fieldState.invalid}
-                                />
-                                <InputGroupAddon align="block-end">
-                                    <InputGroupText className="tabular-nums">
-                                        {field.value.length}/1000 characters
-                                    </InputGroupText>
-                                </InputGroupAddon>
-                            </InputGroup>
-                            <FieldDescription>
-                                Include full details of what you want done, e.g. walk dog daily starting at 5pm.
-                            </FieldDescription>
-                            {fieldState.invalid && (
-                                <FieldError errors={[fieldState.error]} />
-                            )}
-                        </Field>
-                    )}
-                />
-            </FieldGroup>
-        </form>
+                    />
+                </FieldGroup>
+            </form>
+            <Field orientation="horizontal" className="mt-8">
+                <Button type="button" variant="outline" onClick={() => form.reset()} className="rounded-full">
+                    Find allocats
+                </Button>
+                <Button type="submit" form="new-project" className="rounded-full text-background">
+                    Post project
+                </Button>
+            </Field>
+        </>        
     );
 }
 

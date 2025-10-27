@@ -3,7 +3,7 @@ import TaskStatusBoard from "./TaskStatusBoard";
 import { Progress } from "./ui/progress";
 import { Button } from "./ui/button";
 import { PlusIcon } from "lucide-react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import ManagerComboBox from "./ManagerComboBox";
 
 function ProjectManager() {
@@ -39,7 +39,7 @@ function ProjectManager() {
                         <Progress value={currentProject?.progress} className="h-3"/>
                     </div>
                     <div>
-                        <Button variant="outline" className={"rounded-full" }><PlusIcon />New project</Button>
+                        <Link to="/projects/new"><Button variant="outline" className={"rounded-full" }><PlusIcon />New project</Button></Link>
                     </div>
                 </section>
                 

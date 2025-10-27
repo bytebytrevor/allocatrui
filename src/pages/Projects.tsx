@@ -33,7 +33,7 @@ function Projects() {
                         <span className="">You have 5 active projects</span>                        
                     </div>
                     <div className="flex items-center">
-                        <Button variant="outline" className="rounded-full"><PlusIcon />New project</Button>
+                        <Link to="/projects/new"><Button variant="outline" className="rounded-full"><PlusIcon />New project</Button></Link>
                     </div>
                 </div>
                   
@@ -71,7 +71,7 @@ function Projects() {
                                 <h3 className="font-bold">Advert Heading</h3>
                                 <p className="text-[0.9rem]">Lorem, ipsum dolor sit amet consectetur adipisicing elit. Vero fugit doloremque eius placeat voluptatum, aliquam porro vitae repellat aperiam.</p>
 
-                                <Button className="rounded-full mt-4"><HeartIcon />Add to favorites</Button>
+                                <Button className="text-background rounded-full mt-4"><HeartIcon />Add to favorites</Button>
                             </div>                            
                         </article>
                         <article className="bg-muted p-6 rounded-2xl">
