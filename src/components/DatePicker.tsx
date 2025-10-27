@@ -14,7 +14,10 @@ import {
 } from "@/components/ui/popover"
 
 type Props = {
+    id: string;
     label?: string;
+    value: Date | null
+    onChange?: (date: Date | undefined) => void
 }
 
 function formatDate(date: Date | undefined) {
@@ -36,30 +39,36 @@ function isValidDate(date: Date | undefined) {
   return !isNaN(date.getTime())
 }
 
-export function Calendar28({label}: Props) {
+export function Calendar28({id, label, value, onChange}: Props) {
   const [open, setOpen] = React.useState(false)
-  const [date, setDate] = React.useState<Date | undefined>(
-    new Date("2025-06-01")
-  )
-  const [month, setMonth] = React.useState<Date | undefined>(date)
-  const [value, setValue] = React.useState(formatDate(date))
+  const [month, setMonth] = React.useState<Date | undefined>(value ?? undefined)
+
+  const handleSelect = (date: Date | undefined) => {
+      if (onChange) onChange(date)
+        setMonth(date)
+        setOpen(false)
+  }
+
+  const currentDate = new Date();
+  // const [month, setMonth] = React.useState<Date | undefined>(date)
+  // const [value, setValue] = React.useState(formatDate(date))
 
   return (
     <div className="flex flex-col gap-3">
-      <Label htmlFor="date" className="px-1 font-semibold">
+      <Label htmlFor={id} className="px-1 font-semibold">
         {label}
       </Label>
       <div className="relative flex gap-2">
         <Input
-          id="date"
-          value={value}
-          placeholder="June 01, 2025"
-          className="bg-red-500 border-none pr-10 rounded-full"
+          id={id}
+          value={formatDate(value ?? undefined)}
+          // placeholder={`${currentDate.getMonth()} ${currentDate.getDate()}, ${currentDate.getFullYear()}`}
+          placeholder={currentDate.toLocaleDateString("en-US", {day: "2-digit", month: "long", year: "numeric"})}
+          className="border-none pr-10 rounded-full"
           onChange={(e) => {
             const date = new Date(e.target.value)
-            setValue(e.target.value)
-            if (isValidDate(date)) {
-              setDate(date)
+            if (!isNaN(date.getTime()) && onChange) {
+              onChange(date)
               setMonth(date)
             }
           }}
@@ -89,15 +98,11 @@ export function Calendar28({label}: Props) {
           >
             <Calendar
               mode="single"
-              selected={date}
+              selected={value ?? undefined}
               captionLayout="dropdown"
               month={month}
               onMonthChange={setMonth}
-              onSelect={(date) => {
-                setDate(date)
-                setValue(formatDate(date))
-                setOpen(false)
-              }}
+              onSelect={handleSelect}
             />
           </PopoverContent>
         </Popover>

@@ -29,6 +29,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
 import { Calendar28 } from "./DatePicker";
+import MultiFileUpload from "./MultiFileUpload";
 
 const formSchema = z.object({
     title: z
@@ -55,12 +56,18 @@ const formSchema = z.object({
 
 
 function NewProjectForm() {
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1); // add 1 day
+
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
             title: "",
             type: "",
-            description:"",
+            description: "",
+            startDate: today,
+            endDate: tomorrow,
         },
     });
 
@@ -82,7 +89,7 @@ function NewProjectForm() {
         });
     }
 
-    const selectedType: string = form.watch("type");
+    const selectedType = form.watch("type") as keyof typeof projectTypes;
 
     return (
         <>
@@ -93,10 +100,11 @@ function NewProjectForm() {
                         control={form.control}
                         render={({field, fieldState}) => (
                             <Field data-invalid={fieldState.invalid}>
-                                <FieldLabel htmlFor="project-title">Title</FieldLabel>
+                                <FieldLabel htmlFor="title">Title</FieldLabel>
                                 <Input
                                     {...field}
-                                    id="project-title"
+                                    name="title"
+                                    id="title"
                                     aria-invalid={fieldState.invalid}
                                     placeholder="Car Window Repair"
                                     autoComplete="off"
@@ -117,10 +125,12 @@ function NewProjectForm() {
                                     Type
                                 </FieldLabel>
                                 <Select
+                                    name="type"
                                     onValueChange={field.onChange}
                                     value={field.value}
                                 >                                 
                                     <SelectTrigger
+                                        name="type"
                                         id="type"
                                         className={cn(
                                             "w-full rounded-full bg-input border-none transition-colors duration-300",
@@ -166,11 +176,13 @@ function NewProjectForm() {
                             <FieldLabel htmlFor="category">Category</FieldLabel>
 
                             <Select
+                                name="category"
                                 onValueChange={field.onChange}
                                 value={field.value}
                                 disabled={!selectedType} // disable until type is chosen
                             >
                                 <SelectTrigger
+                                name="category"
                                 id="category"
                                 className={cn(
                                     "w-full rounded-full bg-input border-none transition-colors duration-300",
@@ -213,30 +225,37 @@ function NewProjectForm() {
                         <Controller
                             name="startDate"
                             control={form.control}
-                            render={({field, fieldState}) =>
-                                <Field data-invalid={fieldState.invalid}>
-                                    <FieldLabel htmlFor="start-date">Start date</FieldLabel>
-                                    <Calendar28 />
-                                </Field>
-                            }
+                            render={({field}) => (                                    
+                                <Calendar28
+                                    id="start-date"
+                                    label="Start date"
+                                    value={field.value ?? null}
+                                    onChange={field.onChange}
+                                />
+                            )}
                         />
                         <Controller
                             name="endDate"
                             control={form.control}
-                            render={({field, fieldState}) =>
-                                <Field data-invalid={fieldState.invalid}>
-                                    <FieldLabel htmlFor="end-date">End date</FieldLabel>
-                                    <Calendar28 />
-                                </Field>
-                            }
+                            render={({field}) => (                                    
+                                <Calendar28
+                                    id="end-date"
+                                    label="End date"
+                                    value={field.value ?? null}
+                                    onChange={field.onChange}
+                                />
+                            )}
                         />
                     </span>
+                    <Field>
+                        <MultiFileUpload />
+                    </Field>
                     <Controller
                         name="description"
                         control={form.control}
                         render={({field, fieldState}) => (
                             <Field data-invalid={fieldState.invalid}>
-                                <FieldLabel>Description</FieldLabel>
+                                <FieldLabel htmlFor="description">Description</FieldLabel>
                                 <InputGroup>
                                     <InputGroupTextarea
                                         {...field}
@@ -244,7 +263,7 @@ function NewProjectForm() {
                                         placeholder="Please tell more about your project."
                                         rows={6}
                                         className="min-h-24 resize-none"
-                                        arai-invalid={fieldState.invalid}
+                                        aria-invalid={fieldState.invalid}
                                     />
                                     <InputGroupAddon align="block-end">
                                         <InputGroupText className="tabular-nums">
@@ -261,6 +280,9 @@ function NewProjectForm() {
                             </Field>
                         )}
                     />
+                    {/* <Field>
+                        <MultiFileUpload />
+                    </Field> */}
                 </FieldGroup>
             </form>
             <Field orientation="horizontal" className="mt-8">

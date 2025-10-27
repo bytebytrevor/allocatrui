@@ -27,6 +27,8 @@ export const projectTypes = {
     "Architecture & Planning",
     "Plumbing & Electrical Installations",
     "Structural Engineering",
+    "Interior Design",
+    "General Contracting"
   ],
   "Creative": [
     "Graphic Design",
@@ -81,6 +83,7 @@ export const projectTypes = {
     "Warehousing",
     "Supply Chain Coordination",
     "Moving Services",
+    "Driver",
   ],
   "Energy & Environment": [
     "Solar Installation",
@@ -100,4 +103,18 @@ export const projectTypes = {
     "Agro-Processing",
     "Food Distribution",
   ],
+  "Personal Services": [
+    "Hairdressing",
+    "Barber Services",
+    "Personal Training",
+    "Massage Therapy",
+    "Makeup & Beauty",
+    "Tailoring & Alterations",
+  ],
+  "Child & Elder Care": [
+    "Babysitter",
+    "Nanny",
+    "Caregiver",
+    "Tutoring"
+  ]
 };
