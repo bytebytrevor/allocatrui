@@ -13,7 +13,6 @@ function CreateProject() {
                         <div className="new-project-bg bg-secondary h-full w-full"></div>
                         <div className="scrollbar-thin w-6xl px-12 pt-6 pb-16 overflow-y-auto">
                             <div className="flex items-center justify-between mb-8 pb-4">
-                                {/* <h1>Hi <span className="font-bold">Thelly!</span></h1> */}
                                 <img src={logo} alt="" className="w-20" />
                             </div>
                             <h2 className="text-2xl font-bold">Create New Project</h2>

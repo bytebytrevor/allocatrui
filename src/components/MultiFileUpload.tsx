@@ -50,7 +50,7 @@ function FileInput({inputRef, disabled, onFileSelect}: FileInputProps) {
             />
             <label
                 htmlFor="file-upload"
-                className="flex cursor-pointer items-center gap-1 rounded-full bg-muted border text-foreground text-xs font-bold py-2 px-3 hover:opacity-90"
+                className="flex cursor-pointer items-center gap-1 rounded-full bg-muted border text-foreground text-xs font-medium py-2 px-3 hover:opacity-90"
             >
                 <Plus size={14} />
                 Select files

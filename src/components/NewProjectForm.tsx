@@ -280,9 +280,6 @@ function NewProjectForm() {
                             </Field>
                         )}
                     />
-                    {/* <Field>
-                        <MultiFileUpload />
-                    </Field> */}
                 </FieldGroup>
             </form>
             <Field orientation="horizontal" className="mt-8">

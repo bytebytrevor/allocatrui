@@ -50,8 +50,6 @@ export function Calendar28({id, label, value, onChange}: Props) {
   }
 
   const currentDate = new Date();
-  // const [month, setMonth] = React.useState<Date | undefined>(date)
-  // const [value, setValue] = React.useState(formatDate(date))
 
   return (
     <div className="flex flex-col gap-3">
@@ -62,7 +60,6 @@ export function Calendar28({id, label, value, onChange}: Props) {
         <Input
           id={id}
           value={formatDate(value ?? undefined)}
-          // placeholder={`${currentDate.getMonth()} ${currentDate.getDate()}, ${currentDate.getFullYear()}`}
           placeholder={currentDate.toLocaleDateString("en-US", {day: "2-digit", month: "long", year: "numeric"})}
           className="border-none pr-10 rounded-full"
           onChange={(e) => {

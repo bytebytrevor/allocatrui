@@ -13,7 +13,6 @@ import {
     Megaphone,
     MessagesSquareIcon,
     PlusIcon,
-    RotateCcwIcon
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { projects } from "@/data/projects";
