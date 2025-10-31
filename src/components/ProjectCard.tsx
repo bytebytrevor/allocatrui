@@ -19,7 +19,7 @@ function ProjectCard({props}: Props) {
             </div> 
             <MotionLink
                 to={`${props.id}`}
-                className="flex justify-between bg-background p-4 mt-2 rounded-2xl"
+                className="flex justify-between  p-4 mt-2 rounded-2xl"
                 whileHover={{ opacity: 0.7 }}
                 whileTap={{ scale: 0.96 }}
                 transition={{ duration: 0.2, ease: "easeInOut" }}

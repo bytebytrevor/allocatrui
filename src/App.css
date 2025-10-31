@@ -31,10 +31,10 @@
 
 .new-project-bg {
   /* background-image: url(./assets/space-cat.svg); */
-  /* background-image: url(./assets/baby-sitter-wide.svg); */
+  background-image: url(./assets/baby-sitter-wide.svg);
   /* background-image: url(./assets/drill-square.svg); */
   /* background-image: url(./assets/electrician-wide.svg); */
-  background-image: url(./assets/manhattan.jpg);
+  /* background-image: url(./assets/manhattan.jpg); */
   background-repeat: no-repeat;
   /* background-attachment: fixed; */
   background-size: cover;

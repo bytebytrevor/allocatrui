@@ -248,7 +248,7 @@ function NewProjectForm() {
                         />
                     </span>
                     <Field>
-                        <MultiFileUpload />
+                        <MultiFileUpload autoUpload={true} />
                     </Field>
                     <Controller
                         name="description"
