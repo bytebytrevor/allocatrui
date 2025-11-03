@@ -2,7 +2,7 @@ export type Task = {
     id: string;
     title: string;
     description: string; 
-    status: "pending" | "active" | "completed" | "cancelled" | "overdue";
+    status: "pending" | "active" | "complete" | "cancelled" | "overdue";
     createdAt: string;
     updatedAt?: string;
     startDate?: string;
@@ -28,7 +28,7 @@ export type Project = {
     startDate?: string;
     dueDate?: string;
     completedAt?: string;
-    status: "pending" | "active" | "completed" | "cancelled" | "overdue";
+    status: "pending" | "active" | "complete" | "cancelled" | "overdue";
     progress?: number; // percentage 0-100
     priority?: "low" | "medium" | "high" | "urgent";
     userId: string; // project owner

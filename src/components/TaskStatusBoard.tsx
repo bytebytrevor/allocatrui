@@ -1,4 +1,4 @@
-import { CalendarDaysIcon, CircleCheckBigIcon, CircleDotIcon, EllipsisVerticalIcon, ListTodoIcon, TriangleAlertIcon } from "lucide-react";
+import { CalendarDaysIcon, CircleCheckBigIcon, CircleDashedIcon, CircleDotIcon, EllipsisVerticalIcon, ListTodoIcon, TriangleAlertIcon } from "lucide-react";
 import { Link } from "react-router-dom";
 import type { Task } from "../Types"
 
@@ -34,9 +34,10 @@ function TaskStatusBoard({title, description, linkText, tasks}: Props) {
                                     </span>
                                 </div>
                                 <div className="flex items-center space-x-4">
-                                    {task.status == "completed" && <CircleCheckBigIcon size={16} className="text-accent-2"/>}
+                                    {task.status == "complete" && <CircleCheckBigIcon size={16} className="text-accent-2"/>}
                                     {task.status == "active" && <CircleDotIcon size={16} className="text-primary"/>}
                                     {task.status == "overdue" && <TriangleAlertIcon size={16} className="text-destructive"/>}
+                                    {task.status == "pending" && <CircleDashedIcon size={16} className="text-accent-3"/>}
                                     <EllipsisVerticalIcon size={16} className="text-muted-foreground hover:text-foreground"/>
                                 </div>
                             </div>

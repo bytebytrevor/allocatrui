@@ -32,7 +32,7 @@ function Projects() {
                         <span className="">You have 5 active projects</span>                        
                     </div>
                     <div className="flex items-center">
-                        <Link to="/projects/new"><Button variant="outline" className="rounded-full"><PlusIcon />New project</Button></Link>
+                        <Link to="/projects/new"><Button className="rounded-full"><PlusIcon />New project</Button></Link>
                     </div>
                 </div>
                   
@@ -57,7 +57,7 @@ function Projects() {
                                 <Button variant="link" className="flex items-center gap-1 text-foreground"><ArrowDownNarrowWideIcon />Title</Button>
                             </div>
                         </div>
-                        <div className="flex flex-col  gap-4 mb-6 mt-2">
+                        <div className="flex flex-col gap-2 mt-2 mb-6">
                             {projects.map(project =>
                                 <ProjectCard key={project.id} props={project} />
                             )}                            
@@ -69,9 +69,10 @@ function Projects() {
                             <div className="flex flex-col space-y-4">
                                 <h3 className="font-bold">Advert Heading</h3>
                                 <p className="text-[0.9rem]">Lorem, ipsum dolor sit amet consectetur adipisicing elit. Vero fugit doloremque eius placeat voluptatum, aliquam porro vitae repellat aperiam.</p>
-
-                                <Button className="text-background rounded-full mt-4"><HeartIcon />Add to favorites</Button>
-                            </div>                            
+                                <span>
+                                    <Button className="text-background rounded-full mt-4 px-"><HeartIcon />Add to favorites</Button>
+                                </span>
+                            </div>                         
                         </article>
                         <article className="bg-muted p-6 rounded-2xl">
                             <div className="flex gap-2">
