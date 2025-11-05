@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 import * as z from "zod";
-import { toast } from "sonner";
+import { toast, Toaster } from "sonner";
 import { Input } from "./ui/input";
 import { projectTypes } from "@/data/projectTypes";
 import {
@@ -30,6 +30,9 @@ import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
 import { Calendar28 } from "./DatePicker";
 import MultiFileUpload from "./MultiFileUpload";
+import axios from "axios";
+import { CircleCheckBig } from "lucide-react";
+import { bg } from "date-fns/locale";
 
 const formSchema = z.object({
     title: z
@@ -71,28 +74,22 @@ function NewProjectForm() {
         },
     });
 
-    function OnSubmit(data: z.infer<typeof formSchema>) {
-        toast("You submitted the following values:", {
-            description: (
-                <pre className="bg-code text-code-foreground mt-2 w-[320px] overflow-x-auto rounded-md p-4">
-                    <code>{JSON.stringify(data, null, 2)}</code>
-
-                </pre>
-            ),
-            position: "bottom-right",
-            classNames: {
-                content: "flex flex-col gap-2",
-            },
-            style: {
-                "--border-radius": "calc(var(--radius) + 4px",
-            } as React.CSSProperties,
-        });
+    async function OnSubmit(data: z.infer<typeof formSchema>) {
+        // await axios.post("https://httpbin.org/post", form);
+        console.log("Submitted");
+        toast.success("Event has been created", {
+          description: "Sunday, December 03, 2023 at 9:00 AM",
+          position: "top-center",
+          style: { color: "#303030"}
+          
+        });      
     }
 
     const selectedType = form.watch("type") as keyof typeof projectTypes;
 
     return (
         <>
+        <Toaster />
             <form id="new-project" onSubmit={form.handleSubmit(OnSubmit)}>
                 <FieldGroup>
                     <Controller
@@ -286,7 +283,11 @@ function NewProjectForm() {
                 <Button type="button" variant="outline" onClick={() => form.reset()} className="rounded-full">
                     Find allocats
                 </Button>
-                <Button type="submit" form="new-project" className="rounded-full text-background">
+                <Button
+                    type="submit"
+                    form="new-project"
+                    className="rounded-full text-background"
+                >
                     Post project
                 </Button>
             </Field>

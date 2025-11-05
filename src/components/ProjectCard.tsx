@@ -12,8 +12,11 @@ type Props = {
 }
 
 function ProjectCard({props}: Props) {
+    const view: "grid" | "list" = "grid"; 
 
     return (
+        <>
+        {view === "grid" ? <Grid props={props}/> : 
         <div className="flex items-center w-full gap-4 bg-muted rounded-2xl py-4 px-6">
             {getProjectIcon(props?.type ?? "default")}  
             <div className="flex flex-col w-full">
@@ -28,8 +31,7 @@ function ProjectCard({props}: Props) {
                     whileTap={{ scale: 0.96 }}
                     transition={{ duration: 0.2, ease: "easeInOut" }}
                 >
-                    <div className="flex items-center gap-4 w-xl">
-                        
+                    <div className="flex items-center gap-4 w-xl">                        
                         <div>                 
                             <span
                                 className="flex items-center gap-1 font-light text-muted-foreground text-xs py-1"
@@ -49,7 +51,44 @@ function ProjectCard({props}: Props) {
                 </MotionLink>
             </div>
         </div>
+        }
+    </>
     );
 }
 
 export default ProjectCard;
+
+function Grid({props}: Props) {
+
+    return (
+        <div className="flex flex-col items-start min-w-[300px] max-w-[360px] gap-4 bg-muted rounded-2xl py-4 px-6">
+            <div className="flex items-center w-full justify-between">
+                {getProjectIcon(props?.type ?? "default")}
+                <EllipsisVerticalIcon size={20} className="text-foreground/50 hover:text-foreground hover:bg-background/40 rounded-full"/>
+            </div> 
+            <h3 className="font-bold text-sm"><span className="font-light">{props.projectCode}</span> {props.title}</h3>
+
+            
+            <MotionLink
+                to={`${props.id}`}
+                className="flex flex-col justify-between mt-2 rounded-2xl"
+                whileHover={{ opacity: 0.7 }}
+                whileTap={{ scale: 0.96 }}
+                transition={{ duration: 0.2, ease: "easeInOut" }}
+            >                
+                <span
+                    className="flex items-center gap-1 font-light text-muted-foreground text-xs"
+                >
+                    <CalendarDaysIcon size={16} />Created { new Date(props.createdAt).toDateString() }
+                </span>       
+                <p className="text-[0.9rem] py-2">{props.description}</p>               
+                <span className="font-semibold">
+                    {props.status}
+                    <Progress value={props.progress} className="mt-1"/>
+                </span>
+                <p className="font-semibold text-sm pt-3">Allocat: <span className="font-normal">{props.projectCode}</span></p>
+                    
+            </MotionLink>
+        </div>
+    );
+}

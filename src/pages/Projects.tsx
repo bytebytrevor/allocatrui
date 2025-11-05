@@ -20,6 +20,8 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 
 function Projects() {
+    const view = "grid"
+
     return (
         <>
             <header className="sticky top-0 z-10">
@@ -57,7 +59,7 @@ function Projects() {
                                 <Button variant="link" className="flex items-center gap-1 text-foreground"><ArrowDownNarrowWideIcon />Title</Button>
                             </div>
                         </div>
-                        <div className="flex flex-col gap-2 mt-2 mb-6">
+                        <div className={`flex gap-2 w-full mt-2 mb-6 ${view ==="grid" ? "flex-wrap gap-4" : "flex-row"}`}>
                             {projects.map(project =>
                                 <ProjectCard key={project.id} props={project} />
                             )}                            
