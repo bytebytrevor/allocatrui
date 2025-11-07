@@ -4,19 +4,38 @@ import type { Project } from "@/Types";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { getProjectIcon } from "@/utils/projectIcons";
+import { useState } from "react";
 
 const MotionLink = motion.create(Link);
 
-type Props = {
-    props: Project
+type ViewProps = {
+    props: Project;
 }
 
-function ProjectCard({props}: Props) {
-    const view: "grid" | "list" = "grid"; 
+// type ProjectCardProps = {
+//     props: Project;
+//     v: string;
+// }
+// function ProjectCard({props, v}: ProjectCardProps) {
+//     const [view, setView] = useState(v);
 
+//     return (
+//         <>
+//             {
+//                 view === "grid"
+//                 ?
+//                     <GridView props={props} />
+//                 :
+//                     <ListView props={props}/>       
+//             }
+//         </>
+//     );
+// }
+
+// export default ProjectCard;
+
+export function ListView({props}: ViewProps) {
     return (
-        <>
-        {view === "grid" ? <Grid props={props}/> : 
         <div className="flex items-center w-full gap-4 bg-muted rounded-2xl py-4 px-6">
             {getProjectIcon(props?.type ?? "default")}  
             <div className="flex flex-col w-full">
@@ -51,15 +70,9 @@ function ProjectCard({props}: Props) {
                 </MotionLink>
             </div>
         </div>
-        }
-    </>
-    );
-}
+)}  
 
-export default ProjectCard;
-
-function Grid({props}: Props) {
-
+export function GridView({props}: ViewProps) {
     return (
         <div className="flex flex-col items-start min-w-[300px] max-w-[360px] gap-4 bg-muted rounded-2xl py-4 px-6">
             <div className="flex items-center w-full justify-between">
@@ -86,8 +99,7 @@ function Grid({props}: Props) {
                     {props.status}
                     <Progress value={props.progress} className="mt-1"/>
                 </span>
-                <p className="font-semibold text-sm pt-3">Allocat: <span className="font-normal">{props.projectCode}</span></p>
-                    
+                <p className="font-semibold text-sm pt-3">Allocat: <span className="font-normal">{props.projectCode}</span></p>                    
             </MotionLink>
         </div>
     );

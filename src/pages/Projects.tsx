@@ -1,26 +1,37 @@
 import DashboardMainNav from "@/components/DashboardMainNav";
-import ProjectCard from "@/components/ProjectCard";
+import {GridView, ListView} from "@/components/ProjectCard";
 import { Button } from "@/components/ui/button";
 import {
     ArrowDownNarrowWideIcon,
     CircleCheckBigIcon,
     CircleDotIcon,
     ClockIcon,
+    EyeIcon,
+    Grid2X2,
+    Grid2X2Icon,
     HeartIcon,
     History,
     LightbulbIcon,
+    ListIcon,
     LoaderCircleIcon,
     Megaphone,
     MessagesSquareIcon,
+    PackagePlusIcon,
     PlusIcon,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { projects } from "@/data/projects";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import Electricians from "@/assets/electrician-wide.svg"
+import { useState } from "react";
 
 function Projects() {
-    const view = "grid"
+    const [view, setView] = useState("grid");
+
+    function switchView() {
+        view === "grid" ? setView("list") : setView("grid");
+    }
 
     return (
         <>
@@ -34,7 +45,7 @@ function Projects() {
                         <span className="">You have 5 active projects</span>                        
                     </div>
                     <div className="flex items-center">
-                        <Link to="/projects/new"><Button className="rounded-full"><PlusIcon />New project</Button></Link>
+                        <Link to="/projects/new"><Button className="rounded-full"><PackagePlusIcon />New project</Button></Link>
                     </div>
                 </div>
                   
@@ -57,25 +68,39 @@ function Projects() {
                             <div className="flex">
                                 <Button variant="link" className="flex items-center gap-1 text-foreground"><History />History</Button>
                                 <Button variant="link" className="flex items-center gap-1 text-foreground"><ArrowDownNarrowWideIcon />Title</Button>
+                                <Button
+                                    variant="link"
+                                    className="flex items-center gap-1 text-foreground"
+                                    onClick={() => switchView()}
+                                >
+                                    {view === "grid" ? <ListIcon /> : <Grid2X2Icon />}
+                                    {view === "grid" ? "List" : "Tile"}
+                                </Button>
                             </div>
                         </div>
-                        <div className={`flex gap-2 w-full mt-2 mb-6 ${view ==="grid" ? "flex-wrap gap-4" : "flex-row"}`}>
+                        <div className={`flex gap-2 w-full mt-2 mb-6 ${view ==="grid" ? "flex-wrap gap-4" : "flex-col"}`}>
                             {projects.map(project =>
-                                <ProjectCard key={project.id} props={project} />
+                                view === "grid" ?
+                                    <GridView key={project.id} props={project} />
+                                :
+                                    <ListView key={project.id} props={project} />
+
                             )}                            
                         </div>                        
                     </section>
                     <aside className="flex flex-col space-y-4 w-lg">
-                        <article className="flex items-start gap-2 bg-muted px-6 py-10 rounded-2xl">
-                            <span className=""><Megaphone size={40} /></span>
-                            <div className="flex flex-col space-y-4">
-                                <h3 className="font-bold">Advert Heading</h3>
-                                <p className="text-[0.9rem]">Lorem, ipsum dolor sit amet consectetur adipisicing elit. Vero fugit doloremque eius placeat voluptatum, aliquam porro vitae repellat aperiam.</p>
-                                <span>
-                                    <Button className="text-background rounded-full mt-4 px-"><HeartIcon />Add to favorites</Button>
-                                </span>
-                            </div>                         
-                        </article>
+                        <div>
+                            <img src={Electricians} alt="" className="rounded-t-2xl"/>
+                            <article className="flex items-start gap-2 bg-muted px-6 py-10 rounded-b-2xl">
+                                <span className=""><Megaphone size={40} /></span>
+                                <div className="flex flex-col space-y-4">
+                                    <h3 className="font-bold">Advert Heading</h3>
+                                    <p className="text-[0.9rem]">Lorem, ipsum dolor sit amet consectetur adipisicing elit. Vero fugit doloremque eius placeat voluptatum, aliquam porro vitae repellat aperiam.</p>
+                                    {/* <Button className="bg-foreground text-background rounded-full font-semibold mt-4 py-6">Add to favorites</Button> */}
+                                    <Button className="rounded-full font-semibold mt-4 py-6">View profile</Button>
+                                </div>                         
+                            </article>
+                        </div>
                         <article className="bg-muted p-6 rounded-2xl">
                             <div className="flex gap-2">
                             <span><LightbulbIcon /></span>
