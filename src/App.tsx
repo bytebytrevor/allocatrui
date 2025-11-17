@@ -12,10 +12,24 @@ import Analytics from "./components/Analytics";
 import Transactions from "./components/Transactions";
 import Favorites from "./components/Favorites";
 import CreateProject from "./pages/CreateProject";
+import FindAllocats from "./pages/FindAllocats";
+import { useEffect } from "react";
 import "./App.css";
 
-
 function App() {
+  const theme = localStorage.getItem("theme") || "light";
+
+  useEffect(() => {
+          const root = document.documentElement;
+          if (theme === "light") {
+              root.classList.add("light");
+              root.classList.remove("dark");
+          } else {
+              root.classList.add("dark");
+              root.classList.remove("light");
+          }
+          localStorage.setItem("theme", theme);
+      }, [theme]);
 
   const router = createBrowserRouter([
     {      
@@ -35,6 +49,9 @@ function App() {
     },
     {
       path: "/projects/new", Component: CreateProject,
+    },
+    {
+      path: "/projects/:projectId/allocats/find", Component: FindAllocats,
     },
     {
       path: "/projects/:projectId",

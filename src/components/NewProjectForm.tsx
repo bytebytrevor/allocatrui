@@ -4,6 +4,8 @@ import * as z from "zod";
 import { toast, Toaster } from "sonner";
 import { Input } from "./ui/input";
 import { projectTypes } from "@/data/projectTypes";
+import { projects } from "@/data/projects";
+import type { Project } from "@/Types";
 import {
     Field,
     FieldDescription,
@@ -22,7 +24,7 @@ import {
     SelectContent,
     SelectGroup,
     SelectItem,
-    SelectLabel,
+    // SelectLabel,
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
@@ -30,11 +32,10 @@ import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
 import { Calendar28 } from "./DatePicker";
 import MultiFileUpload from "./MultiFileUpload";
-import axios from "axios";
-import { CircleCheckBig } from "lucide-react";
-import { bg } from "date-fns/locale";
+import { useNavigate } from "react-router-dom";
 
 const formSchema = z.object({
+    // Required fields
     title: z
         .string()
         .min(5, "Project title must be at least 5 characters.")
@@ -54,11 +55,20 @@ const formSchema = z.object({
     description: z
         .string()
         .min(20, "Description must be at least 20 characters")
-        .max(2000, "Description must be at most 2000 characters")
+        .max(2000, "Description must be at most 2000 characters"),
+    
+    // Optional fields
+    budget: z
+        .string()
+        .optional(),
+    priority: z
+        .string()
+        .optional()    
 });
 
 
 function NewProjectForm() {
+    let navigate = useNavigate();
     const today = new Date();
     const tomorrow = new Date(today);
     tomorrow.setDate(today.getDate() + 1); // add 1 day
@@ -74,30 +84,119 @@ function NewProjectForm() {
         },
     });
 
-    async function OnSubmit(data: z.infer<typeof formSchema>) {
-        // await axios.post("https://httpbin.org/post", form);
+    function OnSubmit() {
+        const newProject: Project =  {
+            id: String(Math.round(Math.random() * 100000)),
+            projectCode: "",
+            title: form.getValues("title"),
+            description: form.getValues("description"),
+            type: form.getValues("type"),
+            category: form.getValues("category"),
+            createdAt: new Date().toLocaleDateString(),
+            updatedAt: new Date().toLocaleDateString(),
+            startDate: form.getValues("startDate")?.toLocaleDateString(),
+            dueDate: form.getValues("endDate")?.toLocaleDateString(),
+            completedAt: "",
+            status: "pending",
+            progress: 12,
+            priority: "low",
+            userId: "",
+            allocatId: null,
+            teamIds: [],
+            tasksCount: 0,
+            messagesCount: 0,
+            lastActivity: new Date().toLocaleDateString(),
+            isPublic: false,
+            allowBids: false,
+            budget: Number(form.getValues("budget")),
+            currency: "USD",
+            attachments: [],
+            tasks: [],
+        }
+
+        console.log(newProject);
+        projects.push(newProject);
+
         console.log("Submitted");
-        toast.success("Event has been created", {
+        toast.success("Project has been created", {
           description: "Sunday, December 03, 2023 at 9:00 AM",
           position: "top-center",
-          style: { color: "#303030"}
-          
-        });      
+          style: { color: "#303030"}          
+        });
+        
+        if (projects.findIndex(project => project.id === newProject.id)) {
+            return navigate(`/projects/${newProject.id}/allocats/find`);
+        }
     }
 
     const selectedType = form.watch("type") as keyof typeof projectTypes;
-
+    
     return (
         <>
         <Toaster />
-            <form id="new-project" onSubmit={form.handleSubmit(OnSubmit)}>
+            <form
+                id="new-project"
+                onSubmit={form.handleSubmit(OnSubmit)}
+                className="flex gap-8"
+            >
+                <FieldGroup className="w-2xl border rounded-2xl p-4 ">
+                    {/* <span className="text-xs text-accent-3">*These are optional fields. You do not need to complete this section.</span> */}
+                    <Controller
+                        name="budget"
+                        control={form.control}
+                        render={({field, fieldState}) => (
+                            <Field data-invalid={fieldState.invalid}>
+                                <FieldLabel htmlFor="budget" className="font-semibold">Budget</FieldLabel>
+                                <Input
+                                    {...field}
+                                    type="number"
+                                    name="budget"
+                                    id="budget"
+                                    aria-invalid={fieldState.invalid}
+                                    placeholder="50"
+                                    autoComplete="off"
+                                    className="w-[12px] border-none rounded-full"
+                                />
+                                {fieldState.invalid && (
+                                    <FieldError errors={[fieldState.error]} />
+                                )}
+                            </Field>
+
+                        )}
+                    />
+                    <Field>
+                        <FieldLabel htmlFor="priority-field" className="font-semibold">Priority</FieldLabel>
+                        <div id="priority-field" className="flex gap-4">                        
+                            <span className="flex items-center gap-2">
+                                <Input type="radio" name="priority" id="urgent" value="urgent" />
+                                <FieldLabel htmlFor="urgent">Urgent</FieldLabel>
+                            </span>
+                            <span className="flex items-center gap-2">
+                                <Input type="radio" name="priority" id="high" value="high"/>
+                                <FieldLabel htmlFor="high">High</FieldLabel>
+                            </span>
+                            <span className="flex items-center gap-2">
+                                <Input type="radio" name="priority" id="medium" value="medium"/>
+                                <FieldLabel htmlFor="medium">Medium</FieldLabel>
+                            </span>
+                            <span className="flex items-center gap-2">
+                                <Input type="radio" name="priority" id="low" value="low"/>
+                                <FieldLabel htmlFor="low">Low</FieldLabel>
+                            </span>
+                        </div>
+                    </Field>
+                    <Field>
+                        <MultiFileUpload autoUpload={false} />
+                    </Field>
+                </FieldGroup>
+
                 <FieldGroup>
                     <Controller
                         name="title"
                         control={form.control}
                         render={({field, fieldState}) => (
                             <Field data-invalid={fieldState.invalid}>
-                                <FieldLabel htmlFor="title">Title</FieldLabel>
+                                <FieldLabel htmlFor="title" className="font-semibold">Title</FieldLabel>
                                 <Input
                                     {...field}
                                     name="title"
@@ -118,9 +217,7 @@ function NewProjectForm() {
                         control={form.control}
                         render={({field, fieldState }) => (
                             <Field data-invalid={fieldState.invalid}>
-                                <FieldLabel htmlFor="type">
-                                    Type
-                                </FieldLabel>
+                                <FieldLabel htmlFor="type" className="font-semibold">Type</FieldLabel>
                                 <Select
                                     name="type"
                                     onValueChange={field.onChange}
@@ -170,7 +267,7 @@ function NewProjectForm() {
 
                         return (
                             <Field data-invalid={fieldState.invalid}>
-                            <FieldLabel htmlFor="category">Category</FieldLabel>
+                            <FieldLabel htmlFor="category" className="font-semibold">Category</FieldLabel>
 
                             <Select
                                 name="category"
@@ -244,15 +341,15 @@ function NewProjectForm() {
                             )}
                         />
                     </span>
-                    <Field>
+                    {/* <Field>
                         <MultiFileUpload autoUpload={true} />
-                    </Field>
+                    </Field> */}
                     <Controller
                         name="description"
                         control={form.control}
                         render={({field, fieldState}) => (
                             <Field data-invalid={fieldState.invalid}>
-                                <FieldLabel htmlFor="description">Description</FieldLabel>
+                                <FieldLabel htmlFor="description" className="font-semibold">Description</FieldLabel>
                                 <InputGroup>
                                     <InputGroupTextarea
                                         {...field}
@@ -279,8 +376,17 @@ function NewProjectForm() {
                     />
                 </FieldGroup>
             </form>
-            <Field orientation="horizontal" className="mt-8">
-                <Button type="button" variant="outline" onClick={() => form.reset()} className="rounded-full">
+            <Field orientation="horizontal" className="flex items-center justify-between border-t pt-4 mt-8">
+                <Button type="button" variant="link" onClick={() => form.reset()} className="text-foreground rounded-full">
+                    Reset
+                </Button>
+                <span className="flex items-center gap-4">
+                <Button
+                    type="submit"
+                    form="new-project"
+                    variant="outline"
+                    className="rounded-full"
+                >
                     Find allocats
                 </Button>
                 <Button
@@ -290,6 +396,7 @@ function NewProjectForm() {
                 >
                     Post project
                 </Button>
+                </span>
             </Field>
         </>        
     );

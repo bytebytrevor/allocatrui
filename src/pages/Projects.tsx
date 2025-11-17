@@ -6,17 +6,13 @@ import {
     CircleCheckBigIcon,
     CircleDotIcon,
     ClockIcon,
-    EyeIcon,
-    Grid2X2,
-    Grid2X2Icon,
-    HeartIcon,
     History,
+    LayoutGrid,
     LightbulbIcon,
     ListIcon,
     LoaderCircleIcon,
     Megaphone,
     MessagesSquareIcon,
-    PackagePlusIcon,
     PlusIcon,
 } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -45,7 +41,7 @@ function Projects() {
                         <span className="">You have 5 active projects</span>                        
                     </div>
                     <div className="flex items-center">
-                        <Link to="/projects/new"><Button className="rounded-full"><PackagePlusIcon />New project</Button></Link>
+                        <Link to="/projects/new"><Button className="rounded-full"><PlusIcon />New project</Button></Link>
                     </div>
                 </div>
                   
@@ -73,19 +69,24 @@ function Projects() {
                                     className="flex items-center gap-1 text-foreground"
                                     onClick={() => switchView()}
                                 >
-                                    {view === "grid" ? <ListIcon /> : <Grid2X2Icon />}
-                                    {view === "grid" ? "List" : "Tile"}
+                                    {view === "grid" ? <ListIcon /> : <LayoutGrid />}
+                                    {view === "grid" ? "List" : "Grid"}
                                 </Button>
                             </div>
                         </div>
-                        <div className={`flex gap-2 w-full mt-2 mb-6 ${view ==="grid" ? "flex-wrap gap-4" : "flex-col"}`}>
-                            {projects.map(project =>
-                                view === "grid" ?
-                                    <GridView key={project.id} props={project} />
-                                :
-                                    <ListView key={project.id} props={project} />
+                        <div className={`flex gap-2 w-full mt-2 mb-6 ${view ==="grid"
+                            ?
+                                "grid gap-4 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3"
+                            :
+                                "flex-col"}`}
+                            >
+                                {projects.map(project => view === "grid"
+                                    ?
+                                        <GridView key={project.id} project={project} />
+                                    :
+                                        <ListView key={project.id} project={project} />
 
-                            )}                            
+                                )}                            
                         </div>                        
                     </section>
                     <aside className="flex flex-col space-y-4 w-lg">
@@ -96,7 +97,6 @@ function Projects() {
                                 <div className="flex flex-col space-y-4">
                                     <h3 className="font-bold">Advert Heading</h3>
                                     <p className="text-[0.9rem]">Lorem, ipsum dolor sit amet consectetur adipisicing elit. Vero fugit doloremque eius placeat voluptatum, aliquam porro vitae repellat aperiam.</p>
-                                    {/* <Button className="bg-foreground text-background rounded-full font-semibold mt-4 py-6">Add to favorites</Button> */}
                                     <Button className="rounded-full font-semibold mt-4 py-6">View profile</Button>
                                 </div>                         
                             </article>
@@ -115,13 +115,13 @@ function Projects() {
                         </article>
                         <article className="">
                             <div className="flex gap-2">
-                            <span><MessagesSquareIcon /></span>
-                            <div className="flex flex-col space-y-2">
-                                <h3 className="font-bold">Jean sent you a message</h3>
-                                <small className="flex items-center gap-1 text-muted-foreground"><ClockIcon size={14} />3 hrs ago</small>
-                                <p className="text-[0.9rem]">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Accusamus, nulla natus corporis.</p>
-                                <Link className="text-accent-3" to="">View chat</Link>
-                            </div>
+                                <span><MessagesSquareIcon /></span>
+                                <div className="flex flex-col space-y-2">
+                                    <h3 className="font-bold">Jean sent you a message</h3>
+                                    <small className="flex items-center gap-1 text-muted-foreground"><ClockIcon size={14} />3 hrs ago</small>
+                                    <p className="text-[0.9rem]">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Accusamus, nulla natus corporis.</p>
+                                    <Link className="text-accent-3" to="">View chat</Link>
+                                </div>
                             </div>
                         </article>
                     </aside>
