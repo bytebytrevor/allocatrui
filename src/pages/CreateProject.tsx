@@ -7,10 +7,8 @@ function CreateProject() {
         <>  
             <header className="bg-background sticky top-0 border-b z-10">
                 <MinimalNavMenu />
-            </header>          
-            {/* <main className="mx-auto w-full px-2 py-8"> */}
+            </header>
             <main className="mx-auto w-full px-2 py-8">
-            {/* <main className="mx-auto w-full px-2 bg-linear-to-r from-primary/4 to-primary/background py-8"> */}
                 <div className="flex flex-col w-6xl mx-auto pb-4">
                     <span className="border-b">
                         <h2 className="text-2xl font-bold mb-4">Create New Project</h2>

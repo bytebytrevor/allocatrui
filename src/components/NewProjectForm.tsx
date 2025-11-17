@@ -376,7 +376,7 @@ function NewProjectForm() {
                     />
                 </FieldGroup>
             </form>
-            <Field orientation="horizontal" className="flex items-center justify-between border-t pt-4 mt-8">
+            <Field orientation="horizontal" className="flex items-center justify-between pt-4 mt-8">
                 <Button type="button" variant="link" onClick={() => form.reset()} className="text-foreground rounded-full">
                     Reset
                 </Button>

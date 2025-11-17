@@ -1,4 +1,4 @@
-import { Dock, Wrench, Hammer, Palette, Zap, FileBox } from "lucide-react";
+import { Dock, Wrench, Hammer, Palette, FileBox } from "lucide-react";
 import type { JSX } from "react";
 
 const size = 36; 

@@ -16,7 +16,7 @@ export function ListView({project}: ViewProps) {
     const allocat = allocats.find(a => a.id === project.allocatId);
 
     return (
-        <div className="flex items-center w-full gap-4 bg-muted border rounded-2xl py-4 px-6">
+        <div className="flex items-center w-full gap-4 bg-muted rounded-2xl py-4 px-6">
             {getProjectIcon(project?.type ?? "default")}  
             <div className="flex flex-col w-full">
                 <div className="flex items-center justify-between">
@@ -56,7 +56,7 @@ export function GridView({project}: ViewProps) {
     const allocat = allocats.find(a => a.id === project.allocatId);
 
     return (
-        <div className="flex flex-col items-start gap-4 bg-muted border rounded-xl py-4 px-6">
+        <div className="flex flex-col items-start gap-4 bg-muted rounded-xl py-4 px-6">
             <div className="flex items-center w-full justify-between">
                 {getProjectIcon(project?.type ?? "default")}
                 <EllipsisVerticalIcon size={20} className="text-foreground/50 hover:text-foreground hover:bg-background/40 rounded-full"/>

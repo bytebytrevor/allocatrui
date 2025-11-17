@@ -11,7 +11,7 @@ function MinimalNavMenu() {
         <nav className="container flex items-center justify-between bg-background mx-auto py-2">
             <AllocatrLogo theme={theme} className="w-24"/>
             <span className="flex items-center gap-8">
-                <Link to="/projects" className="flex items-center font-semibold">Go to dashboard<ChevronRightIcon size={16} /></Link>
+                <Link to="/projects" className="flex items-center text-sm font-semibold">Go to dashboard<ChevronRightIcon size={14} /></Link>
                 <Avatar className="w-8 h-8 border-4" >
                     {/* <AvatarImage src="https://github.com/shadcn.png" /> */}
                     <AvatarImage src={drill} />

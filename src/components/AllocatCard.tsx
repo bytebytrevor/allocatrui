@@ -1,4 +1,4 @@
-import { CalendarPlus2Icon, CircleCheckBigIcon, MapPinIcon, ShieldCheckIcon, StarIcon, User2Icon} from "lucide-react";
+import { CalendarPlus2Icon, ChevronRightIcon, CircleCheckBigIcon, MapPinIcon, ShieldCheckIcon, StarIcon, User2Icon} from "lucide-react";
 import { Button } from "./ui/button"; 
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import type { Allocat, Project } from "@/Types";
@@ -73,10 +73,15 @@ export function AllocatCardGrid({ allocat, project }: Props) {
             <div className="mt-4">
                 <span className="text-sm font-bold">${allocat.hourlyRate}/h</span>
             </div>
-            <div className="flex items-center gap-2 mt-8">
-                <Button variant="outline" className="w-[50%] py-6 px-8 rounded-full shadow-none"><User2Icon />View profile</Button>
+            <div className="flex items-center gap-2 mt-4">
                 <Button
-                    className="w-[50%] py-6 px-8 rounded-full"
+                    variant="link"
+                    className="w-[50%] text-xs text-foreground font-semibold rounded-full"
+                >
+                    View profile
+                </Button>
+                <Button
+                    className="w-[50%] text-xs py-4 px-6 rounded-full"
                     onClick={handleInvite}
                 >
                     Invite
