@@ -139,64 +139,13 @@ function NewProjectForm() {
                 onSubmit={form.handleSubmit(OnSubmit)}
                 className="flex gap-8"
             >
-                <FieldGroup className="w-2xl border rounded-2xl p-4 ">
-                    {/* <span className="text-xs text-accent-3">*These are optional fields. You do not need to complete this section.</span> */}
-                    <Controller
-                        name="budget"
-                        control={form.control}
-                        render={({field, fieldState}) => (
-                            <Field data-invalid={fieldState.invalid}>
-                                <FieldLabel htmlFor="budget" className="font-semibold">Budget</FieldLabel>
-                                <Input
-                                    {...field}
-                                    type="number"
-                                    name="budget"
-                                    id="budget"
-                                    aria-invalid={fieldState.invalid}
-                                    placeholder="50"
-                                    autoComplete="off"
-                                    className="w-[12px] border-none rounded-full"
-                                />
-                                {fieldState.invalid && (
-                                    <FieldError errors={[fieldState.error]} />
-                                )}
-                            </Field>
-
-                        )}
-                    />
-                    <Field>
-                        <FieldLabel htmlFor="priority-field" className="font-semibold">Priority</FieldLabel>
-                        <div id="priority-field" className="flex gap-4">                        
-                            <span className="flex items-center gap-2">
-                                <Input type="radio" name="priority" id="urgent" value="urgent" />
-                                <FieldLabel htmlFor="urgent">Urgent</FieldLabel>
-                            </span>
-                            <span className="flex items-center gap-2">
-                                <Input type="radio" name="priority" id="high" value="high"/>
-                                <FieldLabel htmlFor="high">High</FieldLabel>
-                            </span>
-                            <span className="flex items-center gap-2">
-                                <Input type="radio" name="priority" id="medium" value="medium"/>
-                                <FieldLabel htmlFor="medium">Medium</FieldLabel>
-                            </span>
-                            <span className="flex items-center gap-2">
-                                <Input type="radio" name="priority" id="low" value="low"/>
-                                <FieldLabel htmlFor="low">Low</FieldLabel>
-                            </span>
-                        </div>
-                    </Field>
-                    <Field>
-                        <MultiFileUpload autoUpload={false} />
-                    </Field>
-                </FieldGroup>
-
                 <FieldGroup>
                     <Controller
                         name="title"
                         control={form.control}
                         render={({field, fieldState}) => (
                             <Field data-invalid={fieldState.invalid}>
-                                <FieldLabel htmlFor="title" className="font-semibold">Title</FieldLabel>
+                                <FieldLabel htmlFor="title" className="text-muted-foreground font-semibold">Title</FieldLabel>
                                 <Input
                                     {...field}
                                     name="title"
@@ -217,7 +166,7 @@ function NewProjectForm() {
                         control={form.control}
                         render={({field, fieldState }) => (
                             <Field data-invalid={fieldState.invalid}>
-                                <FieldLabel htmlFor="type" className="font-semibold">Type</FieldLabel>
+                                <FieldLabel htmlFor="type" className="text-muted-foreground font-semibold">Type</FieldLabel>
                                 <Select
                                     name="type"
                                     onValueChange={field.onChange}
@@ -267,7 +216,7 @@ function NewProjectForm() {
 
                         return (
                             <Field data-invalid={fieldState.invalid}>
-                            <FieldLabel htmlFor="category" className="font-semibold">Category</FieldLabel>
+                            <FieldLabel htmlFor="category" className="text-muted-foreground font-semibold">Category</FieldLabel>
 
                             <Select
                                 name="category"
@@ -341,15 +290,61 @@ function NewProjectForm() {
                             )}
                         />
                     </span>
-                    {/* <Field>
-                        <MultiFileUpload autoUpload={true} />
-                    </Field> */}
+                    <span className="flex items-center gap-4">
+                    <Field>
+                        <FieldLabel htmlFor="priority-field" className="text-muted-foreground font-semibold">Priority</FieldLabel>
+                        <div id="priority-field" className="flex gap-4">                        
+                            <span className="flex items-center gap-2">
+                                <input type="radio" name="priority" id="urgent" value="urgent" />
+                                <FieldLabel htmlFor="urgent">Urgent</FieldLabel>
+                            </span>
+                            <span className="flex items-center gap-2">
+                                <input type="radio" name="priority" id="high" value="high"/>
+                                <FieldLabel htmlFor="high">High</FieldLabel>
+                            </span>
+                            <span className="flex items-center gap-2">
+                                <input type="radio" name="priority" id="medium" value="medium"/>
+                                <FieldLabel htmlFor="medium">Medium</FieldLabel>
+                            </span>
+                            <span className="flex items-center gap-2">
+                                <input type="radio" name="priority" id="low" value="low"/>
+                                <FieldLabel htmlFor="low">Low</FieldLabel>
+                            </span>
+                        </div>
+                    </Field>
+                    <Controller
+                        name="budget"
+                        control={form.control}
+                        render={({field, fieldState}) => (
+                            <Field data-invalid={fieldState.invalid}>
+                                <FieldLabel htmlFor="budget" className="text-muted-foreground font-semibold">Budget</FieldLabel>
+                                <Input
+                                    {...field}
+                                    type="number"
+                                    name="budget"
+                                    id="budget"
+                                    aria-invalid={fieldState.invalid}
+                                    placeholder="50"
+                                    autoComplete="off"
+                                    className="w-[12px] border-none rounded-full"
+                                />
+                                {fieldState.invalid && (
+                                    <FieldError errors={[fieldState.error]} />
+                                )}
+                            </Field>
+
+                        )}
+                    />
+                    </span>
+                    <Field>
+                        <MultiFileUpload autoUpload={false} />
+                    </Field>
                     <Controller
                         name="description"
                         control={form.control}
                         render={({field, fieldState}) => (
                             <Field data-invalid={fieldState.invalid}>
-                                <FieldLabel htmlFor="description" className="font-semibold">Description</FieldLabel>
+                                <FieldLabel htmlFor="description" className="text-muted-foreground font-semibold">Description</FieldLabel>
                                 <InputGroup>
                                     <InputGroupTextarea
                                         {...field}
@@ -375,6 +370,11 @@ function NewProjectForm() {
                         )}
                     />
                 </FieldGroup>
+                {/* <FieldGroup className="w-2xl rounded-2xl p-4 ">                    
+                    <Field>
+                        <MultiFileUpload autoUpload={false} />
+                    </Field>
+                </FieldGroup> */}
             </form>
             <Field orientation="horizontal" className="flex items-center justify-between pt-4 mt-8">
                 <Button type="button" variant="link" onClick={() => form.reset()} className="text-foreground rounded-full">

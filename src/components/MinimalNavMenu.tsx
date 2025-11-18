@@ -8,7 +8,7 @@ function MinimalNavMenu() {
     const theme = localStorage.getItem("theme") || "dark";
 
     return (
-        <nav className="container flex items-center justify-between bg-background mx-auto py-2">
+        <nav className="flex items-center justify-between mx-auto py-2">
             <AllocatrLogo theme={theme} className="w-24"/>
             <span className="flex items-center gap-8">
                 <Link to="/projects" className="flex items-center text-sm font-semibold">Go to dashboard<ChevronRightIcon size={14} /></Link>

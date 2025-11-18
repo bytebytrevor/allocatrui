@@ -40,16 +40,40 @@
   background-position: center;
 }
 
+/************** Radio Button ****************/
 input[type="radio"] {
   appearance: none;
+  -webkit-appearance: none;
   width: 16px;
   height: 16px;
-  background: var(--input);
-  border-spacing: 12px;
-  border-radius: 100px;
-  padding: 4px;
+  border: 2px solid var(--input, #ccc);
+  border-radius: 50%;
+  background-color: var(--input, #fff);
+  cursor: pointer;
+  display: inline-block;
+  position: relative;
 }
 
-input[type="radio"]:checked {
-  background: var(--primary);
+/* Inner dot when checked */
+input[type="radio"]:checked::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  background-color: var(--primary);
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Optional hover state */
+input[type="radio"]:hover {
+  border-color: var(--primary-hover, var(--primary));
+}
+
+/* Disabled styling */
+input[type="radio"]:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
