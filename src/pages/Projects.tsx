@@ -21,6 +21,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import Electricians from "@/assets/electrician-wide.svg"
 import { useState } from "react";
+import axios from "axios";
 
 function Projects() {
     const [view, setView] = useState("grid");
@@ -28,6 +29,9 @@ function Projects() {
     function switchView() {
         view === "grid" ? setView("list") : setView("grid");
     }
+
+    const proj = axios.get("http://localhost:5206/projects");
+    console.log(proj);
 
     return (
         <>
