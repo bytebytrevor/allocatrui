@@ -15,7 +15,9 @@ function FindAllocats() {
     return (        
         <>
             <header className="sticky top-0 border-b px-2 z-10">
-                <MinimalNavMenu />             
+                <div className="container mx-auto">
+                    <MinimalNavMenu />
+                </div>             
             </header>
             <main className="container mx-auto px-2 py-8">
                 <h1 className="text-2xl font-bold mb-4">Fix electrical wiring</h1>

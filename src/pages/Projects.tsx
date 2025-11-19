@@ -41,7 +41,7 @@ function Projects() {
                         <span className="">You have 5 active projects</span>                        
                     </div>
                     <div className="flex items-center">
-                        <Link to="/projects/new"><Button className="rounded-full"><PlusIcon />New project</Button></Link>
+                        <Link to="/projects/new"><Button variant="outline" className="rounded-full text-xs shadow-none"><PlusIcon />New project</Button></Link>
                     </div>
                 </div>
                   
@@ -70,7 +70,6 @@ function Projects() {
                                     onClick={() => switchView()}
                                 >
                                     {view === "grid" ? <ListIcon /> : <LayoutGrid />}
-                                    {view === "grid" ? "List" : "Grid"}
                                 </Button>
                             </div>
                         </div>
