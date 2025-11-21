@@ -22,10 +22,10 @@ function FindAllocats() {
             <main className="container mx-auto px-2 py-8">
                 <h1 className="text-2xl font-bold mb-4">Fix electrical wiring</h1>
                 <div className="w-full border-b">
-                            <p className="max-w-3xl text-xs text-muted-foreground py-4 md:text-sm">
-                                We've listed the most suitable allocats based on your project details and location. You can adjust your location or refine your search filters to find the best match for your project.
-                            </p>                            
-                        </div>
+                    <p className="max-w-3xl text-xs text-muted-foreground py-4 md:text-sm">
+                        We've listed the most suitable allocats based on your project details and location. You can adjust your location or refine your search filters to find the best match for your project.
+                    </p>                            
+                </div>
                 <div className="flex flex-col items-start gap-4 mt-8 lg:flex-row">
                     <aside className="w-full border rounded-2xl p-4 lg:w-sm">
                         <form>

@@ -5,7 +5,9 @@ import { motion } from "framer-motion";
 function HeroMain() {
     return (
         <header className="min-h-screen bg-accent rounded-b-[120px] pb-20 border-b-12">
-            <MainNav />
+            <div className="container mx-auto">
+                <MainNav />
+            </div>
             <div className="container flex items-center justify-between px-4 mx-auto">
                 <div>
                     <motion.h1
@@ -25,7 +27,7 @@ function HeroMain() {
                         Allocatr connects you with skilled experts and professionals for tasks of any size.
                     </motion.p>
                     <div>
-                        <Button className="rounded-full mr-4 w-36">Find allocats</Button>
+                        <Button className="text-xs rounded-full mr-4 w-36">Find allocats</Button>
                     </div>
                 </div>
                 <div className="rounded-lg">
