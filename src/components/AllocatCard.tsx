@@ -24,7 +24,7 @@ export function AllocatCardGrid({ allocat, project }: Props) {
 
     function handleInvite() {
         if (project) {
-            project.allocatId = allocat.id;
+            project.allocatIds.push(allocat.id);
             return navigate("/projects");
         }
     }

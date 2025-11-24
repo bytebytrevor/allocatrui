@@ -28,7 +28,7 @@ function DashboardMainNav({children}: Props) {
     
 
     return (
-        <nav className="flex items-center justify-between bg-background border-b px-4 py-2">
+        <nav className="flex items-center justify-between bg-background py-2">
             <Link to="/projects" className="flex items-center">
                 <AllocatrLogo theme={theme} />
             </Link>

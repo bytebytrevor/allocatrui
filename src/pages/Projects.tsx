@@ -1,6 +1,13 @@
 import DashboardMainNav from "@/components/DashboardMainNav";
 import {GridView, ListView} from "@/components/ProjectCard";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import Electricians from "@/assets/electrician-wide.svg"
+import { useState, useEffect } from "react";
+import axios from "axios";
+import type { Project } from "@/Types";
 import {
     ArrowDownNarrowWideIcon,
     CircleCheckBigIcon,
@@ -15,30 +22,56 @@ import {
     MessagesSquareIcon,
     PlusIcon,
 } from "lucide-react";
-import { Link } from "react-router-dom";
-import { projects } from "@/data/projects";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import Electricians from "@/assets/electrician-wide.svg"
-import { useState } from "react";
-import axios from "axios";
 
 function Projects() {
-    const [view, setView] = useState("grid");
+    const [view, setView] = useState("grid");    
 
     function switchView() {
         view === "grid" ? setView("list") : setView("grid");
     }
 
-    const proj = axios.get("http://localhost:5206/projects");
-    console.log(proj);
+    const [projects, setProjects] = useState<Project[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<Error | null>(null);
+
+    useEffect(() => {
+        async function fetchProjects() {
+            try {
+                const response = await axios.get(
+                    `${import.meta.env.VITE_API_URL}/projects`,
+                    {
+                        withCredentials: true,
+                    }
+                );
+                setProjects(response.data);
+            } catch (err: unknown) {
+                if (err instanceof Error) {
+                    setError(err);
+                } else {
+                    setError(new Error("Unknown"));
+                }
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        fetchProjects();
+    }, []);
+
+
+    if (loading) return <p>Loading...</p>    
+    if (error) return <p>Could not load projects</p>
+
+    console.log(projects);
 
     return (
         <>
-            <header className="sticky top-0 z-10">
-                <DashboardMainNav />
+            <header className="sticky top-0 z-10 border-b">
+                <div className="px-4">
+                    <DashboardMainNav />
+                </div>
             </header>
-            <main className="container mt-8 mx-auto">
+            <main className="container mt-8 mx-auto px-4">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
                         <h1 className="font-bold">Hi Thelly!</h1>
@@ -79,7 +112,7 @@ function Projects() {
                         </div>
                         <div className={`flex gap-2 w-full mt-2 mb-6 ${view ==="grid"
                             ?
-                                "grid gap-4 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3"
+                                "grid gap-4 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-3"
                             :
                                 "flex-col"}`}
                             >
@@ -92,7 +125,7 @@ function Projects() {
                                 )}                            
                         </div>                        
                     </section>
-                    <aside className="flex flex-col space-y-4 w-lg">
+                    <aside className="hidden flex flex-col space-y-4 w-lg xl:block">
                         <div>
                             <img src={Electricians} alt="" className="rounded-t-2xl"/>
                             <article className="flex items-start gap-2 bg-muted px-6 py-10 rounded-b-2xl">

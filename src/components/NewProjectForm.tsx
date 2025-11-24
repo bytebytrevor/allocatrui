@@ -101,8 +101,7 @@ function NewProjectForm() {
             progress: 12,
             priority: "low",
             userId: "",
-            allocatId: null,
-            teamIds: [],
+            allocatIds: [],
             tasksCount: 0,
             messagesCount: 0,
             lastActivity: new Date().toLocaleDateString(),
@@ -303,12 +302,8 @@ function NewProjectForm() {
                                 <FieldLabel htmlFor="high">High</FieldLabel>
                             </span>
                             <span className="flex items-center gap-2">
-                                <input type="radio" name="priority" id="medium" value="medium"/>
-                                <FieldLabel htmlFor="medium">Medium</FieldLabel>
-                            </span>
-                            <span className="flex items-center gap-2">
-                                <input type="radio" name="priority" id="low" value="low"/>
-                                <FieldLabel htmlFor="low">Low</FieldLabel>
+                                <input type="radio" name="priority" id="standard" value="standard"/>
+                                <FieldLabel htmlFor="standard">Standard</FieldLabel>
                             </span>
                         </div>
                     </Field>
@@ -351,7 +346,7 @@ function NewProjectForm() {
                                         id="description"
                                         placeholder="Please tell more about your project."
                                         rows={6}
-                                        className="min-h-24 resize-none"
+                                        className="min-h-16 resize-none"
                                         aria-invalid={fieldState.invalid}
                                     />
                                     <InputGroupAddon align="block-end">
@@ -370,11 +365,6 @@ function NewProjectForm() {
                         )}
                     />
                 </FieldGroup>
-                {/* <FieldGroup className="w-2xl rounded-2xl p-4 ">                    
-                    <Field>
-                        <MultiFileUpload autoUpload={false} />
-                    </Field>
-                </FieldGroup> */}
             </form>
             <Field orientation="horizontal" className="flex items-center justify-between pt-4 mt-8">
                 <Button type="button" variant="link" onClick={() => form.reset()} className="text-foreground rounded-full">
