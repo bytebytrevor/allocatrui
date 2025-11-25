@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 
 function HeroMain() {
     return (
-        <header className="min-h-screen bg-accent rounded-b-[120px] pb-20 border-b-12">
+        <header className="min-h-screen bg-muted rounded-b-[120px] pb-20 border-b-12">
             <div className="container mx-auto">
                 <MainNav />
             </div>

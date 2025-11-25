@@ -39,8 +39,7 @@ function ProjectManager() {
                         <Progress value={currentProject?.progress} className="h-3"/>
                     </div>
                     <div>
-                        {/* <Link to="/projects/new"><Button variant="outline" className={"rounded-full" }><PlusIcon />New project</Button></Link> */}
-                        <Link to="/projects/new"><Button className={"rounded-full" }><PlusIcon />New project</Button></Link>
+                        <Link to="/projects/new"><Button className={"text-xs rounded-full" }><PlusIcon />New project</Button></Link>
                     </div>
                 </section>
                 

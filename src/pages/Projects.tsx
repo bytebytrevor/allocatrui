@@ -67,7 +67,7 @@ function Projects() {
     return (
         <>
             <header className="sticky top-0 z-10 border-b">
-                <div className="px-4">
+                <div className="container mx-auto px-4">
                     <DashboardMainNav />
                 </div>
             </header>
@@ -121,7 +121,6 @@ function Projects() {
                                         <GridView key={project.id} project={project} />
                                     :
                                         <ListView key={project.id} project={project} />
-
                                 )}                            
                         </div>                        
                     </section>

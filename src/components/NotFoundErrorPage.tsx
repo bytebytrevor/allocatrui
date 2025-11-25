@@ -5,12 +5,14 @@ import { Button } from "./ui/button";
 
 function NotFoundErrorPage() {
     return (
-        <div className="flex h-screen flex-col mx-0">            
-            <header className="border-b">
-                <MainNav />
+        <div className="flex flex-col h-screen mx-0">
+            <header className="border-b">            
+                <div className="container mx-auto">
+                    <MainNav />
+                </div>
             </header>
-            <div className="flex-1 flex h-full items-center justify-center content-center">
-                <div className="flex items-center gap-12 w-4xl">
+            <main className="flex-1 flex h-full items-center justify-center content-center">
+                <div className="container flex items-center gap-12 w-4xl">
                     <img src={SpaceCat} alt="Space cat" className="w-90 content-center" />
                     <div className="space-y-4">
                         <h2 className="text-6xl font-bold uppercase">Oops! Page not found.</h2>
@@ -23,7 +25,7 @@ function NotFoundErrorPage() {
                         </Button>                        
                     </div>
                 </div>
-            </div>
+            </main>
         </div>
     );
 }

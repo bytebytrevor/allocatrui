@@ -9,8 +9,10 @@ function Dashboard() {
 
     return (
         <div className="flex flex-col h-screen">
-            <header className="mb-8">
-                <DashboardMainNav />
+            <header className="mb-8 border-b">
+                <div className="px-4">
+                    <DashboardMainNav />
+                </div>
             </header>
             
             <main className="flex flex-1 gap-2 overflow-hidden"> 
