@@ -2,7 +2,6 @@ import DashboardMainNav from "@/components/DashboardMainNav";
 import {GridView, ListView} from "@/components/ProjectCard";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import Electricians from "@/assets/electrician-wide.svg"
 import { useState, useEffect } from "react";
@@ -10,8 +9,6 @@ import axios from "axios";
 import type { Project } from "@/Types";
 import {
     ArrowDownNarrowWideIcon,
-    Bold,
-    Cat,
     CircleCheckBigIcon,
     CircleDotIcon,
     ClockIcon,
@@ -23,11 +20,8 @@ import {
     Megaphone,
     MessagesSquareIcon,
     NotepadText,
-    PackagePlus,
     PlusIcon,
-    Search,
 } from "lucide-react";
-import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 
 function Projects() {
     const [view, setView] = useState("grid");    
@@ -152,8 +146,9 @@ function Projects() {
                                 <div className="flex flex-col space-y-4">
                                     <h3 className="font-bold">Advert Heading</h3>
                                     <p className="text-[0.9rem]">Lorem, ipsum dolor sit amet consectetur adipisicing elit. Vero fugit doloremque eius placeat voluptatum, aliquam porro vitae repellat aperiam.</p>
-                                    <Button className="rounded-full font-semibold mt-4 py-6">View profile</Button>
-                                </div>                         
+                                    {/* <Button className="text-xs font-semibold rounded-full mt-4 py-4">View profile</Button> */}
+                                    <span><Button className="text-xs font-semibold rounded-full mt-4 px-6">View profile</Button></span>
+                                </div>                        
                             </article>
                         </div>
                         <article className="bg-muted p-6 rounded-2xl">
