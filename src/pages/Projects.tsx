@@ -10,6 +10,7 @@ import axios from "axios";
 import type { Project } from "@/Types";
 import {
     ArrowDownNarrowWideIcon,
+    Bold,
     Cat,
     CircleCheckBigIcon,
     CircleDotIcon,
@@ -76,33 +77,32 @@ function Projects() {
                     <DashboardMainNav />
                 </div>
             </header>
-            <main className="container mt-8 mx-auto px-4">
-                {/* <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <NotepadText size={60} className="text-accent-3" />
-                        <div>
-                            <h1 className="text-2xl font-bold">Hi Thelma</h1>
-                            <p className="">Lorem ipsum, dolor sit amet consectetur adipisicing elit.</p> 
-                        </div>              
-                    </div>
-                    <div className="flex items-center">
-                        <Link to="/projects/new"><Button variant="outline" className="rounded-full text-xs shadow-none"><PlusIcon />New project</Button></Link>
-                    </div>
-                </div> */}
-                  
+            <main className="container mt-8 mx-auto px-4">                  
                 <section className="flex gap-12 justify-between w-full mt-8">                                       
                     <section className="w-full">
                         <div className="flex items-center justify-between border-b py-4">
                             <div className="flex items-center gap-2">
                                 <NotepadText size={60} className="text-primary" />
                                 <div>
-                                    <h1 className="text-2xl font-medium">Hi Thelma</h1>
+                                    <h1 className="text-2xl font-medium">Hi Thelma 👋</h1>
+                                    {/* <h1 className="text-2xl font-medium">Hi Thelma</h1> */}
                                     <p className="text-muted-foreground">You have 5 active projects in progress.</p> 
                                 </div>              
                             </div>
                             <div className="flex items-center">
-                                <Link to="/projects/new"><Button variant="outline" className="rounded-full text-xs shadow-none"><PlusIcon />New project</Button></Link>
-                                {/* <Link to="/projects/new"><Button className="rounded-full text-xs shadow-none"><PlusIcon />New project</Button></Link> */}
+                                <Link to="/projects/new">
+                                    <Button variant="outline" className="text-xs rounded-full shadow-none">
+                                        <PlusIcon />New project
+                                    </Button>
+                                </Link>
+                                {/* <Link to="/projects/new"><Button className="text-xs bg-linear-to-r from-primary to-accent-2/60  rounded-full shadow-none"><PlusIcon />New project</Button></Link> */}
+                                {/* <Link to="/projects/new"><Button className="text-xs bg-foreground rounded-full shadow-none"><PlusIcon />New project</Button></Link> */}
+                                {/* <Link
+                                    to="/projects/new"
+                                    className="text-background bg-linear-to-r from-primary to-primary/80 rounded-full p-3"
+                                >
+                                    <PlusIcon />
+                                </Link> */}
                             </div>
                         </div> 
                         {/* <InputGroup className="mb-4">
