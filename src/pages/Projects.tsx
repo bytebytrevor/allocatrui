@@ -10,6 +10,7 @@ import axios from "axios";
 import type { Project } from "@/Types";
 import {
     ArrowDownNarrowWideIcon,
+    Cat,
     CircleCheckBigIcon,
     CircleDotIcon,
     ClockIcon,
@@ -20,8 +21,12 @@ import {
     LoaderCircleIcon,
     Megaphone,
     MessagesSquareIcon,
+    NotepadText,
+    PackagePlus,
     PlusIcon,
+    Search,
 } from "lucide-react";
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 
 function Projects() {
     const [view, setView] = useState("grid");    
@@ -72,27 +77,42 @@ function Projects() {
                 </div>
             </header>
             <main className="container mt-8 mx-auto px-4">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                        <h1 className="font-bold">Hi Thelly!</h1>
-                        <span className="">You have 5 active projects</span>                        
+                {/* <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        <NotepadText size={60} className="text-accent-3" />
+                        <div>
+                            <h1 className="text-2xl font-bold">Hi Thelma</h1>
+                            <p className="">Lorem ipsum, dolor sit amet consectetur adipisicing elit.</p> 
+                        </div>              
                     </div>
                     <div className="flex items-center">
                         <Link to="/projects/new"><Button variant="outline" className="rounded-full text-xs shadow-none"><PlusIcon />New project</Button></Link>
                     </div>
-                </div>
+                </div> */}
                   
-                <section className="flex gap-12 justify-between w-full mt-8">                    
+                <section className="flex gap-12 justify-between w-full mt-8">                                       
                     <section className="w-full">
-                        <form action="" className="focus:outline-none focus:border-none focus:ring-0 mb-4">
-                            <Input
-                                name="searchProject"
-                                placeholder="Search project..."
-                                id="searchProject"
-                                className="search border-none rounded-full"
-                            />
-                        </form>                     
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between border-b py-4">
+                            <div className="flex items-center gap-2">
+                                <NotepadText size={60} className="text-primary" />
+                                <div>
+                                    <h1 className="text-2xl font-medium">Hi Thelma</h1>
+                                    <p className="text-muted-foreground">You have 5 active projects in progress.</p> 
+                                </div>              
+                            </div>
+                            <div className="flex items-center">
+                                <Link to="/projects/new"><Button variant="outline" className="rounded-full text-xs shadow-none"><PlusIcon />New project</Button></Link>
+                                {/* <Link to="/projects/new"><Button className="rounded-full text-xs shadow-none"><PlusIcon />New project</Button></Link> */}
+                            </div>
+                        </div> 
+                        {/* <InputGroup className="mb-4">
+                            <InputGroupInput placeholder="Search..." />
+                            <InputGroupAddon>
+                                <Search />
+                            </InputGroupAddon>
+                            <InputGroupAddon align="inline-end">12 results</InputGroupAddon>
+                        </InputGroup>                      */}
+                        <div className="flex items-center justify-between mt-8">
                             <div className="flex items-center gap-2">
                                 <Badge className="rounded-full bg-muted-foreground text-background"><CircleDotIcon /> Active</Badge>
                                 <Badge className="rounded-full bg-muted text-foreground"><LoaderCircleIcon />Pending</Badge>

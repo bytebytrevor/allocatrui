@@ -65,8 +65,8 @@ function DashboardMainNav({children}: Props) {
                         <DropdownMenuSeparator />
                         <DropdownMenuItem>Switch Mode</DropdownMenuItem>
                         <DropdownMenuItem>New project</DropdownMenuItem>
-                        <DropdownMenuItem>Team</DropdownMenuItem>
-                        <DropdownMenuItem>Subscription</DropdownMenuItem>
+                        <DropdownMenuItem></DropdownMenuItem>
+                        <DropdownMenuItem>Help and support</DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
 
