@@ -4,6 +4,7 @@ import type { Project } from "@/Types";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { getProjectIcon } from "@/utils/projectIcons";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
 
 const MotionLink = motion.create(Link);
 
@@ -27,7 +28,18 @@ export function ListView({project}: ViewProps) {
             <div className="flex flex-col w-full">
                 <div className="flex items-center justify-between">
                     <h3 className="font-bold text-sm">{project.title}</h3>
-                    <EllipsisVerticalIcon size={20} className="text-foreground/50 hover:text-foreground hover:bg-background/40 rounded-full"/>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger>
+                            <EllipsisVerticalIcon size={20} className="text-foreground/50 hover:text-foreground hover:bg-background/40 rounded-full"/>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="bg-background">
+                            <DropdownMenuItem>Open</DropdownMenuItem>
+                            <DropdownMenuItem>View Details</DropdownMenuItem>
+                            <DropdownMenuItem>Edit project</DropdownMenuItem>
+                            <DropdownMenuItem>Change status</DropdownMenuItem>
+                            <DropdownMenuItem>Cancel</DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 </div> 
                 <MotionLink
                     to={`${project.id}`}
@@ -70,7 +82,24 @@ export function GridView({project}: ViewProps) {
         <div className="flex flex-col items-start gap-4 bg-muted rounded-xl py-4 px-6">
             <div className="flex items-center w-full justify-between">
                 {getProjectIcon(project?.type ?? "default")}
-                <EllipsisVerticalIcon size={20} className="text-foreground/50 hover:text-foreground hover:bg-background/40 rounded-full"/>
+                <DropdownMenu>
+                    <DropdownMenuTrigger>
+                        <EllipsisVerticalIcon size={20} className="text-foreground/50 hover:text-foreground hover:bg-background/40 rounded-full"/>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="bg-background">
+                        {project.allocatIds.length === 0
+                        ?
+                            <DropdownMenuItem>Assign Allocat</DropdownMenuItem>
+                        :
+                            <DropdownMenuItem>Open</DropdownMenuItem>
+                        }
+                        {/* <DropdownMenuItem>Open</DropdownMenuItem> */}
+                        <DropdownMenuItem>View Details</DropdownMenuItem>
+                        <DropdownMenuItem>Edit project</DropdownMenuItem>
+                        <DropdownMenuItem>Change status</DropdownMenuItem>
+                        <DropdownMenuItem className="text-destructive">Cancel</DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
             </div>
             <MotionLink
                 to={`${project.id}`}
