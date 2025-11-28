@@ -27,26 +27,17 @@ export function ListView({project}: ViewProps) {
             {getProjectIcon(project?.type ?? "default")}  
             <div className="flex flex-col w-full">
                 <div className="flex items-center justify-between">
-                    <h3 className="font-bold text-sm">{project.title}</h3>
-                    <DropdownMenu>
-                        <DropdownMenuTrigger>
-                            <EllipsisVerticalIcon size={20} className="text-foreground/50 hover:text-foreground hover:bg-background/40 rounded-full"/>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent className="bg-background">
-                            <DropdownMenuItem>Open</DropdownMenuItem>
-                            <DropdownMenuItem>View Details</DropdownMenuItem>
-                            <DropdownMenuItem>Edit project</DropdownMenuItem>
-                            <DropdownMenuItem>Change status</DropdownMenuItem>
-                            <DropdownMenuItem>Cancel</DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </div> 
-                <MotionLink
+                    <MotionLink
                     to={`${project.id}`}
-                    className="flex justify-between mt-2 rounded-2xl"
-                    whileHover={{ opacity: 0.7 }}
-                    whileTap={{ scale: 0.96 }}
-                    transition={{ duration: 0.2, ease: "easeInOut" }}
+                        className="flex justify-between mt-2 rounded-2xl"
+                        whileTap={{ scale: 0.96 }}
+                        transition={{ duration: 0.2, ease: "easeInOut" }}
+                    >
+                        <h3 className="font-bold text-sm transition delay-90 duration-300 hover:text-primary">{project.title}</h3>
+                    </MotionLink>
+                    <ProjectMenu project={project} />
+                </div> 
+                <div className="flex justify-between mt-2 rounded-2xl"
                 >
                     <div className="flex items-center gap-4 w-xl">                        
                         <div>                 
@@ -70,7 +61,7 @@ export function ListView({project}: ViewProps) {
                             </div>
                         </div>                    
                     </div>
-                </MotionLink>
+                </div>
             </div>
         </div>
 )}  
@@ -82,33 +73,18 @@ export function GridView({project}: ViewProps) {
         <div className="flex flex-col items-start gap-4 bg-muted rounded-xl py-4 px-6">
             <div className="flex items-center w-full justify-between">
                 {getProjectIcon(project?.type ?? "default")}
-                <DropdownMenu>
-                    <DropdownMenuTrigger>
-                        <EllipsisVerticalIcon size={20} className="text-foreground/50 hover:text-foreground hover:bg-background/40 rounded-full"/>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="bg-background">
-                        {project.allocatIds.length === 0
-                        ?
-                            <DropdownMenuItem>Assign Allocat</DropdownMenuItem>
-                        :
-                            <DropdownMenuItem>Open</DropdownMenuItem>
-                        }
-                        {/* <DropdownMenuItem>Open</DropdownMenuItem> */}
-                        <DropdownMenuItem>View Details</DropdownMenuItem>
-                        <DropdownMenuItem>Edit project</DropdownMenuItem>
-                        <DropdownMenuItem>Change status</DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive">Cancel</DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
+                <ProjectMenu project={project}/>
             </div>
-            <MotionLink
-                to={`${project.id}`}
-                className="flex flex-col justify-between mt-2 rounded-2xl"
-                whileHover={{ opacity: 0.7 }}
-                whileTap={{ scale: 0.96 }}
-                transition={{ duration: 0.2, ease: "easeInOut" }}
-            > 
-                <h3 className="font-bold text-sm">{project.title}</h3>
+            <div>
+                <MotionLink
+                    to={`${project.id}`}
+                    className="flex flex-col justify-between mt-2 rounded-2xl"
+                    whileTap={{ scale: 0.96 }}
+                    transition={{ duration: 0.2, ease: "easeInOut" }}
+                > 
+                    <h3 className="font-bold text-sm transition delay-90 duration-300 hover:text-primary">{project.title}</h3>
+                </MotionLink>
+            
                 <Progress value={project.progress} className="mt-4"/>               
                 <span
                     className="flex items-center gap-1 font-light text-muted-foreground text-xs mt-6"
@@ -116,7 +92,7 @@ export function GridView({project}: ViewProps) {
                     <CalendarDaysIcon size={16} />Created { new Date(project.createdAt).toDateString() }
                 </span>       
                 <p className="text-[0.9rem] py-2">{project.description.slice(0, 60)}...</p>                              
-            </MotionLink>
+            </div>
             <div className="flex flex-grow items-center w-full justify-between font-semibold mt-2">
                 <span className="text-xs text-muted-foreground font-light">{project.projectCode}</span> 
                 <span className="flex items-center gap-2 text-xs">
@@ -125,5 +101,31 @@ export function GridView({project}: ViewProps) {
                 </span>
             </div> 
         </div>
+    );
+}
+
+function ProjectMenu({project}: ViewProps) {
+    return (
+        <DropdownMenu>
+            <DropdownMenuTrigger>
+                <EllipsisVerticalIcon
+                    size={28}
+                    className="text-foreground/50 rounded-full cursor-pointer p-1 transition delay-150 duration-300 ease-in-out hover:text-foreground hover:bg-muted-foreground/20"
+                />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="bg-background">
+                {project.allocatIds.length === 0
+                ?
+                    <DropdownMenuItem>Assign Allocat</DropdownMenuItem>
+                :
+                    <DropdownMenuItem>Open</DropdownMenuItem>
+                }
+                {/* <DropdownMenuItem>Open</DropdownMenuItem> */}
+                <DropdownMenuItem>View Details</DropdownMenuItem>
+                <DropdownMenuItem>Edit project</DropdownMenuItem>
+                <DropdownMenuItem>Change status</DropdownMenuItem>
+                <DropdownMenuItem className="text-destructive">Cancel</DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
     );
 }
