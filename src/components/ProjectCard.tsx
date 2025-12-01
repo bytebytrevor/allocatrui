@@ -82,7 +82,7 @@ export function GridView({project}: ViewProps) {
                     whileTap={{ scale: 0.96 }}
                     transition={{ duration: 0.2, ease: "easeInOut" }}
                 > 
-                    <h3 className="font-bold text-sm transition delay-90 duration-300 hover:text-primary">{project.title}</h3>
+                    <h3 className="font-bold text-sm transition delay-90 duration-300 hover:underline">{project.title}</h3>
                 </MotionLink>
             
                 <Progress value={project.progress} className="mt-4"/>               
