@@ -152,7 +152,7 @@ function NewProjectForm() {
                                     aria-invalid={fieldState.invalid}
                                     placeholder="Car Window Repair"
                                     autoComplete="off"
-                                    className="rounded-full border-none bg-input"
+                                    className=" border-none bg-input"
                                 />
                                 {fieldState.invalid && (
                                     <FieldError errors={[fieldState.error]}/>
@@ -175,7 +175,7 @@ function NewProjectForm() {
                                         name="type"
                                         id="type"
                                         className={cn(
-                                            "w-full rounded-full bg-input border-none transition-colors duration-300",
+                                            "w-full  bg-input border-none transition-colors duration-300",
                                             fieldState.invalid && "ring-1 ring-destructive"
                                         )}
                                     >
@@ -227,7 +227,7 @@ function NewProjectForm() {
                                 name="category"
                                 id="category"
                                 className={cn(
-                                    "w-full rounded-full bg-input border-none transition-colors duration-300",
+                                    "w-full  bg-input border-none transition-colors duration-300",
                                     fieldState.invalid && "ring-1 ring-destructive"
                                 )}
                                 >
@@ -321,7 +321,7 @@ function NewProjectForm() {
                                     aria-invalid={fieldState.invalid}
                                     placeholder="50"
                                     autoComplete="off"
-                                    className="w-[12px] border-none rounded-full"
+                                    className="w-[12px] border-none "
                                 />
                                 {fieldState.invalid && (
                                     <FieldError errors={[fieldState.error]} />
@@ -367,7 +367,7 @@ function NewProjectForm() {
                 </FieldGroup>
             </form>
             <Field orientation="horizontal" className="flex items-center justify-between pt-4 mt-8">
-                <Button type="button" variant="link" onClick={() => form.reset()} className="text-foreground rounded-full">
+                <Button type="button" variant="link" onClick={() => form.reset()} className="text-foreground ">
                     Reset
                 </Button>
                 <span className="flex items-center gap-4">
@@ -375,14 +375,14 @@ function NewProjectForm() {
                     type="submit"
                     form="new-project"
                     variant="outline"
-                    className="rounded-full"
+                    className=""
                 >
                     Find allocats
                 </Button>
                 <Button
                     type="submit"
                     form="new-project"
-                    className="rounded-full text-background"
+                    className=" text-background"
                 >
                     Post project
                 </Button>

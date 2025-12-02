@@ -48,16 +48,16 @@ function DashboardMainNav({children}: Props) {
             <span className="flex items-center space-x-2">
                 <button
                     onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                    className="p-1 rounded-full hover:bg-muted-foreground/20 cursor-pointer transition-colors delay-150 duration-300"
+                    className="p-1  hover:bg-muted-foreground/20 cursor-pointer transition-colors delay-150 duration-300"
                     >
                     {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
                 </button>
-                <BellIcon size={28} className="hover:bg-muted-foreground/20 rounded-full cursor-pointer p-1 transition-colors delay-150 duration-300"/>
+                <BellIcon size={28} className="hover:bg-muted-foreground/20  cursor-pointer p-1 transition-colors delay-150 duration-300"/>
                 <DropdownMenu>
                     <DropdownMenuTrigger>
                         <EllipsisVerticalIcon
                             size={28}
-                            className="hover:bg-muted-foreground/20 rounded-full cursor-pointer p-1 transition-colors delay-150 duration-300"
+                            className="hover:bg-muted-foreground/20  cursor-pointer p-1 transition-colors delay-150 duration-300"
                         />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
@@ -70,9 +70,9 @@ function DashboardMainNav({children}: Props) {
                     </DropdownMenuContent>
                 </DropdownMenu>
 
-                <Avatar className="w-8 h-8 border-4 rounded-full" >
-                    <AvatarImage src="https://github.com/shadcn.png" className="rounded-full" />
-                    {/* <AvatarImage src={drill} className="rounded-full"/> */}
+                <Avatar className="w-8 h-8 border-4 " >
+                    <AvatarImage src="https://github.com/shadcn.png" className="" />
+                    {/* <AvatarImage src={drill} className=""/> */}
                     <AvatarFallback className={`text-background bg-muted-foreground`}>
                         A
                     </AvatarFallback>

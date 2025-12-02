@@ -61,7 +61,7 @@ export function Calendar28({id, label, value, onChange}: Props) {
           id={id}
           value={formatDate(value ?? undefined)}
           placeholder={currentDate.toLocaleDateString("en-US", {day: "2-digit", month: "long", year: "numeric"})}
-          className="border-none pr-10 rounded-full"
+          className="border-none pr-10 "
           onChange={(e) => {
             const date = new Date(e.target.value)
             if (!isNaN(date.getTime()) && onChange) {

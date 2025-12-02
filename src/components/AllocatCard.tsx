@@ -76,13 +76,13 @@ export function AllocatCardGrid({ allocat, project }: Props) {
             <div className="flex items-center gap-2 mt-4">
                 <Button
                     variant="link"
-                    className="w-[50%] text-xs text-foreground font-semibold rounded-full"
+                    className="w-[50%] text-xs text-foreground font-semibold "
                 >
                     View profile
                 </Button>
                 <Button
                     variant="outline"
-                    className="w-[50%] text-xs py-4 px-6 rounded-full shadow-none dark:hover:bg-primary dark:hover:text-background"
+                    className="w-[50%] text-xs py-4 px-6  shadow-none dark:hover:bg-primary dark:hover:text-background"
                     onClick={handleInvite}
                 >
                     Invite

@@ -32,7 +32,7 @@ function ComboBox({projects, project, projectId}: Props) {
                 variant="outline"
                 role="combobox"
                 aria-expanded={open}
-                className="w-[300px] justify-between rounded-full"
+                className="w-[300px] justify-between "
                 >
                 {value ?? "Select project..."}
                 <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />

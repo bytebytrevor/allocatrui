@@ -129,7 +129,7 @@ function FileInput({inputRef, disabled, onFileSelect}: FileInputProps) {
             />
             <label
                 htmlFor="file-upload"
-                className="flex cursor-pointer items-center gap-1 rounded-full bg-muted border text-foreground text-xs font-medium py-2 px-3 hover:opacity-90 disabled:bg-muted/50 disabled:text-foreground/50"
+                className="flex cursor-pointer items-center gap-1  bg-muted border text-foreground text-xs font-medium py-2 px-3 hover:opacity-90 disabled:bg-muted/50 disabled:text-foreground/50"
             >
                 <Plus size={14} />
                 Select files
@@ -159,7 +159,7 @@ function ActionButtons({ onUpload, onClear, disabled, autoUpload}: ActionButtonP
                     <button
                         onClick={onUpload}
                         disabled={disabled}
-                        className="flex items-center gap-1 cursor-pointer rounded-full bg-muted border text-foreground text-xs font-medium py-2 px-3 hover:opacity-90 disabled:bg-muted/50 disabled:text-foreground/50"
+                        className="flex items-center gap-1 cursor-pointer  bg-muted border text-foreground text-xs font-medium py-2 px-3 hover:opacity-90 disabled:bg-muted/50 disabled:text-foreground/50"
                     >
                         <Upload size={16} />
                         Upload
@@ -167,7 +167,7 @@ function ActionButtons({ onUpload, onClear, disabled, autoUpload}: ActionButtonP
             }
             <button
                 onClick={onClear}
-                className="flex items-center gap-1 cursor-pointer rounded-full bg-muted border text-foreground text-xs font-medium py-2 px-3 hover:opacity-90 disabled:bg-muted/50 disabled:text-foreground/50"
+                className="flex items-center gap-1 cursor-pointer  bg-muted border text-foreground text-xs font-medium py-2 px-3 hover:opacity-90 disabled:bg-muted/50 disabled:text-foreground/50"
                 disabled={disabled}
             >
                 <Trash size={16} />
@@ -242,7 +242,7 @@ type ProgressBarProps = {
 
 function ProgressBar({ progress }: ProgressBarProps) {
     return (
-        <div className="h-2 w-full overflow-hidden rounded-full bg-grayscale-800">
+        <div className="h-2 w-full overflow-hidden  bg-grayscale-800">
             <div
                 className="h-full bg-linear-to-t from-primary to-primary/50 transition-all duration-300"
                 style={{ width: `${progress}%` }}

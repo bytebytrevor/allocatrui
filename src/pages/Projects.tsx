@@ -85,15 +85,15 @@ function Projects() {
                             </div>
                             <div className="flex items-center">
                                 <Link to="/projects/new">
-                                    <Button variant="outline" className="text-xs rounded-full shadow-none">
+                                    <Button variant="outline" className="text-xs  shadow-none">
                                         <PlusIcon />New project
                                     </Button>
                                 </Link>
-                                {/* <Link to="/projects/new"><Button className="text-xs bg-linear-to-r from-primary to-accent-2/60  rounded-full shadow-none"><PlusIcon />New project</Button></Link> */}
-                                {/* <Link to="/projects/new"><Button className="text-xs bg-foreground rounded-full shadow-none"><PlusIcon />New project</Button></Link> */}
+                                {/* <Link to="/projects/new"><Button className="text-xs bg-linear-to-r from-primary to-accent-2/60   shadow-none"><PlusIcon />New project</Button></Link> */}
+                                {/* <Link to="/projects/new"><Button className="text-xs bg-foreground  shadow-none"><PlusIcon />New project</Button></Link> */}
                                 {/* <Link
                                     to="/projects/new"
-                                    className="text-background bg-linear-to-r from-primary to-primary/80 rounded-full p-3"
+                                    className="text-background bg-linear-to-r from-primary to-primary/80  p-3"
                                 >
                                     <PlusIcon />
                                 </Link> */}
@@ -108,9 +108,9 @@ function Projects() {
                         </InputGroup>                      */}
                         <div className="flex items-center justify-between mt-8">
                             <div className="flex items-center gap-2">
-                                <Badge className="rounded-full bg-muted-foreground text-background"><CircleDotIcon /> Active</Badge>
-                                <Badge className="rounded-full bg-muted text-foreground"><LoaderCircleIcon />Pending</Badge>
-                                <Badge className="rounded-full bg-muted text-foreground"><CircleCheckBigIcon /> Closed</Badge>
+                                <Badge className=" bg-muted-foreground text-background"><CircleDotIcon /> Active</Badge>
+                                <Badge className=" bg-muted text-foreground"><LoaderCircleIcon />Pending</Badge>
+                                <Badge className=" bg-muted text-foreground"><CircleCheckBigIcon /> Closed</Badge>
                             </div>
                             <div className="flex">
                                 <Button variant="link" className="flex items-center gap-1 text-foreground"><History />History</Button>
@@ -146,8 +146,8 @@ function Projects() {
                                 <div className="flex flex-col space-y-4">
                                     <h3 className="font-bold">Advert Heading</h3>
                                     <p className="text-[0.9rem]">Lorem, ipsum dolor sit amet consectetur adipisicing elit. Vero fugit doloremque eius placeat voluptatum, aliquam porro vitae repellat aperiam.</p>
-                                    {/* <Button className="text-xs font-semibold rounded-full mt-4 py-4">View profile</Button> */}
-                                    <span><Button className="text-xs font-semibold rounded-full mt-4 px-6">View profile</Button></span>
+                                    {/* <Button className="text-xs font-semibold  mt-4 py-4">View profile</Button> */}
+                                    <span><Button className="text-xs font-semibold  mt-4 px-6">View profile</Button></span>
                                 </div>                        
                             </article>
                         </div>

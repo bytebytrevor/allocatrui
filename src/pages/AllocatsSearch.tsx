@@ -30,9 +30,9 @@ function AllocatsSearch() {
                                         id="location"
                                         defaultValue="Zimbabwe, Harare"
                                         placeholder="Location"
-                                        className="w-full rounded-full"
+                                        className="w-full "
                                     />
-                                    {/* <Link to="" ><Button variant="outline" className="rounded-full"><MapPinIcon />Choose on map</Button></Link> */}
+                                    {/* <Link to="" ><Button variant="outline" className=""><MapPinIcon />Choose on map</Button></Link> */}
                             </span>
                         </form>
                         <span>
@@ -41,7 +41,7 @@ function AllocatsSearch() {
                         </span>
                         <span className="flex items-center gap-4">
                             <Label htmlFor="min-experience">Min experience</Label>
-                            <Input type="number" name="min-experience" id="min-experience" defaultValue={1} className="w-[100px] rounded-full"/>
+                            <Input type="number" name="min-experience" id="min-experience" defaultValue={1} className="w-[100px] "/>
                         </span>
 
                     </aside>

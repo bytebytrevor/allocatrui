@@ -9,7 +9,7 @@ type Props = {
 
 function ProjectStatusBadge({ icon: Icon, label, color }: Props) {
     return (
-        <Button className={`flex items-center justify-center gap-2 bg-transparent border-2 text-${color} py-[0.1px] px-3 rounded-full`}>
+        <Button className={`flex items-center justify-center gap-2 bg-transparent border-2 text-${color} py-[0.1px] px-3 `}>
             {Icon && <Icon size={12} className="font-light" />}
             <span className="text-xs">{label}</span>
         </Button>

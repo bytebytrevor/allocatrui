@@ -65,7 +65,7 @@ function LandingPage() {
                                 </span>
                                 
                                 <h3 className="text-6xl font-black max-w-4xl uppercase">We line up skilled pros so fast you’ll think time’s on your  side</h3>
-                                <Button className="text-xs rounded-full my-12 px-16">Post a job</Button>
+                                <Button className="text-xs  my-12 px-16">Post a job</Button>
                         </article>
                         <Accordion type="single" collapsible className="">
                             <AccordionItem value="item-1">
@@ -73,7 +73,7 @@ function LandingPage() {
                                 <AccordionContent>
                                     Allocats bring qualifications and years of experience, and unmatched expertise.
                                     {/* <Button variant="link" className="my-4 text-[#DEDA00]">How to become an allocat </Button> */}
-                                    <Button className="my-4 rounded-full">How to become an allocat </Button>
+                                    <Button className="my-4 ">How to become an allocat </Button>
                                 </AccordionContent>
                             </AccordionItem>
                             <AccordionItem value="item-2">
@@ -124,7 +124,7 @@ function LandingPage() {
                                 delay={0.4}
                                 text="Powerful tools to simplify your project management, giving you seamless collaboration and streamlined workflows to keep everything organized."
                             />
-                            <Button className="text-xs rounded-full my-12 px-16">Learn more</Button>
+                            <Button className="text-xs  my-12 px-16">Learn more</Button>
                         </article>
                         <div className="w-full">
                             <img src={assets.computerPhone} alt="laptop"  />
@@ -146,7 +146,7 @@ function LandingPage() {
                             delay={0.6}
                             text="Whether it's a quick fix or a major project, every task matters. From simple jobs to complex endeavors, allocatr is the right place to connect with skilled professionals."
                         />
-                        {/* <Button className="bg-foreground text-xs rounded-full my-12 px-16">Post a job</Button> */}
+                        {/* <Button className="bg-foreground text-xs  my-12 px-16">Post a job</Button> */}
                     </article>
                 </section>
 

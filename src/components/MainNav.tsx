@@ -9,8 +9,8 @@ function MainNav() {
             <div className="flex items-center gap-6">
                 <Link to="" className="text-sm">Explore</Link>
                 <Link to="" className="text-sm">Post a task</Link>
-                {/* <Link to="" className="text-xs border py-2 px-8 rounded-full">Log in</Link> */}
-                <Link to="" className="text-xs text-background bg-primary px-8 py-2 rounded-full hover:bg-primary/90 transition-colors duration-300">Log in</Link>
+                {/* <Link to="" className="text-xs border py-2 px-8 ">Log in</Link> */}
+                <Link to="" className="text-xs text-background bg-primary px-8 py-2  hover:bg-primary/90 transition-colors duration-300">Log in</Link>
             </div>
         </nav>
     );

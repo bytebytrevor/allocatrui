@@ -19,7 +19,7 @@ function NotFoundErrorPage() {
                         <p className="">Looks like Schrödinger's cat fell off the map.. but don't worry, you haven't hit your 9th life just yet.</p>
                         <Button
                             asChild
-                            className="rounded-full"
+                            className=""
                         >
                             <Link to="/"> Respawn to Earth</Link>
                         </Button>                        

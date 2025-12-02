@@ -5,6 +5,19 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { getProjectIcon } from "@/utils/projectIcons";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
+import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 
 const MotionLink = motion.create(Link);
 
@@ -110,7 +123,7 @@ function ProjectMenu({project}: ViewProps) {
             <DropdownMenuTrigger>
                 <EllipsisVerticalIcon
                     size={28}
-                    className="text-foreground/50 rounded-full cursor-pointer p-1 transition delay-150 duration-300 ease-in-out hover:text-foreground hover:bg-muted-foreground/20"
+                    className="text-foreground/50  cursor-pointer p-1 transition delay-150 duration-300 ease-in-out hover:text-foreground hover:bg-muted-foreground/20"
                 />
             </DropdownMenuTrigger>
             <DropdownMenuContent className="bg-background">
@@ -120,12 +133,54 @@ function ProjectMenu({project}: ViewProps) {
                 :
                     <DropdownMenuItem>Open</DropdownMenuItem>
                 }
-                {/* <DropdownMenuItem>Open</DropdownMenuItem> */}
-                <DropdownMenuItem>View Details</DropdownMenuItem>
+                {/* <DropdownMenuItem><ProjectDetailsDialog trigger="View details"/></DropdownMenuItem> */}
+                <ProjectDetailsDialog project={project} trigger="View details"/>
                 <DropdownMenuItem>Edit project</DropdownMenuItem>
                 <DropdownMenuItem>Change status</DropdownMenuItem>
                 <DropdownMenuItem className="text-destructive">Cancel</DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
     );
+}
+
+type DetailsDialogProps = {
+    project: Project;
+    trigger: string;
+}
+
+function ProjectDetailsDialog({project, trigger}: DetailsDialogProps) {
+  return (
+    <Dialog>
+      <form>
+        <DialogTrigger asChild>
+            <Link to="" className="text-[0.92rem] font-normal px-2">{trigger}</Link>  
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Edit project</DialogTitle>
+            <DialogDescription>
+              Make changes to your project here. Click save when you&apos;re
+              done.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4">
+            <div className="grid gap-3">
+              <Label htmlFor="name-1">Title</Label>
+              <Input id="name-1" name="name" defaultValue={project.title} className=""/>
+            </div>
+            <div className="grid gap-3">
+              <Label htmlFor="username-1">Username</Label>
+              <Input id="username-1" name="username" defaultValue="@peduarte" className="" />
+            </div>
+          </div>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline" className="">Cancel</Button>
+            </DialogClose>
+            <Button type="submit" className="">Save changes</Button>
+          </DialogFooter>
+        </DialogContent>
+      </form>
+    </Dialog>
+  );
 }
