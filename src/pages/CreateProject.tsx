@@ -7,7 +7,7 @@ function CreateProject() {
     return (
         <>  
             <header className="bg-background sticky top-0 border-b z-10">
-                <div className="container mx-auto">
+                <div className="container mx-auto px-4">
                     <MinimalNavMenu />
                 </div>
             </header>

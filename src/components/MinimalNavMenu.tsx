@@ -14,9 +14,9 @@ function MinimalNavMenu() {
                 <Link to="/projects" className="flex items-center text-sm font-semibold">
                     Go to dashboard<ChevronRightIcon size={14} />
                 </Link>
-                <Avatar className="w-8 h-8 border-4" >
-                    {/* <AvatarImage src="https://github.com/shadcn.png" /> */}
-                    <AvatarImage src={drill} />
+                <Avatar className="w-6 h-6 ring-0 hover:ring-3 ring-muted-foreground/20 transition-all duration-300">
+                    <AvatarImage src="https://github.com/shadcn.png" />
+                    {/* <AvatarImage src={drill} /> */}
                     <AvatarFallback className={`text-background bg-muted-foreground`}>
                         A
                     </AvatarFallback>

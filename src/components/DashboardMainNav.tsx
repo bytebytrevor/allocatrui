@@ -1,11 +1,10 @@
 import { Link } from "react-router-dom";
-import { BellIcon, EllipsisVerticalIcon, Moon, PlusIcon, Sun } from "lucide-react";
+import { BellIcon, EllipsisVerticalIcon, Moon, Sun } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { useEffect, } from "react";
 import AllocatrLogo from "./AllocatrLogo";
 import { Avatar } from "@radix-ui/react-avatar";
 import { AvatarFallback, AvatarImage } from "./ui/avatar";
-import drill from "@/assets/drill-square.svg"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,8 +12,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Switch } from "./ui/switch";
+} from "@/components/ui/dropdown-menu";
 
 type Props = {
     children?: ReactNode;
@@ -70,9 +68,9 @@ function DashboardMainNav({children}: Props) {
                     </DropdownMenuContent>
                 </DropdownMenu>
 
-                <Avatar className="w-8 h-8 border-4 " >
-                    <AvatarImage src="https://github.com/shadcn.png" className="" />
-                    {/* <AvatarImage src={drill} className=""/> */}
+                <Avatar className="w-6 h-6 rounded-full ring-0 hover:ring-3 ring-muted-foreground/20 transition-all duration-300">
+                    <AvatarImage src="https://github.com/shadcn.png" className="rounded-full"/>
+                    {/* <AvatarImage src={drill} /> */}
                     <AvatarFallback className={`text-background bg-muted-foreground`}>
                         A
                     </AvatarFallback>
