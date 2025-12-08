@@ -46,16 +46,16 @@ function DashboardMainNav({children}: Props) {
             <span className="flex items-center space-x-2">
                 <button
                     onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                    className="p-1  hover:bg-muted-foreground/20 cursor-pointer transition-colors delay-150 duration-300"
+                    className="p-1  hover:bg-muted-foreground/20 rounded-full cursor-pointer transition-colors delay-150 duration-300"
                     >
                     {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
                 </button>
-                <BellIcon size={28} className="hover:bg-muted-foreground/20  cursor-pointer p-1 transition-colors delay-150 duration-300"/>
+                <BellIcon size={28} className="hover:bg-muted-foreground/20 rounded-full cursor-pointer p-1 transition-colors delay-150 duration-300"/>
                 <DropdownMenu>
                     <DropdownMenuTrigger>
                         <EllipsisVerticalIcon
                             size={28}
-                            className="hover:bg-muted-foreground/20  cursor-pointer p-1 transition-colors delay-150 duration-300"
+                            className="hover:bg-muted-foreground/20 rounded-full cursor-pointer p-1 transition-colors delay-150 duration-300"
                         />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>

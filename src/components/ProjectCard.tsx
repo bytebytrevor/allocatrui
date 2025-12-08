@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Textarea } from "./ui/textarea";
 
 const MotionLink = motion.create(Link);
 
@@ -123,7 +124,7 @@ function ProjectMenu({project}: ViewProps) {
             <DropdownMenuTrigger>
                 <EllipsisVerticalIcon
                     size={28}
-                    className="text-foreground/50  cursor-pointer p-1 transition delay-150 duration-300 ease-in-out hover:text-foreground hover:bg-muted-foreground/20"
+                    className="text-foreground/50 rounded-full cursor-pointer p-1 transition delay-150 duration-300 ease-in-out hover:text-foreground hover:bg-muted-foreground/20"
                 />
             </DropdownMenuTrigger>
             <DropdownMenuContent className="bg-background">
@@ -143,12 +144,66 @@ function ProjectMenu({project}: ViewProps) {
     );
 }
 
-type DetailsDialogProps = {
+type DialogProps = {
     project: Project;
     trigger: string;
 }
 
-function ProjectDetailsDialog({project, trigger}: DetailsDialogProps) {
+function ProjectDetailsDialog({project, trigger}: DialogProps) {
+    return(
+        <Dialog>
+            <DialogTrigger asChild>
+                <Link to="" className="text-[0.92rem] font-normal px-2">{trigger}</Link> 
+            </DialogTrigger>
+            <DialogContent>
+                <DialogHeader className="border-b pb-4">
+                    {/* {getProjectIcon(project?.type ?? "default")}  */}
+                    <DialogTitle className="flex items-center gap-2">{getProjectIcon(project?.type ?? "default")} {project.title}</DialogTitle>
+                    <DialogDescription>{project.description}</DialogDescription>
+                </DialogHeader>
+
+                <div className="flex flex-col space-y-4">
+                    <span>
+                        <h3 className="text-muted-foreground">CREATED</h3>
+                        <span className="flex items-center gap-1 text-sm">
+                            <CalendarDaysIcon size={16} />{new Date(project.createdAt).toDateString()}
+                        </span>
+                    </span>
+                    <span>
+                        <h3 className="text-muted-foreground">DUE DATE</h3>
+                        <span className="flex items-center gap-1 text-sm">
+                            <CalendarDaysIcon size={16} />{new Date(project.dueDate).toDateString()}
+                        </span>
+                    </span>
+                </div>
+
+                <div>
+                    <span>
+                        <h3 className="text-muted-foreground">PROJECT CODE</h3>
+                        <span>{project.projectCode}</span>
+                    </span>
+                </div>
+                <div>
+                    <span className="flex items-center justify-between w-full py-2">
+                        <span>{project.status}</span>
+                        <span className="font-bold">{project.progress}%</span>
+                    </span>
+                    <Progress value={project.progress} />                    
+                </div>
+                
+                <DialogFooter>
+                    <DialogClose asChild>
+                        <Button>Close</Button>
+                    </DialogClose>
+                </DialogFooter>
+            </DialogContent>
+            
+        </Dialog>
+    )
+
+}
+
+function EditProjectDialog({project, trigger}: DialogProps) {
   return (
     <Dialog>
       <form>
@@ -166,11 +221,11 @@ function ProjectDetailsDialog({project, trigger}: DetailsDialogProps) {
           <div className="grid gap-4">
             <div className="grid gap-3">
               <Label htmlFor="name-1">Title</Label>
-              <Input id="name-1" name="name" defaultValue={project.title} className=""/>
+              <Input id="name-1" name="name" defaultValue={project.title} className=""/>              
             </div>
             <div className="grid gap-3">
               <Label htmlFor="username-1">Username</Label>
-              <Input id="username-1" name="username" defaultValue="@peduarte" className="" />
+              <Textarea id="description" name="description" defaultValue={project.description} className="" />
             </div>
           </div>
           <DialogFooter>
