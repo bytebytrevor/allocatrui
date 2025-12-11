@@ -150,6 +150,8 @@ type DialogProps = {
 }
 
 function ProjectDetailsDialog({project, trigger}: DialogProps) {
+    const dotColor = statusColor[project.status] || statusColor.onhold;
+
     return(
         <Dialog>
             <DialogTrigger asChild>
@@ -157,39 +159,48 @@ function ProjectDetailsDialog({project, trigger}: DialogProps) {
             </DialogTrigger>
             <DialogContent>
                 <DialogHeader className="border-b pb-4">
-                    {/* {getProjectIcon(project?.type ?? "default")}  */}
                     <DialogTitle className="flex items-center gap-2">{getProjectIcon(project?.type ?? "default")} {project.title}</DialogTitle>
                     <DialogDescription>{project.description}</DialogDescription>
                 </DialogHeader>
 
-                <div className="flex flex-col space-y-4">
+                <div className="flex iteems-center justify-between gap-2 border-b pb-4">
                     <span>
-                        <h3 className="text-muted-foreground">CREATED</h3>
+                        <h3 className="text-muted-foreground font-semibold">Created</h3>
                         <span className="flex items-center gap-1 text-sm">
                             <CalendarDaysIcon size={16} />{new Date(project.createdAt).toDateString()}
                         </span>
                     </span>
                     <span>
-                        <h3 className="text-muted-foreground">DUE DATE</h3>
+                        <h3 className="text-muted-foreground font-semibold">Start date</h3>
+                        <span className="flex items-center gap-1 text-sm">
+                            <CalendarDaysIcon size={16} />{new Date(project.startDate).toDateString()}
+                        </span>
+                    </span>
+                    <span>
+                        <h3 className="text-muted-foreground font-semibold">Due date</h3>
                         <span className="flex items-center gap-1 text-sm">
                             <CalendarDaysIcon size={16} />{new Date(project.dueDate).toDateString()}
                         </span>
                     </span>
                 </div>
-
-                <div>
-                    <span>
-                        <h3 className="text-muted-foreground">PROJECT CODE</h3>
-                        <span>{project.projectCode}</span>
-                    </span>
-                </div>
                 <div>
                     <span className="flex items-center justify-between w-full py-2">
-                        <span>{project.status}</span>
+                        <span className="flex items-center gap-2">
+                            <span className={`w-2 h-2 bg-${dotColor} rounded-full`}></span>
+                            {project.status.charAt(0).toUpperCase()+project.status.slice(1)}                            
+                        </span>
+                        
                         <span className="font-bold">{project.progress}%</span>
                     </span>
                     <Progress value={project.progress} />                    
                 </div>
+                <div>
+                    <span>
+                        <h3 className="text-muted-foreground font-semibold">Project code</h3>
+                        <span>{project.projectCode}</span>
+                    </span>
+                </div>
+                
                 
                 <DialogFooter>
                     <DialogClose asChild>
