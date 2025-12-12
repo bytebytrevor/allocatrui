@@ -1,4 +1,4 @@
-import { CalendarDaysIcon, EllipsisVerticalIcon } from "lucide-react";
+import { BadgeAlert, CalendarDaysIcon, Clock10Icon, EllipsisVerticalIcon, FolderDotIcon } from "lucide-react";
 import { Progress } from "./ui/progress";
 import type { Project } from "@/Types";
 import { Link } from "react-router-dom";
@@ -19,6 +19,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "./ui/textarea";
+import { Badge } from "./ui/badge";
 
 const MotionLink = motion.create(Link);
 
@@ -161,9 +162,20 @@ function ProjectDetailsDialog({project, trigger}: DialogProps) {
                 <DialogHeader className="border-b pb-4">
                     <DialogTitle className="flex items-center gap-2">{getProjectIcon(project?.type ?? "default")} {project.title}</DialogTitle>
                     <DialogDescription>{project.description}</DialogDescription>
+                    <div className="my-4">
+                        <span className="flex items-center gap-2 text-sm">
+                            <h3 className="font-semibold">Category</h3>
+                            <span>{project.category}</span>
+                        </span>
+                        <span className="flex items-center gap-2 text-sm">
+                            <h3 className="font-semibold py-1 color-foreground">Priority</h3>
+                            <span><Badge variant="destructive" className="text-white rounded-full">{project.priority}</Badge></span>
+                        </span>
+                    </div>
+                    
                 </DialogHeader>
 
-                <div className="flex iteems-center justify-between gap-2 border-b pb-4">
+                <div className="flex items-center justify-between gap-2 border-b pb-4">
                     <span>
                         <h3 className="text-muted-foreground font-semibold">Created</h3>
                         <span className="flex items-center gap-1 text-sm">
@@ -194,17 +206,17 @@ function ProjectDetailsDialog({project, trigger}: DialogProps) {
                     </span>
                     <Progress value={project.progress} />                    
                 </div>
-                <div>
+                <div>                       
                     <span>
                         <h3 className="text-muted-foreground font-semibold">Project code</h3>
-                        <span>{project.projectCode}</span>
+                        <span className="text-sm">{project.projectCode}</span>
                     </span>
                 </div>
                 
                 
                 <DialogFooter>
                     <DialogClose asChild>
-                        <Button>Close</Button>
+                        <Button className="text-muted-foreground text-sm font bg-transparent hover:bg-transparent shadow-none">Close</Button>
                     </DialogClose>
                 </DialogFooter>
             </DialogContent>
