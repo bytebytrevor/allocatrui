@@ -5,13 +5,15 @@ import { PlusIcon } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import ManagerComboBox from "./ManagerComboBox";
 import { useEffect, useState } from "react";
-import type { Project } from "@/Types";
+import type { Project, Task } from "@/Types";
 import axios from "axios";
 
 function ProjectManager() {
     const [project, setProject] = useState<Project>();
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<Error | null>(null);   
+    const [error, setError] = useState<Error | null>(null);
+    
+    const [tasks, setTasks] = useState<Task[]>();
 
     const params = useParams();
 
@@ -45,17 +47,44 @@ function ProjectManager() {
         fetchProject();
     }, [params.projectId]);
 
+    useEffect(() => {
+        async function fetchTasks() {
+            try {
+                const response = await axios.get(
+                    `${import.meta.env.VITE_API_URL}/tasks`,
+                    {
+                        withCredentials: true,
+                    }
+                );
+                setTasks(response.data);
+            } catch (err: unknown) {
+                if (err instanceof Error) {
+                    setError(err);
+                } else {
+                    setError(new Error("Unknown"));
+                }
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        fetchTasks();
+    }, []);
+
+    // console.log(tasks);
+
 
     if (loading) return <p>Loading...</p>    
     if (error) return <p>Could not load project</p>
 
 
-    const projectTasks = project?.tasks;
+    const projectTasks = tasks?.filter(t => t.projectId === params.projectId);
+    console.log(projectTasks);
 
     const completedTaskList = projectTasks?.filter(task => task.status == "complete");
     const activeTaskList = projectTasks?.filter(task => task.status == "active");
     const overdueTaskList = projectTasks?.filter(task => task.status == "overdue");
-    // const pendingTaskList = projectTasks?.filter(task => task.status == "pending");
+    const pendingTaskList = projectTasks?.filter(task => task.status == "pending");
 
     return (
         <>
@@ -94,7 +123,12 @@ function ProjectManager() {
                         description="No overdue tasks"
                         linkText="+ Click here to add"
                         tasks={overdueTaskList}
-                        // tasks={pendingTaskList}
+                    />
+                    <TaskStatusBoard
+                        title="Pending"
+                        description="No pending tasks"
+                        linkText="+ Click here to add"
+                        tasks={pendingTaskList}
                     />
                 </section>    
             </div> 

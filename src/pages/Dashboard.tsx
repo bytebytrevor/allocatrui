@@ -56,7 +56,7 @@ function Dashboard() {
                                     Switch project
                                     <ArrowRightLeftIcon className="w-8 h-8 bg-brand-primary text-secondary p-2 rounded-sm" />
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent className="bg-background">
+                                <DropdownMenuContent className="bg-background ml-4">
                                     {projects.map(p => <DropdownMenuItem key={p.id}><Link to={`/projects/${p.id}`}>{p.title}</Link></DropdownMenuItem>)}
                                 </DropdownMenuContent>
                             </DropdownMenu>

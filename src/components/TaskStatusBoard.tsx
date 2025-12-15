@@ -11,7 +11,7 @@ type Props = {
 
 function TaskStatusBoard({title, description, linkText, tasks}: Props) {
     return (               
-        <section className="flex flex-col mt-8 min-h-60 max-h-full min-w-86 max-w-96 bg-muted rounded-2xl p-4">
+        <section className="flex flex-col mt-8 min-h-60 max-h-full min-w-86 max-w-96 bg-muted rounded-md p-4">
             <h3 className="font-semibold text-xs text-foreground/80 pb-2">{title}</h3> 
             {tasks == null || tasks?.length == 0 ? (  
                 <div className="flex-1 flex gap-x-4 items-center justify-center text-muted-foreground">
@@ -26,11 +26,13 @@ function TaskStatusBoard({title, description, linkText, tasks}: Props) {
                         <div key={task.id} className="bg-background my-1 p-2 shadow-md rounded-[6px]">
                             <div className="flex items-center justify-between">
                                 <div className="flex flex-col space-y-2">
-                                    <h2 className="font-bold text-sm">{task.title}</h2>
+                                    <h4 className="font-medium text-xs">{task.title}</h4>
                                     {/* <p className="text-xs">The description will go here. Go and add a description prop in Task type</p> */}
                                     <span className="flex gap-1 items-center text-xs text-muted-foreground">
                                         <CalendarDaysIcon size={14}/>
-                                        Due {new Date(task.dueDate).toDateString()}
+                                        Due {task.dueDate
+                                            ? (` ${new Date(task.dueDate).toDateString()}`)
+                                            : <span className="italic">Not specified</span>}
                                     </span>
                                 </div>
                                 <div className="flex items-center space-x-4">

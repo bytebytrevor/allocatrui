@@ -1,21 +1,3 @@
-export type Task = {
-    id: string;
-    title: string;
-    description: string; 
-    status: "pending" | "active" | "complete" | "cancelled" | "overdue";
-    createdAt: string;
-    updatedAt?: string;
-    startDate?: string;
-    dueDate: string;
-    completedAt?: string;
-    projectId: string;
-    allocatId?: string;
-    assignedById?: string;
-    attachments?: string[];
-    priority?: "low" | "medium" | "high" | "urgent";
-    isPublic: boolean;
-}
-
 export type Project = {
     id: string; // GUID
     projectCode: string;
@@ -57,4 +39,29 @@ export type Allocat = {
     hourlyRate: number,
     currency: string,
     joinedAt: string
+}
+
+export type Task = {
+    id: string,
+    title: string,
+    description?: string,
+    status: "pending" | "active" | "complete" | "overdue";
+    priority?: "low" | "medium" | "high" | "urgent",
+    order: number,
+    createdAt: string,
+    dueDate?: string,
+    UpdatedAt: string,
+    completedAt: string,
+    comments: Comment[],
+    createdByUserId: string,
+    projectId: string,
+}
+
+export type TaskComment = {
+    id: string,
+    createdAt: string,
+    updatedAt: string,
+    comment: string,
+    createdBy: string,
+    taskId: string
 }
