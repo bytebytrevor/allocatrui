@@ -165,11 +165,16 @@ function ProjectDetailsDialog({project, trigger}: DialogProps) {
                     <div className="my-4">
                         <span className="flex items-center gap-2 text-sm">
                             <h3 className="font-semibold">Category</h3>
-                            <span>{project.category}</span>
+                            <span>
+                                {project.category.charAt(0).toUpperCase()}{project.category.slice(1)}
+                            </span>
                         </span>
                         <span className="flex items-center gap-2 text-sm">
                             <h3 className="font-semibold py-1 color-foreground">Priority</h3>
-                            <span><Badge variant="destructive" className="text-white rounded-full">{project.priority}</Badge></span>
+                            <span>
+                                <Badge variant="destructive" className="text-white rounded-full">
+                                    {project.priority?.charAt(0).toUpperCase()}{project.priority?.slice(1)}
+                                </Badge></span>
                         </span>
                     </div>
                     

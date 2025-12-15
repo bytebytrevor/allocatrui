@@ -1,25 +1,56 @@
-import  { projects } from "../data/projects";
 import TaskStatusBoard from "./TaskStatusBoard";
 import { Progress } from "./ui/progress";
 import { Button } from "./ui/button";
 import { PlusIcon } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import ManagerComboBox from "./ManagerComboBox";
+import { useEffect, useState } from "react";
+import type { Project } from "@/Types";
+import axios from "axios";
 
 function ProjectManager() {
-    // Fetch tasks for this project from database
-    // useEffect(() => {
-    //   fetch(`/api/projects/${projectId}/tasks`)
-    //     .then(res => res.json())
-    //     .then(data => setTasks(data));
-    // }, [projectId]);
+    const [project, setProject] = useState<Project>();
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<Error | null>(null);   
 
     const params = useParams();
-    const currentProject = projects?.find(project => (
-        project.id === params.projectId)
-    );
 
-    const projectTasks = currentProject?.tasks;
+
+
+    // Fetch project by id
+    useEffect(() => {
+        if (!params.projectId) return;
+
+        async function fetchProject() {
+            try {
+                setLoading(true);
+
+                const response = await axios.get<Project>(
+                    `${import.meta.env.VITE_API_URL}/projects/${params.projectId}`,
+                    { withCredentials: true }
+                );
+
+                setProject(response.data);
+            } catch (err: unknown) {
+                if (err instanceof Error) {
+                    setError(err);
+                } else {
+                    setError(new Error("Unknown error"));
+                }
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        fetchProject();
+    }, [params.projectId]);
+
+
+    if (loading) return <p>Loading...</p>    
+    if (error) return <p>Could not load project</p>
+
+
+    const projectTasks = project?.tasks;
 
     const completedTaskList = projectTasks?.filter(task => task.status == "complete");
     const activeTaskList = projectTasks?.filter(task => task.status == "active");
@@ -31,12 +62,14 @@ function ProjectManager() {
             <div className="flex-1 flex flex-col h-full pb-4">
                 <section className="flex justify-between pr-12 pb-4 shrink-0">
                     <div className="flex flex-col space-y-4">
-                        <ManagerComboBox project={currentProject} projects={projects} />
-                        <h2 className="flex gap-2 items-center text-xl font-medium">
-                            <span className="font-light">{currentProject?.projectCode}</span>
-                            {currentProject?.title}
-                        </h2>
-                        <Progress value={currentProject?.progress} className="h-3"/>
+                        {/* <ManagerComboBox project={project} projects={projects} /> */}
+                        <span className="flex gap-4 items-center text-md">
+                            <h2 className="font-semibold">{project?.title}</h2>
+                            {/* <Link to="" className="flex items-center gap-2 text-xs text-background font-medium bg-muted-foreground py-1 px-4 rounded-sm">
+                                Switch project<ChevronDownIcon size={12} />
+                            </Link> */}
+                        </span>
+                        <Progress value={project?.progress} className="w-sm h-3"/>
                     </div>
                     <div>
                         <Link to="/projects/new"><Button className={"text-xs " }><PlusIcon />New project</Button></Link>

@@ -17,10 +17,9 @@ import type { Project } from "@/Types";
 type Props = {
   projects?: Project[];
   project?: Project;
-  projectId?: string;
 }
 
-function ComboBox({projects, project, projectId}: Props) {
+function ComboBox({projects, project}: Props) {
 
     const [open, setOpen] = useState(false);
     const [value, setValue] = useState(project?.title);
