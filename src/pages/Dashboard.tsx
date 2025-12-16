@@ -1,8 +1,7 @@
 import { Link, Outlet, useParams } from "react-router-dom";
-import { ArrowRightLeftIcon, Banknote, BlocksIcon, CalendarDaysIcon, ChartNoAxesColumnIcon, EllipsisVerticalIcon, HeartIcon, MailIcon } from "lucide-react";
+import { ArrowRightLeftIcon, Banknote, BlocksIcon, CalendarDaysIcon, ChartNoAxesColumnIcon, HeartIcon, MailIcon } from "lucide-react";
 import DashboardNavLink from "@/components/DashboardNavLink";
 import DashboardMainNav from "@/components/DashboardMainNav";
-import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import type { Project } from "@/Types";

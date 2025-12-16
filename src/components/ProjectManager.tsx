@@ -3,7 +3,6 @@ import { Progress } from "./ui/progress";
 import { Button } from "./ui/button";
 import { PlusIcon } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
-import ManagerComboBox from "./ManagerComboBox";
 import { useEffect, useState } from "react";
 import type { Project, Task } from "@/Types";
 import axios from "axios";
@@ -91,12 +90,8 @@ function ProjectManager() {
             <div className="flex-1 flex flex-col h-full pb-4">
                 <section className="flex justify-between pr-12 pb-4 shrink-0">
                     <div className="flex flex-col space-y-4">
-                        {/* <ManagerComboBox project={project} projects={projects} /> */}
                         <span className="flex gap-4 items-center text-md">
                             <h2 className="font-semibold">{project?.title}</h2>
-                            {/* <Link to="" className="flex items-center gap-2 text-xs text-background font-medium bg-muted-foreground py-1 px-4 rounded-sm">
-                                Switch project<ChevronDownIcon size={12} />
-                            </Link> */}
                         </span>
                         <Progress value={project?.progress} className="w-sm h-3"/>
                     </div>

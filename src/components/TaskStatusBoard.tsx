@@ -23,11 +23,10 @@ function TaskStatusBoard({title, description, linkText, tasks}: Props) {
                 </div>) : (
                 <section className="flex-1 overflow-y-auto max-h-full scrollbar-thin">
                     {tasks?.map(task => (
-                        <div key={task.id} className="bg-background my-1 p-2 shadow-md rounded-[6px]">
+                        <div key={task.id} className="bg-background my-2 p-2 shadow-sm rounded-[6px]">
                             <div className="flex items-center justify-between">
                                 <div className="flex flex-col space-y-2">
                                     <h4 className="font-medium text-xs">{task.title}</h4>
-                                    {/* <p className="text-xs">The description will go here. Go and add a description prop in Task type</p> */}
                                     <span className="flex gap-1 items-center text-xs text-muted-foreground">
                                         <CalendarDaysIcon size={14}/>
                                         Due {task.dueDate

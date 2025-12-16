@@ -1,4 +1,4 @@
-import { BadgeAlert, CalendarDaysIcon, Clock10Icon, EllipsisVerticalIcon, FolderDotIcon } from "lucide-react";
+import { CalendarDaysIcon, EllipsisVerticalIcon } from "lucide-react";
 import { Progress } from "./ui/progress";
 import type { Project } from "@/Types";
 import { Link } from "react-router-dom";
@@ -48,7 +48,7 @@ export function ListView({project}: ViewProps) {
                         whileTap={{ scale: 0.96 }}
                         transition={{ duration: 0.2, ease: "easeInOut" }}
                     >
-                        <h3 className="font-bold text-sm transition delay-90 duration-300 hover:text-primary">{project.title}</h3>
+                        <h3 className="font-semibold text-sm transition delay-90 duration-300 hover:text-primary">{project.title}</h3>
                     </MotionLink>
                     <ProjectMenu project={project} />
                 </div> 
@@ -97,7 +97,7 @@ export function GridView({project}: ViewProps) {
                     whileTap={{ scale: 0.96 }}
                     transition={{ duration: 0.2, ease: "easeInOut" }}
                 > 
-                    <h3 className="font-bold text-sm transition delay-90 duration-300 hover:underline">{project.title}</h3>
+                    <h3 className="font-semibold text-sm transition delay-90 duration-300 hover:underline">{project.title}</h3>
                 </MotionLink>
             
                 <Progress value={project.progress} className="mt-4"/>               
@@ -190,13 +190,15 @@ function ProjectDetailsDialog({project, trigger}: DialogProps) {
                     <span>
                         <h3 className="text-muted-foreground font-semibold">Start date</h3>
                         <span className="flex items-center gap-1 text-sm">
-                            <CalendarDaysIcon size={16} />{new Date(project.startDate).toDateString()}
+                            <CalendarDaysIcon size={16} />
+                            {project.startDate ? new Date(project.startDate).toDateString() : ""}
                         </span>
                     </span>
                     <span>
                         <h3 className="text-muted-foreground font-semibold">Due date</h3>
                         <span className="flex items-center gap-1 text-sm">
-                            <CalendarDaysIcon size={16} />{new Date(project.dueDate).toDateString()}
+                            <CalendarDaysIcon size={16} />
+                            {project.dueDate ? new Date(project.dueDate).toDateString() : ""}
                         </span>
                     </span>
                 </div>
