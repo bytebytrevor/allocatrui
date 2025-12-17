@@ -135,9 +135,12 @@ function ProjectMenu({project}: ViewProps) {
                 :
                     <DropdownMenuItem>Open</DropdownMenuItem>
                 }
-                {/* <DropdownMenuItem><ProjectDetailsDialog trigger="View details"/></DropdownMenuItem> */}
-                <ProjectDetailsDialog project={project} trigger="View details"/>
-                <DropdownMenuItem>Edit project</DropdownMenuItem>
+                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                    <ProjectDetailsDialog project={project} trigger="View details"/>
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                    <EditProjectDialog project={project} trigger="Edit project"/>
+                </DropdownMenuItem>
                 <DropdownMenuItem>Change status</DropdownMenuItem>
                 <DropdownMenuItem className="text-destructive">Cancel</DropdownMenuItem>
             </DropdownMenuContent>
@@ -156,7 +159,7 @@ function ProjectDetailsDialog({project, trigger}: DialogProps) {
     return(
         <Dialog>
             <DialogTrigger asChild>
-                <Link to="" className="text-[0.92rem] font-normal px-2">{trigger}</Link> 
+                <span className="text-[0.92rem] font-normal">{trigger}</span> 
             </DialogTrigger>
             <DialogContent>
                 <DialogHeader className="border-b pb-4">
@@ -238,7 +241,7 @@ function EditProjectDialog({project, trigger}: DialogProps) {
     <Dialog>
       <form>
         <DialogTrigger asChild>
-            <Link to="" className="text-[0.92rem] font-normal px-2">{trigger}</Link>  
+            <span className="text-[0.92rem] font-normal">{trigger}</span>  
         </DialogTrigger>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
