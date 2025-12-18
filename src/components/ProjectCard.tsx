@@ -20,6 +20,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "./ui/textarea";
 import { Badge } from "./ui/badge";
+import { Calendar28 } from "./DatePicker";
 
 const MotionLink = motion.create(Link);
 
@@ -243,7 +244,7 @@ function EditProjectDialog({project, trigger}: DialogProps) {
         <DialogTrigger asChild>
             <span className="text-[0.92rem] font-normal">{trigger}</span>  
         </DialogTrigger>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="min-w-sm ">
           <DialogHeader>
             <DialogTitle>Edit project</DialogTitle>
             <DialogDescription>
@@ -251,7 +252,7 @@ function EditProjectDialog({project, trigger}: DialogProps) {
               done.
             </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4">
+          <form className="grid gap-4">
             <div className="grid gap-3">
               <Label htmlFor="name-1">Title</Label>
               <Input id="name-1" name="name" defaultValue={project.title} className=""/>              
@@ -260,7 +261,24 @@ function EditProjectDialog({project, trigger}: DialogProps) {
               <Label htmlFor="username-1">Username</Label>
               <Textarea id="description" name="description" defaultValue={project.description} className="" />
             </div>
-          </div>
+            <div className="flex gap-4">
+              <span>
+                <Label htmlFor="start-date">Start date</Label>
+                <Calendar28
+                    id={"start-date"}
+                    value={project.dueDate ? new Date(project.dueDate) : new Date()}
+                />
+              </span>
+
+              <span>
+                <Label htmlFor="end-date">Due date</Label>
+                <Calendar28
+                    id={"start-date"}
+                    value={project.dueDate ? new Date(project.dueDate) : new Date()}
+                />
+              </span>
+            </div>
+          </form>
           <DialogFooter>
             <DialogClose asChild>
               <Button variant="outline" className="">Cancel</Button>

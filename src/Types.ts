@@ -12,7 +12,7 @@ export type Project = {
     completedAt?: string;
     status: "pending" | "active" | "complete" | "cancelled" | "overdue";
     progress?: number; // percentage 0-100
-    priority?: "low" | "medium" | "high" | "urgent";
+    priority: "standard" | "high" | "urgent";
     userId: string; // project owner
     allocatIds: string[]; // optional team members
     tasksCount?: number;

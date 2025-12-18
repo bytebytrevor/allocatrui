@@ -56,15 +56,14 @@ const formSchema = z.object({
         .string()
         .min(20, "Description must be at least 20 characters")
         .max(2000, "Description must be at most 2000 characters"),
-    priority: z
-        .string()
-        .nonempty("Please select priority"),   
     
     // Optional fields
     budget: z
         .string()
         .optional(),
-    
+    priority: z
+        .string()
+        .optional()    
 });
 
 
@@ -100,8 +99,7 @@ function NewProjectForm() {
             completedAt: "",
             status: "pending",
             progress: 12,
-            // priority: form.getValues("priority"),
-            priority: "standard",
+            priority: "low",
             userId: "",
             allocatIds: [],
             tasksCount: 0,
@@ -294,19 +292,19 @@ function NewProjectForm() {
                     <span className="flex items-center gap-4">
                     <Field>
                         <FieldLabel htmlFor="priority-field" className="text-muted-foreground font-semibold">Priority</FieldLabel>
-                        <div id="priority-field" className="flex gap-4">
+                        <div id="priority-field" className="flex gap-4">                        
                             <span className="flex items-center gap-2">
-                                <input type="radio" name="priority" id="standard" value="standard" defaultChecked />
-                                <FieldLabel htmlFor="standard">Standard</FieldLabel>
-                            </span>           
+                                <input type="radio" name="priority" id="urgent" value="urgent" />
+                                <FieldLabel htmlFor="urgent">Urgent</FieldLabel>
+                            </span>
                             <span className="flex items-center gap-2">
                                 <input type="radio" name="priority" id="high" value="high"/>
                                 <FieldLabel htmlFor="high">High</FieldLabel>
                             </span>
                             <span className="flex items-center gap-2">
-                                <input type="radio" name="priority" id="urgent" value="urgent" />
-                                <FieldLabel htmlFor="urgent">Urgent</FieldLabel>
-                            </span>                            
+                                <input type="radio" name="priority" id="standard" value="standard"/>
+                                <FieldLabel htmlFor="standard">Standard</FieldLabel>
+                            </span>
                         </div>
                     </Field>
                     <Controller
