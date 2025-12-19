@@ -79,7 +79,6 @@ function Projects() {
                                 <NotepadText size={60} className="text-primary" />
                                 <div>
                                     <h1 className="text-2xl font-medium">Hi Thelma 👋</h1>
-                                    {/* <h1 className="text-2xl font-medium">Hi Thelma</h1> */}
                                     <p className="text-muted-foreground">You have 5 active projects in progress.</p> 
                                 </div>              
                             </div>
@@ -146,7 +145,6 @@ function Projects() {
                                 <div className="flex flex-col space-y-4">
                                     <h3 className="font-bold">Advert Heading</h3>
                                     <p className="text-[0.9rem]">Lorem, ipsum dolor sit amet consectetur adipisicing elit. Vero fugit doloremque eius placeat voluptatum, aliquam porro vitae repellat aperiam.</p>
-                                    {/* <Button className="text-xs font-semibold  mt-4 py-4">View profile</Button> */}
                                     <span><Button className="text-xs font-semibold  mt-4 px-6">View profile</Button></span>
                                 </div>                        
                             </article>

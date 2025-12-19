@@ -134,7 +134,7 @@ function ProjectMenu({project}: ViewProps) {
                 ?
                     <DropdownMenuItem>Assign Allocat</DropdownMenuItem>
                 :
-                    <DropdownMenuItem>Open</DropdownMenuItem>
+                    <DropdownMenuItem><Link to={project.id}>Open</Link></DropdownMenuItem>
                 }
                 <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
                     <ProjectDetailsDialog project={project} trigger="View details"/>
@@ -254,29 +254,46 @@ function EditProjectDialog({project, trigger}: DialogProps) {
           </DialogHeader>
           <form className="grid gap-4">
             <div className="grid gap-3">
-              <Label htmlFor="name-1">Title</Label>
-              <Input id="name-1" name="name" defaultValue={project.title} className=""/>              
+              <Label htmlFor="title">Title</Label>
+              <Input id="title" name="title" defaultValue={project.title} />              
             </div>
             <div className="grid gap-3">
-              <Label htmlFor="username-1">Username</Label>
-              <Textarea id="description" name="description" defaultValue={project.description} className="" />
+              <Label htmlFor="description">Description</Label>
+              <Textarea id="description" name="description" defaultValue={project.description} />
             </div>
             <div className="flex gap-4">
               <span>
                 <Label htmlFor="start-date">Start date</Label>
                 <Calendar28
-                    id={"start-date"}
+                    id="start-date"
                     value={project.dueDate ? new Date(project.dueDate) : new Date()}
                 />
               </span>
 
               <span>
-                <Label htmlFor="end-date">Due date</Label>
+                <Label htmlFor="due-date">Due date</Label>
                 <Calendar28
-                    id={"start-date"}
+                    id={"due-date"}
                     value={project.dueDate ? new Date(project.dueDate) : new Date()}
                 />
               </span>
+            </div>
+            <div className="grid gap-3">
+              <Label htmlFor="priority-field">Priority</Label>
+              <div id="priority-field" className="flex gap-4">
+                    <span className="flex items-center gap-2">
+                        <input type="radio" name="priority" id="standard" value="standard" />
+                        <Label htmlFor="standard">Standard</Label>
+                    </span>           
+                    <span className="flex items-center gap-2">
+                        <input type="radio" name="priority" id="high" value="high"/>
+                        <Label htmlFor="high">High</Label>
+                    </span>
+                    <span className="flex items-center gap-2">
+                        <input type="radio" name="priority" id="urgent" value="urgent" />
+                        <Label htmlFor="urgent">Urgent</Label>
+                    </span>                            
+                </div>
             </div>
           </form>
           <DialogFooter>

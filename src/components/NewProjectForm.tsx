@@ -46,6 +46,9 @@ const formSchema = z.object({
     category: z
         .string()
         .nonempty("Please select a category"),
+    tags: z
+        .string()
+        .nonempty("Please add tags"),
     startDate: z
         .date()
         .nullable(),
@@ -93,6 +96,7 @@ function NewProjectForm() {
             description: form.getValues("description"),
             type: form.getValues("type"),
             category: form.getValues("category"),
+            tags: form.getValues("tags"),
             createdAt: new Date().toLocaleDateString(),
             updatedAt: new Date().toLocaleDateString(),
             startDate: form.getValues("startDate")?.toLocaleDateString(),
@@ -177,7 +181,7 @@ function NewProjectForm() {
                                         name="type"
                                         id="type"
                                         className={cn(
-                                            "w-full  bg-input border-none transition-colors duration-300",
+                                            "w-full  bg-input border-none transition-colors duration-300 rounded-full",
                                             fieldState.invalid && "ring-1 ring-destructive"
                                         )}
                                     >
@@ -265,6 +269,22 @@ function NewProjectForm() {
                             </Field>
                         )}}
                     />
+                    <Controller
+                        name="tags"
+                        control={form.control}
+                        render={({field}) => (
+                            <span className="flex items-center">
+                            <Input
+                                name="tags"
+                                id="tags"
+                                placeholder="Add tags. e.g. Capenter, Repair, Tutor, Nanny"
+                                className="rounded-none rounded-l-full"
+                            />
+                            <Button className="w-36 rounded-none rounded-r-full">Add</Button>
+                            </span>
+                        )}
+                    />
+
                     <span className="flex gap-4">
                         <Controller
                             name="startDate"
