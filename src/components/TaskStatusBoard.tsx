@@ -23,8 +23,8 @@ function TaskStatusBoard({title, description, linkText, tasks}: Props) {
                 </div>) : (
                 <section className="flex-1 overflow-y-auto max-h-full scrollbar-thin">
                     {tasks?.map(task => (
-                        // <div key={task.id} className="bg-background my-2 p-2 shadow-sm rounded-[6px]">
-                        <div key={task.id} className="bg-linear-to-bl from-dark-gray/10 to-muted/20 my-2 p-2 shadow-sm border rounded-[6px]">
+                        // <div key={task.id} className="bg-background/50 my-2 p-2 shadow-sm rounded-[6px]">
+                        <div key={task.id} className="bg-linear-to-b from-background/50 to-background my-2 p-2 shadow-sm rounded-[6px]">
                             <div className="flex items-center justify-between">
                                 <div className="flex flex-col space-y-2">
                                     <h4 className="font-medium text-xs">{task.title}</h4>
