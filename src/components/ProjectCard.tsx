@@ -1,6 +1,6 @@
 import { CalendarDaysIcon, EllipsisVerticalIcon } from "lucide-react";
 import { Progress } from "./ui/progress";
-import type { Project } from "@/Types";
+import type { Project } from "../Types/project";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { getProjectIcon } from "@/utils/projectIcons";
@@ -40,7 +40,7 @@ export function ListView({project}: ViewProps) {
 
     return (
         <div className="flex items-center w-full gap-4 bg-muted rounded-2xl py-4 px-6">
-            {getProjectIcon(project?.type ?? "default")}  
+            {getProjectIcon(project?.category ?? "default")}  
             <div className="flex flex-col w-full">
                 <div className="flex items-center justify-between">
                     <MotionLink
@@ -49,7 +49,7 @@ export function ListView({project}: ViewProps) {
                         whileTap={{ scale: 0.96 }}
                         transition={{ duration: 0.2, ease: "easeInOut" }}
                     >
-                        <h3 className="font-semibold text-sm transition delay-90 duration-300 hover:text-primary">{project.title}</h3>
+                        <h3 className="text-sm text-foreground/90 font-semibold transition delay-90 duration-300 hover:text-primary">{project.title}</h3>
                     </MotionLink>
                     <ProjectMenu project={project} />
                 </div> 
@@ -86,9 +86,9 @@ export function GridView({project}: ViewProps) {
     const dotColor = statusColor[project.status] || statusColor.onhold;
 
     return (
-        <div className="flex flex-col items-start gap-4 bg-muted rounded-xl py-4 px-6">
+        <div className="flex flex-col items-start gap-4 bg-muted rounded-lg py-4 px-6">
             <div className="flex items-center w-full justify-between">
-                {getProjectIcon(project?.type ?? "default")}
+                {getProjectIcon(project?.category ?? "default")}
                 <ProjectMenu project={project}/>
             </div>
             <div>
@@ -98,10 +98,10 @@ export function GridView({project}: ViewProps) {
                     whileTap={{ scale: 0.96 }}
                     transition={{ duration: 0.2, ease: "easeInOut" }}
                 > 
-                    <h3 className="font-semibold text-sm transition delay-90 duration-300 hover:underline">{project.title}</h3>
+                    <h3 className="text-sm text-foreground/90 font-semibold transition delay-90 duration-300 hover:underline">{project.title}</h3>
                 </MotionLink>
             
-                <Progress value={project.progress} className="mt-4"/>               
+                {/* <Progress value={project.progress} className="mt-4"/>                */}
                 <span
                     className="flex items-center gap-1 font-light text-muted-foreground text-xs mt-6"
                 >
@@ -110,7 +110,8 @@ export function GridView({project}: ViewProps) {
                 <p className="text-[0.9rem] py-2">{project.description.slice(0, 60)}...</p>                              
             </div>
             <div className="flex flex-grow items-center w-full justify-between font-semibold mt-2">
-                <span className="text-xs text-muted-foreground font-light">{project.projectCode}</span> 
+                {/* <span className="text-xs text-muted-foreground font-light">{project.projectCode}</span> */}
+                <Progress value={project.progress} className="w-16"/>
                 <span className="flex items-center gap-2 text-xs">
                     <span className={`w-2 h-2 bg-${dotColor} rounded-full`}></span>
                     {project.status.charAt(0).toUpperCase()+project.status.slice(1)}
@@ -164,7 +165,7 @@ function ProjectDetailsDialog({project, trigger}: DialogProps) {
             </DialogTrigger>
             <DialogContent>
                 <DialogHeader className="border-b pb-4">
-                    <DialogTitle className="flex items-center gap-2">{getProjectIcon(project?.type ?? "default")} {project.title}</DialogTitle>
+                    <DialogTitle className="flex items-center gap-2">{getProjectIcon(project?.category ?? "default")} {project.title}</DialogTitle>
                     <DialogDescription>{project.description}</DialogDescription>
                     <div className="my-4">
                         <span className="flex items-center gap-2 text-sm">

@@ -9,7 +9,8 @@ import axios from "axios";
 
 function ProjectManager() {
     const [project, setProject] = useState<Project>();
-    const [loading, setLoading] = useState(true);
+    const [projectLoading, setProjectLoading] = useState(true);
+    const [tasksLoading, setTasksLoading] = useState(true);
     const [error, setError] = useState<Error | null>(null);
     
     const [tasks, setTasks] = useState<Task[]>();
@@ -24,7 +25,7 @@ function ProjectManager() {
 
         async function fetchProject() {
             try {
-                setLoading(true);
+                setProjectLoading(true);
 
                 const response = await axios.get<Project>(
                     `${import.meta.env.VITE_API_URL}/projects/${params.projectId}`,
@@ -39,7 +40,7 @@ function ProjectManager() {
                     setError(new Error("Unknown error"));
                 }
             } finally {
-                setLoading(false);
+                setProjectLoading(false);
             }
         }
 
@@ -47,10 +48,14 @@ function ProjectManager() {
     }, [params.projectId]);
 
     useEffect(() => {
+        if (!params.projectId) return;
+
         async function fetchTasks() {
             try {
-                const response = await axios.get(
-                    `${import.meta.env.VITE_API_URL}/tasks`,
+                setTasksLoading(true);
+
+                const response = await axios.get<Task[]>(
+                    `${import.meta.env.VITE_API_URL}/projects/${params.projectId}/tasks`,
                     {
                         withCredentials: true,
                     }
@@ -63,27 +68,32 @@ function ProjectManager() {
                     setError(new Error("Unknown"));
                 }
             } finally {
-                setLoading(false);
+                setTasksLoading(false);
             }
         }
 
         fetchTasks();
-    }, []);
+    }, [params.projectId]);
 
     // console.log(tasks);
 
 
-    if (loading) return <p>Loading...</p>    
+    {if (projectLoading || tasksLoading) return <p>Loading...</p>} 
     if (error) return <p>Could not load project</p>
 
 
-    const projectTasks = tasks?.filter(t => t.projectId === params.projectId);
-    console.log(projectTasks);
+    // const projectTasks = tasks?.filter(t => t.projectId === params.projectId);
+    console.log(tasks);
 
-    const completedTaskList = projectTasks?.filter(task => task.status == "complete");
-    const activeTaskList = projectTasks?.filter(task => task.status == "active");
-    const overdueTaskList = projectTasks?.filter(task => task.status == "overdue");
-    const pendingTaskList = projectTasks?.filter(task => task.status == "pending");
+    // const completedTaskList = projectTasks?.filter(task => task.status == "complete");
+    // const activeTaskList = projectTasks?.filter(task => task.status == "active");
+    // const overdueTaskList = projectTasks?.filter(task => task.status == "overdue");
+    // const pendingTaskList = projectTasks?.filter(task => task.status == "pending");
+
+    const completedTaskList = tasks?.filter(task => task.status == "complete");
+    const activeTaskList = tasks?.filter(task => task.status == "active");
+    const overdueTaskList = tasks?.filter(task => task.status == "overdue");
+    const pendingTaskList = tasks?.filter(task => task.status == "pending");
 
     return (
         <>
@@ -102,7 +112,7 @@ function ProjectManager() {
                 
                 <section className="flex items-start gap-6 overflow-y-auto scrollbar-thin">                
                     <TaskStatusBoard
-                        title="Completed"
+                        title="Completedo"
                         description="No completed tasks"
                         linkText="+ Click here to add"
                         tasks={completedTaskList}

@@ -38,8 +38,8 @@ function Dashboard() {
 
 
             
-            <main className="flex flex-1 gap-2 overflow-hidden"> 
-                    <aside className="flex flex-col justify-between bg-brand-secondary text-white min-w-[200px] text-lg font-light rounded-tr-4xl">
+            <main className="flex flex-1 gap-2 overflow-hidden">
+                    <aside className="flex flex-col justify-between bg-dark-gray text-white min-w-[200px] text-lg font-light rounded-tr-4xl">
                         <div className="flex flex-col">
                             <Link to="" className="pt-4 pl-4 space-y-12 font-medium">Title</Link>
                             <DashboardNavLink href={`/projects/${params.projectId}`} icon={BlocksIcon} label="Manager" />
@@ -53,7 +53,7 @@ function Dashboard() {
                             <DropdownMenu>
                                 <DropdownMenuTrigger className="flex items-center gap-2 text-sm text-white bg-transparent hover:bg-transparent rounded-md px-4 font-medium focus:outline-none">
                                     Switch project
-                                    <ArrowRightLeftIcon className="w-8 h-8 bg-brand-primary text-secondary p-2 rounded-sm" />
+                                    <ArrowRightLeftIcon className="w-8 h-8 bg-brand-primary text-dark-gray p-2 rounded-sm" />
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent className="bg-background ml-4">
                                     {projects.map(p => <DropdownMenuItem key={p.id}><Link to={`/projects/${p.id}`}>{p.title}</Link></DropdownMenuItem>)}

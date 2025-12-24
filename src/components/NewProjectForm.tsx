@@ -3,9 +3,8 @@ import { Controller, useForm } from "react-hook-form";
 import * as z from "zod";
 import { toast, Toaster } from "sonner";
 import { Input } from "./ui/input";
-import { projectTypes } from "@/data/projectTypes";
-import { projects } from "@/data/projects";
-import type { Project } from "@/Types";
+import { projectCategories } from "@/data/projectCategories";
+import { toLocalDateOnly } from "@/utils/date"
 import {
     Field,
     FieldDescription,
@@ -33,6 +32,10 @@ import { Button } from "./ui/button";
 import { Calendar28 } from "./DatePicker";
 import MultiFileUpload from "./MultiFileUpload";
 import { useNavigate } from "react-router-dom";
+import React, { useState } from "react";
+import axios from "axios";
+import type { CreateProjectRequest } from "@/Types/createProjectRequest";
+import type { Project } from "@/Types/project";
 
 const formSchema = z.object({
     // Required fields
@@ -40,15 +43,12 @@ const formSchema = z.object({
         .string()
         .min(5, "Project title must be at least 5 characters.")
         .max(64, "Project title must be at most 64 characters."),
-    type: z
-        .string()
-        .nonempty("Please select a type."),
     category: z
-        .string()
-        .nonempty("Please select a category"),
+        .string("Please select a category")
+        .nonempty("Please lect a category"),
     tags: z
-        .string()
-        .nonempty("Please add tags"),
+        .array(z.string().min(2))
+        .min(1, "Add at least one tag"),
     startDate: z
         .date()
         .nullable(),
@@ -60,14 +60,14 @@ const formSchema = z.object({
         .min(20, "Description must be at least 20 characters")
         .max(2000, "Description must be at most 2000 characters"),
     priority: z
-        .string()
-        .nonempty("Please select priority"),   
+        .enum(["standard", "high", "urgent"], {
+            error: "Please select priority"
+        }),  
     
     // Optional fields
     budget: z
         .string()
-        .optional(),
-    
+        .optional(),    
 });
 
 
@@ -76,73 +76,80 @@ function NewProjectForm() {
     const today = new Date();
     const tomorrow = new Date(today);
     tomorrow.setDate(today.getDate() + 1); // add 1 day
+    
+    type SubmitIntent = "post" | "find";
+    const [submitIntent, setSubmitIntent] = useState<SubmitIntent>("post");    
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
             title: "",
-            type: "",
             description: "",
             startDate: today,
             endDate: tomorrow,
         },
     });
 
-    function OnSubmit() {
-        const newProject: Project =  {
-            id: String(Math.round(Math.random() * 100000)),
-            projectCode: "",
-            title: form.getValues("title"),
-            description: form.getValues("description"),
-            type: form.getValues("type"),
-            category: form.getValues("category"),
-            tags: form.getValues("tags"),
-            createdAt: new Date().toLocaleDateString(),
-            updatedAt: new Date().toLocaleDateString(),
-            startDate: form.getValues("startDate")?.toLocaleDateString(),
-            dueDate: form.getValues("endDate")?.toLocaleDateString(),
-            completedAt: "",
-            status: "pending",
-            progress: 12,
-            // priority: form.getValues("priority"),
-            priority: "standard",
-            userId: "",
-            allocatIds: [],
-            tasksCount: 0,
-            messagesCount: 0,
-            lastActivity: new Date().toLocaleDateString(),
+    const {isSubmitting} = form.formState;
+
+    async function OnSubmit(values: z.infer<typeof formSchema>) {
+        const payload: CreateProjectRequest =  {
+            title: values.title,
+            description: values.description,
+            category: values.category,
+            tags: values.tags,
+            startDate: toLocalDateOnly(values.startDate ?? new Date()),
+            dueDate: toLocalDateOnly(values.endDate ?? new Date()),
+            priority: values.priority,
             isPublic: false,
             allowBids: false,
-            budget: Number(form.getValues("budget")),
-            currency: "USD",
-            attachments: [],
-            tasks: [],
-        }
+            budget: Number(values.budget ?? 0),
+            currency: "USD"
 
-        console.log(newProject);
-        projects.push(newProject);
+        };
 
-        console.log("Submitted");
-        toast.success("Project has been created", {
-          description: "Sunday, December 03, 2023 at 9:00 AM",
-          position: "top-center",
-          style: { color: "#303030"}          
-        });
-        
-        if (projects.findIndex(project => project.id === newProject.id)) {
-            return navigate(`/projects/${newProject.id}/allocats/find`);
-        }
+        console.log(payload);
+        try {
+            const response = await axios.post<Project>(
+                "http://localhost:5206/projects", payload
+            );
+            
+            const createdProject = response.data;
+
+            toast.success("Project has been created", {
+                description: new Date().toLocaleDateString(),
+                position: "top-center",
+                style: { color: "#303030"}
+                 
+            });
+
+            console.log("Submitted");            
+
+            if (submitIntent === "find") {
+                navigate(`/projects/${createdProject.id}/allocats/find`);
+            } else {
+                navigate("/projects");
+            }   
+
+        } catch(e) {
+            console.log(e);
+            toast.error("Failed to create project");                  
+        };          
     }
 
-    const selectedType = form.watch("type") as keyof typeof projectTypes;
-    
     return (
         <>
         <Toaster />
             <form
                 id="new-project"
-                onSubmit={form.handleSubmit(OnSubmit)}
-                className="flex gap-8"
+                onSubmit={form.handleSubmit(
+                    OnSubmit,
+                    errors => {
+                    console.log("FORM ERRORS:", errors);
+                    }
+                )}
+                className=""
+                
             >
                 <FieldGroup>
                     <Controller
@@ -150,7 +157,9 @@ function NewProjectForm() {
                         control={form.control}
                         render={({field, fieldState}) => (
                             <Field data-invalid={fieldState.invalid}>
-                                <FieldLabel htmlFor="title" className="text-muted-foreground font-semibold">Title</FieldLabel>
+                                <FieldLabel htmlFor="title" className="text-muted-foreground font-semibold">
+                                    Title*
+                                </FieldLabel>
                                 <Input
                                     {...field}
                                     name="title"
@@ -167,121 +176,74 @@ function NewProjectForm() {
                         )}
                     />
                     <Controller
-                        name="type"
+                        name="category"
                         control={form.control}
                         render={({field, fieldState }) => (
                             <Field data-invalid={fieldState.invalid}>
-                                <FieldLabel htmlFor="type" className="text-muted-foreground font-semibold">Type</FieldLabel>
+                                <FieldLabel htmlFor="category" className="text-muted-foreground font-semibold">
+                                    Category*
+                                </FieldLabel>
                                 <Select
-                                    name="type"
+                                    name="category"
                                     onValueChange={field.onChange}
                                     value={field.value}
                                 >                                 
                                     <SelectTrigger
-                                        name="type"
-                                        id="type"
+                                        name="category"
+                                        id="category"
                                         className={cn(
                                             "w-full  bg-input border-none transition-colors duration-300 rounded-full",
                                             fieldState.invalid && "ring-1 ring-destructive"
                                         )}
                                     >
-                                        <SelectValue placeholder="Select type" />
+                                        <SelectValue placeholder="Select category" />
                                     </SelectTrigger>
                                     <SelectContent className="bg-background">
                                         <SelectGroup>
-                                        {/* <SelectLabel>Project type</SelectLabel> */}
-                                        {Object.keys(projectTypes).map(type =>
+                                        {/* <SelectLabel>Project category</SelectLabel> */}
+                                        {projectCategories.map(category =>
                                             <SelectItem
-                                                key={type}
-                                                value={type}
+                                                key={category}
+                                                value={category}
                                                 className="focus:bg-input"
                                             >
-                                                {type}
+                                                {category}
                                             </SelectItem>
                                         )}
                                         </SelectGroup>
                                     </SelectContent>
                                 </Select>
-                                {fieldState.error && (
-                                    <p className="text-destructive text-xs mt-1">
-                                        {fieldState.error.message}
-                                    </p>
+                                {fieldState.invalid && (
+                                    <FieldError errors={[fieldState.error]}/>
                                 )}                            
                             </Field> 
                         )}                
                     />
-                    {/* CATEGORY SELECT */}
-                    <Controller
-                        name="category"
-                        control={form.control}
-                        render={({ field, fieldState }) => {
-                        const availableCategories = selectedType
-                            ? projectTypes[selectedType]
-                            : []
-
-                        return (
-                            <Field data-invalid={fieldState.invalid}>
-                            <FieldLabel htmlFor="category" className="text-muted-foreground font-semibold">Category</FieldLabel>
-
-                            <Select
-                                name="category"
-                                onValueChange={field.onChange}
-                                value={field.value}
-                                disabled={!selectedType} // disable until type is chosen
-                            >
-                                <SelectTrigger
-                                name="category"
-                                id="category"
-                                className={cn(
-                                    "w-full  bg-input border-none transition-colors duration-300",
-                                    fieldState.invalid && "ring-1 ring-destructive"
-                                )}
-                                >
-                                <SelectValue placeholder="Select category" />
-                                </SelectTrigger>
-
-                                <SelectContent className="bg-background">
-                                <SelectGroup>
-                                    {availableCategories.length > 0 ? (
-                                    availableCategories.map((category: string) => (
-                                        <SelectItem
-                                            key={category}
-                                            value={category}
-                                            className="focus:bg-input"
-                                        >
-                                            {category}
-                                        </SelectItem>
-                                    ))
-                                    ) : (
-                                    <p className="px-2 text-xs text-muted-foreground">
-                                        Select a type first
-                                    </p>
-                                    )}
-                                </SelectGroup>
-                                </SelectContent>
-                            </Select>
-
-                            {fieldState.error && (
-                                <p className="text-destructive text-xs mt-1">
-                                {fieldState.error.message}
-                                </p>
-                            )}
-                            </Field>
-                        )}}
-                    />
+                    {/* TAGS SELECT */}                    
                     <Controller
                         name="tags"
                         control={form.control}
-                        render={({field}) => (
-                            <span className="flex items-center">
-                            <Input
-                                name="tags"
-                                id="tags"
-                                placeholder="Add tags. e.g. Capenter, Repair, Tutor, Nanny"
-                                className="rounded-none rounded-l-full"
+                        defaultValue={[]}
+                        render={({ field, fieldState }) => (
+                            <Field data-invalid={fieldState.invalid}>
+                            <FieldLabel className="text-muted-foreground font-semibold">
+                                Tags*
+                            </FieldLabel>
+
+                            <TagsInput
+                                value={field.value}
+                                onChange={field.onChange}
+                                disabled={!form.watch("category")}
                             />
-                            <Button className="w-36 rounded-none rounded-r-full">Add</Button>
-                            </span>
+
+                            <FieldDescription>
+                                Add tags to improve search (e.g. cleaning, plumbing, repair)
+                            </FieldDescription>
+
+                            {fieldState.invalid && (
+                                <FieldError errors={[fieldState.error]} />
+                            )}
+                            </Field>
                         )}
                     />
 
@@ -312,23 +274,33 @@ function NewProjectForm() {
                         />
                     </span>
                     <span className="flex items-center gap-4">
-                    <Field>
-                        <FieldLabel htmlFor="priority-field" className="text-muted-foreground font-semibold">Priority</FieldLabel>
-                        <div id="priority-field" className="flex gap-4">
-                            <span className="flex items-center gap-2">
-                                <input type="radio" name="priority" id="standard" value="standard" defaultChecked />
-                                <FieldLabel htmlFor="standard">Standard</FieldLabel>
-                            </span>           
-                            <span className="flex items-center gap-2">
-                                <input type="radio" name="priority" id="high" value="high"/>
-                                <FieldLabel htmlFor="high">High</FieldLabel>
-                            </span>
-                            <span className="flex items-center gap-2">
-                                <input type="radio" name="priority" id="urgent" value="urgent" />
-                                <FieldLabel htmlFor="urgent">Urgent</FieldLabel>
-                            </span>                            
-                        </div>
-                    </Field>
+                    <Controller
+                        name="priority"
+                        control={form.control}
+                        defaultValue="standard"
+                        render={({ field }) => (
+                            <Field>
+                            <FieldLabel className="text-muted-foreground font-semibold">
+                                Priority*
+                            </FieldLabel>
+
+                            <div className="flex gap-4">
+                                {["standard", "high", "urgent"].map(p => (
+                                <label key={p} className="flex items-center gap-2">
+                                    <input
+                                    type="radio"
+                                    value={p}
+                                    checked={field.value === p}
+                                    onChange={() => field.onChange(p)}
+                                    />
+                                    {p.charAt(0).toUpperCase() + p.slice(1)}
+                                </label>
+                                ))}
+                            </div>
+                            </Field>
+                        )}
+                    />
+
                     <Controller
                         name="budget"
                         control={form.control}
@@ -361,7 +333,9 @@ function NewProjectForm() {
                         control={form.control}
                         render={({field, fieldState}) => (
                             <Field data-invalid={fieldState.invalid}>
-                                <FieldLabel htmlFor="description" className="text-muted-foreground font-semibold">Description</FieldLabel>
+                                <FieldLabel htmlFor="description" className="text-muted-foreground font-semibold">
+                                    Description*
+                                </FieldLabel>
                                 <InputGroup>
                                     <InputGroupTextarea
                                         {...field}
@@ -387,31 +361,85 @@ function NewProjectForm() {
                         )}
                     />
                 </FieldGroup>
-            </form>
-            <Field orientation="horizontal" className="flex items-center justify-between pt-4 mt-8">
-                <Button type="button" variant="link" onClick={() => form.reset()} className="text-foreground ">
-                    Reset
-                </Button>
-                <span className="flex items-center gap-4">
-                <Button
-                    type="submit"
-                    form="new-project"
-                    variant="outline"
-                    className=""
-                >
-                    Find allocats
-                </Button>
-                <Button
-                    type="submit"
-                    form="new-project"
-                    className=" text-background"
-                >
-                    Post project
-                </Button>
-                </span>
-            </Field>
+                <div className="flex justify-between mt-8">
+                    <Button type="reset" variant="link" onClick={() => form.reset()}>
+                        Reset
+                    </Button>
+
+                    <div className="flex gap-4">
+                    <Button
+                        type="submit"
+                        onClick={() => setSubmitIntent("find")}
+                        disabled={isSubmitting}
+                        variant="outline"
+                    >
+                        Find allocats
+                    </Button>
+                    <Button
+                        type="submit"
+                        onClick={() => setSubmitIntent("post")}
+                        disabled={isSubmitting}
+                    >
+                        Post project
+                    </Button>
+                    </div>
+                </div>
+            </form>            
         </>        
     );
+}
+
+function TagsInput({
+  value,
+  onChange,
+  disabled,
+}: {
+  value: string[];
+  onChange: (value: string[]) => void;
+  disabled?: boolean;
+}) {
+  const [input, setInput] = React.useState("");
+
+  function addTag(tag: string) {
+    const clean = tag.trim().toLowerCase();
+    if (!clean || value.includes(clean)) return;
+    onChange([...value, clean]);    
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "Enter" || e.key === ",") {
+      e.preventDefault();
+      addTag(input);
+      setInput("");
+    }
+  }
+
+  function removeTag(tag: string) {
+    onChange(value.filter(t => t !== tag));
+  }
+
+  return (
+    <div className="flex flex-wrap gap-2 bg-transparent p-2">
+      {value.map(tag => (
+        <span
+          key={tag}
+          className="flex items-center gap-1 rounded-sm bg-muted px-3 py-1 text-xs"
+        >
+          {tag}
+          <button onClick={() => removeTag(tag)}>×</button>
+        </span>
+      ))}
+
+      <Input
+        value={input}
+        onChange={e => setInput(e.target.value)}
+        onKeyDown={handleKeyDown}
+        placeholder="Type tag and press Enter"
+        disabled={disabled}
+        className="border-none bg-transparent w-50"
+      />
+    </div>
+  );
 }
 
 export default NewProjectForm;

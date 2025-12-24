@@ -5,7 +5,7 @@ export type Project = {
     description: string;
     type?: string; // e.g., "home service", "digital", etc.
     category: string; // e.g., "plumbing", "babysitting", etc.
-    tags: [];
+    tags: string[];
     createdAt: string;
     updatedAt: string;
     startDate?: string;
