@@ -81,14 +81,8 @@ function ProjectManager() {
     {if (projectLoading || tasksLoading) return <p>Loading...</p>} 
     if (error) return <p>Could not load project</p>
 
-
-    // const projectTasks = tasks?.filter(t => t.projectId === params.projectId);
     console.log(tasks);
 
-    // const completedTaskList = projectTasks?.filter(task => task.status == "complete");
-    // const activeTaskList = projectTasks?.filter(task => task.status == "active");
-    // const overdueTaskList = projectTasks?.filter(task => task.status == "overdue");
-    // const pendingTaskList = projectTasks?.filter(task => task.status == "pending");
 
     const completedTaskList = tasks?.filter(task => task.status == "complete");
     const activeTaskList = tasks?.filter(task => task.status == "active");
@@ -106,7 +100,19 @@ function ProjectManager() {
                         <Progress value={project?.progress} className="w-sm h-3"/>
                     </div>
                     <div>
-                        <Link to="/projects/new"><Button className={"text-xs " }><PlusIcon />New project</Button></Link>
+                        <Link
+                            to="/projects/new"
+                        >
+                            <Button variant="outline" className={"text-xs shadow-none" }>
+                            <PlusIcon />Create new project</Button>
+                        </Link>
+                        {/* <Link
+                            to="/projects/new"
+                            className="flex items-center gap-1 text-foreground/80 text-sm font-medium"
+                        >
+                                <PlusIcon size={16} />
+                                New project
+                        </Link> */}
                     </div>
                 </section>
                 

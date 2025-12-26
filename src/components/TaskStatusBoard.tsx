@@ -10,6 +10,7 @@ type Props = {
 }
 
 function TaskStatusBoard({title, description, linkText, tasks}: Props) {
+    
     return (               
         <section className="flex flex-col mt-8 min-h-60 max-h-full min-w-86 max-w-96 bg-muted rounded-md p-4">
             <h3 className="font-semibold text-xs text-foreground/80 pb-2">{title}</h3> 
@@ -23,13 +24,11 @@ function TaskStatusBoard({title, description, linkText, tasks}: Props) {
                 </div>) : (
                 <section className="flex-1 overflow-y-auto max-h-full scrollbar-thin">
                     {tasks?.map(task => (
-                        // <div key={task.id} className="bg-background/50 my-2 p-2 shadow-sm rounded-[6px]">
-                        <div key={task.id} className="bg-linear-to-b from-background/50 to-background my-2 p-2 shadow-sm rounded-[6px]">
+                        <div key={task.id} className="bg-linear-to-br from-muted-foreground/15 to-muted-foreground/8 my-2 p-2 shadow-none border border-foreground/10 rounded-[6px]">
                             <div className="flex items-center justify-between">
                                 <div className="flex flex-col space-y-2">
                                     <h4 className="font-medium text-xs">{task.title}</h4>
                                     <span className="flex gap-1 items-center text-xs text-muted-foreground">
-                                    {/* <span className="flex gap-1 items-center text-xs text-muted"> */}
                                         <CalendarDaysIcon size={14}/>
                                         Due {task.dueDate
                                             ? (` ${new Date(task.dueDate).toDateString()}`)

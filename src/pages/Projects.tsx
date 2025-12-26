@@ -85,7 +85,7 @@ function Projects() {
                             <div className="flex items-center">
                                 <Link to="/projects/new">
                                     <Button variant="outline" className="text-xs  shadow-none">
-                                        <PlusIcon />New project
+                                        <PlusIcon />Create new project
                                     </Button>
                                 </Link>
                                 {/* <Link to="/projects/new"><Button className="text-xs bg-linear-to-r from-primary to-accent-2/60   shadow-none"><PlusIcon />New project</Button></Link> */}
