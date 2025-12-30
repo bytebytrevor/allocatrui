@@ -32,6 +32,8 @@ function ProjectManager() {
                     { withCredentials: true }
                 );
 
+                console.log(response.data);
+
                 setProject(response.data);
             } catch (err: unknown) {
                 if (err instanceof Error) {

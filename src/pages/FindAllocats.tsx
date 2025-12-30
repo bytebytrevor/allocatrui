@@ -4,13 +4,43 @@ import { Label } from "@/components/ui/label";
 import { allocats } from "@/data/allocats";
 import { Slider } from "@/components/ui/slider";
 import MinimalNavMenu from "@/components/MinimalNavMenu";
-import { projects } from "@/data/projects";
 import { useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import type { Project } from "@/Types/project";
+import axios from "axios";
 
 function FindAllocats() {
+    const [project, setProject] = useState<Project>();
+    const [error, setError] = useState<Error | null>(null);
+
     const params = useParams();
-    params.projectId;
-    const project = projects.find(p => p.id == params.projectId);
+
+    // Fetch project by id
+    useEffect(() => {
+        if (!params.projectId) return;
+
+        async function fetchProject() {
+            try {
+                const response = await axios.get<Project>(
+                    `${import.meta.env.VITE_API_URL}/projects/${params.projectId}`,
+                    { withCredentials: true }
+                );
+
+                setProject(response.data);
+            } catch (err: unknown) {
+                if (err instanceof Error) {
+                    setError(err);
+                } else {
+                    setError(new Error("Unknown error"));
+                }
+            }
+        }
+
+        fetchProject();
+    }, []);
+
+    if (error)
+        return <p>Error</p>
 
     return (        
         <>

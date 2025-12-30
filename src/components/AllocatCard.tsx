@@ -1,9 +1,12 @@
 import { CalendarPlus2Icon, CircleCheckBigIcon, MapPinIcon, ShieldCheckIcon, StarIcon } from "lucide-react";
 import { Button } from "./ui/button"; 
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import type { Allocat, Project } from "@/Types";
+import { avatarFallback } from "@/utils/avatarFallback";
+import type { Project } from "../Types/project";
+import type { Allocat } from "../Types/allocat";
 import drill from "@/assets/drill-square.svg"
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 type Props = {
     allocat: Allocat;
@@ -13,20 +16,22 @@ type Props = {
 export function AllocatCardGrid({ allocat, project }: Props) {
     const navigate = useNavigate();
 
-    function avatarFallback() {
-        const fullname = allocat.fullName.split(' ');
-        return (
-            fullname.length > 1
-            ? `${fullname[0].charAt(0)}${fullname[1].charAt(0)}`
-            : `${fullname[0].charAt(0)}`
-        );
-    }
+    async function handleInvite() {
+        if (!project)
+            return;
+        console.log(project);
 
-    function handleInvite() {
-        if (project) {
-            project.allocatIds.push(allocat.id);
+        try {
+            await axios.put<Allocat>(
+                `http://localhost:5206/projects/${project.id}/allocats/${allocat.id}`,
+            );
+
+            console.log(project);
+
             return navigate("/projects");
-        }
+        } catch (err) {
+            console.log(err);
+        }        
     }
 
     return (
@@ -37,7 +42,7 @@ export function AllocatCardGrid({ allocat, project }: Props) {
                         {/* <AvatarImage src="https://github.com/shadcn.png" /> */}
                         <AvatarImage src={drill} />
                         <AvatarFallback className={`text-background bg-muted-foreground`}>
-                            {avatarFallback()}
+                            {avatarFallback(allocat)}
                         </AvatarFallback>
                     </Avatar>
                     <span className="flex items-center gap-1 bg-accent-2 text-xs text-white py-1 px-2 font-semibold rounded-xl">

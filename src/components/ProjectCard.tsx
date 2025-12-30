@@ -21,6 +21,10 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "./ui/textarea";
 import { Badge } from "./ui/badge";
 import { Calendar28 } from "./DatePicker";
+import { avatarFallback } from "@/utils/avatarFallback";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { allocats } from "@/data/allocats";
+import type { Allocat } from "@/Types/allocat";
 
 const MotionLink = motion.create(Link);
 
@@ -157,6 +161,14 @@ type DialogProps = {
 
 function ProjectDetailsDialog({project, trigger}: DialogProps) {
     const dotColor = statusColor[project.status] || statusColor.onhold;
+    
+    const projectAllocats = project.allocatIds.map(
+        allocatId => allocats.find(
+            allocat => allocat.id === allocatId
+        )
+    );
+
+    console.log(projectAllocats.map(a => a?.fullName));
 
     return(
         <Dialog>
@@ -224,7 +236,29 @@ function ProjectDetailsDialog({project, trigger}: DialogProps) {
                         <span className="text-sm">{project.projectCode}</span>
                     </span>
                 </div>
-                
+
+                <h3 className="text-muted-foreground font-semibold border-t pt-4">Members</h3>
+                {projectAllocats.map(allocat =>            
+                    <div key={allocat?.id} className="flex items-center justify-between gap-2 m-0 rounded-sm">  
+                        <span className="flex items-center gap-2 m-0 rounded-sm">              
+                            <Avatar className="w-10 h-10 border-4 m-0" >
+                                <AvatarImage src="https://github.com/shadcn.png" />
+                                <AvatarFallback className={`text-background bg-muted-foreground`}>
+                                    {avatarFallback(allocat)}
+                                </AvatarFallback>
+                            </Avatar>
+                            {allocat?.fullName}
+                        </span>
+                        <span>
+                            <Link
+                                to=""
+                            >
+                                {/* <Button variant="outline" className="shadow-none">View profile</Button> */}
+                                <span className="text-sm text-accent-3 font-medium">View profile</span>
+                            </Link>
+                        </span>
+                    </div>
+                )}                
                 
                 <DialogFooter>
                     <DialogClose asChild>
