@@ -15,6 +15,9 @@ import CreateProject from "./pages/CreateProject";
 import FindAllocats from "./pages/FindAllocats";
 import { useEffect } from "react";
 import "./App.css";
+import Register from "./pages/Register";
+import { AuthProvider } from "./auth/AuthContext";
+import { RequireAuth } from "./auth/RequireAuth";
 
 function App() {
   const theme = localStorage.getItem("theme") || "light";
@@ -36,40 +39,76 @@ function App() {
       path: "/",
       Component: LandingPage,
       errorElement: <NotFoundErrorPage />
-    },    
+    },
+    {      
+      path: "/register", Component: Register,
+    },
+        
     {
       path: "/allocats", Component: AllocatsSearch,
     },        
     {
       path: "/allocats/:profileId", Component: AllocatProfile,
     },    
-    {
-      path: "/projects",
-      Component: Projects,
-    },
-    {
-      path: "/projects/new", Component: CreateProject,
-    },
-    {
-      path: "/projects/:projectId/allocats/find", Component: FindAllocats,
-    },
-    {
-      path: "/projects/:projectId",
-      Component: Dashboard,
-      children: [
-        { index: true, Component: ProjectManager },
-        { path: "/projects/:projectId/calendar", Component: Calendar },
-        { path: "/projects/:projectId/messaging", Component: Messaging },
-        { path: "/projects/:projectId/analytics", Component: Analytics },
-        { path: "/projects/:projectId/favorites", Component: Favorites },
-        { path: "/projects/:projectId/transactions", Component: Transactions },
-      ]
-    }
-  ])
+    // {
+    //   path: "/projects",
+    //   Component: Projects,
+    // },
+    // {
+    //   path: "/projects/new", Component: CreateProject,
+    // },
+    // {
+    //   path: "/projects/:projectId/allocats/find", Component: FindAllocats,
+    // },
+    // {
+    //   path: "/projects/:projectId",
+    //   Component: Dashboard,
+    //   children: [
+    //     { index: true, Component: ProjectManager },
+    //     { path: "/projects/:projectId/calendar", Component: Calendar },
+    //     { path: "/projects/:projectId/messaging", Component: Messaging },
+    //     { path: "/projects/:projectId/analytics", Component: Analytics },
+    //     { path: "/projects/:projectId/favorites", Component: Favorites },
+    //     { path: "/projects/:projectId/transactions", Component: Transactions },
+    //   ]
+    // }
+    // 🔐 PROTECTED ROUTES
+  {
+    element: <RequireAuth />,
+    children: [
+      {
+        path: "/projects",
+        Component: Projects,
+      },
+      {
+        path: "/projects/new",
+        Component: CreateProject,
+      },
+      {
+        path: "/projects/:projectId/allocats/find",
+        Component: FindAllocats,
+      },
+      {
+        path: "/projects/:projectId",
+        Component: Dashboard,
+        children: [
+          { index: true, Component: ProjectManager },
+          { path: "calendar", Component: Calendar },
+          { path: "messaging", Component: Messaging },
+          { path: "analytics", Component: Analytics },
+          { path: "favorites", Component: Favorites },
+          { path: "transactions", Component: Transactions },
+        ],
+      },
+    ],
+  },
+  ]);
 
   return (
     <>
-      <RouterProvider router={router}/>
+      <AuthProvider>
+        <RouterProvider router={router}/>
+      </AuthProvider>
     </>
   );
 }
