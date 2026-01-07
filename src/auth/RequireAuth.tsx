@@ -4,7 +4,7 @@ import { useAuth } from "./useAuth";
 export function RequireAuth() {
   const { user, loading } = useAuth();
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return null; // or spinner
   if (!user) return <Navigate to="/login" replace />;
 
   return <Outlet />;

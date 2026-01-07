@@ -37,7 +37,7 @@ export default function Register() {
           <AllocatrLogo theme={theme} className="w-18" />
         </span>
 
-        <span className="flex flex-col gap-3">
+        {/* <span className="flex flex-col gap-3">
           <Label htmlFor="fullname">Fullname</Label>
           <Input
             id="fullname"
@@ -48,7 +48,7 @@ export default function Register() {
             required
             className="border-none"
           />
-        </span>
+        </span> */}
 
         <span className="flex flex-col gap-3">
           <Label htmlFor="email">Email</Label>
@@ -91,8 +91,7 @@ export default function Register() {
               Login
             </Link>
         </span>
-      </form>
-      
+      </form>      
     </div>
   );
 }

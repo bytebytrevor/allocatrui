@@ -18,6 +18,7 @@ import "./App.css";
 import Register from "./pages/Register";
 import { AuthProvider } from "./auth/AuthContext";
 import { RequireAuth } from "./auth/RequireAuth";
+import Login from "./pages/Login";
 
 function App() {
   const theme = localStorage.getItem("theme") || "light";
@@ -43,7 +44,9 @@ function App() {
     {      
       path: "/register", Component: Register,
     },
-        
+    {      
+      path: "/login", Component: Login,
+    },        
     {
       path: "/allocats", Component: AllocatsSearch,
     },        
@@ -73,35 +76,27 @@ function App() {
     //   ]
     // }
     // 🔐 PROTECTED ROUTES
-  {
-    element: <RequireAuth />,
-    children: [
-      {
-        path: "/projects",
-        Component: Projects,
-      },
-      {
-        path: "/projects/new",
-        Component: CreateProject,
-      },
-      {
-        path: "/projects/:projectId/allocats/find",
-        Component: FindAllocats,
-      },
-      {
-        path: "/projects/:projectId",
-        Component: Dashboard,
-        children: [
-          { index: true, Component: ProjectManager },
-          { path: "calendar", Component: Calendar },
-          { path: "messaging", Component: Messaging },
-          { path: "analytics", Component: Analytics },
-          { path: "favorites", Component: Favorites },
-          { path: "transactions", Component: Transactions },
-        ],
-      },
-    ],
-  },
+    {
+      path: "/projects",
+      element: <RequireAuth />,
+      children: [
+        { index: true, Component: Projects }, // /projects
+        { path: "new", Component: CreateProject }, // /projects/new
+        { path: ":projectId/allocats/find", Component: FindAllocats },
+        {
+          path: ":projectId",
+          Component: Dashboard,
+          children: [
+            { index: true, Component: ProjectManager },
+            { path: "calendar", Component: Calendar },
+            { path: "messaging", Component: Messaging },
+            { path: "analytics", Component: Analytics },
+            { path: "favorites", Component: Favorites },
+            { path: "transactions", Component: Transactions },
+          ],
+        },
+      ],
+    }
   ]);
 
   return (
