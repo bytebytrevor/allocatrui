@@ -30,11 +30,17 @@ export default function Register() {
   }
 
   return (
-    <div className="h-screen flex justify-center items-center">
-      <form className="container max-w-lg space-y-6 bg-muted pt-4 pb-8 px-8 rounded-sm shadow-lg/8" onSubmit={handleSubmit}>
-        <span className="flex items-center justify-between border-b pb-4">
-          <h1 className="text-lg font-bold">Create account</h1>
-          <AllocatrLogo theme={theme} className="w-18" />
+    <>
+    <header className="border-b py-4">
+      <div className="container mx-auto">
+        <AllocatrLogo theme={theme} className="w-24"/>
+      </div> 
+    </header>
+    
+    <div className="flex justify-center mt-16">
+      <form className="container max-w-lg space-y-6 pt-4 pb-8 px-8 rounded-sm" onSubmit={handleSubmit}>
+        <span className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold">Create account</h1>
         </span>
 
         {/* <span className="flex flex-col gap-3">
@@ -43,10 +49,10 @@ export default function Register() {
             id="fullname"
             type="fullname"
             value={email}
-            placeholder="Firstname Lastname"
+            placeholder="Fullname"
             onChange={e => setEmail(e.target.value)}
             required
-            className="border-none"
+            className="h-12 border-none px-4 shadow-none"
           />
         </span> */}
 
@@ -59,7 +65,7 @@ export default function Register() {
             placeholder="name@email.com"
             onChange={e => setEmail(e.target.value)}
             required
-            className="border-none"
+            className="h-12 border-none px-4 shadow-none"
           />
         </span>
 
@@ -72,11 +78,11 @@ export default function Register() {
             placeholder="Password"
             onChange={e => setPassword(e.target.value)}
             required
-            className="border-none"
+            className="h-12 border-none px-4 shadow-none"
           />
         </span>
 
-        <Button type="submit" disabled={loading} className="flex gap-2">
+        <Button type="submit" disabled={loading} className="flex gap-2 h-12 w-full">
           {loading && <Loader2 className="h-4 w-4 animate-spin" />}
           {loading ? "Creating account…" : "Create Account"}
         </Button>
@@ -93,5 +99,6 @@ export default function Register() {
         </span>
       </form>      
     </div>
+    </>
   );
 }
