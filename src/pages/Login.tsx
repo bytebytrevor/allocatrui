@@ -31,7 +31,7 @@ export default function Login() {
 
   return (
     <>
-      <header className="border-b py-4">
+      <header className="border-b py-2">
         <div className="container mx-auto">
           <AllocatrLogo theme={theme} className="w-24" />
         </div>
@@ -70,12 +70,22 @@ export default function Login() {
               required
               className="h-12 border-none px-4 shadow-none"
             />
+                <div className="pb-2">
+                <Link
+                    to=""
+                    className="font-semibold text-sm text-accent-3 "            
+                >
+                    Forgot Password?
+                </Link>
+            </div>
           </span>
+
+          
 
           <Button
             type="submit"
             disabled={loading}
-            className="flex gap-2 h-12 w-full"
+            className="flex h-12 w-full"
           >
             {loading && <Loader2 className="h-4 w-4 animate-spin" />}
             {loading ? "Signing in…" : "Login"}
@@ -83,8 +93,8 @@ export default function Login() {
 
           <span className="flex gap-2 text-sm text-muted-foreground">
             Don't have an account?
-            <Link to="/register" className="text-accent-3">
-              Create one
+            <Link to="/register" className="text-accent-3 font-medium">
+              Create account
             </Link>
           </span>
         </form>

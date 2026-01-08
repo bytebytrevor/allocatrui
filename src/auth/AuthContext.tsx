@@ -70,7 +70,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // 🔑 Rehydrate auth on reload
+  // Rehydrate auth on reload
   useEffect(() => {
     async function checkAuth() {
       try {
