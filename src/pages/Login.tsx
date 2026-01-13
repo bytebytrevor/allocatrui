@@ -31,7 +31,8 @@ export default function Login() {
 
   return (
     <>
-      <header className="border-b py-2">
+      <header className="border-b py-2 px-2">
+      {/* <header className="py-2"> */}
         <div className="container mx-auto">
           <AllocatrLogo theme={theme} className="w-24" />
         </div>

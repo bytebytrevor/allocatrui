@@ -197,6 +197,7 @@ function NewProjectForm() {
                   control={form.control}
                   render={({ field }) => (
                     <Calendar28
+                    id="startDate"
                       label="Start date"
                       value={field.value}
                       onChange={field.onChange}
@@ -208,6 +209,7 @@ function NewProjectForm() {
                   control={form.control}
                   render={({ field }) => (
                     <Calendar28
+                      id="endDate"
                       label="End date"
                       value={field.value}
                       onChange={field.onChange}
