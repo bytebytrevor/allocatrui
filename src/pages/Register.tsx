@@ -12,6 +12,7 @@ export default function Register() {
   const { register } = useAuth();
   const navigate = useNavigate();
 
+  const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -22,7 +23,7 @@ export default function Register() {
 
     try {
       setLoading(true);
-      await register(email, password);
+      await register(fullName, email, password);
       navigate("/projects");
     } finally {
       setLoading(false);
@@ -43,18 +44,18 @@ export default function Register() {
           <h1 className="text-2xl font-bold">Create account</h1>
         </span>
 
-        {/* <span className="flex flex-col gap-3">
-          <Label htmlFor="fullname">Fullname</Label>
+        <span className="flex flex-col gap-3">
+          <Label htmlFor="fullName">Full name</Label>
           <Input
-            id="fullname"
-            type="fullname"
-            value={email}
-            placeholder="Fullname"
-            onChange={e => setEmail(e.target.value)}
+            id="fullName"
+            type="text"
+            value={fullName}
+            placeholder="Your full name"
+            onChange={e => setFullName(e.target.value)}
             required
             className="h-12 border-none px-4 shadow-none"
           />
-        </span> */}
+        </span>
 
         <span className="flex flex-col gap-3">
           <Label htmlFor="email">Email</Label>
