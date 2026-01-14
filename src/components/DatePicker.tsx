@@ -12,12 +12,14 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import { cn } from "@/lib/utils"
 
 type Props = {
     id: string;
     label?: string;
     value: Date | null
     onChange?: (date: Date | undefined) => void
+    className?: string;
 }
 
 function formatDate(date: Date | undefined) {
@@ -39,7 +41,7 @@ function isValidDate(date: Date | undefined) {
   return !isNaN(date.getTime())
 }
 
-export function Calendar28({id, label, value, onChange}: Props) {
+export function Calendar28({id, label, value, onChange, className}: Props) {
   const [open, setOpen] = React.useState(false)
   const [month, setMonth] = React.useState<Date | undefined>(value ?? undefined)
 
@@ -61,7 +63,7 @@ export function Calendar28({id, label, value, onChange}: Props) {
           id={id}
           value={formatDate(value ?? undefined)}
           placeholder={currentDate.toLocaleDateString("en-US", {day: "2-digit", month: "long", year: "numeric"})}
-          className="border-none pr-10 "
+          className={cn ("border-none pr-10", className)}
           onChange={(e) => {
             const date = new Date(e.target.value)
             if (!isNaN(date.getTime()) && onChange) {

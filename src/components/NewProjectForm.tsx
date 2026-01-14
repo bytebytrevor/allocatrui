@@ -194,7 +194,7 @@ function NewProjectForm() {
           {/* ================= STEP 2 ================= */}
           {step === 2 && (
             <>
-              <span className="flex gap-4">
+              <span className="flex gap-4 w-full">
                 <Controller
                   name="startDate"
                   control={form.control}
@@ -204,6 +204,7 @@ function NewProjectForm() {
                       label="Start date"
                       value={field.value}
                       onChange={field.onChange}
+                      className="h-12 shadow-none"
                     />
                   )}
                 />
@@ -216,6 +217,7 @@ function NewProjectForm() {
                       label="End date"
                       value={field.value}
                       onChange={field.onChange}
+                      className="h-12 shadow-none"
                     />
                   )}
                 />
@@ -256,7 +258,7 @@ function NewProjectForm() {
                     <Input
                       type="number"
                       {...field}
-                      className="border-none bg-input"
+                      className="h-12 border-none bg-input shadow-none"
                     />
                   </Field>
                 )}
@@ -320,6 +322,7 @@ function NewProjectForm() {
                 variant="outline"
                 disabled={isSubmitting}
                 onClick={() => setSubmitIntent("find")}
+                className="h-12 shadow-none"
               >
                 Find allocats
               </Button>
@@ -327,6 +330,7 @@ function NewProjectForm() {
                 type="submit"
                 disabled={isSubmitting}
                 onClick={() => setSubmitIntent("post")}
+                className="h-12"
               >
                 Post project
               </Button>
