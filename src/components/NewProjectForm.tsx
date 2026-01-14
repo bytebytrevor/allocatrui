@@ -125,7 +125,10 @@ function NewProjectForm() {
                     <FieldLabel className="text-muted-foreground font-semibold">
                       Title*
                     </FieldLabel>
-                    <Input {...field} className="border-none bg-input" />
+                    <Input {...field}
+                      className="h-12 border-none bg-input shadow-none"
+                      placeholder="Project title"
+                    />
                     <FieldError errors={[fieldState.error]} />
                   </Field>
                 )}
@@ -143,7 +146,7 @@ function NewProjectForm() {
                     <Select value={field.value} onValueChange={field.onChange}>
                       <SelectTrigger
                         className={cn(
-                          "w-full bg-input border-none rounded-full",
+                          "w-full bg-input border-none rounded-full py-6 shadow-none",
                           fieldState.invalid && "ring-1 ring-destructive"
                         )}
                       >
@@ -303,7 +306,11 @@ function NewProjectForm() {
           )}
 
           {step < 3 ? (
-            <Button type="button" onClick={() => setStep(step + 1)}>
+            <Button
+              type="button"
+              onClick={() => setStep(step + 1)}
+              className="h-12 px-12"
+            >
               Next
             </Button>
           ) : (
@@ -378,7 +385,7 @@ function TagsInput({
         onKeyDown={handleKeyDown}
         placeholder="Type tag and press Enter"
         disabled={disabled}
-        className="border-none bg-transparent w-50"
+        className="border-none bg-transparent w-50 h-12"
       />
     </div>
   );

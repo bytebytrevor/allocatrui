@@ -11,17 +11,22 @@ function CreateProject() {
                     <MinimalNavMenu />
                 </div>
             </header>
-            <main className="w-full px-2 py-8">
-                <div className="container flex gap-8 w-6xl mx-auto pb-4 rounded-4xl">
-                    <div className="flex flex-col items-center w- text-center justify-start pr-8 border-r">
-                        <img src={robocat} alt="" />
-                        <h2 className="text-2xl text-primary font-bold my-4">Create New Project</h2>
-                        <p className="text-sm text-muted-foreground w-sm py-4 leading-[1rem]">Start by defining your project details, setting goals, and assigning tasks to the right experts.</p>
-                    </div>
-                    <div className="w-full">
-                        <NewProjectForm />
-                    </div>
-                </div>                
+            <main className="container flex flex-col items-center mx-auto px-2 py-8">
+                    <div className="w-2xl">
+                        <img
+                        className="bg-input w-24 rounded-sm"
+                            src={robocat}
+                            alt=""
+                        />
+                            <span>
+                                <h2 className="text-2xl text-primary font-bold my-4">Create New Project</h2>
+                                <p className="text-sm text-muted-foreground w-sm py-4 leading-[1rem]">Start by defining your project details, setting goals, and assigning tasks to the right experts.</p>
+                            </span>
+                    
+                        <div>
+                            <NewProjectForm />
+                        </div>
+                    </div>               
             </main>
         </>
     );
