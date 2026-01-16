@@ -24,7 +24,7 @@ function DashboardMainNav({children}: Props) {
         localStorage.getItem("theme") || "dark"
     );
 
-    const { logout } = useAuth();
+    const { user, logout } = useAuth();
     const navigate = useNavigate(); 
 
     useEffect(() => {
@@ -75,17 +75,25 @@ function DashboardMainNav({children}: Props) {
                 <DropdownMenu>
                     <DropdownMenuTrigger className="w-6 h-6">
                         <Avatar className="w-6 h-6 rounded-full ring-0 hover:ring-3 ring-muted-foreground/20 transition-all duration-300">
-                            <AvatarImage src="https://github.com/shadcn.png" className="rounded-full"/>
-                            {/* <AvatarImage src={drill} /> */}
-                            <AvatarFallback className={`text-background bg-muted-foreground`}>
-                                A
-                            </AvatarFallback>
+                            {user?.avatarUrl ? (
+                                <AvatarImage src={user.avatarUrl} />
+                            ) : (
+                                <AvatarFallback>{user?.fullName?.[0] || "U"}</AvatarFallback>
+                            )}
+                        </Avatar>
+
+                         <Avatar className="w-8 h-8 rounded-full">
+                            {user?.avatarUrl ? (
+                                <AvatarImage src={user.avatarUrl} />
+                            ) : (
+                                <AvatarFallback>{user?.fullName?.[0] || "U"}</AvatarFallback>
+                            )}
                         </Avatar>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
                         <DropdownMenuLabel>My Account</DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem><User2Icon/>Profile</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => navigate("/profile")}><User2Icon/>Profile</DropdownMenuItem>
                         <DropdownMenuItem><SettingsIcon/>Settings</DropdownMenuItem>
                         <DropdownMenuItem
                             onClick={async () => {
