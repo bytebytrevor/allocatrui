@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { BellIcon, EllipsisVerticalIcon, LogOutIcon, Moon, SettingsIcon, Sun, User2Icon } from "lucide-react";
+import { BellIcon, EllipsisVerticalIcon, LogOutIcon, Moon, SettingsIcon, Sun, User2Icon, UserCircleIcon } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { useEffect, } from "react";
 import { useAuth } from "@/auth/useAuth";
@@ -25,6 +25,8 @@ function DashboardMainNav({children}: Props) {
     );
 
     const { user, logout } = useAuth();
+    console.log(user);
+
     const navigate = useNavigate(); 
 
     useEffect(() => {
@@ -44,22 +46,22 @@ function DashboardMainNav({children}: Props) {
     return (
         <nav className="flex items-center justify-between bg-background py-2">
             <Link to="/projects" className="flex items-center">
-                <AllocatrLogo theme={theme} className="w-24"/>
+                <AllocatrLogo theme={theme} className="w-20"/>
             </Link>
             <span>{children}</span>
             <span className="flex items-center space-x-2">
                 <button
                     onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                    className="p-1  hover:bg-muted-foreground/20 rounded-full cursor-pointer transition-colors delay-150 duration-300"
+                    className="p-1  hover:bg-muted-foreground/20 border rounded-full cursor-pointer transition-colors delay-150 duration-300"
                     >
-                    {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
+                    {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
                 </button>
-                <BellIcon size={28} className="hover:bg-muted-foreground/20 rounded-full cursor-pointer p-1 transition-colors delay-150 duration-300"/>
+                <BellIcon size={26} className="hover:bg-muted-foreground/20 border rounded-full cursor-pointer p-1 transition-colors delay-150 duration-300"/>
                 <DropdownMenu>
                     <DropdownMenuTrigger>
                         <EllipsisVerticalIcon
-                            size={28}
-                            className="hover:bg-muted-foreground/20 rounded-full cursor-pointer p-1 transition-colors delay-150 duration-300"
+                            size={26}
+                            className="hover:bg-muted-foreground/20 border rounded-full cursor-pointer p-1 transition-colors delay-150 duration-300"
                         />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
@@ -74,24 +76,23 @@ function DashboardMainNav({children}: Props) {
 
                 <DropdownMenu>
                     <DropdownMenuTrigger className="w-6 h-6">
-                        <Avatar className="w-6 h-6 rounded-full ring-0 hover:ring-3 ring-muted-foreground/20 transition-all duration-300">
+                        <Avatar className="w-6 h-6 rounded-full ring-0 ring-muted-foreground/20 transition-all duration-300">
                             {user?.avatarUrl ? (
                                 <AvatarImage src={user.avatarUrl} />
                             ) : (
-                                <AvatarFallback>{user?.fullName?.[0] || "U"}</AvatarFallback>
-                            )}
-                        </Avatar>
-
-                         <Avatar className="w-8 h-8 rounded-full">
-                            {user?.avatarUrl ? (
-                                <AvatarImage src={user.avatarUrl} />
-                            ) : (
-                                <AvatarFallback>{user?.fullName?.[0] || "U"}</AvatarFallback>
+                                <AvatarFallback
+                                    className="text-foreground font-medium border"
+                                >
+                                    {user?.fullName?.toString()[0] || <UserCircleIcon />}
+                                </AvatarFallback>
                             )}
                         </Avatar>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
-                        <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                        <DropdownMenuLabel className="flex items-center gap-2">
+                            <UserCircleIcon/>
+                            {user?.fullName?.split(" ")[0]}
+                        </DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={() => navigate("/profile")}><User2Icon/>Profile</DropdownMenuItem>
                         <DropdownMenuItem><SettingsIcon/>Settings</DropdownMenuItem>

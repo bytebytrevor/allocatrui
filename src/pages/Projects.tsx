@@ -7,6 +7,7 @@ import Electricians from "@/assets/electrician-wide.svg"
 import { useState, useEffect } from "react";
 import axios from "axios";
 import type { Project } from "@/Types";
+import { useAuth } from "@/auth/AuthContext";
 import {
     ArrowDownNarrowWideIcon,
     CircleCheckBigIcon,
@@ -29,6 +30,8 @@ function Projects() {
     function switchView() {
         view === "grid" ? setView("list") : setView("grid");
     }
+
+    const { user } = useAuth();
 
     const [projects, setProjects] = useState<Project[]>([]);
     const [loading, setLoading] = useState(true);
@@ -78,13 +81,13 @@ function Projects() {
                             <div className="flex items-center gap-2">
                                 <NotepadText size={60} className="text-primary" />
                                 <div>
-                                    <h1 className="text-2xl font-medium">Hi Thelma 👋</h1>
-                                    <p className="text-muted-foreground">You have 5 active projects in progress.</p> 
+                                    <h1 className="text-xl font-medium">Hi {user?.fullName?.split(" ")[0]} 👋</h1>
+                                    <p className="text-sm text-muted-foreground">You have 5 active projects in progress.</p> 
                                 </div>              
                             </div>
                             <div className="flex items-center">
                                 <Link to="/projects/new">
-                                    <Button variant="outline" className="text-xs  shadow-none">
+                                    <Button variant="outline" className="text-xs shadow-none">
                                         <PlusIcon />Create new project
                                     </Button>
                                 </Link>

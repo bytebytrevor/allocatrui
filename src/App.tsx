@@ -22,7 +22,6 @@ import Profile from "./pages/Profile";
 
 import { AuthProvider } from "./auth/AuthContext";
 import { RequireAuth } from "./auth/RequireAuth";
-import { AvatarProvider } from "./auth/AvatarContext";
 
 function App() {
   const theme = localStorage.getItem("theme") || "light";
