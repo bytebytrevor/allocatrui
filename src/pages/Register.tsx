@@ -32,16 +32,18 @@ export default function Register() {
 
   return (
     <>
-    <header className="border-b py-4">
+    {/* <header className="border-b py-4">
       <div className="container mx-auto">
         <AllocatrLogo theme={theme} className="w-24"/>
       </div> 
-    </header>
+    </header> */}
     
-    <div className="flex justify-center mt-16">
-      <form className="container max-w-lg space-y-6 pt-4 pb-8 px-8 rounded-sm" onSubmit={handleSubmit}>
+    <main className="flex flex-col items-center mt-16">
+      <AllocatrLogo theme={theme} className="w-24 py-6"/>
+      <form className="container max-w-lg space-y-6 border pt-4 pb-8 px-8 rounded-sm" onSubmit={handleSubmit}>
         <span className="flex items-center justify-between">
           <h1 className="text-2xl font-bold">Create account</h1>
+          {/* <AllocatrLogo theme={theme} className="w-24"/> */}
         </span>
 
         <span className="flex flex-col gap-3">
@@ -99,7 +101,7 @@ export default function Register() {
             </Link>
         </span>
       </form>      
-    </div>
+    </main>
     </>
   );
 }

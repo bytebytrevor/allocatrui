@@ -78,19 +78,33 @@ function DashboardMainNav({children}: Props) {
                     <DropdownMenuTrigger className="w-6 h-6">
                         <Avatar className="w-6 h-6 rounded-full ring-0 ring-muted-foreground/20 transition-all duration-300">
                             {user?.avatarUrl ? (
-                                <AvatarImage src={user.avatarUrl} />
+                                <AvatarImage
+                                    src={user?.avatarUrl}
+                                    className="h-full w-full rounded-full object-cover transition-opacity data-[state=loading]:opacity-0" />
                             ) : (
                                 <AvatarFallback
                                     className="text-foreground font-medium border"
                                 >
-                                    {user?.fullName?.toString()[0] || <UserCircleIcon />}
+                                    {user?.avatarUrl ?? <UserCircleIcon />}
                                 </AvatarFallback>
                             )}
                         </Avatar>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
-                        <DropdownMenuLabel className="flex items-center gap-2">
-                            <UserCircleIcon/>
+                        <DropdownMenuLabel className="flex items-center gap-2 text-muted-foreground text-sm font-normal ">
+                            <Avatar className="w-6 h-6 rounded-full ring-0 ring-muted-foreground/20 transition-all duration-300">
+                                {user?.avatarUrl ? (
+                                    <AvatarImage
+                                        src={user?.avatarUrl}
+                                        className="h-full w-full rounded-full object-cover transition-opacity data-[state=loading]:opacity-0" />
+                                ) : (
+                                    <AvatarFallback
+                                        className="text-foreground font-medium border"
+                                    >
+                                        {user?.avatarUrl ?? <UserCircleIcon />}
+                                    </AvatarFallback>
+                                )}
+                            </Avatar>
                             {user?.fullName?.split(" ")[0]}
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
