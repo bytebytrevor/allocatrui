@@ -91,23 +91,9 @@ function Projects() {
                                         <PlusIcon />Create new project
                                     </Button>
                                 </Link>
-                                {/* <Link to="/projects/new"><Button className="text-xs bg-linear-to-r from-primary to-accent-2/60   shadow-none"><PlusIcon />New project</Button></Link> */}
-                                {/* <Link to="/projects/new"><Button className="text-xs bg-foreground  shadow-none"><PlusIcon />New project</Button></Link> */}
-                                {/* <Link
-                                    to="/projects/new"
-                                    className="text-background bg-linear-to-r from-primary to-primary/80  p-3"
-                                >
-                                    <PlusIcon />
-                                </Link> */}
                             </div>
                         </div> 
-                        {/* <InputGroup className="mb-4">
-                            <InputGroupInput placeholder="Search..." />
-                            <InputGroupAddon>
-                                <Search />
-                            </InputGroupAddon>
-                            <InputGroupAddon align="inline-end">12 results</InputGroupAddon>
-                        </InputGroup>                      */}
+                        
                         <div className="flex items-center justify-between mt-8">
                             <div className="flex items-center gap-2">
                                 <Badge className=" bg-muted-foreground text-background"><CircleDotIcon /> Active</Badge>

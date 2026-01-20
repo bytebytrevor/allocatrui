@@ -75,37 +75,38 @@ function DashboardMainNav({children}: Props) {
                 </DropdownMenu>
 
                 <DropdownMenu>
-                    <DropdownMenuTrigger className="w-6 h-6">
-                        <Avatar className="w-6 h-6 rounded-full ring-0 ring-muted-foreground/20 transition-all duration-300">
-                            {user?.avatarUrl ? (
-                                <AvatarImage
-                                    src={user?.avatarUrl}
-                                    className="h-full w-full rounded-full object-cover transition-opacity data-[state=loading]:opacity-0" />
-                            ) : (
-                                <AvatarFallback
-                                    className="text-foreground font-medium border"
-                                >
-                                    {user?.avatarUrl ?? <UserCircleIcon />}
-                                </AvatarFallback>
-                            )}
+                    <DropdownMenuTrigger className="w-6 h-6 rounded-full border-2 border-muted-foreground/20">
+                        <Avatar className="rounded-full transition-all duration-300">
+                            <AvatarImage
+                                src={user?.avatarUrl}
+                                className="h-full w-full rounded-full object-cover transition-opacity data-[state=loading]:opacity-0"
+                            />
+            
+                            <AvatarFallback
+                                className="text-foreground font-medium border"
+                            >
+                                {user?.fullName?.charAt(0) ?? <UserCircleIcon />}
+                            </AvatarFallback>
                         </Avatar>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
-                        <DropdownMenuLabel className="flex items-center gap-2 text-muted-foreground text-sm font-normal ">
-                            <Avatar className="w-6 h-6 rounded-full ring-0 ring-muted-foreground/20 transition-all duration-300">
-                                {user?.avatarUrl ? (
+                        <DropdownMenuLabel className="flex items-center gap-2 text-muted-foreground bg-muted rounded-sm p-2">
+                            <Avatar className="w-12 h-12 rounded-full border border-muted-foreground/20 transition-all duration-300 ">                        
                                     <AvatarImage
                                         src={user?.avatarUrl}
-                                        className="h-full w-full rounded-full object-cover transition-opacity data-[state=loading]:opacity-0" />
-                                ) : (
+                                        className="h-full w-full rounded-full object-cover transition-opacity data-[state=loading]:opacity-0"
+                                    />
                                     <AvatarFallback
                                         className="text-foreground font-medium border"
                                     >
-                                        {user?.avatarUrl ?? <UserCircleIcon />}
+                                        {user?.fullName?.charAt(0).toUpperCase() ?? <UserCircleIcon />}
                                     </AvatarFallback>
-                                )}
+                            
                             </Avatar>
-                            {user?.fullName?.split(" ")[0]}
+                            <div className="flex flex-col">
+                                <span className="font-bold text-sm">{user?.fullName?.split(" ")[0]}</span>
+                                <span className="text-xs font-normal">{user?.email}</span>
+                            </div>
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={() => navigate("/profile")}><User2Icon/>Profile</DropdownMenuItem>
