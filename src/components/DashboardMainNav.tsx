@@ -90,7 +90,7 @@ function DashboardMainNav({children}: Props) {
                         </Avatar>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
-                        <DropdownMenuLabel className="flex items-center gap-2 text-muted-foreground bg-muted rounded-sm p-2">
+                        <DropdownMenuLabel className="flex items-center gap-2 text-muted-foreground bg-muted rounded-t-sm p-2">
                             <Avatar className="w-12 h-12 rounded-full border border-muted-foreground/20 transition-all duration-300 ">                        
                                     <AvatarImage
                                         src={user?.avatarUrl}

@@ -21,10 +21,8 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "./ui/textarea";
 import { Badge } from "./ui/badge";
 import { Calendar28 } from "./DatePicker";
-import { avatarFallback } from "@/utils/avatarFallback";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { allocats } from "@/data/allocats";
-import type { Allocat } from "@/Types/allocat";
 
 const MotionLink = motion.create(Link);
 
@@ -135,7 +133,7 @@ function ProjectMenu({project}: ViewProps) {
                 />
             </DropdownMenuTrigger>
             <DropdownMenuContent className="bg-background">
-                {project.allocatIds.length === 0
+                {project.allocatAssignments.length === 0
                 ?
                     <DropdownMenuItem>Assign Allocat</DropdownMenuItem>
                 :
@@ -162,7 +160,7 @@ type DialogProps = {
 function ProjectDetailsDialog({project, trigger}: DialogProps) {
     const dotColor = statusColor[project.status] || statusColor.onhold;
     
-    const projectAllocats = project.allocatIds.map(
+    const projectAllocats = project.allocatAssignments.map(
         allocatId => allocats.find(
             allocat => allocat.id === allocatId
         )
@@ -244,7 +242,7 @@ function ProjectDetailsDialog({project, trigger}: DialogProps) {
                             <Avatar className="w-10 h-10 border-4 m-0" >
                                 <AvatarImage src="https://github.com/shadcn.png" />
                                 <AvatarFallback className={`text-background bg-muted-foreground`}>
-                                    {avatarFallback(allocat)}
+                                    U
                                 </AvatarFallback>
                             </Avatar>
                             {allocat?.fullName}

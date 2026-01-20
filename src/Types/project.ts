@@ -16,8 +16,7 @@ export type Project = {
     progress?: number; // percentage 0-100
     priority: "standard" | "high" | "urgent";
     userId: string; // project owner
-    allocatIds: string[]; // optional team members
-    tasksCount?: number;
+    allocatAssignments: string[]; // optional team members
     messagesCount?: number;
     lastActivity?: string;
     isPublic?: boolean;

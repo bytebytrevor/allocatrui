@@ -35,6 +35,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import type { CreateProjectRequest } from "@/Types/createProjectRequest";
 import type { Project } from "@/Types/project";
+import api from "@/api/axios";
 
 const formSchema = z.object({
   title: z.string().min(5).max(64),
@@ -86,9 +87,10 @@ function NewProjectForm() {
     };
 
     try {
-      const response = await axios.post<Project>(
-        "http://localhost:5206/projects",
-        payload
+      const response = await api.post<Project>(
+        "projects",
+        payload,
+        { withCredentials: true }
       );
 
       toast.success("Project has been created");

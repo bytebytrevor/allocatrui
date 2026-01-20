@@ -5,8 +5,7 @@ import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import Electricians from "@/assets/electrician-wide.svg"
 import { useState, useEffect } from "react";
-import axios from "axios";
-import type { Project } from "@/Types";
+import type { Project } from "@/Types/project";
 import { useAuth } from "@/auth/AuthContext";
 import {
     ArrowDownNarrowWideIcon,
@@ -23,6 +22,7 @@ import {
     NotepadText,
     PlusIcon,
 } from "lucide-react";
+import api from "@/api/axios";
 
 function Projects() {
     const [view, setView] = useState("grid");    
@@ -40,11 +40,9 @@ function Projects() {
     useEffect(() => {
         async function fetchProjects() {
             try {
-                const response = await axios.get(
-                    `${import.meta.env.VITE_API_URL}/projects`,
-                    {
-                        withCredentials: true,
-                    }
+                const response = await api.get(
+                    "/projects",
+                    { withCredentials: true, }
                 );
                 setProjects(response.data);
             } catch (err: unknown) {
