@@ -85,10 +85,17 @@ function Projects() {
                             <FolderOpenDot className="w-24 h-24" />
                             {/* <img src={AllocatrIcon} alt="Allocatr icon" className="w-20 rounded-full"/> */}
                             <div>Hi <span className="font-semibold">{user?.fullName?.split(" " )[0]}!</span></div>
-                            <h3 className="text-2xl font-bold">Welcome to Allocatr</h3>
-                            <p className="text-sm text-center py-4">
-                                Lorem ipsum dolor sit amet consectetur adipisicing elit. Quae natus
-                                assumenda nesciunt blanditiis vero odit inventore.
+                            <h3 className="flex items-center gap-1 text-2xl font-bold">
+                                <CircleCheckBigIcon size={15} strokeWidth={3} />
+                                Your workspace is ready
+                            </h3>
+                            <span
+                                className="flex items-center gap-1 text-xs text-muted-foreground font-medium"
+                            >
+                                {/* Your workspace is ready <CircleCheckBigIcon size={12} strokeWidth={3} /> */}
+                            </span>
+                            <p className="text-sm text-center text-muted-foreground py-4">
+                                Your dashboard is empty because you haven't created a project. Start one now and begin working with skilled experts
                             </p>
                             <Link to="/projects/new">
                                 <Button className="h-12 text-xs font-medium px-12 mt-4">Create new project</Button>

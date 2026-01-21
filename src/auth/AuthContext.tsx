@@ -13,7 +13,7 @@ type AuthContextType = {
   user: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (fullName: string, email: string, password: string) => Promise<void>;
+  register: (fullName: string, email: string, password: string, isAllocat: boolean) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
   setAvatar: (avatarUrl: string) => void; // update avatar after upload
@@ -42,10 +42,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   // ----------------- REGISTER -----------------
-  async function register(fullName: string, email: string, password: string) {
+  async function register(fullName: string, email: string, password: string, isAllocat: boolean) {
     await api.post(
       "/auth/register",
-      { fullName, email, password },
+      { fullName, email, password, isAllocat },
       { withCredentials: true }
     );
 

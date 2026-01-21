@@ -1,120 +1,19 @@
-// import { useState } from "react";
-// import { Link, useNavigate } from "react-router-dom";
-// import { Loader2 } from "lucide-react";
-// import { useAuth } from "../auth/useAuth";
-// import { Input } from "@/components/ui/input";
-// import { Button } from "@/components/ui/button";
-// import { Label } from "@/components/ui/label";
-// import AllocatrLogo from "@/components/AllocatrLogo";
-
-// export default function Login() {
-//   const theme = localStorage.getItem("theme") || "dark";
-//   const { login } = useAuth();
-//   const navigate = useNavigate();
-
-//   const [email, setEmail] = useState("");
-//   const [password, setPassword] = useState("");
-//   const [loading, setLoading] = useState(false);
-
-//   async function handleSubmit(e: React.FormEvent) {
-//     e.preventDefault();
-//     if (loading) return;
-
-//     try {
-//       setLoading(true);
-//       await login(email, password);
-//       navigate("/projects");
-//     } finally {
-//       setLoading(false);
-//     }
-//   }
-
-//   return (
-//     <>
-//       <header className="border-b py-2 px-2">
-//       {/* <header className="py-2"> */}
-//         <div className="container mx-auto">
-//           <AllocatrLogo theme={theme} className="w-24" />
-//         </div>
-//       </header>
-
-//       <div className="flex justify-center mt-16">
-//         <form
-//           className="container max-w-lg space-y-6 pt-4 pb-8 px-8 rounded-sm"
-//           onSubmit={handleSubmit}
-//         >
-//           <span className="flex items-center justify-between">
-//             <h1 className="text-2xl font-bold">Welcome back</h1>
-//           </span>
-
-//           <span className="flex flex-col gap-3">
-//             <Label htmlFor="email">Email</Label>
-//             <Input
-//               id="email"
-//               type="email"
-//               value={email}
-//               placeholder="name@email.com"
-//               onChange={(e) => setEmail(e.target.value)}
-//               required
-//               className="h-12 border-none px-4 shadow-none"
-//             />
-//           </span>
-
-//           <span className="flex flex-col gap-3">
-//             <Label htmlFor="password">Password</Label>
-//             <Input
-//               id="password"
-//               type="password"
-//               value={password}
-//               placeholder="Password"
-//               onChange={(e) => setPassword(e.target.value)}
-//               required
-//               className="h-12 border-none px-4 shadow-none"
-//             />
-//                 <div className="pb-2">
-//                 <Link
-//                     to=""
-//                     className="font-semibold text-sm text-accent-3 "            
-//                 >
-//                     Forgot Password?
-//                 </Link>
-//             </div>
-//           </span>
-
-          
-
-//           <Button
-//             type="submit"
-//             disabled={loading}
-//             className="flex h-12 w-full"
-//           >
-//             {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-//             {loading ? "Signing in…" : "Login"}
-//           </Button>
-
-//           <span className="flex gap-2 text-sm text-muted-foreground">
-//             Don't have an account?
-//             <Link to="/register" className="text-accent-3 font-medium">
-//               Create account
-//             </Link>
-//           </span>
-//         </form>
-//       </div>
-//     </>
-//   );
-// }
-
 import { useState } from "react";
-import { useNavigate } from "react-router-dom"; // <-- import navigate
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/auth/useAuth";
+import AllocatrLogo from "@/components/AllocatrLogo";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 
 export default function Login() {
   const { login } = useAuth();
-  const navigate = useNavigate(); // <-- initialize navigate
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const theme = localStorage.getItem("theme") || "dark";
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -123,7 +22,7 @@ export default function Login() {
 
     try {
       await login(email, password);
-      navigate("/projects"); // <-- redirect after successful login
+      navigate("/projects");
     } catch (err: any) {
       setError(err?.response?.data?.message || "Login failed");
     } finally {
@@ -132,36 +31,63 @@ export default function Login() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-md mx-auto p-6 space-y-4">
-      <h2 className="text-xl font-semibold">Login</h2>
+    <>
+        <div className="flex flex-col items-center justify-center">
+          <AllocatrLogo theme={theme} className="w-24 py-6 mt-[5%]"/>
+          <form
+            className="container max-w-lg space-y-6 bg-muted-foreground/5 pt-4 pb-8 px-8 rounded-sm border"
+            onSubmit={handleSubmit}
+          >
+            <span className="flex items-center justify-between">
+              <h1 className="text-2xl font-bold">Welcome back</h1>
+            </span>
 
-      <input
-        type="email"
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        className="w-full p-2 border rounded"
-        required
-      />
-      <input
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        className="w-full p-2 border rounded"
-        required
-      />
+            <Input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full h-12 px-4 border-none rounded-full shadow-none "
+              required
+            />
+            <Input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full h-12 px-4 border-none rounded-full shadow-none "
+              required
+            />
 
-      {error && <p className="text-red-500">{error}</p>}
+            {error && <p className="text-red-500">{error}</p>}
 
-      <button
-        type="submit"
-        disabled={loading}
-        className="w-full bg-blue-500 text-white p-2 rounded"
-      >
-        {loading ? "Logging in..." : "Login"}
-      </button>
-    </form>
+            <div className="pb-2">
+              <Link
+                  to=""
+                  className="font-semibold text-sm text-accent-3 "            
+              >
+                  Forgot Password?
+              </Link>
+            </div>
+
+            <Button
+              type="submit"
+              disabled={loading}
+              className="w-full h-12"
+            >
+              {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+              {loading ? "Signing in…" : "Login"}
+            </Button>
+
+            <div className="flex gap-2 text-sm text-muted-foreground">
+              Don't have an account?
+              <Link to="/register" className="text-accent-3 font-medium">
+                Create account
+              </Link>
+            </div>
+          </form>
+      </div>
+    </>
   );
 }
 
