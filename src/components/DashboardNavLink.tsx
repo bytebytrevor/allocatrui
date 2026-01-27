@@ -11,10 +11,11 @@ function DashboardNavLink({label, href, icon: Icon}: Props) {
         <NavLink
             end
             className={({ isActive }) => {
-                return`text-sm font-medium flex items-center gap-2 py-2 pl-4 hover:bg-accent/40
+                return`text-sm text-foreground/60 font-medium flex items-center gap-2 py-2 pl-4 hover:bg-foreground/10
                     ${isActive
                     ? 
-                        "text-sm text-brand-primary font-semibold border-r-4 border-brand-primary"
+                        // "text-sm text-brand-primary font-semibold border-r-4 border-brand-primary"
+                        "text-sm text-foreground/90 font-semibold border-r-4 border-primary"
                     :                        
                         ""
                     }`

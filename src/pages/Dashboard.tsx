@@ -39,9 +39,10 @@ function Dashboard() {
 
             
             <main className="flex flex-1 gap-2 overflow-hidden">
-                    <aside className="flex flex-col justify-between bg-dark-gray text-white min-w-[200px] text-lg font-light rounded-tr-4xl">
+                    {/* <aside className="flex flex-col justify-between bg-dark-gray text-white min-w-[200px] text-lg font-light rounded-tr-4xl"> */}
+                    <aside className="flex flex-col justify-between border-r min-w-[200px] text-lg font-light">
                         <div className="flex flex-col">
-                            <Link to="" className="pt-4 pl-4 space-y-12 font-medium">Title</Link>
+                            {/* <Link to="" className="pt-4 pl-4 space-y-12 font-medium">Title</Link> */}
                             <DashboardNavLink href={`/projects/${params.projectId}`} icon={BlocksIcon} label="Manager" />
                             <DashboardNavLink href={`/projects/${params.projectId}/calendar`} icon={CalendarDaysIcon} label="Calendar" />
                             <DashboardNavLink href={`/projects/${params.projectId}/messaging`} icon={MailIcon} label="Messaging" />
@@ -51,9 +52,9 @@ function Dashboard() {
                         </div>
                         <span className="py-6">
                             <DropdownMenu>
-                                <DropdownMenuTrigger className="flex items-center gap-2 text-sm text-white bg-transparent hover:bg-transparent rounded-md px-4 font-medium focus:outline-none">
+                                <DropdownMenuTrigger className="flex items-center gap-2 text-sm text-foreground bg-transparent hover:bg-transparent rounded-md px-4 font-medium focus:outline-none">
                                     Switch project
-                                    <ArrowRightLeftIcon className="w-8 h-8 bg-brand-primary text-dark-gray p-2 rounded-sm" />
+                                    <ArrowRightLeftIcon className="w-8 h-8 bg-primary text-background p-2 rounded-sm" />
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent className="bg-background ml-4">
                                     {projects.map(p => <DropdownMenuItem key={p.id}><Link to={`/projects/${p.id}`}>{p.title}</Link></DropdownMenuItem>)}

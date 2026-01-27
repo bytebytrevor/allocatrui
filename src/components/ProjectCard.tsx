@@ -85,10 +85,9 @@ export function ListView({project}: ViewProps) {
 )}  
 
 export function GridView({project}: ViewProps) {    
-    const dotColor = statusColor[project.status] || statusColor.onhold;
 
     return (
-        <div className="flex flex-col items-start gap-4 bg-muted rounded-lg py-4 px-6">
+        <div className="flex flex-col items-start gap-4 bg-muted border rounded-lg py-4 px-6">
             <div className="flex items-center w-full justify-between">
                 {getProjectIcon(project?.category ?? "default")}
                 <ProjectMenu project={project}/>
@@ -99,32 +98,34 @@ export function GridView({project}: ViewProps) {
                     className="flex flex-col justify-between mt-2 rounded-2xl"
                     whileTap={{ scale: 0.96 }}
                     transition={{ duration: 0.2, ease: "easeInOut" }}
-                > 
-                    <h3 className="text-sm text-foreground/90 font-semibold transition delay-90 duration-300 hover:underline">{project.title}</h3>
+                >
+                    <h3 className="text-md text-primary/90 font-semibold transition delay-90 duration-300 hover:underline">{project.title}</h3>
                 </MotionLink>
             
-                {/* <Progress value={project.progress} className="mt-4"/>                */}
                 <span
-                    className="flex items-center gap-1 font-light text-muted-foreground text-xs mt-6"
+                    className="flex items-center gap-1 font-light text-muted-foreground text-xs py-1"
                 >
                     <CalendarDaysIcon size={16} />Created { new Date(project.createdAt).toDateString() }
                 </span>       
-                <p className="text-[0.9rem] py-2">{project.description.slice(0, 60)}...</p>                              
             </div>
-            <div className="flex flex-grow items-center w-full justify-between font-semibold mt-2">
-                {/* <span className="text-xs text-muted-foreground font-light">{project.projectCode}</span> */}
-                <Progress value={project.progress} className="w-16"/>
-                <span className="flex items-center gap-2 text-xs">
-                    <span className={`w-2 h-2 bg-${dotColor} rounded-full`}></span>
-                    {project.status.charAt(0).toUpperCase()+project.status.slice(1)}
-                </span>
+
+            <div className="flex flex-grow items-center justify-between w-full font-semibold mt-6 mb-2">
+                <Link to="" className="text-sm font-normal">View details</Link>
+                <Button variant="outline" className="text-xs bg-red-500 shadow-none px-12 hover:bg-red-500">Open</Button>
             </div> 
         </div>
     );
 }
 
 function ProjectMenu({project}: ViewProps) {
+    const dotColor = statusColor[project.status] || statusColor.onhold;
+
     return (
+        <div className="flex items-center gap-4">
+            <span className="flex items-center gap-2 text-xs">
+                <span className={`w-2 h-2 bg-${dotColor} rounded-full`}></span>
+                {project.status.charAt(0).toUpperCase()+project.status.slice(1)}
+            </span>
         <DropdownMenu>
             <DropdownMenuTrigger>
                 <EllipsisVerticalIcon
@@ -149,6 +150,7 @@ function ProjectMenu({project}: ViewProps) {
                 <DropdownMenuItem className="text-destructive">Cancel</DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
+        </div>
     );
 }
 
