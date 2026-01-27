@@ -27,7 +27,7 @@ function HeroMain() {
                         Allocatr connects you with skilled experts and professionals for tasks of any size.
                     </motion.p>
                     <div>
-                        <Button className="text-xs  mr-4 w-36">Find allocats</Button>
+                        <Button className="h-12 text-xs  mr-4 w-36">Find allocats</Button>
                     </div>
                 </div>
                 <div className="rounded-lg">
