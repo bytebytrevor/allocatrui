@@ -38,16 +38,17 @@ export default function Login() {
             className="container max-w-lg space-y-6 bg-muted-foreground/5 pt-4 pb-8 px-8 rounded-sm border"
             onSubmit={handleSubmit}
           >
-            <span className="flex items-center justify-between">
+            <div>
               <h1 className="text-2xl font-bold">Welcome back</h1>
-            </span>
+              <p className="text-sm text-muted-foreground pt-2 pb-4">Log in to your account</p>
+            </div>
 
             <Input
               type="email"
               placeholder="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full h-12 px-4 border-none rounded-full shadow-none "
+              className="w-full h-12 px-4 border-none rounded-full shadow-none"
               required
             />
             <Input
@@ -55,7 +56,7 @@ export default function Login() {
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full h-12 px-4 border-none rounded-full shadow-none "
+              className="w-full h-12 px-4 border-none rounded-full shadow-none"
               required
             />
 
@@ -64,7 +65,7 @@ export default function Login() {
             <div className="pb-2">
               <Link
                   to=""
-                  className="font-semibold text-sm text-accent-3 "            
+                  className="font-semibold text-sm text-accent-3"            
               >
                   Forgot Password?
               </Link>
