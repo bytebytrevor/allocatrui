@@ -1,15 +1,18 @@
 import { CalendarDaysIcon, CircleCheckBigIcon, CircleDashedIcon, CircleDotIcon, EllipsisVerticalIcon, ListTodoIcon, TriangleAlertIcon } from "lucide-react";
 import { Link } from "react-router-dom";
 import type { Task } from "../Types"
+import CreateTaskDialog from "./CreateTaskDialogue";
+import type { Project } from "@/Types/project";
 
 type Props = {
     title: string;
     description: string;
     linkText: string;
     tasks?: Task[];
+    project?: Project;
 }
 
-function TaskStatusBoard({title, description, linkText, tasks}: Props) {
+function TaskStatusBoard({title, description, linkText, tasks, project}: Props) {
     
     return (               
         <section className="flex flex-col mt-8 min-h-60 max-h-full min-w-86 max-w-96 bg-muted rounded-md p-4">
@@ -19,7 +22,13 @@ function TaskStatusBoard({title, description, linkText, tasks}: Props) {
                     <ListTodoIcon />
                     <small className="flex flex-col">
                         {description}
-                        <Link className="text-accent-3" to="">{linkText}</Link>
+                        {project?.id && (
+                            <CreateTaskDialog
+                                trigger={<Link className="text-accent-3" to="">{linkText}</Link>}
+                                projectId={project.id}
+                            />
+                            )
+                        }
                     </small>
                 </div>) : (
                 <section className="flex-1 overflow-y-auto max-h-full scrollbar-thin">

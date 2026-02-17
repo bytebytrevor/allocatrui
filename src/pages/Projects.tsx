@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import Electricians from "@/assets/electrician-wide.svg";
-import AllocatrIcon from "@/assets/icon-variant-02.svg";
 import { useState, useEffect } from "react";
 import type { Project } from "@/Types/project";
 import { useAuth } from "@/auth/AuthContext";

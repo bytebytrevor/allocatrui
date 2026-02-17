@@ -4,8 +4,9 @@ import { Button } from "./ui/button";
 import { PlusIcon } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import type { Project, Task } from "@/Types";
-import axios from "axios";
+import type { Project } from "@/Types/project";
+import type { Task } from "@/Types/task";
+import api from "@/api/axios";
 
 function ProjectManager() {
     const [project, setProject] = useState<Project>();
@@ -27,8 +28,8 @@ function ProjectManager() {
             try {
                 setProjectLoading(true);
 
-                const response = await axios.get<Project>(
-                    `${import.meta.env.VITE_API_URL}/projects/${params.projectId}`,
+                const response = await api.get<Project>(
+                    `/projects/${params.projectId}`,
                     { withCredentials: true }
                 );
 
@@ -56,11 +57,9 @@ function ProjectManager() {
             try {
                 setTasksLoading(true);
 
-                const response = await axios.get<Task[]>(
-                    `${import.meta.env.VITE_API_URL}/projects/${params.projectId}/tasks`,
-                    {
-                        withCredentials: true,
-                    }
+                const response = await api.get<Task[]>(
+                    `/projects/tasks/${params.projectId}`,
+                    { withCredentials: true, }
                 );
                 setTasks(response.data);
             } catch (err: unknown) {
@@ -124,24 +123,28 @@ function ProjectManager() {
                         description="No completed tasks"
                         linkText="+ Click here to add"
                         tasks={completedTaskList}
+                        project={project}
                     />
                     <TaskStatusBoard
                         title="In progress"
                         description="You don't have any tasks"
                         linkText="+ Click here to add"
                         tasks={activeTaskList}
+                        project={project}
                     />
                     <TaskStatusBoard
                         title="Overdue"
                         description="No overdue tasks"
                         linkText="+ Click here to add"
                         tasks={overdueTaskList}
+                        project={project}
                     />
                     <TaskStatusBoard
                         title="Pending"
                         description="No pending tasks"
                         linkText="+ Click here to add"
                         tasks={pendingTaskList}
+                        project = {project}
                     />
                 </section>    
             </div> 
