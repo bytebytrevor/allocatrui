@@ -4,7 +4,7 @@ import DashboardNavLink from "@/components/DashboardNavLink";
 import DashboardMainNav from "@/components/DashboardMainNav";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import type { Project } from "@/Types";
+import type { Project } from "@/Types/project";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 function Dashboard() {
@@ -30,15 +30,15 @@ function Dashboard() {
 
     return (
         <div className="flex flex-col h-screen">
-            <header className="mb-8 border-b">
-                <div className="px-4">
+            <header className="w-full mx-auto mb-8 border-b">
+                <div className="container px-4 mx-auto">
                     <DashboardMainNav />
                 </div>
             </header>
 
 
             
-            <main className="flex flex-1 gap-2 overflow-hidden">
+            <main className="container mx-auto flex flex-1 gap-2 overflow-hidden">
                     {/* <aside className="flex flex-col justify-between bg-dark-gray text-white min-w-[200px] text-lg font-light rounded-tr-4xl"> */}
                     <aside className="flex flex-col justify-between border-r min-w-[200px] text-lg font-light">
                         <div className="flex flex-col">

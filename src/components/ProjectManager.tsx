@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import type { Project } from "@/Types/project";
 import type { Task } from "@/Types/task";
 import api from "@/api/axios";
+import { DndContext, type DragEndEvent } from "@dnd-kit/core";
 
 function ProjectManager() {
     const [project, setProject] = useState<Project>();
@@ -18,7 +19,12 @@ function ProjectManager() {
 
     const params = useParams();
 
+    const STATUSES = ["pending", "active", "complete", "overdue"] as const;
+    type Status = typeof STATUSES[number];
 
+    function isStatus(v: unknown): v is Status {
+    return typeof v === "string" && (STATUSES as readonly string[]).includes(v);
+    }
 
     // Fetch project by id
     useEffect(() => {
@@ -76,6 +82,44 @@ function ProjectManager() {
         fetchTasks();
     }, [params.projectId]);
 
+    async function updateTaskStatus(taskId: string, status: Status) {
+        await api.patch(
+        `/projects/tasks/task/${taskId}/status`,
+        { status },
+        { withCredentials: true }
+        );
+    }
+
+    const handleDragEnd = async (event: DragEndEvent) => {
+        const { active, over } = event;
+        if (!over) return;
+
+        const taskId = String(active.id);
+        const newStatusRaw = over.id;
+
+        if (!isStatus(newStatusRaw)) return;
+        const newStatus = newStatusRaw;
+
+        const current = tasks?.find(t => t.id === taskId);
+        if (!current) return;
+        if (current.status === newStatus) return;
+
+        // optimistic update
+        const previousTasks = tasks ?? [];
+        setTasks(prev =>
+        (prev ?? []).map(t => (t.id === taskId ? { ...t, status: newStatus } : t))
+        );
+
+        try {
+        await updateTaskStatus(taskId, newStatus);
+        } catch (e) {
+        // revert
+        setTasks(previousTasks);
+        console.error(e);
+        }
+    };
+
+
     // console.log(tasks);
 
 
@@ -84,11 +128,10 @@ function ProjectManager() {
 
     console.log(tasks);
 
-
-    const completedTaskList = tasks?.filter(task => task.status == "complete");
-    const activeTaskList = tasks?.filter(task => task.status == "active");
-    const overdueTaskList = tasks?.filter(task => task.status == "overdue");
     const pendingTaskList = tasks?.filter(task => task.status == "pending");
+    const activeTaskList = tasks?.filter(task => task.status == "active");
+    const completedTaskList = tasks?.filter(task => task.status == "complete");    
+    const overdueTaskList = tasks?.filter(task => task.status == "overdue");    
 
     return (
         <>
@@ -117,36 +160,47 @@ function ProjectManager() {
                     </div>
                 </section>
                 
-                <section className="flex items-start gap-6 overflow-y-auto scrollbar-thin">                
-                    <TaskStatusBoard
-                        title="Completedo"
-                        description="No completed tasks"
-                        linkText="+ Click here to add"
-                        tasks={completedTaskList}
-                        project={project}
-                    />
-                    <TaskStatusBoard
-                        title="In progress"
-                        description="You don't have any tasks"
-                        linkText="+ Click here to add"
-                        tasks={activeTaskList}
-                        project={project}
-                    />
-                    <TaskStatusBoard
-                        title="Overdue"
-                        description="No overdue tasks"
-                        linkText="+ Click here to add"
-                        tasks={overdueTaskList}
-                        project={project}
-                    />
-                    <TaskStatusBoard
-                        title="Pending"
-                        description="No pending tasks"
-                        linkText="+ Click here to add"
-                        tasks={pendingTaskList}
-                        project = {project}
-                    />
-                </section>    
+                <DndContext onDragEnd={handleDragEnd}>
+                    <section className="flex items-start gap-6 overflow-y-auto scrollbar-thin">                
+                        <TaskStatusBoard
+                        status="pending"
+                            title="Pending"
+                            description="No pending tasks"
+                            linkText="+ Click here to add"
+                            tasks={pendingTaskList}
+                            project = {project}
+                            className = "border-t-accent-3/80"
+                        />
+                        <TaskStatusBoard
+                            status="active"
+                            title="In progress"
+                            description="You don't have any tasks"
+                            linkText="+ Click here to add"
+                            tasks={activeTaskList}
+                            project={project}
+                            className = "border-t-primary/80"
+                        />                    
+                        <TaskStatusBoard
+                            status="complete"
+                            title="Complete"
+                            description="No completed tasks"
+                            linkText="+ Click here to add"
+                            tasks={completedTaskList}
+                            project={project}
+                            className = "border-t-accent-2/80"
+                        />                    
+                        <TaskStatusBoard
+                            status="overdue"
+                            title="Overdue"
+                            description="No overdue tasks"
+                            linkText="+ Click here to add"
+                            tasks={overdueTaskList}
+                            project={project}
+                            className = "border-t-destructive/80"
+                        />
+                        
+                    </section>
+                </DndContext>    
             </div> 
         </>
     );
