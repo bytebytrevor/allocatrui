@@ -32,7 +32,6 @@ import { Calendar28 } from "./DatePicker";
 import MultiFileUpload from "./MultiFileUpload";
 import { useNavigate } from "react-router-dom";
 import React, { useState } from "react";
-import axios from "axios";
 import type { CreateProjectRequest } from "@/Types/createProjectRequest";
 import type { Project } from "@/Types/project";
 import api from "@/api/axios";
