@@ -5,12 +5,14 @@ import assets from "@/assets/assets";
 import { Button } from "@/components/ui/button";
 import { motion, useScroll, useSpring, useTransform } from "framer-motion";
 import AnimatedIconScale from "@/components/AnimatedIconScale";
+import { useAuth } from "@/auth/useAuth";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion"
+import { useNavigate } from "react-router-dom";
 
 function LandingPage() {
 
@@ -22,6 +24,13 @@ function LandingPage() {
     });
 
     const scale = useTransform(scaleX, [0, 1], [0.8, 1]);
+
+    const { user } = useAuth();
+    const navigate = useNavigate();
+
+    if (user) {
+        navigate('/projects');
+    }
 
     return (    
         <>    

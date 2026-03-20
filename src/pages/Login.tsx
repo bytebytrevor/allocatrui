@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 
 export default function Login() {
-  const { login } = useAuth();
+  const { login, user } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -30,6 +30,9 @@ export default function Login() {
     }
   }
 
+  if (user) {
+    navigate('/projects');
+  }
   return (
     <>
         <div className="flex flex-col items-center justify-center">

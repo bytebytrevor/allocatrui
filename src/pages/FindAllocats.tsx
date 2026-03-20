@@ -7,7 +7,7 @@ import MinimalNavMenu from "@/components/MinimalNavMenu";
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import type { Project } from "@/Types/project";
-import axios from "axios";
+import api from "@/api/axios";
 
 function FindAllocats() {
     const [project, setProject] = useState<Project>();
@@ -21,11 +21,10 @@ function FindAllocats() {
 
         async function fetchProject() {
             try {
-                const response = await axios.get<Project>(
-                    `${import.meta.env.VITE_API_URL}/projects/${params.projectId}`,
+                const response = await api.get<Project>(
+                    `/projects/${params.projectId}`,
                     { withCredentials: true }
                 );
-
                 setProject(response.data);
             } catch (err: unknown) {
                 if (err instanceof Error) {
@@ -35,7 +34,6 @@ function FindAllocats() {
                 }
             }
         }
-
         fetchProject();
     }, []);
 
