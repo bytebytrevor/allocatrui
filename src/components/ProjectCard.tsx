@@ -41,7 +41,8 @@ export function ListView({project}: ViewProps) {
     const dotColor = statusColor[project.status] || statusColor.onhold;
 
     return (
-        <div className="flex items-center w-full gap-4 bg-muted rounded-2xl py-4 px-6">
+        <div className="flex items-center w-full gap-4 bg-background/40 border rounded-2xl py-4 px-6">
+             
             {getProjectIcon(project?.category ?? "default")}  
             <div className="flex flex-col w-full">
                 <div className="flex items-center justify-between">
@@ -64,19 +65,20 @@ export function ListView({project}: ViewProps) {
                             >
                                 <CalendarDaysIcon size={16} />Created { new Date(project.createdAt).toDateString()}
                             </span>       
-                            <p className="text-[0.9rem] pt-1">{project.description.slice(0, 60)}...</p>
+                            {/* <p className="text-[0.9rem] pt-1">{project.description.slice(0, 60)}...</p> */}
+                            {/* <p className="text-sm pt-1">{project.description.slice(0, 60)}...</p> */}
                         </div>   
                     </div>
                     <div className="flex gap-12">
                         <div className="flex flex-col items-end max-w-60">
                             <Progress value={project.progress} className="mt-1 w-[120px]"/>
-                            <div className="flex flex-col items-end mt-2">
+                            {/* <div className="flex flex-col items-end mt-2">
                                 <span className="text-xs text-muted-foreground font-light">{project.projectCode}</span>
                                 <span className="flex items-center gap-2 text-xs">
                                     {project.status.charAt(0).toUpperCase()+project.status.slice(1)}
                                     <span className={`w-2 h-2 bg-${dotColor} rounded-full`}></span>
                                 </span>
-                            </div>
+                            </div> */}
                         </div>                    
                     </div>
                 </div>
@@ -87,7 +89,7 @@ export function ListView({project}: ViewProps) {
 export function GridView({project}: ViewProps) {    
 
     return (
-        <div className="flex flex-col items-start gap-4 bg-muted border rounded-lg py-4 px-6">
+        <div className="flex flex-col items-start gap-4 bg-background/40 border rounded-lg py-4 px-6">
             <div className="flex items-center w-full justify-between">
                 {getProjectIcon(project?.category ?? "default")}
                 <ProjectMenu project={project}/>
@@ -99,7 +101,7 @@ export function GridView({project}: ViewProps) {
                     whileTap={{ scale: 0.96 }}
                     transition={{ duration: 0.2, ease: "easeInOut" }}
                 >
-                    <h3 className="text-md text-primary/90 font-semibold transition delay-90 duration-300 hover:underline">{project.title}</h3>
+                    <h3 className="text-sm text-primary/90 font-semibold transition delay-90 duration-300 hover:underline">{project.title}</h3>
                 </MotionLink>
             
                 <span
@@ -109,9 +111,11 @@ export function GridView({project}: ViewProps) {
                 </span>       
             </div>
 
-            <div className="flex flex-grow items-center justify-between w-full font-semibold mt-6 mb-2">
-                <Link to="" className="text-sm font-normal">View details</Link>
-                <Button variant="outline" className="text-xs bg-red-500 shadow-none px-12 hover:bg-red-500">Open</Button>
+            <div className=" items-center justify-between w-full font-semibold mt-6 mb-2">
+                <span className="text-xs">Progress</span>
+                <Progress value={project.progress} className="mt-1 w-full"/>
+                {/* <Link to="" className="text-sm font-normal">View details</Link>
+                <Button variant="outline" className="text-xs bg-red-500 shadow-none px-12 hover:bg-red-500">Open</Button> */}
             </div> 
         </div>
     );

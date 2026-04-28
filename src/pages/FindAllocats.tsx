@@ -1,17 +1,19 @@
 import { AllocatCardGrid } from "@/components/AllocatCard";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { allocats } from "@/data/allocats";
+// import { allocats } from "@/data/allocats";
 import { Slider } from "@/components/ui/slider";
 import MinimalNavMenu from "@/components/MinimalNavMenu";
-import { useParams } from "react-router-dom";
+import { data, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import type { Project } from "@/Types/project";
 import api from "@/api/axios";
+import type { Allocat } from "@/Types/allocat";
 
 function FindAllocats() {
     const [project, setProject] = useState<Project>();
     const [error, setError] = useState<Error | null>(null);
+    const [allocats, setAllocats] = useState<Allocat>();
 
     const params = useParams();
 
@@ -36,6 +38,20 @@ function FindAllocats() {
         }
         fetchProject();
     }, []);
+
+    async function getAllocats() {
+        if (!params.projectId)
+            return
+
+        const response = await api.get<Allocat>(
+            `/allocats/profiles`,
+            {withCredentials: true}
+        );
+
+        setAllocats(response.data);
+    } 
+    
+    getAllocats();
 
     if (error)
         return <p>Error</p>
@@ -81,11 +97,11 @@ function FindAllocats() {
 
                     </aside>
                     <section className="w-full">
-                        <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-                            {allocats.map(allocat =>
+                        {/* <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+                            {allocats?.map(allocat =>
                                 <span key={allocat.id}className="max-w-sm"><AllocatCardGrid allocat={allocat} project={project} /></span>
                             )}        
-                        </div>
+                        </div> */}
                     </section>
                 </div> 
             </main>

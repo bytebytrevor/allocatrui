@@ -45,7 +45,8 @@ function DraggableTaskCard({ task }: { task: Task }) {
       style={style}
       {...listeners}
       {...attributes}
-      className="bg-background/20 my-1 py-1 px-2 shadow-none border border-foreground/10 rounded-[6px] cursor-grab active:cursor-grabbing"
+      // className="bg-muted my-1 py-1 px-2 shadow-none border border-foreground/10 rounded-[6px] cursor-grab active:cursor-grabbing"
+      className="bg-muted my-1 py-1 px-2 shadow-none border border-foreground/10 rounded-[6px] cursor-grab active:cursor-grabbing"
     >
       <div className="flex items-center justify-between gap-2">
         <div className="flex flex-col">
@@ -86,7 +87,7 @@ function TaskStatusBoard({ status, title, description, linkText, tasks, project,
   return (
     <section
       ref={setNodeRef}
-      className={`flex flex-col w-64 min-h-60 max-h-full bg-muted border border-t-5 rounded-sm p-2 mt-8 ${className} ${
+      className={`flex flex-col w-64 min-h-60 max-h-full bg-background/40 border border-t-5 rounded-sm p-2 mt-8 ${className} ${
         isOver ? "ring-2 ring-foreground/20" : ""
       }`}
     >

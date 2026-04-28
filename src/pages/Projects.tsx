@@ -67,8 +67,8 @@ function Projects() {
     console.log(projects);
 
     return (
-        <div className="min-h-screen flex flex-col">
-            <header className="sticky top-0 z-10 border-b">
+        <div className="min-h-screen flex flex-col bg-muted">
+            <header className="sticky top-0 z-10 border-b bg-background/40">
                 <div className="container mx-auto px-4">
                     <DashboardMainNav />
                 </div>
@@ -103,18 +103,19 @@ function Projects() {
                     </div>) : (
                         <section className="flex-1 flex gap-12 justify-between w-full">              
                         <section className="w-full">
-                            <div className="flex items-center justify-between border-b py-4">
+                            <div className="flex items-center justify-between rounded-sm">
+                            {/* <div className="flex items-center justify-between p-4 border bg-muted rounded-sm"> */}
                                 <div className="flex items-center gap-2">
-                                    <NotepadText size={60} className="text-primary" />
+                                    {/* <NotepadText size={60} className="text-primary" /> */}
                                     <div>
-                                        <h1 className="text-xl font-medium">Hi {user?.fullName?.split(" ")[0]} 👋</h1>
+                                        <h1 className="text-xl font-bold">Hi {user?.fullName?.split(" ")[0]} 👋</h1>
                                         <p className="text-sm text-muted-foreground">You have 5 active projects in progress.</p> 
                                     </div>              
                                 </div>
                                 <div className="flex items-center">
                                     <Link to="/projects/new">
-                                        <Button variant="outline" className="text-xs shadow-none">
-                                            <PlusIcon />Create new project
+                                        <Button className="text-xs shadow-none">
+                                            <PlusIcon />New project
                                         </Button>
                                     </Link>
                                 </div>
@@ -153,18 +154,18 @@ function Projects() {
                             </div>                        
                         </section>
                         <aside className="hidden flex flex-col space-y-4 w-lg xl:block">
-                            <div>
-                                <img src={Electricians} alt="" className="rounded-t-2xl"/>
-                                <article className="flex items-start gap-2 bg-muted px-6 py-10 rounded-b-2xl">
+                            <div className="border rounded-lg">
+                                <img src={Electricians} alt="" className="rounded-t-lg"/>
+                                <article className="flex items-start gap-2 bg-background/40 px-6 py-10 rounded-b-lg">
                                     <span className=""><Megaphone size={40} /></span>
                                     <div className="flex flex-col space-y-4">
                                         <h3 className="font-bold">Advert Heading</h3>
                                         <p className="text-[0.9rem]">Lorem, ipsum dolor sit amet consectetur adipisicing elit. Vero fugit doloremque eius placeat voluptatum, aliquam porro vitae repellat aperiam.</p>
-                                        <span><Button className="text-xs font-semibold  mt-4 px-6">View profile</Button></span>
+                                        <span><Button variant="outline" className="text-xs font-semibold mt-4 px-6 shadow-none">View profile</Button></span>
                                     </div>                        
                                 </article>
                             </div>
-                            <article className="bg-muted p-6 rounded-2xl">
+                            <article className="bg-background/40 border p-6 rounded-lg">
                                 <div className="flex gap-2">
                                 <span><LightbulbIcon /></span>
                                 <div className="flex flex-col space-y-2">

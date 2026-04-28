@@ -29,8 +29,8 @@ function Dashboard() {
     const params = useParams();
 
     return (
-        <div className="flex flex-col h-screen">
-            <header className="w-full mx-auto mb-8 border-b">
+        <div className="flex flex-col h-screen bg-muted">
+            <header className="w-full mx-auto bg-background/40 mb-8 border-b">
                 <div className="container px-4 mx-auto">
                     <DashboardMainNav />
                 </div>
@@ -54,7 +54,7 @@ function Dashboard() {
                             <DropdownMenu>
                                 <DropdownMenuTrigger className="flex items-center gap-2 text-sm text-foreground bg-transparent hover:bg-transparent rounded-md px-4 font-medium focus:outline-none">
                                     Switch project
-                                    <ArrowRightLeftIcon className="w-8 h-8 bg-primary text-background p-2 rounded-sm" />
+                                    <ArrowRightLeftIcon className="w-8 h-8 bg-primary text-secondary p-2 rounded-sm" />
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent className="bg-background ml-4">
                                     {projects.map(p => <DropdownMenuItem key={p.id}><Link to={`/projects/${p.id}`}>{p.title}</Link></DropdownMenuItem>)}

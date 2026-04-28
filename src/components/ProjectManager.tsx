@@ -175,9 +175,9 @@ function ProjectManager() {
             </div>
             <div>
             <Link to="/projects/new">
-                <Button variant="outline" className={"text-xs shadow-none"}>
+                <Button className={"text-xs shadow-none"}>
                 <PlusIcon />
-                Create new project
+                New project
                 </Button>
             </Link>
             </div>

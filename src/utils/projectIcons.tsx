@@ -1,4 +1,4 @@
-import { Dock, Wrench, Hammer, Palette, FileBox } from "lucide-react";
+import { Dock, Wrench, Hammer, Palette, FileBox, Armchair, Fence } from "lucide-react";
 import type { JSX } from "react";
 
 const size = 36; 
@@ -9,6 +9,9 @@ const projectTypeIcons: Record<string, () => JSX.Element> = {
   "home service": () => <Wrench size={size} className="bg-muted-foreground/16 rounded-sm p-2 text-orange-500" />,
   "construction": () => <Hammer size={size} className="bg-muted-foreground/16 rounded-sm p-2 text-yellow-600" />,
   "creative": () => <Palette size={size} className="bg-muted-foreground/16 rounded-sm p-2 text-pink-500" />,
+  "Beauty & Grooming": () => <Armchair size={size} className="bg-muted-foreground/16 rounded-sm p-2 text-green-500" />,
+  // "Carpentry & Joinery": () => <Fence size={size} className="bg-primary rounded-sm p-2 text-secondary" />,
+  "Carpentry & Joinery": () => <Fence size={size} className="bg-muted-foreground/16 rounded-sm p-2 text-green-500" />,
 };
 
 // Optional: default icon if type not found

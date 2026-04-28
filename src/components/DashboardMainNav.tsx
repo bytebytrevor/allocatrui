@@ -14,6 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import AllocatrIconLogo from "./AllocatrIconLogo";
 
 type Props = {
     children?: ReactNode;
@@ -44,24 +45,24 @@ function DashboardMainNav({children}: Props) {
     
 
     return (
-        <nav className="flex items-center justify-between bg-background py-2">
+        <nav className="flex items-center justify-between bg-background/40 py-2">
             <Link to="/projects" className="flex items-center">
-                <AllocatrLogo theme={theme} className="w-20"/>
+                <AllocatrIconLogo theme={theme} className="w-6"/>
             </Link>
             <span>{children}</span>
             <span className="flex items-center space-x-2">
                 <button
                     onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                    className="p-1  hover:bg-muted-foreground/20 border rounded-full cursor-pointer transition-colors delay-150 duration-300"
+                    className="pr-2 hover:text-foreground text-muted-foreground border-r cursor-pointer transition-colors delay-150 duration-300"
                     >
                     {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
                 </button>
-                <BellIcon size={26} className="hover:bg-muted-foreground/20 border rounded-full cursor-pointer p-1 transition-colors delay-150 duration-300"/>
+                <BellIcon size={26} className="pr-2 hover:text-foreground text-muted-foreground border-r cursor-pointer transition-colors delay-150 duration-300"/>
                 <DropdownMenu>
                     <DropdownMenuTrigger>
                         <EllipsisVerticalIcon
                             size={26}
-                            className="hover:bg-muted-foreground/20 border rounded-full cursor-pointer p-1 transition-colors delay-150 duration-300"
+                            className="pr-2 hover:text-foreground text-muted-foreground border-r cursor-pointer transition-colors delay-150 duration-300"
                         />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
@@ -75,7 +76,7 @@ function DashboardMainNav({children}: Props) {
                 </DropdownMenu>
 
                 <DropdownMenu>
-                    <DropdownMenuTrigger className="w-6 h-6 rounded-full border-2 border-muted-foreground/20">
+                    <DropdownMenuTrigger className="w-6 h-6 border-muted-foreground/20">
                         <Avatar className="rounded-full transition-all duration-300">
                             <AvatarImage
                                 src={user?.avatarUrl}
