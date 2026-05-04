@@ -13,7 +13,7 @@ import type { Allocat } from "@/Types/allocat";
 function FindAllocats() {
     const [project, setProject] = useState<Project>();
     const [error, setError] = useState<Error | null>(null);
-    const [allocats, setAllocats] = useState<Allocat>();
+    const [allocats, setAllocats] = useState<Allocat[]>([]);
 
     const params = useParams();
 
@@ -39,19 +39,27 @@ function FindAllocats() {
         fetchProject();
     }, []);
 
-    async function getAllocats() {
-        if (!params.projectId)
-            return
+    // Fetch allocats based on project details
+    useEffect(() => {
+        async function fetchAllocats() {
+            try {
+                const response = await api.get<Allocat[]>(
+                    `/allocats/profiles`,
+                    {withCredentials: true}
+            );
+                setAllocats(response.data);
+            } catch (err: unknown) {
+                if (err instanceof Error) {
+                    setError(err);
+                } else {
+                    setError(new Error("Unknown error"));
+                }
+            }
+        }
+        fetchAllocats();
+    }, []);
 
-        const response = await api.get<Allocat>(
-            `/allocats/profiles`,
-            {withCredentials: true}
-        );
-
-        setAllocats(response.data);
-    } 
-    
-    getAllocats();
+    console.log(allocats);
 
     if (error)
         return <p>Error</p>
@@ -97,11 +105,11 @@ function FindAllocats() {
 
                     </aside>
                     <section className="w-full">
-                        {/* <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+                        <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
                             {allocats?.map(allocat =>
-                                <span key={allocat.id}className="max-w-sm"><AllocatCardGrid allocat={allocat} project={project} /></span>
+                                <span key={allocat.id} className="max-w-sm"><AllocatCardGrid allocat={allocat} project={project} /></span>
                             )}        
-                        </div> */}
+                        </div>
                     </section>
                 </div> 
             </main>
