@@ -22,6 +22,7 @@ import Profile from "./pages/Profile";
 
 import { AuthProvider } from "./auth/AuthContext";
 import { RequireAuth } from "./auth/RequireAuth";
+import CreateAllocatProfile from "./pages/CreateAllocatProfile";
 
 function App() {
   const theme = localStorage.getItem("theme") || "light";
@@ -87,6 +88,10 @@ function App() {
           path: "/profile",
           Component: Profile,
         },
+        {
+          path: "allocat/profile/create",
+          Component: CreateAllocatProfile
+        }
         // {
         //   path: "/profile/edit",
         //   Component: EditProfile,
