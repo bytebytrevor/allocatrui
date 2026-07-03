@@ -20,7 +20,6 @@ import {
     LoaderCircleIcon,
     Megaphone,
     MessagesSquareIcon,
-    NotepadText,
     PlusIcon,
 } from "lucide-react";
 import api from "@/api/axios";

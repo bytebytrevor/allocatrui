@@ -1,4 +1,4 @@
-import type { Allocat } from "@/Types/allocat";
+import type { Allocat } from "@/Types/allocatProfile";
 import type { User } from "@/Types/user"
 
 export function avatarFallback(user: Allocat | User) {

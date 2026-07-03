@@ -22,6 +22,9 @@ import {
   GraduationCapIcon
 } from "lucide-react";
 import { useState } from "react";
+import api from "@/api/axios";
+import { useNavigate } from "react-router-dom";
+
 
 function CreateAllocatProfile() {
   const [skills, setSkills] = useState<string[]>([]);
@@ -32,6 +35,8 @@ function CreateAllocatProfile() {
 
   const [idDocument, setIdDocument] = useState<File | null>(null);
   const [credentialFiles, setCredentialFiles] = useState<File[]>([]);
+
+  const navigate = useNavigate();
 
   function addSkill() {
     const value = skillInput.trim();
@@ -68,22 +73,40 @@ function CreateAllocatProfile() {
     return "Specialist rate";
   }
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
     const formData = new FormData(e.currentTarget);
 
-    const payload = {
-      idNumber: formData.get("idNumber"),
-      hourlyRate,
-      yearsExperience,
-      bio,
-      skills,
-      idDocument,
-      credentialFiles
-    };
+    const data = new FormData()
+    
+    data.append("idNumber", String(formData.get("idNumber")));
+    data.append("hourlyRate", hourlyRate.toString());
+    data.append("yearsExperience", yearsExperience.toString());
+    data.append("bio", bio)
 
-    console.log("Allocat profile payload:", payload);
+    skills.forEach(skill => data.append("skills", skill));
+
+    if (idDocument) {
+        data.append("idDocument", idDocument)
+    }
+
+    credentialFiles.forEach(file =>
+        data.append("credentialFiles", file)
+    );
+
+    try {
+        const response = await api.post(
+            "allocats/profiles/create",
+            data,
+            {withCredentials: true}            
+        );
+        console.log("Allocat profile payload:", response);
+
+        navigate("/allocats/profile")
+    } catch (err) {
+        console.error(err);
+    }    
   }
 
   const completionItems = [
@@ -495,7 +518,10 @@ function CreateAllocatProfile() {
                   You can always edit this later.
                 </p>
 
-                <Button type="submit" className="px-10 shadow-none">
+                <Button
+                    type="submit"
+                    className="px-10 shadow-none"
+                >
                   Create profile
                   <SparklesIcon size={16} />
                 </Button>

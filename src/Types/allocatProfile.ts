@@ -13,7 +13,8 @@
 //     joinedAt: string
 // }
 
-export type Allocat = {
+export type AllocatProfile = {
+    id: string,
     fullName: string,
     idNumber: string,
     hourlyRate: number,

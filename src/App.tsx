@@ -89,7 +89,11 @@ function App() {
           Component: Profile,
         },
         {
-          path: "allocat/profile/create",
+          path: "allocats/profile",
+          Component: AllocatProfile,
+        },
+        {
+          path: "allocats/profile/create",
           Component: CreateAllocatProfile
         }
         // {

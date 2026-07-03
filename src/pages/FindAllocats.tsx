@@ -1,19 +1,18 @@
 import { AllocatCardGrid } from "@/components/AllocatCard";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-// import { allocats } from "@/data/allocats";
 import { Slider } from "@/components/ui/slider";
 import MinimalNavMenu from "@/components/MinimalNavMenu";
-import { data, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import type { Project } from "@/Types/project";
 import api from "@/api/axios";
-import type { Allocat } from "@/Types/allocat";
+import type { AllocatProfile } from "@/Types/allocatProfile";
 
 function FindAllocats() {
     const [project, setProject] = useState<Project>();
     const [error, setError] = useState<Error | null>(null);
-    const [allocats, setAllocats] = useState<Allocat[]>([]);
+    const [allocats, setAllocats] = useState<AllocatProfile[]>([]);
 
     const params = useParams();
 
@@ -43,7 +42,7 @@ function FindAllocats() {
     useEffect(() => {
         async function fetchAllocats() {
             try {
-                const response = await api.get<Allocat[]>(
+                const response = await api.get<AllocatProfile[]>(
                     `/allocats/profiles`,
                     {withCredentials: true}
             );
