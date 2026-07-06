@@ -1,24 +1,26 @@
-// export type Allocat = {
-//     id: string;
-//     fullName: string;
-//     title: string
-//     skills: string[],
-//     rating: number,
-//     completedProjects: number,
-//     available: boolean,
-//     verified: boolean,
-//     location: string,
-//     hourlyRate: number,
-//     currency: string,
-//     joinedAt: string
-// }
+import type { Project } from "./project"
 
 export type AllocatProfile = {
     id: string,
     fullName: string,
-    idNumber: string,
-    hourlyRate: number,
-    bio: string,    
+    IdNumber: string,
+    email: string,
+    bio: string,
+    headline: string,
+    title: string
+    skills: string[],
+    rating: number,
+    ratingCount: number,
+    completedProjects: number,
     availability: boolean,
+    verified: boolean,
+    location: string,
+    hourlyRate: number,
+    currency: string,
+    responseTime: number,
+    level: number,
     yearsExperience: number,
+    professionalScore: number,
+    joinedAt: string
+    projects: Project[]
 }

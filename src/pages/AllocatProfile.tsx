@@ -21,49 +21,13 @@ import {
   StarIcon,
   UserRoundCheckIcon
 } from "lucide-react";
-import { Link, useParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import api from "@/api/axios";
 import type { AllocatProfile } from "@/Types/allocatProfile";
 
 function AllocatProfile() {
-  const profile = {
-    fullName: "Trevor Ngwenya",
-    headline: "Backend-focused software developer",
-    level: "Skilled professional",
-    location: "Harare, Zimbabwe",
-    availability: "Available now",
-    hourlyRate: 22,
-    yearsExperience: 3,
-    rating: 0,
-    ratingCount: 0,
-    completedProjects: 4,
-    responseTime: "Usually replies fast",
-    email: "trevor@example.com",
-    professionalScore: 84,
-    bio: "I build clean backend systems, APIs, and project workflows for teams that need reliable execution. I enjoy turning unclear requirements into practical, maintainable solutions.",
-    skills: ["C#", ".NET", "React", "TypeScript", "APIs", "PostgreSQL"],
-    projects: [
-      {
-        title: "Client dashboard API",
-        category: "Backend Development",
-        icon: <Code2Icon size={18} />,
-        accent: "bg-primary/10 text-primary"
-      },
-      {
-        title: "Project task board",
-        category: "Full-stack Feature",
-        icon: <FolderCheckIcon size={18} />,
-        accent: "bg-accent-3/10 text-accent-3"
-      },
-      {
-        title: "Authentication workflow",
-        category: "Security & Identity",
-        icon: <ShieldCheckIcon size={18} />,
-        accent: "bg-blue-500/10 text-blue-500"
-      }
-    ]
-  };
+  
   const [allocatProfile, setAllocatProfile] = useState<AllocatProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -90,6 +54,8 @@ function AllocatProfile() {
         fetchAllocatProfile();
     }, []);
 
+    console.log(allocatProfile);
+
   return (
     <div className="min-h-screen flex flex-col bg-muted">
       <header className="sticky top-0 z-10 border-b bg-background/70 backdrop-blur">
@@ -111,29 +77,29 @@ function AllocatProfile() {
 
             <div className="pb-2">
               <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-3xl font-black">{profile.fullName}</h1>
+                <h1 className="text-3xl font-black">{allocatProfile?.fullName}</h1>
                 <Badge className="bg-primary text-primary-foreground border-primary shadow-none">
                   <BadgeCheckIcon size={14} />
                   Allocat
                 </Badge>
               </div>
 
-              <p className="text-sm font-medium mt-1">{profile.headline}</p>
+              <p className="text-sm font-medium mt-1">{allocatProfile?.headline}</p>
 
               <div className="flex flex-wrap items-center gap-4 mt-3 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1">
                   <MapPinIcon size={14} />
-                  {profile.location}
+                  {allocatProfile?.location}
                 </span>
 
                 <span className="flex items-center gap-1">
                   <span className="h-2 w-2 rounded-full bg-accent-2" />
-                  {profile.availability}
+                  {allocatProfile?.availability}
                 </span>
 
                 <span className="flex items-center gap-1">
                   <FlameIcon size={14} className="text-accent-3" />
-                  {profile.responseTime}
+                  {allocatProfile?.responseTime}
                 </span>
               </div>
 
@@ -142,7 +108,7 @@ function AllocatProfile() {
                 className="mt-4 shadow-none bg-primary/5 text-primary border-primary/20"
               >
                 <StarIcon size={14} />
-                {profile.level}
+                {allocatProfile?.level}
               </Badge>
             </div>
           </div>
@@ -172,7 +138,7 @@ function AllocatProfile() {
                   </span>
                   <div>
                     <p className="text-xs text-muted-foreground">Rate</p>
-                    <p className="text-3xl font-black">${profile.hourlyRate}</p>
+                    <p className="text-3xl font-black">${allocatProfile?.hourlyRate}</p>
                     <p className="text-xs text-muted-foreground">per hour</p>
                   </div>
                 </div>
@@ -185,7 +151,7 @@ function AllocatProfile() {
                   </span>
                   <div>
                     <p className="text-xs text-muted-foreground">Experience</p>
-                    <p className="text-3xl font-black">{profile.yearsExperience}</p>
+                    <p className="text-3xl font-black">{allocatProfile?.yearsExperience}</p>
                     <p className="text-xs text-muted-foreground">years</p>
                   </div>
                 </div>
@@ -198,9 +164,10 @@ function AllocatProfile() {
                   </span>
                   <div>
                     <p className="text-xs text-muted-foreground">Rating</p>
-                    <p className="text-3xl font-black">{profile.rating.toFixed(1)}</p>
+                    {/* <p className="text-3xl font-black">{allocatProfile?.rating.toFixed(1)}</p> */}
+                    <p className="text-3xl font-black">{3.45.toFixed(1)}</p>
                     <p className="text-xs text-muted-foreground">
-                      {profile.ratingCount} reviews
+                      {allocatProfile?.ratingCount} reviews
                     </p>
                   </div>
                 </div>
@@ -213,7 +180,7 @@ function AllocatProfile() {
                   </span>
                   <div>
                     <p className="text-xs text-muted-foreground">Completed</p>
-                    <p className="text-3xl font-black">{profile.completedProjects}</p>
+                    <p className="text-3xl font-black">{allocatProfile?.completedProjects}</p>
                     <p className="text-xs text-muted-foreground">projects</p>
                   </div>
                 </div>
@@ -229,7 +196,7 @@ function AllocatProfile() {
               </div>
 
               <p className="text-sm text-muted-foreground leading-8">
-                {profile.bio}
+                {allocatProfile?.bio}
               </p>
             </article>
 
@@ -247,8 +214,8 @@ function AllocatProfile() {
                 </Button>
               </div>
 
-              <div className="space-y-3">
-                {profile.projects.map(project => (
+              {/* <div className="space-y-3">
+                {allocatProfile?.projects.map(project => (
                   <div
                     key={project.title}
                     className="rounded-xl border bg-muted/30 p-4 flex items-center justify-between gap-4"
@@ -277,7 +244,7 @@ function AllocatProfile() {
                     </div>
                   </div>
                 ))}
-              </div>
+              </div> */}
             </article>
 
             <article className="rounded-xl border bg-background p-6">
@@ -289,7 +256,7 @@ function AllocatProfile() {
               </div>
 
               <div className="flex flex-wrap gap-2">
-                {profile.skills.map(skill => (
+                {allocatProfile?.skills.map(skill => (
                   <span
                     key={skill}
                     className="rounded-full border bg-primary/5 text-primary border-primary/20 px-4 py-1 text-xs font-medium hover:bg-primary hover:text-primary-foreground transition-colors"
@@ -313,7 +280,7 @@ function AllocatProfile() {
               <div className="flex items-center gap-5">
                 <div className="rounded-full border-[10px] p-6 border-primary/20 flex items-center justify-center">
                   <div className="text-center">
-                    <p className="text-3xl font-black">{profile.professionalScore}%</p>
+                    <p className="text-3xl font-black">{allocatProfile?.professionalScore}%</p>
                     <p className="text-xs font-medium">Strong profile</p>
                   </div>
                 </div>
@@ -400,7 +367,7 @@ function AllocatProfile() {
                     </span>
                     <div>
                       <p className="text-sm font-bold">Email verified</p>
-                      <p className="text-xs text-muted-foreground">{profile.email}</p>
+                      <p className="text-xs text-muted-foreground">{allocatProfile?.email}</p>
                     </div>
                   </div>
 
