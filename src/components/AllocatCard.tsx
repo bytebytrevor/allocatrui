@@ -3,13 +3,13 @@ import { Button } from "./ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { avatarFallback } from "@/utils/avatarFallback";
 import type { Project } from "../Types/project";
-import type { Allocat } from "../Types/allocatProfile";
+import type { AllocatProfile } from "../Types/allocatProfile";
 import drill from "@/assets/drill-square.svg"
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 type Props = {
-    allocat: Allocat;
+    allocat: AllocatProfile;
     project?: Project;
 }
 
@@ -22,7 +22,7 @@ export function AllocatCardGrid({ allocat, project }: Props) {
         console.log(project);
 
         try {
-            await axios.put<Allocat>(
+            await axios.put<AllocatProfile>(
                 `http://localhost:5206/projects/${project.id}/allocats/${allocat.id}`,
             );
 
