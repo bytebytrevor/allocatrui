@@ -1,19 +1,8 @@
-
-
-import {
-  CalendarDaysIcon,
-  CircleCheckBigIcon,
-  CircleDashedIcon,
-  CircleDotIcon,
-  EllipsisVerticalIcon,
-  ListTodoIcon,
-  TriangleAlertIcon
-} from "lucide-react";
-import { Link } from "react-router-dom";
+import { ListTodoIcon, PlusIcon } from "lucide-react";
 import type { Task } from "@/Types/task";
-import CreateTaskDialog from "./CreateTaskDialogue";
 import type { Project } from "@/Types/project";
-
+import CreateTaskDialog from "./CreateTaskDialogue";
+import TaskCard from "./TaskCard";
 import { useDroppable, useDraggable } from "@dnd-kit/core";
 
 type Status = "pending" | "active" | "complete" | "overdue";
@@ -22,7 +11,6 @@ type Props = {
   status: Status;
   title: string;
   description: string;
-  linkText: string;
   tasks?: Task[];
   project?: Project;
   onTaskCreated?: () => void;
@@ -30,13 +18,22 @@ type Props = {
 };
 
 function DraggableTaskCard({ task }: { task: Task }) {
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
-    id: task.id
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    isDragging
+  } = useDraggable({
+    id: task.id,
+    data: { task }
   });
 
   const style: React.CSSProperties = {
-    transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
-    opacity: isDragging ? 0 : 1 // Hide original while overlay is visible
+    transform: transform
+      ? `translate3d(${transform.x}px, ${transform.y}px, 0)`
+      : undefined,
+    opacity: isDragging ? 0 : 1
   };
 
   return (
@@ -45,74 +42,83 @@ function DraggableTaskCard({ task }: { task: Task }) {
       style={style}
       {...listeners}
       {...attributes}
-      // className="bg-muted my-1 py-1 px-2 shadow-none border border-foreground/10 rounded-[6px] cursor-grab active:cursor-grabbing"
-      className="bg-muted my-1 py-1 px-2 shadow-none border border-foreground/10 rounded-[6px] cursor-grab active:cursor-grabbing"
+      className="cursor-grab touch-none active:cursor-grabbing"
     >
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex flex-col">
-          <h4 className="font-medium text-xs">{task.title}</h4>
-          <span className="flex gap-1 items-center text-[0.6rem] text-muted-foreground">
-            <CalendarDaysIcon size={10} />
-            Due{" "}
-            {task.dueDate ? (
-              ` ${new Date(task.dueDate).toDateString()}`
-            ) : (
-              <span className="italic">Not specified</span>
-            )}
-          </span>
-        </div>
-        <div className="flex items-center space-x-4">
-          {task.status === "complete" && (
-            <CircleCheckBigIcon size={16} className="text-accent-2" />
-          )}
-          {task.status === "active" && (
-            <CircleDotIcon size={16} className="text-primary" />
-          )}
-          {task.status === "overdue" && (
-            <TriangleAlertIcon size={16} className="text-destructive" />
-          )}
-          {task.status === "pending" && (
-            <CircleDashedIcon size={16} className="text-accent-3" />
-          )}
-          <EllipsisVerticalIcon size={16} className="text-muted-foreground hover:text-foreground" />
-        </div>
-      </div>
+      <TaskCard task={task} />
     </div>
   );
 }
 
-function TaskStatusBoard({ status, title, description, linkText, tasks, project, onTaskCreated, className }: Props) {
-  const { setNodeRef, isOver } = useDroppable({ id: status });
+function TaskStatusBoard({
+  status,
+  title,
+  description,
+  tasks,
+  project,
+  onTaskCreated,
+  className
+}: Props) {
+  const { setNodeRef, isOver } = useDroppable({
+    id: status
+  });
 
   return (
     <section
       ref={setNodeRef}
-      className={`flex flex-col w-64 min-h-60 max-h-full bg-background/40 border border-t-5 rounded-sm p-2 mt-8 ${className} ${
-        isOver ? "ring-2 ring-foreground/20" : ""
-      }`}
+      className={[
+        "flex w-full min-w-[260px] flex-col",
+        "min-h-[180px]",
+        "max-h-[calc(100vh-230px)]",
+        "overflow-hidden rounded-xl border bg-background p-3",
+        className,
+        isOver ? "ring-2 ring-primary/30" : ""
+      ].join(" ")}
     >
-      <h3 className="font-semibold text-xs text-foreground/80 pb-2">{title}</h3>
+      <div className="mb-3 flex items-center justify-between pb-3">
+        <div className="flex items-center gap-2">
+          {/* <h3 className="text-sm font-semibold">{title}</h3> */}
+          <h3 className="text-sm font-semibold">{title}</h3>
 
-      {tasks == null || tasks.length === 0 ? (
-        <div className="flex-1 flex gap-x-4 items-center justify-center text-muted-foreground">
-          <ListTodoIcon />
-          <small className="flex flex-col">
-            {description}
-            {project?.id && (
-              <CreateTaskDialog
-                trigger={<Link className="text-accent-3" to="">{linkText}</Link>}
-                projectId={project.id}
-                onCreated={onTaskCreated}
-              />
-            )}
-          </small>
+          <span className="rounded-full bg-muted px-2 py-0.5 text-[0.65rem] font-semibold text-muted-foreground">
+            {tasks?.length ?? 0}
+          </span>
+        </div>
+
+        {project?.id && (
+          <CreateTaskDialog
+            projectId={project.id}
+            onCreated={onTaskCreated}
+            trigger={
+              <button
+                type="button"
+                className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                aria-label={`Add task to ${title}`}
+              >
+                <PlusIcon size={15} />
+              </button>
+            }
+          />
+        )}
+      </div>
+
+      {!tasks?.length ? (
+        <div className="flex flex-1 flex-col items-center justify-center px-5 text-center">
+          <span className="flex h-11 w-11 items-center justify-center rounded-full bg-muted text-muted-foreground">
+            <ListTodoIcon size={20} />
+          </span>
+
+          <p className="mt-3 text-sm font-medium">{description}</p>
+
+          <p className="mt-1 text-xs text-muted-foreground">
+            Drag a task here or create a new one.
+          </p>
         </div>
       ) : (
-        <section className="flex-1 overflow-y-auto max-h-full scrollbar-thin">
+        <div className="flex min-h-0 flex-col gap-2 overflow-y-auto pr-1 scrollbar-thin">
           {tasks.map(task => (
             <DraggableTaskCard key={task.id} task={task} />
           ))}
-        </section>
+        </div>
       )}
     </section>
   );

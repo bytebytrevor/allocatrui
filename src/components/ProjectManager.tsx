@@ -1,7 +1,7 @@
 import TaskStatusBoard from "./TaskStatusBoard";
 import { Progress } from "./ui/progress";
 import { Button } from "./ui/button";
-import { PlusIcon } from "lucide-react";
+import { ArrowLeftIcon, EyeIcon, FolderIcon, FolderOpenIcon, FolderSymlinkIcon, PlusIcon, SendToBack, SendToBackIcon } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import { useEffect, useState, useMemo } from "react";
 import type { Project } from "@/Types/project";
@@ -165,66 +165,98 @@ function ProjectManager() {
   return (
     <>
         <Toaster />
-        <div className="flex-1 flex flex-col h-full pb-4">
-        <section className="flex justify-between pr-12 pb-4 shrink-0">
-            <div className="flex flex-col space-y-4">
-            <span className="flex gap-4 items-center text-md">
-                <h2 className="font-semibold">{project?.title}</h2>
-            </span>
-            <Progress value={project?.progress} className="w-sm h-3" />
-            </div>
-            <div>
-            <Link to="/projects/new">
-                <Button className={"text-xs shadow-none"}>
-                <PlusIcon />
-                New project
-                </Button>
-            </Link>
-            </div>
-        </section>
+        <div className="flex-1 flex flex-col h-full pb-4">        
+          <section className="flex flex-col gap-5 pb-6 lg:flex-row lg:items-end lg:justify-between">
+            <div className="space-y-3">
+              <div>
+                <Link
+                  to="/projects"
+                  className="flex items-center text-[0.7rem] text-primary/60 pb-3 gap-1 "
+                >
+                  <ArrowLeftIcon size="10" />
+                  Back to projects
+                </Link>
+                <p className="flex text-xs font-medium uppercase tracking-wider text-muted-foreground gap-1">
+                  {/* <FolderOpenIcon size="12" /> */}
+                  <FolderOpenIcon size="12" />
+                  Project workspace
+                </p>
 
-        <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-            <section className="flex items-start gap-6 overflow-y-auto scrollbar-thin">
-            <TaskStatusBoard
+                <h1 className="text-2xl font-bold tracking-tight">
+                  {project?.title}
+                </h1>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <Progress value={project?.progress ?? 0} className="h-2 w-72" />
+
+                <span className="text-xs font-semibold text-muted-foreground">
+                  {Math.round(project?.progress ?? 0)}%
+                </span>
+              </div>
+            </div>
+
+            <span className="space-x-2">
+              <Button
+                className="shadow-none"
+                variant="outline"
+              >
+                  <EyeIcon size={16} />
+                  View details
+              </Button>
+
+              <Link to="/projects/new">
+                <Button className="shadow-none">
+                  <PlusIcon size={16} />
+                  New project
+                </Button>
+              </Link>
+            </span>
+            
+          </section>
+
+          <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+            <section className="mt-6 grid min-h-0 items-start gap-4 pb-4 md:grid-cols-2 xl:grid-cols-4">
+            
+              <TaskStatusBoard
                 status="pending"
                 title="Pending"
                 description="No pending tasks"
-                linkText="+ Click here to add"
                 tasks={pendingTaskList}
                 project={project}
                 onTaskCreated={refreshTasks}
-                className="border-t-accent-3/80"
-            />
-            <TaskStatusBoard
+                className="border-t-4 border-t-accent-3"
+              />
+
+              <TaskStatusBoard
                 status="active"
                 title="In progress"
-                description="You don't have any tasks"
-                linkText="+ Click here to add"
+                description="No active tasks"
                 tasks={activeTaskList}
                 project={project}
                 onTaskCreated={refreshTasks}
-                className="border-t-primary/80"
-            />
-            <TaskStatusBoard
+                className="border-t-4 border-t-primary"
+              />
+
+              <TaskStatusBoard
                 status="complete"
                 title="Complete"
                 description="No completed tasks"
-                linkText="+ Click here to add"
                 tasks={completedTaskList}
                 project={project}
                 onTaskCreated={refreshTasks}
-                className="border-t-accent-2/80"
-            />
-            <TaskStatusBoard
+                className="border-t-4 border-t-accent-2"
+              />
+
+              <TaskStatusBoard
                 status="overdue"
                 title="Overdue"
                 description="No overdue tasks"
-                linkText="+ Click here to add"
                 tasks={overdueTaskList}
                 project={project}
                 onTaskCreated={refreshTasks}
-                className="border-t-destructive/80"
-            />
+                className="border-t-4 border-t-destructive"
+              />
             </section>
 
             <DragOverlay>

@@ -11,7 +11,7 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
-import type { Project } from "@/Types";
+import type { Project } from "@/Types/project";
 
 
 type Props = {
