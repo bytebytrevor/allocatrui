@@ -216,7 +216,7 @@ function ProjectManager() {
           </section>
 
           <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-            <section className="mt-6 grid min-h-0 items-start gap-4 pb-4 md:grid-cols-2 xl:grid-cols-4">
+            <section className="mt-6 grid min-h-0 gap-12 items-start pb-4 md:grid-cols-2 xl:grid-cols-4 2xl:gap-4 ">
             
               <TaskStatusBoard
                 status="pending"

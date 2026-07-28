@@ -23,6 +23,7 @@ import Profile from "./pages/Profile";
 import { AuthProvider } from "./auth/AuthContext";
 import { RequireAuth } from "./auth/RequireAuth";
 import CreateAllocatProfile from "./pages/CreateAllocatProfile";
+import AboutPage from "./pages/AboutPage";
 
 function App() {
   const theme = localStorage.getItem("theme") || "light";
@@ -56,6 +57,11 @@ function App() {
     },        
     {
       path: "/allocats/:profileId", Component: AllocatProfile,
+    },
+    {      
+      path: "/about",
+      Component: AboutPage,
+      errorElement: <NotFoundErrorPage />
     },    
 
     // PROTECTED ROUTES

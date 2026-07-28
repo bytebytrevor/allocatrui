@@ -1,76 +1,523 @@
+// import { Link, Outlet, useParams } from "react-router-dom";
+// import { ArrowRightLeftIcon, Banknote, BlocksIcon, CalendarDaysIcon, ChartNoAxesColumnIcon, HeartIcon, MailIcon } from "lucide-react";
+// import DashboardNavLink from "@/components/DashboardNavLink";
+// import DashboardMainNav from "@/components/DashboardMainNav";
+// import { useEffect, useState } from "react";
+// import axios from "axios";
+// import type { Project } from "@/Types/project";
+// import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+
+// function Dashboard() {
+//     const [projects, setProjects] = useState<Project[]>([]);
+    
+    
+//     // Fetch all projects
+//     useEffect(() => {
+//         async function fetchProjects() {
+//             const response = await axios.get(
+//                 `${import.meta.env.VITE_API_URL}/projects`,
+//                 {
+//                     withCredentials: true,
+//                 }
+//             );
+//             setProjects(response.data);
+//         }
+
+//         fetchProjects();
+//     }, []);
+
+//     const params = useParams();
+
+//     return (
+//         <div className="flex flex-col h-screen bg-muted">
+//             <header className="w-full mx-auto bg-background/40 mb-8 border-b">
+//                 <div className="container px-4 mx-auto">
+//                     <DashboardMainNav />
+//                 </div>
+//             </header>
+            
+
+
+            
+//             <main className="container mx-auto flex flex-1 gap-2 overflow-hidden">
+//                     {/* <aside className="flex flex-col justify-between bg-dark-gray text-white min-w-[200px] text-lg font-light rounded-tr-4xl"> */}
+//                     <aside className="flex flex-col justify-between border-r min-w-[200px] text-lg font-light">
+//                         <div className="flex flex-col">
+//                             {/* <Link to="" className="pt-4 pl-4 space-y-12 font-medium">Title</Link> */}
+//                             <DashboardNavLink href={`/projects/${params.projectId}`} icon={BlocksIcon} label="Manager" />
+//                             <DashboardNavLink href={`/projects/${params.projectId}/calendar`} icon={CalendarDaysIcon} label="Calendar" />
+//                             <DashboardNavLink href={`/projects/${params.projectId}/messaging`} icon={MailIcon} label="Messaging" />
+//                             <DashboardNavLink href={`/projects/${params.projectId}/analytics`} icon={ChartNoAxesColumnIcon} label="Analytics" />
+//                             <DashboardNavLink href={`/projects/${params.projectId}/favorites`} icon={HeartIcon} label="Favorites" />
+//                             <DashboardNavLink href={`/projects/${params.projectId}/transactions`} icon={Banknote} label="Transactions" />
+//                         </div>
+//                         <span className="py-6">
+//                             <DropdownMenu>
+//                                 <DropdownMenuTrigger className="flex items-center gap-2 text-sm text-foreground bg-transparent hover:bg-transparent rounded-md px-4 font-medium focus:outline-none">
+//                                     Switch project
+//                                     <ArrowRightLeftIcon className="w-8 h-8 bg-primary text-secondary p-2 rounded-sm" />
+//                                 </DropdownMenuTrigger>
+//                                 <DropdownMenuContent className="bg-background ml-4">
+//                                     {projects.map(p => <DropdownMenuItem key={p.id}><Link to={`/projects/${p.id}`}>{p.title}</Link></DropdownMenuItem>)}
+//                                 </DropdownMenuContent>
+//                             </DropdownMenu>
+                            
+//                         </span>
+//                     </aside>
+//                 <div className="flex-1 pl-12 overflow-y-auto ">
+//                     <Outlet />
+//                 </div>
+//             </main>
+//         </div>        
+//     )
+// }
+
+// export default Dashboard;
+
+
+import { useEffect, useMemo, useState } from "react";
 import { Link, Outlet, useParams } from "react-router-dom";
-import { ArrowRightLeftIcon, Banknote, BlocksIcon, CalendarDaysIcon, ChartNoAxesColumnIcon, HeartIcon, MailIcon } from "lucide-react";
-import DashboardNavLink from "@/components/DashboardNavLink";
+import {
+  ArrowLeftIcon,
+  ArrowRightLeftIcon,
+  BanknoteIcon,
+  BlocksIcon,
+  CalendarDaysIcon,
+  ChartNoAxesColumnIcon,
+  CheckIcon,
+  ChevronDownIcon,
+  HeartIcon,
+  LayoutDashboardIcon,
+  LoaderCircleIcon,
+  MailIcon,
+  MenuIcon,
+  PlusIcon,
+  RefreshCwIcon,
+  XIcon,
+} from "lucide-react";
+
+import api from "@/api/axios";
 import DashboardMainNav from "@/components/DashboardMainNav";
-import { useEffect, useState } from "react";
-import axios from "axios";
+import DashboardNavLink from "@/components/DashboardNavLink";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import type { Project } from "@/Types/project";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+
+const managerLinks = [
+  {
+    label: "Manager",
+    path: "",
+    icon: BlocksIcon,
+  },
+  {
+    label: "Calendar",
+    path: "calendar",
+    icon: CalendarDaysIcon,
+  },
+  {
+    label: "Messaging",
+    path: "messaging",
+    icon: MailIcon,
+  },
+  {
+    label: "Analytics",
+    path: "analytics",
+    icon: ChartNoAxesColumnIcon,
+  },
+  {
+    label: "Favorites",
+    path: "favorites",
+    icon: HeartIcon,
+  },
+  {
+    label: "Transactions",
+    path: "transactions",
+    icon: BanknoteIcon,
+  },
+];
 
 function Dashboard() {
-    const [projects, setProjects] = useState<Project[]>([]);
-    
-    
-    // Fetch all projects
-    useEffect(() => {
-        async function fetchProjects() {
-            const response = await axios.get(
-                `${import.meta.env.VITE_API_URL}/projects`,
-                {
-                    withCredentials: true,
-                }
-            );
-            setProjects(response.data);
-        }
+  const { projectId } = useParams();
 
-        fetchProjects();
-    }, []);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loadingProjects, setLoadingProjects] = useState(true);
+  const [projectsError, setProjectsError] = useState<string | null>(
+    null,
+  );
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-    const params = useParams();
+  async function fetchProjects() {
+    setLoadingProjects(true);
+    setProjectsError(null);
 
+    try {
+      const response = await api.get<Project[]>("/projects", {
+        withCredentials: true,
+      });
+
+      setProjects(response.data);
+    } catch (error) {
+      console.error(error);
+      setProjectsError("Projects could not be loaded.");
+    } finally {
+      setLoadingProjects(false);
+    }
+  }
+
+  useEffect(() => {
+    void fetchProjects();
+  }, []);
+
+  const currentProject = useMemo(() => {
+    return projects.find(
+      (project) => String(project.id) === String(projectId),
+    );
+  }, [projects, projectId]);
+
+  const projectBasePath = `/projects/${projectId}`;
+
+  return (
+    <div className="flex min-h-screen flex-col bg-background text-foreground transition-colors">
+      <header className="sticky top-0 z-50 border-b border-border bg-background/85 backdrop-blur-xl">
+        <div className="container mx-auto px-4 sm:px-5 md:px-8">
+          <DashboardMainNav />
+        </div>
+      </header>
+
+      {/* Mobile project heading */}
+      <div className="border-b border-border bg-card lg:hidden">
+        <div className="container mx-auto flex items-center justify-between gap-4 px-5 py-4 md:px-8">
+          <div className="min-w-0">
+            <p className="text-[0.62rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+              Project manager
+            </p>
+
+            <h1 className="mt-1 truncate text-sm font-black uppercase tracking-[-0.01em]">
+              {currentProject?.title || "Project workspace"}
+            </h1>
+          </div>
+
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            className="h-10 w-10 shrink-0 rounded-full"
+            onClick={() => setMobileMenuOpen((current) => !current)}
+            aria-label={
+              mobileMenuOpen
+                ? "Close project navigation"
+                : "Open project navigation"
+            }
+          >
+            {mobileMenuOpen ? (
+              <XIcon size={18} />
+            ) : (
+              <MenuIcon size={18} />
+            )}
+          </Button>
+        </div>
+
+        {mobileMenuOpen && (
+          <div className="container mx-auto px-5 pb-5 md:px-8">
+            <div className="rounded-[1.5rem] border border-border bg-background p-3">
+              <ProjectNavigation
+                basePath={projectBasePath}
+                onNavigate={() => setMobileMenuOpen(false)}
+              />
+
+              <div className="mt-3 border-t border-border pt-3">
+                <ProjectSwitcher
+                  projects={projects}
+                  projectId={projectId}
+                  loading={loadingProjects}
+                  error={projectsError}
+                  currentProject={currentProject}
+                  onRetry={fetchProjects}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <main className="container mx-auto flex min-h-0 flex-1 px-5 py-6 md:px-8 lg:py-8">
+        <div className="grid min-h-0 w-full gap-7 lg:grid-cols-[260px_minmax(0,1fr)] xl:grid-cols-[280px_minmax(0,1fr)]">
+          {/* Desktop sidebar */}
+          <aside className="hidden min-h-0 lg:block">
+            <div className="sticky top-[6.5rem] flex max-h-[calc(100vh-8rem)] flex-col overflow-hidden rounded-[2rem] border border-border bg-card text-card-foreground">
+              {/* Current project */}
+              <div className="relative overflow-hidden border-b border-border p-6">
+                <div className="absolute -right-14 -top-16 h-44 w-44 rounded-full bg-primary/10 blur-3xl" />
+
+                <div className="relative">
+                  <Link
+                    to="/projects"
+                    className="inline-flex items-center gap-2 text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    <ArrowLeftIcon size={14} />
+                    All projects
+                  </Link>
+
+                  <div className="mt-6 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/12 text-primary">
+                    <LayoutDashboardIcon size={22} />
+                  </div>
+
+                  <p className="mt-5 text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                    Project workspace
+                  </p>
+
+                  <h1 className="mt-2 line-clamp-2 break-words text-xl font-black uppercase leading-[1.05] tracking-[-0.025em]">
+                    {currentProject?.title || "Project manager"}
+                  </h1>
+
+                  {currentProject?.projectCode && (
+                    <p className="mt-3 text-xs text-muted-foreground">
+                      {currentProject.projectCode}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Navigation */}
+              <div className="flex-1 overflow-y-auto p-3">
+                <p className="px-3 pb-3 pt-2 text-[0.62rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                  Workspace
+                </p>
+
+                <ProjectNavigation basePath={projectBasePath} />
+              </div>
+
+              {/* Project switcher */}
+              <div className="border-t border-border p-4">
+                <ProjectSwitcher
+                  projects={projects}
+                  projectId={projectId}
+                  loading={loadingProjects}
+                  error={projectsError}
+                  currentProject={currentProject}
+                  onRetry={fetchProjects}
+                />
+              </div>
+            </div>
+          </aside>
+
+          {/* Page content */}
+          <section className="min-w-0">
+            {/* <div className="min-h-full min-w-0 rounded-[2rem] border border-border bg-card text-card-foreground"> */}
+            <div className="min-h-full min-w-0 rounded-[2rem] text-card-foreground">
+              {/* <div className="min-w-0 p-5 sm:p-6 md:p-8 lg:p-9"> */}
+              <div className="min-w-0 pt-5 sm:pt-6 md:pt-8 lg:pt-9">
+                <Outlet />
+              </div>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+  );
+}
+
+type ProjectNavigationProps = {
+  basePath: string;
+  onNavigate?: () => void;
+};
+
+function ProjectNavigation({
+  basePath,
+  onNavigate,
+}: ProjectNavigationProps) {
+  return (
+    <nav className="space-y-1" aria-label="Project workspace">
+      {managerLinks.map((link) => {
+        const href = link.path
+          ? `${basePath}/${link.path}`
+          : basePath;
+
+        return (
+          <div key={link.label} onClick={onNavigate}>
+            <DashboardNavLink
+              href={href}
+              icon={link.icon}
+              label={link.label}
+            />
+          </div>
+        );
+      })}
+    </nav>
+  );
+}
+
+type ProjectSwitcherProps = {
+  projects: Project[];
+  projectId?: string;
+  loading: boolean;
+  error: string | null;
+  currentProject?: Project;
+  onRetry: () => void;
+};
+
+function ProjectSwitcher({
+  projects,
+  projectId,
+  loading,
+  error,
+  currentProject,
+  onRetry,
+}: ProjectSwitcherProps) {
+  if (loading) {
     return (
-        <div className="flex flex-col h-screen bg-muted">
-            <header className="w-full mx-auto bg-background/40 mb-8 border-b">
-                <div className="container px-4 mx-auto">
-                    <DashboardMainNav />
-                </div>
-            </header>
-            
+      <div className="flex items-center gap-3 rounded-[1.25rem] bg-muted/40 px-4 py-3">
+        <LoaderCircleIcon
+          size={17}
+          className="animate-spin text-primary"
+        />
 
+        <div>
+          <p className="text-xs font-semibold">Loading projects</p>
+          <p className="mt-0.5 text-[0.65rem] text-muted-foreground">
+            Preparing your workspace
+          </p>
+        </div>
+      </div>
+    );
+  }
 
-            
-            <main className="container mx-auto flex flex-1 gap-2 overflow-hidden">
-                    {/* <aside className="flex flex-col justify-between bg-dark-gray text-white min-w-[200px] text-lg font-light rounded-tr-4xl"> */}
-                    <aside className="flex flex-col justify-between border-r min-w-[200px] text-lg font-light">
-                        <div className="flex flex-col">
-                            {/* <Link to="" className="pt-4 pl-4 space-y-12 font-medium">Title</Link> */}
-                            <DashboardNavLink href={`/projects/${params.projectId}`} icon={BlocksIcon} label="Manager" />
-                            <DashboardNavLink href={`/projects/${params.projectId}/calendar`} icon={CalendarDaysIcon} label="Calendar" />
-                            <DashboardNavLink href={`/projects/${params.projectId}/messaging`} icon={MailIcon} label="Messaging" />
-                            <DashboardNavLink href={`/projects/${params.projectId}/analytics`} icon={ChartNoAxesColumnIcon} label="Analytics" />
-                            <DashboardNavLink href={`/projects/${params.projectId}/favorites`} icon={HeartIcon} label="Favorites" />
-                            <DashboardNavLink href={`/projects/${params.projectId}/transactions`} icon={Banknote} label="Transactions" />
-                        </div>
-                        <span className="py-6">
-                            <DropdownMenu>
-                                <DropdownMenuTrigger className="flex items-center gap-2 text-sm text-foreground bg-transparent hover:bg-transparent rounded-md px-4 font-medium focus:outline-none">
-                                    Switch project
-                                    <ArrowRightLeftIcon className="w-8 h-8 bg-primary text-secondary p-2 rounded-sm" />
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent className="bg-background ml-4">
-                                    {projects.map(p => <DropdownMenuItem key={p.id}><Link to={`/projects/${p.id}`}>{p.title}</Link></DropdownMenuItem>)}
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                            
-                        </span>
-                    </aside>
-                <div className="flex-1 pl-12 overflow-y-auto ">
-                    <Outlet />
-                </div>
-            </main>
-        </div>        
-    )
+  if (error) {
+    return (
+      <button
+        type="button"
+        onClick={onRetry}
+        className="flex w-full items-center gap-3 rounded-[1.25rem] border border-destructive/20 bg-destructive/5 px-4 py-3 text-left text-destructive"
+      >
+        <RefreshCwIcon size={17} />
+
+        <div>
+          <p className="text-xs font-semibold">Try loading again</p>
+          <p className="mt-0.5 text-[0.65rem] opacity-70">
+            Project list unavailable
+          </p>
+        </div>
+      </button>
+    );
+  }
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          type="button"
+          className={[
+            "flex w-full items-center justify-between gap-3",
+            "rounded-[1.25rem] border border-border bg-background",
+            "px-4 py-3 text-left transition-colors",
+            "hover:border-primary/25 hover:bg-primary/[0.04]",
+          ].join(" ")}
+        >
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/12 text-primary">
+              <ArrowRightLeftIcon size={17} />
+            </span>
+
+            <div className="min-w-0">
+              <p className="text-[0.62rem] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
+                Switch project
+              </p>
+
+              <p className="mt-1 truncate text-xs font-bold">
+                {currentProject?.title || "Choose project"}
+              </p>
+            </div>
+          </div>
+
+          <ChevronDownIcon
+            size={16}
+            className="shrink-0 text-muted-foreground"
+          />
+        </button>
+      </DropdownMenuTrigger>
+
+      <DropdownMenuContent
+        align="start"
+        side="top"
+        className="w-[260px] rounded-2xl border-border bg-popover p-2 text-popover-foreground shadow-xl"
+      >
+        <DropdownMenuLabel className="px-3 py-2">
+          <p className="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            Your projects
+          </p>
+        </DropdownMenuLabel>
+
+        <DropdownMenuSeparator />
+
+        <div className="max-h-64 overflow-y-auto">
+          {projects.length > 0 ? (
+            projects.map((project) => {
+              const isCurrent =
+                String(project.id) === String(projectId);
+
+              return (
+                <DropdownMenuItem
+                  key={project.id}
+                  asChild
+                  className="rounded-xl"
+                >
+                  <Link
+                    to={`/projects/${project.id}`}
+                    className="flex items-center justify-between gap-3"
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold">
+                        {project.title}
+                      </p>
+
+                      {project.projectCode && (
+                        <p className="mt-0.5 text-[0.65rem] text-muted-foreground">
+                          {project.projectCode}
+                        </p>
+                      )}
+                    </div>
+
+                    {isCurrent && (
+                      <CheckIcon
+                        size={15}
+                        className="shrink-0 text-primary"
+                      />
+                    )}
+                  </Link>
+                </DropdownMenuItem>
+              );
+            })
+          ) : (
+            <div className="px-3 py-6 text-center">
+              <p className="text-sm font-semibold">
+                No projects available
+              </p>
+
+              <p className="mt-1 text-xs text-muted-foreground">
+                Create a project to begin.
+              </p>
+            </div>
+          )}
+        </div>
+
+        <DropdownMenuSeparator />
+
+        <DropdownMenuItem asChild className="rounded-xl">
+          <Link to="/projects/new">
+            <PlusIcon size={15} />
+            Create new project
+          </Link>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
 }
 
 export default Dashboard;
-
