@@ -227,6 +227,7 @@ import { GridView, ListView } from "@/components/ProjectCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { Project } from "@/Types/project";
+import LoadingState from "@/components/LoadingState";
 
 type ProjectView = "grid" | "list";
 type ProjectFilter = "active" | "pending" | "closed";

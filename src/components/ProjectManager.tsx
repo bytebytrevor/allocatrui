@@ -10,6 +10,7 @@ import api from "@/api/axios";
 import { DndContext, DragOverlay, type DragStartEvent, type DragEndEvent } from "@dnd-kit/core";
 import TaskCard from "./TaskCard";
 import { Toaster } from "sonner";
+import LoadingState from "./LoadingState";
 
 function ProjectManager() {
   const [project, setProject] = useState<Project>();
@@ -154,7 +155,14 @@ function ProjectManager() {
     }
   };
 
-  if (projectLoading || tasksLoading) return <p>Loading...</p>;
+  if (projectLoading || tasksLoading) {
+    return (
+      <LoadingState
+        title="Loading project manager"
+        description="We are preparing your project, tasks and workspace activity."
+      />
+    );
+  }
   if (error) return <p>Could not load project</p>;
 
   const pendingTaskList = tasks?.filter(task => task.status === "pending");
