@@ -66,7 +66,7 @@ function TaskStatusBoard({
     <section
       ref={setNodeRef}
       className={[
-        "flex w-full min-w-[260px] flex-col",
+        "flex w-full min-w-[236px] flex-col",
         "min-h-[180px]",
         "max-h-[calc(100vh-230px)]",
         "overflow-hidden rounded-xl border bg-background p-3",

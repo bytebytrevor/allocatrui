@@ -5,18 +5,18 @@ const size = 36;
 
 // Map project type to a function that returns JSX with styling
 const projectTypeIcons: Record<string, () => JSX.Element> = {
-  "digital": () => <Dock size={size} className="bg-muted-foreground/16 rounded-sm p-2 text-blue-500" />,
-  "home service": () => <Wrench size={size} className="bg-muted-foreground/16 rounded-sm p-2 text-orange-500" />,
-  "construction": () => <Hammer size={size} className="bg-muted-foreground/16 rounded-sm p-2 text-yellow-600" />,
-  "creative": () => <Palette size={size} className="bg-muted-foreground/16 rounded-sm p-2 text-pink-500" />,
-  "Beauty & Grooming": () => <Armchair size={size} className="bg-muted-foreground/16 rounded-sm p-2 text-green-500" />,
+  "digital": () => <Dock size={size} className="rounded-sm p-2 text-blue-500" />,
+  "home service": () => <Wrench size={size} className="rounded-sm p-2 text-orange-500" />,
+  "Construction": () => <Hammer size={size} className="rounded-sm p-2 text-yellow-600" />,
+  "creative": () => <Palette size={size} className="rounded-sm p-2 text-pink-500" />,
+  "Beauty & Grooming": () => <Armchair size={size} className="rounded-sm p-2 text-green-500" />,
   // "Carpentry & Joinery": () => <Fence size={size} className="bg-primary rounded-sm p-2 text-secondary" />,
-  "Carpentry & Joinery": () => <Fence size={size} className="bg-muted-foreground/16 rounded-sm p-2 text-green-500" />,
+  "Carpentry & Joinery": () => <Fence size={size} className="rounded-sm p-2 text-green-500" />,
 };
 
 // Optional: default icon if type not found
 export const getProjectIcon = (type: string): JSX.Element => {
-  return projectTypeIcons[type]?.() ?? <FileBox size={size} className="bg-muted-foreground/16 rounded-sm p-2 text-gray-400" />;
+  return projectTypeIcons[type]?.() ?? <FileBox size={size} className="rounded-sm p-2 text-gray-400" />;
 };
 
 export default projectTypeIcons;

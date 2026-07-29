@@ -1,7 +1,7 @@
-import type { Allocat } from "@/Types/allocatProfile";
+import type { AllocatProfile } from "@/Types/allocatProfile";
 import type { User } from "@/Types/user"
 
-export function avatarFallback(user: Allocat | User) {
+export function avatarFallback(user: AllocatProfile | User) {
     // const fullname = user.fullName.split(' ');
     return (
         "A"

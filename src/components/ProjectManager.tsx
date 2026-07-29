@@ -1,7 +1,7 @@
 import TaskStatusBoard from "./TaskStatusBoard";
 import { Progress } from "./ui/progress";
 import { Button } from "./ui/button";
-import { ArrowLeftIcon, EyeIcon, FolderIcon, FolderOpenIcon, FolderSymlinkIcon, PlusIcon, SendToBack, SendToBackIcon } from "lucide-react";
+import { ArrowLeftIcon, EyeIcon, FolderOpenIcon, PlusIcon } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import { useEffect, useState, useMemo } from "react";
 import type { Project } from "@/Types/project";
