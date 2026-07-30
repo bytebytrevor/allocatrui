@@ -1,167 +1,9 @@
-// import { Link, useNavigate } from "react-router-dom";
-// import { BadgeCheckIcon, BellIcon, EllipsisVerticalIcon, LogOutIcon, Moon, SettingsIcon, Sun, User2Icon, UserCircleIcon } from "lucide-react";
-// import { useState, type ReactNode } from "react";
-// import { useEffect, } from "react";
-// import { useAuth } from "@/auth/useAuth";
-// import { Avatar } from "@radix-ui/react-avatar";
-// import { AvatarFallback, AvatarImage } from "./ui/avatar";
-// import {
-//   DropdownMenu,
-//   DropdownMenuContent,
-//   DropdownMenuItem,
-//   DropdownMenuLabel,
-//   DropdownMenuSeparator,
-//   DropdownMenuTrigger,
-// } from "@/components/ui/dropdown-menu";
-// import AllocatrIconLogo from "./AllocatrIconLogo";
-// import BecomeAllocatDialog from "./BecomeAllocatDialog";
-// import api from "@/api/axios";
-
-// type Props = {
-//     children?: ReactNode;
-// }
-
-
-
-// function DashboardMainNav({children}: Props) {      
-//     const [theme, setTheme] = useState(
-//         localStorage.getItem("theme") || "dark"
-//     );
-
-//     const { user, logout } = useAuth();
-//     console.log(user);
-
-//     const navigate = useNavigate(); 
-
-//     const [becomeAllocatOpen, setBecomeAllocatOpen] = useState(false);
-
-//     useEffect(() => {
-//         const root = document.documentElement;
-//         if (theme === "light") {
-//             root.classList.add("light");
-//             root.classList.remove("dark");
-//         } else {
-//             root.classList.add("dark");
-//             root.classList.remove("light");
-//         }
-//         localStorage.setItem("theme", theme);
-//     }, [theme]);
-
-    
-
-//     return (
-//         <>
-//             <nav className="flex items-center justify-between bg-background/40 py-2">
-//                 <Link to="/projects" className="flex items-center">
-//                     <AllocatrIconLogo theme={theme} className="w-6"/>
-//                 </Link>
-//                 <span>{children}</span>
-//                 <span className="flex items-center space-x-2">
-//                     <button
-//                         onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-//                         className="pr-2 hover:text-foreground text-muted-foreground border-r cursor-pointer transition-colors delay-150 duration-300"
-//                         >
-//                         {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
-//                     </button>
-//                     <BellIcon size={26} className="pr-2 hover:text-foreground text-muted-foreground border-r cursor-pointer transition-colors delay-150 duration-300"/>
-//                     <DropdownMenu>
-//                         <DropdownMenuTrigger>
-//                             <EllipsisVerticalIcon
-//                                 size={26}
-//                                 className="pr-2 hover:text-foreground text-muted-foreground border-r cursor-pointer transition-colors delay-150 duration-300"
-//                             />
-//                         </DropdownMenuTrigger>
-//                         <DropdownMenuContent>
-//                             <DropdownMenuLabel>My Account</DropdownMenuLabel>
-//                             <DropdownMenuSeparator />
-//                             <DropdownMenuItem>Switch Mode</DropdownMenuItem>
-//                             <DropdownMenuItem>New project</DropdownMenuItem>
-//                             <DropdownMenuItem>Settings</DropdownMenuItem>
-//                             <DropdownMenuItem>Help and support</DropdownMenuItem>
-//                         </DropdownMenuContent>
-//                     </DropdownMenu>
-
-//                     <DropdownMenu>
-//                         <DropdownMenuTrigger className="w-6 h-6 border-muted-foreground/20">
-//                             <Avatar className="rounded-full transition-all duration-300">
-//                                 <AvatarImage
-//                                     src={user?.avatarUrl}
-//                                     className="h-full w-full rounded-full object-cover transition-opacity data-[state=loading]:opacity-0"
-//                                 />
-                
-//                                 <AvatarFallback
-//                                     className="text-foreground font-medium border"
-//                                 >
-//                                     {user?.fullName?.charAt(0) ?? <UserCircleIcon />}
-//                                 </AvatarFallback>
-//                             </Avatar>
-//                         </DropdownMenuTrigger>
-//                         <DropdownMenuContent>
-//                             <DropdownMenuLabel className="flex items-center gap-2 text-muted-foreground rounded-t-sm p-2">
-//                                 <Avatar className="w-12 h-12 rounded-full border border-muted-foreground/20 transition-all duration-300 ">                        
-//                                         <AvatarImage
-//                                             src={user?.avatarUrl}
-//                                             className="h-full w-full rounded-full object-cover transition-opacity data-[state=loading]:opacity-0"
-//                                         />
-//                                         <AvatarFallback
-//                                             className="text-foreground font-medium border"
-//                                         >
-//                                             {user?.fullName?.charAt(0).toUpperCase() ?? <UserCircleIcon />}
-//                                         </AvatarFallback>
-                                
-//                                 </Avatar>
-//                                 <div className="flex flex-col">
-//                                     <span className="font-bold text-sm">{user?.fullName?.split(" ")[0]}</span>
-//                                     <span className="text-xs font-normal">{user?.email}</span>
-//                                 </div>
-//                             </DropdownMenuLabel>
-//                             <DropdownMenuSeparator />
-//                             <DropdownMenuItem
-//                                 onSelect={(e) => {
-//                                     e.preventDefault();
-//                                     setBecomeAllocatOpen(true);
-//                                 }}
-//                                 >
-//                                 <BadgeCheckIcon />
-//                                 Become an allocat
-//                             </DropdownMenuItem>
-//                             <DropdownMenuItem onClick={() => navigate("/profile")}><User2Icon/>Profile</DropdownMenuItem>
-//                             <DropdownMenuItem><SettingsIcon/>Settings</DropdownMenuItem>
-//                             <DropdownMenuItem
-//                                 onClick={async () => {
-//                                     await logout();      // clear backend cookie & front-end state
-//                                     navigate("/login");  // redirects to login page
-//                                 }}
-//                                 className="text-destructive font-medium focus:bg-destructive/90 focus:text-white transition-all duration-300"
-//                             >
-//                                 <LogOutIcon className="focus:text-white"/>
-//                                 Logout
-//                             </DropdownMenuItem>
-//                         </DropdownMenuContent>
-//                     </DropdownMenu>                
-//                 </span>
-//             </nav>
-//             <BecomeAllocatDialog
-//                 open={becomeAllocatOpen}
-//                 onOpenChange={setBecomeAllocatOpen}
-//                 onContinue={async () => {
-//                     await api.patch(
-//                     "/users/me/become-allocat",
-//                     {},
-//                     { withCredentials: true }
-//                     );
-
-//                     setBecomeAllocatOpen(false);
-//                     navigate("/allocats/profile/create");
-//                 }}
-//             />
-//         </>
-//     );
-// }
-
-// export default DashboardMainNav;
-
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   BadgeCheckIcon,
@@ -205,7 +47,9 @@ type Props = {
 type Theme = "light" | "dark";
 
 function getInitials(name?: string) {
-  if (!name) return "U";
+  if (!name) {
+    return "U";
+  }
 
   return name
     .trim()
@@ -235,7 +79,8 @@ function DashboardMainNav({ children }: Props) {
   const [becomingAllocat, setBecomingAllocat] =
     useState(false);
 
-  const [loggingOut, setLoggingOut] = useState(false);
+  const [loggingOut, setLoggingOut] =
+    useState(false);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -247,7 +92,10 @@ function DashboardMainNav({ children }: Props) {
   }, [theme]);
 
   const firstName = useMemo(() => {
-    return user?.fullName?.trim().split(/\s+/)[0] || "Account";
+    return (
+      user?.fullName?.trim().split(/\s+/)[0] ||
+      "Account"
+    );
   }, [user?.fullName]);
 
   const initials = useMemo(() => {
@@ -261,7 +109,9 @@ function DashboardMainNav({ children }: Props) {
   }
 
   async function handleLogout() {
-    if (loggingOut) return;
+    if (loggingOut) {
+      return;
+    }
 
     setLoggingOut(true);
 
@@ -276,7 +126,9 @@ function DashboardMainNav({ children }: Props) {
   }
 
   async function handleBecomeAllocat() {
-    if (becomingAllocat) return;
+    if (becomingAllocat) {
+      return;
+    }
 
     setBecomingAllocat(true);
 
@@ -292,7 +144,10 @@ function DashboardMainNav({ children }: Props) {
       setBecomeAllocatOpen(false);
       navigate("/allocats/profile/create");
     } catch (error) {
-      console.error("Could not update account mode:", error);
+      console.error(
+        "Could not update account mode:",
+        error,
+      );
     } finally {
       setBecomingAllocat(false);
     }
@@ -301,40 +156,36 @@ function DashboardMainNav({ children }: Props) {
   return (
     <>
       <nav
-        className="flex min-h-16 items-center justify-between gap-4 py-3"
+        className="flex h-14 items-center justify-between gap-3"
         aria-label="Dashboard navigation"
       >
-        {/* Brand */}
-        <div className="flex min-w-0 items-center gap-5">
+        {/* Brand and page context */}
+        <div className="flex min-w-0 items-center gap-3">
           <Link
             to="/projects"
-            className={[
-              "flex h-10 w-10 shrink-0 items-center justify-center",
-              "rounded-2xl bg-primary/10 transition-colors",
-              "hover:bg-primary/15",
-            ].join(" ")}
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl transition-colors hover:bg-muted"
             aria-label="Go to projects"
           >
             <AllocatrIconLogo
               theme={theme}
-              className="w-6"
+              className="w-5"
             />
           </Link>
 
           {children && (
-            <div className="hidden min-w-0 border-l border-border pl-5 md:block">
+            <div className="hidden min-w-0 border-l border-border pl-3 md:block">
               {children}
             </div>
           )}
         </div>
 
-        {/* Desktop actions */}
-        <div className="flex items-center gap-2">
+        {/* Navigation controls */}
+        <div className="flex shrink-0 items-center gap-1">
           <Button
             type="button"
             variant="ghost"
             size="icon"
-            className="h-10 w-10 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
+            className="h-8 w-8 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
             onClick={toggleTheme}
             aria-label={
               theme === "dark"
@@ -343,9 +194,9 @@ function DashboardMainNav({ children }: Props) {
             }
           >
             {theme === "dark" ? (
-              <SunIcon size={18} />
+              <SunIcon size={16} />
             ) : (
-              <MoonIcon size={18} />
+              <MoonIcon size={16} />
             )}
           </Button>
 
@@ -353,30 +204,31 @@ function DashboardMainNav({ children }: Props) {
             type="button"
             variant="ghost"
             size="icon"
-            className="relative h-10 w-10 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
+            className="relative h-8 w-8 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
             aria-label="Open notifications"
           >
-            <BellIcon size={18} />
+            <BellIcon size={16} />
 
-            <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full border-2 border-background bg-primary" />
+            <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-primary" />
           </Button>
 
-          {/* Quick actions */}
+          {/* Quick actions - visible at every breakpoint */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 type="button"
                 variant="ghost"
                 size="icon"
-                className="hidden h-10 w-10 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground sm:inline-flex"
+                className="h-8 w-8 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
                 aria-label="Open quick actions"
               >
-                <MenuIcon size={18} />
+                <MenuIcon size={16} />
               </Button>
             </DropdownMenuTrigger>
 
             <DropdownMenuContent
               align="end"
+              sideOffset={8}
               className="w-56 rounded-2xl border-border bg-popover p-2 text-popover-foreground shadow-xl"
             >
               <DropdownMenuLabel className="px-3 py-2">
@@ -389,7 +241,9 @@ function DashboardMainNav({ children }: Props) {
 
               <DropdownMenuItem
                 className="rounded-xl"
-                onClick={() => navigate("/projects/new")}
+                onClick={() =>
+                  navigate("/projects/new")
+                }
               >
                 <FolderPlusIcon size={16} />
                 New project
@@ -397,7 +251,9 @@ function DashboardMainNav({ children }: Props) {
 
               <DropdownMenuItem
                 className="rounded-xl"
-                onClick={() => navigate("/settings")}
+                onClick={() =>
+                  navigate("/settings")
+                }
               >
                 <SettingsIcon size={16} />
                 Settings
@@ -413,22 +269,22 @@ function DashboardMainNav({ children }: Props) {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {/* Account menu */}
+          {/* Compact account menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
                 type="button"
                 className={[
-                  "flex min-w-0 items-center gap-3 rounded-full",
-                  "border border-border bg-card py-1.5 pl-1.5 pr-2",
-                  "text-card-foreground transition-colors",
-                  "hover:border-primary/25 hover:bg-muted/50",
+                  "ml-1 flex min-w-0 items-center gap-2 rounded-full",
+                  "border border-border bg-background p-1 pr-1",
+                  "text-foreground transition-colors",
+                  "hover:bg-muted/60",
                   "focus-visible:outline-none focus-visible:ring-2",
                   "focus-visible:ring-ring focus-visible:ring-offset-2",
                 ].join(" ")}
                 aria-label="Open account menu"
               >
-                <Avatar className="h-9 w-9 shrink-0 border border-border">
+                <Avatar className="h-7 w-7 shrink-0">
                   <AvatarImage
                     src={user?.avatarUrl}
                     alt={
@@ -439,41 +295,36 @@ function DashboardMainNav({ children }: Props) {
                     className="object-cover"
                   />
 
-                  <AvatarFallback className="bg-primary/10 text-xs font-bold text-primary">
+                  <AvatarFallback className="bg-primary/10 text-[0.65rem] font-bold text-primary">
                     {user?.fullName ? (
                       initials
                     ) : (
-                      <UserCircleIcon size={18} />
+                      <UserCircleIcon size={15} />
                     )}
                   </AvatarFallback>
                 </Avatar>
 
-                <div className="hidden min-w-0 text-left lg:block">
-                  <p className="max-w-28 truncate text-xs font-bold">
+                <div className="hidden min-w-0 text-left xl:block">
+                  <p className="max-w-24 truncate text-xs font-semibold">
                     {firstName}
-                  </p>
-
-                  <p className="max-w-28 truncate text-[0.65rem] text-muted-foreground">
-                    My account
                   </p>
                 </div>
 
                 <ChevronDownIcon
-                  size={15}
-                  className="hidden shrink-0 text-muted-foreground sm:block"
+                  size={13}
+                  className="mr-1 hidden shrink-0 text-muted-foreground sm:block"
                 />
               </button>
             </DropdownMenuTrigger>
 
             <DropdownMenuContent
               align="end"
-              sideOffset={10}
-              className="w-72 rounded-[1.5rem] border-border bg-popover p-2 text-popover-foreground shadow-xl"
+              sideOffset={8}
+              className="w-64 rounded-[1.25rem] border-border bg-popover p-2 text-popover-foreground shadow-xl"
             >
-              {/* Account header */}
-              <DropdownMenuLabel className="p-3">
+              <DropdownMenuLabel className="p-2">
                 <div className="flex min-w-0 items-center gap-3">
-                  <Avatar className="h-12 w-12 shrink-0 border border-border">
+                  <Avatar className="h-10 w-10 shrink-0">
                     <AvatarImage
                       src={user?.avatarUrl}
                       alt={
@@ -484,22 +335,24 @@ function DashboardMainNav({ children }: Props) {
                       className="object-cover"
                     />
 
-                    <AvatarFallback className="bg-primary/10 font-bold text-primary">
+                    <AvatarFallback className="bg-primary/10 text-sm font-bold text-primary">
                       {user?.fullName ? (
                         initials
                       ) : (
-                        <UserCircleIcon size={20} />
+                        <UserCircleIcon size={18} />
                       )}
                     </AvatarFallback>
                   </Avatar>
 
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-bold text-foreground">
-                      {user?.fullName || "Allocatr user"}
+                    <p className="truncate text-sm font-semibold text-foreground">
+                      {user?.fullName ||
+                        "Allocatr user"}
                     </p>
 
                     <p className="mt-0.5 truncate text-xs font-normal text-muted-foreground">
-                      {user?.email || "No email available"}
+                      {user?.email ||
+                        "No email available"}
                     </p>
                   </div>
                 </div>
@@ -521,7 +374,9 @@ function DashboardMainNav({ children }: Props) {
 
                 <DropdownMenuItem
                   className="rounded-xl"
-                  onClick={() => navigate("/profile")}
+                  onClick={() =>
+                    navigate("/profile")
+                  }
                 >
                   <User2Icon size={16} />
                   Profile
@@ -529,7 +384,9 @@ function DashboardMainNav({ children }: Props) {
 
                 <DropdownMenuItem
                   className="rounded-xl"
-                  onClick={() => navigate("/settings")}
+                  onClick={() =>
+                    navigate("/settings")
+                  }
                 >
                   <SettingsIcon size={16} />
                   Settings
@@ -544,13 +401,13 @@ function DashboardMainNav({ children }: Props) {
                   void handleLogout();
                 }}
                 disabled={loggingOut}
-                className={[
-                  "rounded-xl font-medium text-destructive",
-                  "focus:bg-destructive/10 focus:text-destructive",
-                ].join(" ")}
+                className="rounded-xl font-medium text-destructive focus:bg-destructive/10 focus:text-destructive"
               >
                 <LogOutIcon size={16} />
-                {loggingOut ? "Logging out..." : "Log out"}
+
+                {loggingOut
+                  ? "Logging out..."
+                  : "Log out"}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -560,7 +417,9 @@ function DashboardMainNav({ children }: Props) {
       <BecomeAllocatDialog
         open={becomeAllocatOpen}
         onOpenChange={setBecomeAllocatOpen}
-        onContinue={() => void handleBecomeAllocat()}
+        onContinue={() =>
+          void handleBecomeAllocat()
+        }
       />
     </>
   );

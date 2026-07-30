@@ -582,20 +582,20 @@ function LandingPage() {
         </section>
 
         {/* Horizontal service slider */}
-        <section className="rounded-t-[2.5rem] bg-white py-16 text-[#151515] sm:rounded-t-[3rem] sm:py-20 md:rounded-t-[5rem] md:py-24 lg:py-36">
+        <section className="rounded-t-[2.5rem] bg-background py-16 text-foreground sm:rounded-t-[3rem] sm:py-20 md:rounded-t-[5rem] md:py-24 lg:py-36">
           <div className="container mx-auto px-5 md:px-8">
             <div className="flex min-w-0 flex-col gap-7 md:flex-row md:items-end md:justify-between">
               <div className="min-w-0 max-w-3xl">
-                <p className="mb-4 text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-[#151515]/55 sm:text-xs sm:tracking-[0.22em]">
+                <p className="mb-4 text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-muted-foreground sm:text-xs sm:tracking-[0.22em]">
                   Skills for real life
                 </p>
 
-                <ResponsiveHeading className="uppercase text-[#151515]">
+                <ResponsiveHeading className="uppercase text-foreground">
                   Whatever needs doing,{" "}
                   <span className="text-primary">start here.</span>
                 </ResponsiveHeading>
 
-                <p className="mt-5 max-w-2xl text-sm leading-7 text-[#151515]/65 sm:mt-6 sm:text-base sm:leading-8">
+                <p className="mt-5 max-w-2xl text-sm leading-7 text-muted-foreground sm:mt-6 sm:text-base sm:leading-8">
                   Browse service areas and find professionals for home,
                   business, technical and creative work.
                 </p>
@@ -605,7 +605,7 @@ function LandingPage() {
                 <button
                   type="button"
                   onClick={() => scrollServices("left")}
-                  className="flex h-11 w-11 items-center justify-center rounded-full border border-[#151515]/15 transition-colors hover:bg-[#151515] hover:text-white sm:h-12 sm:w-12"
+                  className="flex h-11 w-11 items-center justify-center rounded-full border border-border bg-background text-foreground transition-colors hover:bg-foreground hover:text-background sm:h-12 sm:w-12"
                   aria-label="View previous services"
                 >
                   <ArrowLeftIcon size={19} />
@@ -614,7 +614,7 @@ function LandingPage() {
                 <button
                   type="button"
                   onClick={() => scrollServices("right")}
-                  className="flex h-11 w-11 items-center justify-center rounded-full border border-[#151515]/15 transition-colors hover:bg-[#151515] hover:text-white sm:h-12 sm:w-12"
+                  className="flex h-11 w-11 items-center justify-center rounded-full border border-border bg-background text-foreground transition-colors hover:bg-foreground hover:text-background sm:h-12 sm:w-12"
                   aria-label="View more services"
                 >
                   <ArrowRightIcon size={19} />
@@ -641,14 +641,17 @@ function LandingPage() {
                   className={[
                     "group flex min-h-[340px] w-[calc(100vw-3rem)] max-w-[340px]",
                     "shrink-0 snap-start flex-col justify-between overflow-hidden",
-                    "rounded-[1.75rem] border border-[#151515]/10 bg-[#f5f5f2] p-6",
+                    "rounded-[1.75rem] border border-border bg-muted/40 p-6",
                     "sm:min-h-[400px] sm:w-[330px] sm:rounded-[2rem] sm:p-7",
                     "transition-transform duration-300 hover:-translate-y-1",
                   ].join(" ")}
                   initial={{ opacity: 0, x: 35 }}
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true, amount: 0.2 }}
-                  transition={{ delay: index * 0.06, duration: 0.5 }}
+                  transition={{
+                    delay: index * 0.06,
+                    duration: 0.5,
+                  }}
                 >
                   <div className="flex items-start justify-between gap-4">
                     <span
@@ -657,13 +660,13 @@ function LandingPage() {
                       {service.label}
                     </span>
 
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#151515] text-white transition-transform duration-300 group-hover:rotate-6 group-hover:scale-110 sm:h-12 sm:w-12">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-foreground text-background transition-transform duration-300 group-hover:rotate-6 group-hover:scale-110 sm:h-12 sm:w-12">
                       <Icon size={21} />
                     </div>
                   </div>
 
                   <div className="min-w-0">
-                    <span className="text-xs font-semibold text-[#151515]/40">
+                    <span className="text-xs font-semibold text-muted-foreground">
                       0{index + 1}
                     </span>
 
@@ -671,7 +674,7 @@ function LandingPage() {
                       {service.title}
                     </h3>
 
-                    <p className="mt-4 text-sm leading-7 text-[#151515]/60 sm:text-base">
+                    <p className="mt-4 text-sm leading-7 text-muted-foreground sm:text-base">
                       {service.description}
                     </p>
 
@@ -694,11 +697,11 @@ function LandingPage() {
         </section>
 
         {/* Trust section */}
-        <section className="bg-white pb-20 text-[#151515] md:pb-28 lg:pb-40">
+        <section className="bg-background pb-20 text-foreground md:pb-28 lg:pb-40">
           <div className="container mx-auto px-5 md:px-8">
             <div className="grid min-w-0 gap-5 lg:grid-cols-[0.8fr_1.2fr] lg:gap-6">
-              <article className="min-w-0 rounded-[1.75rem] bg-[#151515] p-7 text-white sm:rounded-[2rem] sm:p-8 md:p-12">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-300 text-[#151515]">
+              <article className="min-w-0 rounded-[1.75rem] bg-foreground p-7 text-background sm:rounded-[2rem] sm:p-8 md:p-12">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-300 text-slate-950">
                   <ShieldCheckIcon size={25} />
                 </div>
 
@@ -706,7 +709,7 @@ function LandingPage() {
                   Confidence before the work begins.
                 </h2>
 
-                <p className="mt-5 text-sm leading-7 text-white/65 sm:text-base">
+                <p className="mt-5 text-sm leading-7 text-background/70 sm:text-base">
                   Better information helps clients make informed choices and
                   gives professionals a stronger way to show what they can do.
                 </p>
@@ -719,7 +722,7 @@ function LandingPage() {
                   return (
                     <article
                       key={point.title}
-                      className="flex min-h-[180px] min-w-0 flex-col justify-between rounded-[1.75rem] border border-[#151515]/10 p-6 sm:min-h-[210px] sm:rounded-[2rem] sm:p-7"
+                      className="flex min-h-[180px] min-w-0 flex-col justify-between rounded-[1.75rem] border border-border bg-muted/30 p-6 sm:min-h-[210px] sm:rounded-[2rem] sm:p-7"
                     >
                       <div
                         className={`flex h-11 w-11 items-center justify-center rounded-2xl ${point.accent}`}
@@ -728,7 +731,7 @@ function LandingPage() {
                       </div>
 
                       <div className="min-w-0">
-                        <span className="text-xs font-semibold text-[#151515]/40">
+                        <span className="text-xs font-semibold text-muted-foreground">
                           0{index + 1}
                         </span>
 
@@ -745,44 +748,81 @@ function LandingPage() {
         </section>
 
         {/* Final CTA */}
-        <section className="bg-white px-5 pb-8 text-[#151515] md:px-8">
-          <div className="container mx-auto min-w-0 overflow-hidden rounded-[1.75rem] bg-primary px-5 py-12 sm:rounded-[2.5rem] sm:px-7 sm:py-16 md:px-12 md:py-20 lg:px-20 lg:py-24">
-            <div className="grid min-w-0 gap-9 lg:grid-cols-[1fr_auto] lg:items-end lg:gap-12">
-              <div className="min-w-0">
-                <p className="mb-4 text-background/60 text-[0.68rem] font-semibold uppercase tracking-[0.2em] opacity-70 sm:text-xs sm:tracking-[0.22em]">
-                  Ready when you are
-                </p>
+        <section className="bg-background px-5 pb-8 pt-8 text-foreground md:px-8 lg:pb-12">
+          <div className="container mx-auto overflow-hidden rounded-[2rem] bg-primary sm:rounded-[2.75rem]">
+            <div className="relative px-6 py-14 sm:px-10 sm:py-20 lg:px-20 lg:py-24">
+              {/* Background decoration */}
+              <div className="pointer-events-none absolute inset-0">
+                <div className="absolute -left-24 -top-24 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
 
-                <h2 className="max-w-5xl break-words text-background text-3xl font-black uppercase leading-[0.94] tracking-[-0.035em] sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl">
-                  The right person for the job could be closer than you think.
-                </h2>
+                <div className="absolute -right-20 bottom-0 h-80 w-80 rounded-full bg-white/5 blur-3xl" />
+
+                <div className="absolute right-10 top-10 h-3 w-3 rounded-full bg-white/40" />
+                <div className="absolute bottom-16 left-1/3 h-2 w-2 rounded-full bg-white/30" />
               </div>
 
-              <div className="flex w-full flex-col gap-3 sm:flex-row lg:w-auto lg:flex-col">
-                <Button
-                  size="lg"
-                  className="h-[52px] w-full rounded-full bg-secondary px-7 text-primary shadow-none hover:bg-secondary/90 hover:text-primary sm:w-auto sm:px-9"
-                >
-                  Post your first job
-                  <ArrowUpRightIcon size={17} />
-                </Button>
+              <div className="relative grid items-end gap-12 lg:grid-cols-[1fr_auto]">
+                <div className="max-w-4xl">
+                  <p className="mb-4 text-xs font-semibold uppercase tracking-[0.22em] text-primary-foreground/70">
+                    Ready to get started?
+                  </p>
 
-                <Button
-                  size="lg"
-                //   variant="outline"
-                  className="h-[52px] w-full rounded-full border-2 border-background bg-transparent px-7 text-background shadow-none hover:bg-background/5 hover:text-background sm:w-auto sm:px-9"
-                >
-                  Join as an Allocat
-                </Button>
+                  <h2 className="text-4xl font-black uppercase leading-[0.92] tracking-[-0.045em] text-primary-foreground sm:text-5xl lg:text-6xl xl:text-7xl">
+                    Find the right person.
+                    <br />
+                    Get the work moving.
+                  </h2>
+
+                  <p className="mt-6 max-w-2xl text-base leading-8 text-primary-foreground/75 sm:text-lg">
+                    Whether you're hiring skilled professionals or offering your own
+                    expertise, Allocatr gives you one place to connect, collaborate and
+                    keep every project on track.
+                  </p>
+
+                  <div className="mt-10 flex flex-wrap gap-3">
+                    <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm text-primary-foreground/85 backdrop-blur">
+                      <CheckCircle2Icon size={16} />
+                      Verified professionals
+                    </div>
+
+                    <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm text-primary-foreground/85 backdrop-blur">
+                      <CheckCircle2Icon size={16} />
+                      Project management included
+                    </div>
+
+                    <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm text-primary-foreground/85 backdrop-blur">
+                      <CheckCircle2Icon size={16} />
+                      Built for Zimbabwe
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex w-full flex-col gap-3 sm:flex-row lg:w-auto lg:flex-col">
+                  <Button
+                    size="lg"
+                    className="h-14 rounded-full bg-background px-8 text-primary shadow-none hover:bg-background/90"
+                  >
+                    Find Allocats
+                    <ArrowRightIcon size={18} />
+                  </Button>
+
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="h-14 rounded-full border-2 border-primary-foreground/30 bg-transparent px-8 text-primary-foreground hover:bg-primary-foreground/10"
+                  >
+                    Become an Allocat
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
         </section>
 
         {/* Footer */}
-        <footer className="bg-white px-5 py-8 text-[#151515] sm:py-10 md:px-8">
-          <div className="container mx-auto flex flex-col gap-6 border-t border-[#151515]/10 pt-8 text-sm md:flex-row md:items-center md:justify-between">
-            <p className="text-[#151515]/55">
+        <footer className="bg-background px-5 py-8 text-foreground sm:py-10 md:px-8">
+          <div className="container mx-auto flex flex-col gap-6 border-t border-border pt-8 text-sm md:flex-row md:items-center md:justify-between">
+            <p className="text-muted-foreground">
               © {new Date().getFullYear()} Allocatr. Work, properly allocated.
             </p>
 
