@@ -52,7 +52,7 @@ export function AllocatCardGrid({
 
     try {
       await api.put(
-        `/projects/${project.id}/allocats/${allocat.id}`,
+        `/projects/${project.id}/allocats/${allocat.allocatrUserId}/invite`,
         {},
         {
           withCredentials: true,

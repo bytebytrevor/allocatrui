@@ -1,7 +1,7 @@
 import type { Project } from "./project"
 
 export type AllocatProfile = {
-    id: string,
+    allocatrUserId: string,
     fullName: string,
     IdNumber: string,
     email: string,

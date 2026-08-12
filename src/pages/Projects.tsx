@@ -434,7 +434,7 @@ function Projects() {
               </div>
 
               {/* Summary cards */}
-              <div className="mt-9 grid gap-4 sm:grid-cols-3">
+              {/* <div className="mt-9 grid gap-4 sm:grid-cols-3">
                 <SummaryCard
                   label="Active projects"
                   value={activeProjects.length || projects.length}
@@ -455,10 +455,10 @@ function Projects() {
                   icon={CheckCircle2Icon}
                   accent="bg-sky-400/15 text-sky-700 dark:text-sky-300"
                 />
-              </div>
+              </div> */}
 
               {/* Toolbar */}
-              <div className="mt-8 flex flex-col gap-4 border-y border-border py-5 lg:flex-row lg:items-center lg:justify-between">
+              <div className="mt-8 flex flex-col gap-4 border-b border-border py-5 lg:flex-row lg:items-center lg:justify-between">
                 <div className="flex max-w-full gap-2 overflow-x-auto pb-1">
                   <FilterButton
                     active={filter === "active"}
