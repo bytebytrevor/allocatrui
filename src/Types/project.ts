@@ -23,6 +23,7 @@ export type Project = {
     allowBids?: boolean;
     budget?: number;
     currency?: string;
+    hasAcceptedAllocat: boolean;
     attachments?: string[];
     tasks: Task[]
 };
