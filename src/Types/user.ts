@@ -1,14 +1,7 @@
 export type User = {
-    id: string;
-    fullName: string;
-    title: string
-    skills: string[],
-    rating: number,
-    completedProjects: number,
-    available: boolean,
-    verified: boolean,
-    location: string,
-    hourlyRate: number,
-    currency: string,
-    joinedAt: string
+    id: string,
+    email: string
+    fullName: string,
+    avatarUrl: string,
+    isAllocat: boolean,
 }

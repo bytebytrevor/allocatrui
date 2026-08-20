@@ -1,13 +1,15 @@
 import { createContext, useState, useEffect, useContext } from "react";
 import type { ReactNode } from "react";
+import type { User } from "@/Types/user";
 
 import api from "@/api/axios";
 
-export type User = {
-  email: string;
-  fullName?: string;
-  avatarUrl?: string; // user profile picture
-};
+// export type User = {
+//   email: string;
+//   fullName?: string;
+//   avatarUrl?: string; // user profile picture
+//   isAllocat?: boolean
+// };
 
 type AuthContextType = {
   user: User | null;
@@ -61,17 +63,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // ----------------- REFRESH USER -----------------
   async function refreshUser() {
-    try {
-      const res = await api.get("/auth/me", { withCredentials: true });
-      setUser({
-        email: res.data.email,
-        fullName: res.data.fullName,
-        avatarUrl: res.data.avatarUrl
-      });
-    } catch {
-      setUser(null);
-    }
+  try {
+    const res = await api.get<User>(
+      "/auth/me",
+      {
+        withCredentials: true,
+      },
+    );
+
+    setUser({
+      id: res.data.id,
+      email: res.data.email,
+      fullName: res.data.fullName,
+      avatarUrl: res.data.avatarUrl,
+      isAllocat: res.data.isAllocat,
+    });
+  } catch {
+    setUser(null);
   }
+}
 
   // ----------------- SET AVATAR -----------------
   function setAvatar(avatarUrl: string) {
