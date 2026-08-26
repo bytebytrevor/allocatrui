@@ -1,6 +1,1463 @@
-import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+// import { useEffect, useState } from "react";
+// import { motion } from "framer-motion";
+// import { Link } from "react-router-dom";
+// import {
+//   ArrowRightIcon,
+//   CalendarDaysIcon,
+//   CheckCircle2Icon,
+//   CircleDotIcon,
+//   Clock3Icon,
+//   Edit3Icon,
+//   EllipsisVerticalIcon,
+//   EyeIcon,
+//   FolderOpenIcon,
+//   LoaderCircleIcon,
+//   PauseCircleIcon,
+//   UserPlusIcon,
+//   UsersIcon,
+//   XCircleIcon,
+// } from "lucide-react";
+
+// import api from "@/api/axios";
+
+// import type { Project } from "@/Types/project";
+// import type { ProjectAllocatMember } from "@/Types/projectAllocatMember";
+
+// import { getProjectIcon } from "@/utils/projectIcons";
+
+// import {
+//   Avatar,
+//   AvatarFallback,
+//   AvatarImage,
+// } from "@/components/ui/avatar";
+// import { Badge } from "@/components/ui/badge";
+// import { Button } from "@/components/ui/button";
+// import { Calendar28 } from "@/components/DatePicker";
+// import {
+//   Dialog,
+//   DialogClose,
+//   DialogContent,
+//   DialogDescription,
+//   DialogFooter,
+//   DialogHeader,
+//   DialogTitle,
+//   DialogTrigger,
+// } from "@/components/ui/dialog";
+// import {
+//   DropdownMenu,
+//   DropdownMenuContent,
+//   DropdownMenuItem,
+//   DropdownMenuSeparator,
+//   DropdownMenuTrigger,
+// } from "@/components/ui/dropdown-menu";
+// import { Input } from "@/components/ui/input";
+// import { Label } from "@/components/ui/label";
+// import { Progress } from "@/components/ui/progress";
+// import { Textarea } from "@/components/ui/textarea";
+
+// const MotionLink = motion.create(Link);
+
+// type ViewProps = {
+//   project: Project;
+// };
+
+// type DialogProps = {
+//   project: Project;
+//   trigger: React.ReactNode;
+// };
+
+// type ProjectStatusAppearance = {
+//   label: string;
+//   dot: string;
+//   badge: string;
+//   icon: React.ComponentType<{
+//     size?: number;
+//     className?: string;
+//   }>;
+// };
+
+// const statusAppearance: Record<
+//   string,
+//   ProjectStatusAppearance
+// > = {
+//   pending: {
+//     label: "Pending",
+//     dot: "bg-amber-500",
+//     badge:
+//       "border-amber-500/20 bg-amber-400/10 text-amber-700 dark:text-amber-300",
+//     icon: Clock3Icon,
+//   },
+
+//   active: {
+//     label: "Active",
+//     dot: "bg-emerald-500",
+//     badge:
+//       "border-emerald-500/20 bg-emerald-400/10 text-emerald-700 dark:text-emerald-300",
+//     icon: CircleDotIcon,
+//   },
+
+//   onhold: {
+//     label: "On hold",
+//     dot: "bg-muted-foreground",
+//     badge:
+//       "border-border bg-muted text-muted-foreground",
+//     icon: PauseCircleIcon,
+//   },
+
+//   complete: {
+//     label: "Complete",
+//     dot: "bg-sky-500",
+//     badge:
+//       "border-sky-500/20 bg-sky-400/10 text-sky-700 dark:text-sky-300",
+//     icon: CheckCircle2Icon,
+//   },
+
+//   completed: {
+//     label: "Complete",
+//     dot: "bg-sky-500",
+//     badge:
+//       "border-sky-500/20 bg-sky-400/10 text-sky-700 dark:text-sky-300",
+//     icon: CheckCircle2Icon,
+//   },
+
+//   closed: {
+//     label: "Closed",
+//     dot: "bg-slate-500",
+//     badge:
+//       "border-border bg-muted text-muted-foreground",
+//     icon: CheckCircle2Icon,
+//   },
+// };
+
+// const priorityAppearance: Record<
+//   string,
+//   string
+// > = {
+//   standard:
+//     "border-sky-500/20 bg-sky-400/10 text-sky-700 dark:text-sky-300",
+
+//   high:
+//     "border-amber-500/20 bg-amber-400/10 text-amber-700 dark:text-amber-300",
+
+//   urgent:
+//     "border-destructive/20 bg-destructive/10 text-destructive",
+// };
+
+// function normalizeStatus(status?: string) {
+//   return (
+//     status
+//       ?.toLowerCase()
+//       .replace(/[\s_-]/g, "") ||
+//     "onhold"
+//   );
+// }
+
+// function getStatusAppearance(
+//   status?: string,
+// ) {
+//   const normalizedStatus =
+//     normalizeStatus(status);
+
+//   return (
+//     statusAppearance[
+//       normalizedStatus
+//     ] ?? {
+//       label: status
+//         ? status.charAt(0).toUpperCase() +
+//           status.slice(1)
+//         : "On hold",
+
+//       dot: "bg-muted-foreground",
+
+//       badge:
+//         "border-border bg-muted text-muted-foreground",
+
+//       icon: PauseCircleIcon,
+//     }
+//   );
+// }
+
+// function formatDate(
+//   date?: string | Date | null,
+// ) {
+//   if (!date) {
+//     return "Not set";
+//   }
+
+//   const parsedDate = new Date(date);
+
+//   if (
+//     Number.isNaN(
+//       parsedDate.getTime(),
+//     )
+//   ) {
+//     return "Not set";
+//   }
+
+//   return new Intl.DateTimeFormat(
+//     "en",
+//     {
+//       day: "numeric",
+//       month: "short",
+//       year: "numeric",
+//     },
+//   ).format(parsedDate);
+// }
+
+// function getInitials(
+//   name?: string,
+// ) {
+//   if (!name) {
+//     return "A";
+//   }
+
+//   return name
+//     .trim()
+//     .split(/\s+/)
+//     .slice(0, 2)
+//     .map((part) =>
+//       part
+//         .charAt(0)
+//         .toUpperCase(),
+//     )
+//     .join("");
+// }
+
+// function clampProgress(
+//   progress?: number,
+// ) {
+//   if (
+//     typeof progress !== "number"
+//   ) {
+//     return 0;
+//   }
+
+//   return Math.min(
+//     100,
+//     Math.max(0, progress),
+//   );
+// }
+
+// /* =========================================================
+//    GRID VIEW
+// ========================================================= */
+
+// export function GridView({
+//   project,
+// }: ViewProps) {
+//   const progress =
+//     clampProgress(project.progress);
+
+//   return (
+//     <motion.article
+//       className={[
+//         "group relative flex min-h-[310px] min-w-0 flex-col",
+//         "overflow-hidden rounded-[1.75rem] border border-border",
+//         "bg-card p-5 text-card-foreground transition-all duration-300",
+//         "hover:-translate-y-1 hover:border-primary/25",
+//         "hover:shadow-xl hover:shadow-black/5",
+//         "dark:hover:shadow-black/20 sm:p-6",
+//       ].join(" ")}
+//       initial={{
+//         opacity: 0,
+//         y: 18,
+//       }}
+//       animate={{
+//         opacity: 1,
+//         y: 0,
+//       }}
+//       transition={{
+//         duration: 0.4,
+//       }}
+//     >
+//       {/* <div className="absolute right-0 top-0 h-28 w-28 rounded-bl-[6rem] bg-primary/[0.06] transition-transform duration-500 group-hover:scale-110" /> */}
+
+//       <div className="relative flex items-start justify-between gap-4">
+//         <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/12 text-primary">
+//           {getProjectIcon(
+//             project?.category ??
+//               "default",
+//           )}
+//         </div>
+
+//         <ProjectMenu
+//           project={project}
+//         />
+//       </div>
+
+//       <div className="relative mt-7 min-w-0">
+//         <p className="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+//           {project.category ||
+//             "General project"}
+//         </p>
+
+//         <MotionLink
+//           to={`${project.id}`}
+//           className="mt-2 block min-w-0"
+//           whileTap={{
+//             scale: 0.98,
+//           }}
+//           transition={{
+//             duration: 0.15,
+//           }}
+//         >
+//           <h3 className="line-clamp-2 break-words text-xl font-black uppercase leading-[1.05] tracking-[-0.025em] transition-colors group-hover:text-primary sm:text-2xl">
+//             {project.title}
+//           </h3>
+//         </MotionLink>
+
+//         {project.description && (
+//           <p className="mt-3 line-clamp-2 text-sm leading-6 text-muted-foreground">
+//             {project.description}
+//           </p>
+//         )}
+//       </div>
+
+//       <div className="relative mt-auto pt-8">
+//         <div className="mb-3 flex items-center justify-between gap-4">
+//           <span className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+//             Progress
+//           </span>
+
+//           <span className="text-sm font-black">
+//             {progress}%
+//           </span>
+//         </div>
+
+//         <Progress
+//           value={progress}
+//           className="h-2"
+//         />
+
+//         <div className="mt-5 flex items-center justify-between gap-3 border-t border-border pt-4">
+//           <span className="flex min-w-0 items-center gap-2 text-xs text-muted-foreground">
+//             <CalendarDaysIcon
+//               size={14}
+//               className="shrink-0"
+//             />
+
+//             <span className="truncate">
+//               Created{" "}
+//               {formatDate(
+//                 project.createdAt,
+//               )}
+//             </span>
+//           </span>
+
+//           <Link
+//             to={`${project.id}`}
+//             className="flex shrink-0 items-center gap-1 text-xs font-semibold text-primary transition-colors hover:underline"
+//           >
+//             Open
+//             <ArrowRightIcon
+//               size={13}
+//             />
+//           </Link>
+//         </div>
+//       </div>
+//     </motion.article>
+//   );
+// }
+
+// /* =========================================================
+//    LIST VIEW
+// ========================================================= */
+
+// export function ListView({
+//   project,
+// }: ViewProps) {
+//   const progress =
+//     clampProgress(project.progress);
+
+//   return (
+//     <motion.article
+//       className={[
+//         "group relative grid min-w-0 gap-5 overflow-hidden",
+//         "rounded-[1.5rem] border border-border bg-card",
+//         "p-5 text-card-foreground transition-all duration-300",
+//         "hover:border-primary/25 hover:shadow-lg hover:shadow-black/5",
+//         "dark:hover:shadow-black/20",
+//         "md:grid-cols-[auto_minmax(0,1fr)_180px_auto]",
+//         "md:items-center md:p-6",
+//       ].join(" ")}
+//       initial={{
+//         opacity: 0,
+//         y: 14,
+//       }}
+//       animate={{
+//         opacity: 1,
+//         y: 0,
+//       }}
+//       transition={{
+//         duration: 0.35,
+//       }}
+//     >
+//       <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/12 text-primary">
+//         {getProjectIcon(
+//           project?.category ??
+//             "default",
+//         )}
+//       </div>
+
+//       <div className="min-w-0">
+//         <div className="flex flex-wrap items-center gap-2">
+//           <p className="text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+//             {project.category ||
+//               "General project"}
+//           </p>
+
+//           <StatusBadge
+//             status={project.status}
+//           />
+//         </div>
+
+//         <MotionLink
+//           to={`${project.id}`}
+//           className="mt-2 block min-w-0"
+//           whileTap={{
+//             scale: 0.98,
+//           }}
+//           transition={{
+//             duration: 0.15,
+//           }}
+//         >
+//           <h3 className="truncate text-lg font-black uppercase tracking-[-0.02em] transition-colors group-hover:text-primary">
+//             {project.title}
+//           </h3>
+//         </MotionLink>
+
+//         <p className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
+//           <CalendarDaysIcon
+//             size={14}
+//           />
+
+//           Created{" "}
+//           {formatDate(
+//             project.createdAt,
+//           )}
+//         </p>
+//       </div>
+
+//       <div className="min-w-0">
+//         <div className="mb-2 flex items-center justify-between">
+//           <span className="text-xs font-semibold text-muted-foreground">
+//             Progress
+//           </span>
+
+//           <span className="text-xs font-black">
+//             {progress}%
+//           </span>
+//         </div>
+
+//         <Progress
+//           value={progress}
+//           className="h-2"
+//         />
+//       </div>
+
+//       <div className="absolute right-4 top-4 md:static">
+//         <ProjectMenu
+//           project={project}
+//           hideStatus
+//         />
+//       </div>
+//     </motion.article>
+//   );
+// }
+
+// /* =========================================================
+//    PROJECT MENU
+// ========================================================= */
+
+// type ProjectMenuProps =
+//   ViewProps & {
+//     hideStatus?: boolean;
+//   };
+
+// function ProjectMenu({
+//   project,
+//   hideStatus = false,
+// }: ProjectMenuProps) {
+//   return (
+//     <div className="flex shrink-0 items-center gap-2">
+//       {!hideStatus && (
+//         <StatusBadge
+//           status={project.status}
+//         />
+//       )}
+
+//       <DropdownMenu>
+//         <DropdownMenuTrigger asChild>
+//           <Button
+//             type="button"
+//             variant="ghost"
+//             size="icon"
+//             className="h-10 w-10 rounded-full text-muted-foreground shadow-none hover:bg-muted hover:text-foreground"
+//             aria-label={`Open menu for ${project.title}`}
+//           >
+//             <EllipsisVerticalIcon
+//               size={18}
+//             />
+//           </Button>
+//         </DropdownMenuTrigger>
+
+//         <DropdownMenuContent
+//           align="end"
+//           className="w-52 rounded-2xl border-border bg-popover p-2 text-popover-foreground shadow-xl"
+//         >
+//           <DropdownMenuItem
+//             asChild
+//             className="rounded-xl"
+//           >
+//             <Link
+//               to={`/projects/${project.id}/find-allocats`}
+//             >
+//               <UserPlusIcon
+//                 size={15}
+//               />
+
+//               Find Allocats
+//             </Link>
+//           </DropdownMenuItem>
+
+//           <DropdownMenuItem
+//             asChild
+//             className="rounded-xl"
+//           >
+//             <Link
+//               to={`${project.id}`}
+//             >
+//               <FolderOpenIcon
+//                 size={15}
+//               />
+
+//               Open project
+//             </Link>
+//           </DropdownMenuItem>
+
+//           <DropdownMenuItem
+//             className="rounded-xl"
+//             onSelect={(event) =>
+//               event.preventDefault()
+//             }
+//           >
+//             <ProjectDetailsDialog
+//               project={project}
+//               trigger={
+//                 <>
+//                   <EyeIcon
+//                     size={15}
+//                   />
+//                   View details
+//                 </>
+//               }
+//             />
+//           </DropdownMenuItem>
+
+//           <DropdownMenuItem
+//             className="rounded-xl"
+//             onSelect={(event) =>
+//               event.preventDefault()
+//             }
+//           >
+//             <EditProjectDialog
+//               project={project}
+//               trigger={
+//                 <>
+//                   <Edit3Icon
+//                     size={15}
+//                   />
+//                   Edit project
+//                 </>
+//               }
+//             />
+//           </DropdownMenuItem>
+
+//           <DropdownMenuItem className="rounded-xl">
+//             <CircleDotIcon
+//               size={15}
+//             />
+//             Change status
+//           </DropdownMenuItem>
+
+//           <DropdownMenuSeparator />
+
+//           <DropdownMenuItem className="rounded-xl text-destructive focus:bg-destructive/10 focus:text-destructive">
+//             <XCircleIcon
+//               size={15}
+//             />
+//             Cancel project
+//           </DropdownMenuItem>
+//         </DropdownMenuContent>
+//       </DropdownMenu>
+//     </div>
+//   );
+// }
+
+// /* =========================================================
+//    STATUS BADGE
+// ========================================================= */
+
+// function StatusBadge({
+//   status,
+// }: {
+//   status?: string;
+// }) {
+//   const appearance =
+//     getStatusAppearance(status);
+
+//   const Icon =
+//     appearance.icon;
+
+//   return (
+//     <Badge
+//       variant="outline"
+//       className={`h-7 rounded-full px-2.5 text-[0.65rem] font-semibold shadow-none ${appearance.badge}`}
+//     >
+//       <Icon size={12} />
+//       {appearance.label}
+//     </Badge>
+//   );
+// }
+
+// /* =========================================================
+//    PROJECT DETAILS DIALOG
+// ========================================================= */
+
+// function ProjectDetailsDialog({
+//   project,
+//   trigger,
+// }: DialogProps) {
+//   const [open, setOpen] =
+//     useState(false);
+
+//   const [
+//     members,
+//     setMembers,
+//   ] = useState<
+//     ProjectAllocatMember[]
+//   >([]);
+
+//   const [
+//     membersLoading,
+//     setMembersLoading,
+//   ] = useState(false);
+
+//   const [
+//     membersError,
+//     setMembersError,
+//   ] = useState<
+//     string | null
+//   >(null);
+
+//   const progress =
+//     clampProgress(
+//       project.progress,
+//     );
+
+//   const status =
+//     getStatusAppearance(
+//       project.status,
+//     );
+
+//   const priority =
+//     project.priority
+//       ?.toLowerCase() ||
+//     "standard";
+
+//   useEffect(() => {
+//     if (!open) {
+//       return;
+//     }
+
+//     let cancelled =
+//       false;
+
+//     async function loadMembers() {
+//       try {
+//         setMembersLoading(
+//           true,
+//         );
+
+//         setMembersError(null);
+
+//         const response =
+//           await api.get<
+//             ProjectAllocatMember[]
+//           >(
+//             `/projects/${project.id}/allocats/members`,
+//             {
+//               withCredentials:
+//                 true,
+//             },
+//           );
+
+//         if (!cancelled) {
+//           setMembers(
+//             response.data,
+//           );
+//         }
+//       } catch (error) {
+//         if (cancelled) {
+//           return;
+//         }
+
+//         console.error(
+//           "Could not load project members:",
+//           error,
+//         );
+
+//         setMembersError(
+//           "Could not load the project team.",
+//         );
+//       } finally {
+//         if (!cancelled) {
+//           setMembersLoading(
+//             false,
+//           );
+//         }
+//       }
+//     }
+
+//     void loadMembers();
+
+//     return () => {
+//       cancelled = true;
+//     };
+//   }, [
+//     open,
+//     project.id,
+//   ]);
+
+//   const acceptedMembers =
+//     members.filter(
+//       (member) =>
+//         member.status ===
+//         "Accepted",
+//     );
+
+//   const invitedMembers =
+//     members.filter(
+//       (member) =>
+//         member.status ===
+//         "Invited",
+//     );
+
+//   return (
+//     <Dialog
+//       open={open}
+//       onOpenChange={setOpen}
+//     >
+//       <DialogTrigger asChild>
+//         <button
+//           type="button"
+//           className="flex w-full items-center gap-2 text-left"
+//         >
+//           {trigger}
+//         </button>
+//       </DialogTrigger>
+
+//       <DialogContent
+//         className={[
+//           "flex max-h-[90vh] flex-col overflow-hidden",
+//           "rounded-[2rem] border-border bg-background p-0 text-foreground",
+//           "sm:max-w-2xl",
+//         ].join(" ")}
+//       >
+//         {/* Header */}
+//         <DialogHeader className="shrink-0 border-b border-border px-6 pb-6 pt-7 text-left sm:px-8 sm:pt-8">
+//           <div className="flex items-start gap-4">
+//             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/12 text-primary">
+//               {getProjectIcon(
+//                 project?.category ??
+//                   "default",
+//               )}
+//             </div>
+
+//             <div className="min-w-0">
+//               <div className="flex flex-wrap items-center gap-2">
+//                 <StatusBadge
+//                   status={
+//                     project.status
+//                   }
+//                 />
+
+//                 {project.priority && (
+//                   <Badge
+//                     variant="outline"
+//                     className={[
+//                       "h-7 rounded-full px-2.5 text-[0.65rem]",
+//                       "font-semibold capitalize shadow-none",
+//                       priorityAppearance[
+//                         priority
+//                       ] ??
+//                         priorityAppearance.standard,
+//                     ].join(" ")}
+//                   >
+//                     {
+//                       project.priority
+//                     }
+//                   </Badge>
+//                 )}
+//               </div>
+
+//               <DialogTitle className="mt-4 break-words text-2xl font-black uppercase leading-tight tracking-[-0.03em] sm:text-3xl">
+//                 {project.title}
+//               </DialogTitle>
+
+//               <DialogDescription className="mt-3 max-w-xl text-sm leading-7 text-muted-foreground">
+//                 {project.description ||
+//                   "No project description was provided."}
+//               </DialogDescription>
+//             </div>
+//           </div>
+//         </DialogHeader>
+
+//         {/* Scrollable body */}
+//         <div className="min-h-0 flex-1 space-y-7 overflow-y-auto px-6 py-7 sm:px-8">
+//           {/* Dates */}
+//           <div className="grid gap-4 sm:grid-cols-3">
+//             <DateDetail
+//               label="Created"
+//               value={
+//                 project.createdAt
+//               }
+//             />
+
+//             <DateDetail
+//               label="Start date"
+//               value={
+//                 project.startDate
+//               }
+//             />
+
+//             <DateDetail
+//               label="Due date"
+//               value={
+//                 project.dueDate
+//               }
+//             />
+//           </div>
+
+//           {/* Progress */}
+//           <section className="rounded-[1.5rem] border border-border bg-card p-5 text-card-foreground">
+//             <div className="flex items-center justify-between gap-4">
+//               <div>
+//                 <p className="text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+//                   Project progress
+//                 </p>
+
+//                 <div className="mt-2 flex items-center gap-2 text-sm font-semibold">
+//                   <span
+//                     className={`h-2 w-2 rounded-full ${status.dot}`}
+//                   />
+
+//                   {
+//                     status.label
+//                   }
+//                 </div>
+//               </div>
+
+//               <span className="text-3xl font-black tracking-[-0.04em]">
+//                 {progress}%
+//               </span>
+//             </div>
+
+//             <Progress
+//               value={progress}
+//               className="mt-5 h-2"
+//             />
+//           </section>
+
+//           {/* Project info */}
+//           <div className="grid gap-4 sm:grid-cols-2">
+//             <DetailCard
+//               label="Category"
+//               value={
+//                 project.category
+//                   ? project.category
+//                       .charAt(0)
+//                       .toUpperCase() +
+//                     project.category.slice(
+//                       1,
+//                     )
+//                   : "General"
+//               }
+//             />
+
+//             <DetailCard
+//               label="Project code"
+//               value={
+//                 project.projectCode ||
+//                 "Not assigned"
+//               }
+//             />
+//           </div>
+
+//           {/* Team */}
+//           <section className="border-t border-border pt-7">
+//             <div className="flex items-center justify-between gap-4">
+//               <div>
+//                 <p className="text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+//                   Project team
+//                 </p>
+
+//                 <h3 className="mt-1 text-lg font-black uppercase">
+//                   Allocats
+//                 </h3>
+//               </div>
+
+//               <Badge
+//                 variant="secondary"
+//                 className="rounded-full shadow-none"
+//               >
+//                 <UsersIcon
+//                   size={13}
+//                 />
+//                 {
+//                   members.length
+//                 }
+//               </Badge>
+//             </div>
+
+//             {membersLoading ? (
+//               <div className="mt-6 flex min-h-28 items-center justify-center">
+//                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
+//                   <LoaderCircleIcon
+//                     size={17}
+//                     className="animate-spin"
+//                   />
+
+//                   Loading team...
+//                 </div>
+//               </div>
+//             ) : membersError ? (
+//               <div className="mt-4 rounded-[1.5rem] border border-destructive/20 bg-destructive/5 p-5">
+//                 <p className="text-sm text-destructive">
+//                   {
+//                     membersError
+//                   }
+//                 </p>
+//               </div>
+//             ) : members.length ===
+//               0 ? (
+//               <div className="mt-4 rounded-[1.5rem] border border-dashed border-border bg-muted/20 px-5 py-8 text-center">
+//                 <UsersIcon
+//                   size={24}
+//                   className="mx-auto text-muted-foreground"
+//                 />
+
+//                 <p className="mt-3 text-sm font-semibold">
+//                   No Allocats yet
+//                 </p>
+
+//                 <p className="mt-1 text-xs text-muted-foreground">
+//                   Invited and accepted
+//                   professionals will
+//                   appear here.
+//                 </p>
+
+//                 <Button
+//                   asChild
+//                   variant="outline"
+//                   size="sm"
+//                   className="mt-5 rounded-full"
+//                 >
+//                   <Link
+//                     to={`/projects/${project.id}/find-allocats`}
+//                   >
+//                     <UserPlusIcon
+//                       size={14}
+//                     />
+//                     Find Allocats
+//                   </Link>
+//                 </Button>
+//               </div>
+//             ) : (
+//               <div className="mt-5 space-y-7">
+//                 {acceptedMembers.length >
+//                   0 && (
+//                   <MemberSection
+//                     title="Accepted"
+//                     description="Allocats currently working on this project."
+//                     members={
+//                       acceptedMembers
+//                     }
+//                   />
+//                 )}
+
+//                 {invitedMembers.length >
+//                   0 && (
+//                   <MemberSection
+//                     title="Pending invitations"
+//                     description="Waiting for these Allocats to respond."
+//                     members={
+//                       invitedMembers
+//                     }
+//                   />
+//                 )}
+//               </div>
+//             )}
+//           </section>
+//         </div>
+
+//         {/* Fixed footer */}
+//         <DialogFooter className="shrink-0 border-t border-border bg-background px-6 py-5 sm:px-8">
+//           <DialogClose asChild>
+//             <Button
+//               variant="outline"
+//               className="rounded-full px-6"
+//             >
+//               Close
+//             </Button>
+//           </DialogClose>
+
+//           <Button
+//             asChild
+//             className="rounded-full px-6"
+//           >
+//             <Link
+//               to={`${project.id}`}
+//             >
+//               Open project
+
+//               <ArrowRightIcon
+//                 size={15}
+//               />
+//             </Link>
+//           </Button>
+//         </DialogFooter>
+//       </DialogContent>
+//     </Dialog>
+//   );
+// }
+
+// /* =========================================================
+//    PROJECT MEMBER SECTION
+// ========================================================= */
+
+// function MemberSection({
+//   title,
+//   description,
+//   members,
+// }: {
+//   title: string;
+//   description: string;
+//   members: ProjectAllocatMember[];
+// }) {
+//   return (
+//     <div>
+//       <div className="mb-3">
+//         <h4 className="text-sm font-bold">
+//           {title}
+//         </h4>
+
+//         <p className="mt-0.5 text-xs text-muted-foreground">
+//           {description}
+//         </p>
+//       </div>
+
+//       <div className="space-y-2">
+//         {members.map(
+//           (member) => (
+//             <ProjectMemberRow
+//               key={
+//                 member.allocatProfileId
+//               }
+//               member={member}
+//             />
+//           ),
+//         )}
+//       </div>
+//     </div>
+//   );
+// }
+
+// /* =========================================================
+//    PROJECT MEMBER ROW
+// ========================================================= */
+
+// function ProjectMemberRow({
+//   member,
+// }: {
+//   member: ProjectAllocatMember;
+// }) {
+//   const accepted =
+//     member.status ===
+//     "Accepted";
+
+//   return (
+//     <div className="flex items-center justify-between gap-4 rounded-[1.25rem] border border-border bg-card p-4 text-card-foreground">
+//       <div className="flex min-w-0 items-center gap-3">
+//         <Avatar className="h-11 w-11 shrink-0 border border-border">
+//           <AvatarImage
+//             src={
+//               member.avatarUrl
+//             }
+//             alt={
+//               member.fullName
+//             }
+//             className="object-cover"
+//           />
+
+//           <AvatarFallback className="bg-primary/15 text-xs font-bold text-primary">
+//             {getInitials(
+//               member.fullName,
+//             )}
+//           </AvatarFallback>
+//         </Avatar>
+
+//         <div className="min-w-0">
+//           <div className="flex flex-wrap items-center gap-2">
+//             <p className="truncate text-sm font-bold">
+//               {member.fullName}
+//             </p>
+
+//             <span
+//               className={[
+//                 "inline-flex items-center gap-1 rounded-full px-2 py-0.5",
+//                 "text-[0.62rem] font-semibold",
+//                 accepted
+//                   ? "bg-emerald-400/10 text-emerald-700 dark:text-emerald-300"
+//                   : "bg-amber-400/10 text-amber-700 dark:text-amber-300",
+//               ].join(" ")}
+//             >
+//               {accepted ? (
+//                 <CheckCircle2Icon
+//                   size={10}
+//                 />
+//               ) : (
+//                 <Clock3Icon
+//                   size={10}
+//                 />
+//               )}
+
+//               {member.status}
+//             </span>
+//           </div>
+
+//           <p className="mt-1 truncate text-xs text-muted-foreground">
+//             {member.title ||
+//               "Allocat professional"}
+//           </p>
+//         </div>
+//       </div>
+
+//       <Button
+//         type="button"
+//         variant="ghost"
+//         size="sm"
+//         className="shrink-0 rounded-full text-xs text-primary"
+//       >
+//         Profile
+//         <ArrowRightIcon
+//           size={13}
+//         />
+//       </Button>
+//     </div>
+//   );
+// }
+
+// /* =========================================================
+//    DATE DETAIL
+// ========================================================= */
+
+// function DateDetail({
+//   label,
+//   value,
+// }: {
+//   label: string;
+//   value?:
+//     | string
+//     | Date
+//     | null;
+// }) {
+//   return (
+//     <div className="rounded-[1.25rem] border border-border bg-card p-4 text-card-foreground">
+//       <p className="text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+//         {label}
+//       </p>
+
+//       <p className="mt-2 flex items-center gap-2 text-sm font-semibold">
+//         <CalendarDaysIcon
+//           size={15}
+//           className="text-primary"
+//         />
+
+//         {formatDate(value)}
+//       </p>
+//     </div>
+//   );
+// }
+
+// /* =========================================================
+//    DETAIL CARD
+// ========================================================= */
+
+// function DetailCard({
+//   label,
+//   value,
+// }: {
+//   label: string;
+//   value: string;
+// }) {
+//   return (
+//     <div className="rounded-[1.25rem] border border-border bg-card p-4 text-card-foreground">
+//       <p className="text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+//         {label}
+//       </p>
+
+//       <p className="mt-2 break-words text-sm font-semibold">
+//         {value}
+//       </p>
+//     </div>
+//   );
+// }
+
+// /* =========================================================
+//    EDIT PROJECT DIALOG
+// ========================================================= */
+
+// function EditProjectDialog({
+//   project,
+//   trigger,
+// }: DialogProps) {
+//   return (
+//     <Dialog>
+//       <DialogTrigger asChild>
+//         <button
+//           type="button"
+//           className="flex w-full items-center gap-2 text-left"
+//         >
+//           {trigger}
+//         </button>
+//       </DialogTrigger>
+
+//       <DialogContent className="max-h-[90vh] overflow-y-auto rounded-[2rem] border-border bg-background text-foreground sm:max-w-2xl">
+//         <form>
+//           <DialogHeader className="text-left">
+//             <p className="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-primary">
+//               Project settings
+//             </p>
+
+//             <DialogTitle className="mt-2 text-2xl font-black uppercase tracking-[-0.03em]">
+//               Edit project
+//             </DialogTitle>
+
+//             <DialogDescription className="leading-7">
+//               Update the project
+//               information, dates and
+//               priority. Save the changes
+//               when you are finished.
+//             </DialogDescription>
+//           </DialogHeader>
+
+//           <div className="mt-7 grid gap-6">
+//             <div className="grid gap-2">
+//               <Label
+//                 htmlFor={`title-${project.id}`}
+//               >
+//                 Project title
+//               </Label>
+
+//               <Input
+//                 id={`title-${project.id}`}
+//                 name="title"
+//                 defaultValue={
+//                   project.title
+//                 }
+//                 className="h-12 rounded-xl bg-card"
+//               />
+//             </div>
+
+//             <div className="grid gap-2">
+//               <Label
+//                 htmlFor={`description-${project.id}`}
+//               >
+//                 Description
+//               </Label>
+
+//               <Textarea
+//                 id={`description-${project.id}`}
+//                 name="description"
+//                 defaultValue={
+//                   project.description
+//                 }
+//                 className="min-h-32 rounded-xl bg-card"
+//               />
+//             </div>
+
+//             <div className="grid gap-5 sm:grid-cols-2">
+//               <div className="grid min-w-0 gap-2">
+//                 <Label
+//                   htmlFor={`start-date-${project.id}`}
+//                 >
+//                   Start date
+//                 </Label>
+
+//                 <Calendar28
+//                   id={`start-date-${project.id}`}
+//                   value={
+//                     project.startDate
+//                       ? new Date(
+//                           project.startDate,
+//                         )
+//                       : new Date()
+//                   }
+//                 />
+//               </div>
+
+//               <div className="grid min-w-0 gap-2">
+//                 <Label
+//                   htmlFor={`due-date-${project.id}`}
+//                 >
+//                   Due date
+//                 </Label>
+
+//                 <Calendar28
+//                   id={`due-date-${project.id}`}
+//                   value={
+//                     project.dueDate
+//                       ? new Date(
+//                           project.dueDate,
+//                         )
+//                       : new Date()
+//                   }
+//                 />
+//               </div>
+//             </div>
+
+//             <fieldset className="grid gap-3">
+//               <legend className="text-sm font-medium">
+//                 Priority
+//               </legend>
+
+//               <div className="grid gap-3 sm:grid-cols-3">
+//                 <PriorityOption
+//                   projectId={
+//                     project.id
+//                   }
+//                   value="standard"
+//                   label="Standard"
+//                   defaultChecked={
+//                     project.priority ===
+//                     "standard"
+//                   }
+//                 />
+
+//                 <PriorityOption
+//                   projectId={
+//                     project.id
+//                   }
+//                   value="high"
+//                   label="High"
+//                   defaultChecked={
+//                     project.priority ===
+//                     "high"
+//                   }
+//                 />
+
+//                 <PriorityOption
+//                   projectId={
+//                     project.id
+//                   }
+//                   value="urgent"
+//                   label="Urgent"
+//                   defaultChecked={
+//                     project.priority ===
+//                     "urgent"
+//                   }
+//                 />
+//               </div>
+//             </fieldset>
+//           </div>
+
+//           <DialogFooter className="mt-8">
+//             <DialogClose asChild>
+//               <Button
+//                 type="button"
+//                 variant="outline"
+//                 className="rounded-full px-6"
+//               >
+//                 Cancel
+//               </Button>
+//             </DialogClose>
+
+//             <Button
+//               type="submit"
+//               className="rounded-full px-6"
+//             >
+//               Save changes
+//             </Button>
+//           </DialogFooter>
+//         </form>
+//       </DialogContent>
+//     </Dialog>
+//   );
+// }
+
+// /* =========================================================
+//    PRIORITY OPTION
+// ========================================================= */
+
+// function PriorityOption({
+//   projectId,
+//   value,
+//   label,
+//   defaultChecked,
+// }: {
+//   projectId: string;
+//   value: string;
+//   label: string;
+//   defaultChecked: boolean;
+// }) {
+//   const inputId =
+//     `${value}-${projectId}`;
+
+//   return (
+//     <label
+//       htmlFor={inputId}
+//       className={[
+//         "flex cursor-pointer items-center gap-3 rounded-xl",
+//         "border border-border bg-card p-4 text-sm",
+//         "transition-colors hover:border-primary/35",
+//         "has-[:checked]:border-primary/40",
+//         "has-[:checked]:bg-primary/10",
+//       ].join(" ")}
+//     >
+//       <input
+//         type="radio"
+//         name={`priority-${projectId}`}
+//         id={inputId}
+//         value={value}
+//         defaultChecked={
+//           defaultChecked
+//         }
+//         className="h-4 w-4 accent-primary"
+//       />
+
+//       <span className="font-semibold">
+//         {label}
+//       </span>
+//     </label>
+//   );
+// }
+
+
+
+import {
+  useEffect,
+  useState,
+} from "react";
+
+import {
+  motion,
+} from "framer-motion";
+
+import {
+  Link,
+} from "react-router-dom";
+
 import {
   ArrowRightIcon,
   CalendarDaysIcon,
@@ -20,19 +1477,36 @@ import {
 
 import api from "@/api/axios";
 
-import type { Project } from "@/Types/project";
-import type { ProjectAllocatMember } from "@/Types/projectAllocatMember";
+import type {
+  Project,
+} from "@/Types/project";
 
-import { getProjectIcon } from "@/utils/projectIcons";
+import type {
+  ProjectAllocatMember,
+} from "@/Types/projectAllocatMember";
+
+import {
+  getProjectIcon,
+} from "@/utils/projectIcons";
 
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
 } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Calendar28 } from "@/components/DatePicker";
+
+import {
+  Badge,
+} from "@/components/ui/badge";
+
+import {
+  Button,
+} from "@/components/ui/button";
+
+import {
+  Calendar28,
+} from "@/components/DatePicker";
+
 import {
   Dialog,
   DialogClose,
@@ -43,6 +1517,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -50,104 +1525,229 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Progress } from "@/components/ui/progress";
-import { Textarea } from "@/components/ui/textarea";
 
-const MotionLink = motion.create(Link);
+import {
+  Input,
+} from "@/components/ui/input";
+
+import {
+  Label,
+} from "@/components/ui/label";
+
+import {
+  Progress,
+} from "@/components/ui/progress";
+
+import {
+  Textarea,
+} from "@/components/ui/textarea";
+
+/* =========================================================
+   MOTION LINK
+========================================================= */
+
+const MotionLink =
+  motion.create(
+    Link,
+  );
+
+/* =========================================================
+   TYPES
+========================================================= */
 
 type ViewProps = {
-  project: Project;
+  project:
+    Project;
 };
 
 type DialogProps = {
-  project: Project;
-  trigger: React.ReactNode;
+  project:
+    Project;
+
+  trigger:
+    React.ReactNode;
 };
 
 type ProjectStatusAppearance = {
-  label: string;
-  dot: string;
-  badge: string;
-  icon: React.ComponentType<{
-    size?: number;
-    className?: string;
-  }>;
+  label:
+    string;
+
+  dot:
+    string;
+
+  text:
+    string;
+
+  subtle:
+    string;
+
+  icon:
+    React.ComponentType<{
+      size?: number;
+      className?: string;
+    }>;
 };
+
+/* =========================================================
+   STATUS APPEARANCE
+========================================================= */
 
 const statusAppearance: Record<
   string,
   ProjectStatusAppearance
 > = {
   pending: {
-    label: "Pending",
-    dot: "bg-amber-500",
-    badge:
-      "border-amber-500/20 bg-amber-400/10 text-amber-700 dark:text-amber-300",
-    icon: Clock3Icon,
+    label:
+      "Pending",
+
+    dot:
+      "bg-amber-500",
+
+    text:
+      "text-amber-700 dark:text-amber-300",
+
+    subtle:
+      "bg-amber-400/10",
+
+    icon:
+      Clock3Icon,
   },
 
   active: {
-    label: "Active",
-    dot: "bg-emerald-500",
-    badge:
-      "border-emerald-500/20 bg-emerald-400/10 text-emerald-700 dark:text-emerald-300",
-    icon: CircleDotIcon,
+    label:
+      "Active",
+
+    dot:
+      "bg-emerald-500",
+
+    text:
+      "text-emerald-700 dark:text-emerald-300",
+
+    subtle:
+      "bg-emerald-400/10",
+
+    icon:
+      CircleDotIcon,
   },
 
   onhold: {
-    label: "On hold",
-    dot: "bg-muted-foreground",
-    badge:
-      "border-border bg-muted text-muted-foreground",
-    icon: PauseCircleIcon,
+    label:
+      "On hold",
+
+    dot:
+      "bg-muted-foreground",
+
+    text:
+      "text-muted-foreground",
+
+    subtle:
+      "bg-muted",
+
+    icon:
+      PauseCircleIcon,
+  },
+
+  paused: {
+    label:
+      "Paused",
+
+    dot:
+      "bg-muted-foreground",
+
+    text:
+      "text-muted-foreground",
+
+    subtle:
+      "bg-muted",
+
+    icon:
+      PauseCircleIcon,
   },
 
   complete: {
-    label: "Complete",
-    dot: "bg-sky-500",
-    badge:
-      "border-sky-500/20 bg-sky-400/10 text-sky-700 dark:text-sky-300",
-    icon: CheckCircle2Icon,
+    label:
+      "Complete",
+
+    dot:
+      "bg-sky-500",
+
+    text:
+      "text-sky-700 dark:text-sky-300",
+
+    subtle:
+      "bg-sky-400/10",
+
+    icon:
+      CheckCircle2Icon,
   },
 
   completed: {
-    label: "Complete",
-    dot: "bg-sky-500",
-    badge:
-      "border-sky-500/20 bg-sky-400/10 text-sky-700 dark:text-sky-300",
-    icon: CheckCircle2Icon,
+    label:
+      "Complete",
+
+    dot:
+      "bg-sky-500",
+
+    text:
+      "text-sky-700 dark:text-sky-300",
+
+    subtle:
+      "bg-sky-400/10",
+
+    icon:
+      CheckCircle2Icon,
   },
 
   closed: {
-    label: "Closed",
-    dot: "bg-slate-500",
-    badge:
-      "border-border bg-muted text-muted-foreground",
-    icon: CheckCircle2Icon,
+    label:
+      "Closed",
+
+    dot:
+      "bg-muted-foreground",
+
+    text:
+      "text-muted-foreground",
+
+    subtle:
+      "bg-muted",
+
+    icon:
+      CheckCircle2Icon,
   },
 };
+
+/* =========================================================
+   PRIORITY APPEARANCE
+========================================================= */
 
 const priorityAppearance: Record<
   string,
   string
 > = {
   standard:
-    "border-sky-500/20 bg-sky-400/10 text-sky-700 dark:text-sky-300",
+    "text-sky-700 dark:text-sky-300",
 
   high:
-    "border-amber-500/20 bg-amber-400/10 text-amber-700 dark:text-amber-300",
+    "text-amber-700 dark:text-amber-300",
 
   urgent:
-    "border-destructive/20 bg-destructive/10 text-destructive",
+    "text-destructive",
 };
 
-function normalizeStatus(status?: string) {
+/* =========================================================
+   HELPERS
+========================================================= */
+
+function normalizeStatus(
+  status?: string,
+) {
   return (
     status
       ?.toLowerCase()
-      .replace(/[\s_-]/g, "") ||
+      .replace(
+        /[\s_-]/g,
+        "",
+      ) ||
     "onhold"
   );
 }
@@ -156,35 +1756,51 @@ function getStatusAppearance(
   status?: string,
 ) {
   const normalizedStatus =
-    normalizeStatus(status);
+    normalizeStatus(
+      status,
+    );
 
   return (
     statusAppearance[
       normalizedStatus
     ] ?? {
-      label: status
-        ? status.charAt(0).toUpperCase() +
-          status.slice(1)
-        : "On hold",
+      label:
+        status
+          ? status
+              .charAt(0)
+              .toUpperCase() +
+            status.slice(1)
+          : "On hold",
 
-      dot: "bg-muted-foreground",
+      dot:
+        "bg-muted-foreground",
 
-      badge:
-        "border-border bg-muted text-muted-foreground",
+      text:
+        "text-muted-foreground",
 
-      icon: PauseCircleIcon,
+      subtle:
+        "bg-muted",
+
+      icon:
+        PauseCircleIcon,
     }
   );
 }
 
 function formatDate(
-  date?: string | Date | null,
+  date?:
+    | string
+    | Date
+    | null,
 ) {
   if (!date) {
     return "Not set";
   }
 
-  const parsedDate = new Date(date);
+  const parsedDate =
+    new Date(
+      date,
+    );
 
   if (
     Number.isNaN(
@@ -197,11 +1813,16 @@ function formatDate(
   return new Intl.DateTimeFormat(
     "en",
     {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
+      day:
+        "numeric",
+      month:
+        "short",
+      year:
+        "numeric",
     },
-  ).format(parsedDate);
+  ).format(
+    parsedDate,
+  );
 }
 
 function getInitials(
@@ -227,14 +1848,18 @@ function clampProgress(
   progress?: number,
 ) {
   if (
-    typeof progress !== "number"
+    typeof progress !==
+    "number"
   ) {
     return 0;
   }
 
   return Math.min(
     100,
-    Math.max(0, progress),
+    Math.max(
+      0,
+      progress,
+    ),
   );
 }
 
@@ -246,98 +1871,129 @@ export function GridView({
   project,
 }: ViewProps) {
   const progress =
-    clampProgress(project.progress);
+    clampProgress(
+      project.progress,
+    );
 
   return (
     <motion.article
       className={[
-        "group relative flex min-h-[310px] min-w-0 flex-col",
-        "overflow-hidden rounded-[1.75rem] border border-border",
-        "bg-card p-5 text-card-foreground transition-all duration-300",
-        "hover:-translate-y-1 hover:border-primary/25",
-        "hover:shadow-xl hover:shadow-black/5",
-        "dark:hover:shadow-black/20 sm:p-6",
+        "group relative flex min-h-[295px] min-w-0 flex-col",
+        "overflow-hidden rounded-[1.35rem]",
+        "border border-border bg-background",
+        "p-5 transition-all duration-300",
+        "hover:border-primary/25",
+        "hover:shadow-lg hover:shadow-black/[0.035]",
+        "dark:hover:shadow-black/20",
+        "sm:p-6",
       ].join(" ")}
       initial={{
         opacity: 0,
-        y: 18,
+        y: 14,
       }}
       animate={{
         opacity: 1,
         y: 0,
       }}
       transition={{
-        duration: 0.4,
+        duration: 0.35,
+        ease:
+          "easeOut",
+      }}
+      whileHover={{
+        y: -3,
       }}
     >
-      <div className="absolute right-0 top-0 h-28 w-28 rounded-bl-[6rem] bg-primary/[0.06] transition-transform duration-500 group-hover:scale-110" />
+      {/* =====================================================
+          TOP
+      ===================================================== */}
 
-      <div className="relative flex items-start justify-between gap-4">
-        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/12 text-primary">
-          {getProjectIcon(
-            project?.category ??
-              "default",
-          )}
-        </div>
+      <div className="flex items-start justify-between gap-4">
+        <ProjectIdentity
+          project={
+            project
+          }
+        />
 
         <ProjectMenu
-          project={project}
+          project={
+            project
+          }
         />
       </div>
 
-      <div className="relative mt-7 min-w-0">
-        <p className="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-          {project.category ||
-            "General project"}
-        </p>
+      {/* =====================================================
+          PROJECT COPY
+      ===================================================== */}
 
+      <div className="mt-6 min-w-0">
         <MotionLink
           to={`${project.id}`}
-          className="mt-2 block min-w-0"
+          className="block min-w-0"
           whileTap={{
-            scale: 0.98,
-          }}
-          transition={{
-            duration: 0.15,
+            scale:
+              0.99,
           }}
         >
-          <h3 className="line-clamp-2 break-words text-xl font-black uppercase leading-[1.05] tracking-[-0.025em] transition-colors group-hover:text-primary sm:text-2xl">
-            {project.title}
+          <h3 className="line-clamp-2 break-words text-xl font-black leading-[1.08] tracking-[-0.025em] transition-colors group-hover:text-primary sm:text-[1.35rem]">
+            {
+              project.title
+            }
           </h3>
         </MotionLink>
 
         {project.description && (
           <p className="mt-3 line-clamp-2 text-sm leading-6 text-muted-foreground">
-            {project.description}
+            {
+              project.description
+            }
           </p>
         )}
       </div>
 
-      <div className="relative mt-auto pt-8">
-        <div className="mb-3 flex items-center justify-between gap-4">
-          <span className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-            Progress
-          </span>
+      {/* =====================================================
+          PROGRESS
+      ===================================================== */}
 
-          <span className="text-sm font-black">
-            {progress}%
-          </span>
+      <div className="mt-auto pt-7">
+        <div className="flex items-end justify-between gap-4">
+          <div>
+            <p className="text-[0.62rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              Progress
+            </p>
+
+            <p className="mt-1 text-2xl font-black tracking-[-0.035em]">
+              {progress}
+              <span className="ml-0.5 text-sm text-muted-foreground">
+                %
+              </span>
+            </p>
+          </div>
+
+          <StatusIndicator
+            status={
+              project.status
+            }
+          />
         </div>
 
         <Progress
-          value={progress}
-          className="h-2"
+          value={
+            progress
+          }
+          className="mt-4 h-1.5"
         />
 
         <div className="mt-5 flex items-center justify-between gap-3 border-t border-border pt-4">
           <span className="flex min-w-0 items-center gap-2 text-xs text-muted-foreground">
             <CalendarDaysIcon
-              size={14}
+              size={
+                13
+              }
               className="shrink-0"
             />
 
             <span className="truncate">
-              Created{" "}
               {formatDate(
                 project.createdAt,
               )}
@@ -346,11 +2002,19 @@ export function GridView({
 
           <Link
             to={`${project.id}`}
-            className="flex shrink-0 items-center gap-1 text-xs font-semibold text-primary transition-colors hover:underline"
+            className={[
+              "group/open inline-flex shrink-0 items-center gap-1.5",
+              "text-xs font-semibold text-foreground",
+              "transition-colors hover:text-primary",
+            ].join(" ")}
           >
             Open
+
             <ArrowRightIcon
-              size={13}
+              size={
+                13
+              }
+              className="transition-transform group-hover/open:translate-x-0.5"
             />
           </Link>
         </div>
@@ -367,101 +2031,196 @@ export function ListView({
   project,
 }: ViewProps) {
   const progress =
-    clampProgress(project.progress);
+    clampProgress(
+      project.progress,
+    );
 
   return (
     <motion.article
       className={[
-        "group relative grid min-w-0 gap-5 overflow-hidden",
-        "rounded-[1.5rem] border border-border bg-card",
-        "p-5 text-card-foreground transition-all duration-300",
-        "hover:border-primary/25 hover:shadow-lg hover:shadow-black/5",
-        "dark:hover:shadow-black/20",
-        "md:grid-cols-[auto_minmax(0,1fr)_180px_auto]",
-        "md:items-center md:p-6",
+        "group relative grid min-w-0 gap-5",
+        "border-b border-border py-5",
+        "transition-colors duration-200",
+        "hover:bg-muted/[0.18]",
+        "sm:px-3",
+        "md:grid-cols-[minmax(0,1.4fr)_180px_120px_auto]",
+        "md:items-center",
       ].join(" ")}
       initial={{
         opacity: 0,
-        y: 14,
+        y: 10,
       }}
       animate={{
         opacity: 1,
         y: 0,
       }}
       transition={{
-        duration: 0.35,
+        duration:
+          0.3,
       }}
     >
-      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/12 text-primary">
-        {getProjectIcon(
-          project?.category ??
-            "default",
-        )}
-      </div>
+      {/* Project */}
 
       <div className="min-w-0">
-        <div className="flex flex-wrap items-center gap-2">
-          <p className="text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-            {project.category ||
-              "General project"}
-          </p>
-
-          <StatusBadge
-            status={project.status}
-          />
-        </div>
+        <ProjectIdentity
+          project={
+            project
+          }
+          compact
+        />
 
         <MotionLink
           to={`${project.id}`}
-          className="mt-2 block min-w-0"
+          className="mt-3 block min-w-0"
           whileTap={{
-            scale: 0.98,
-          }}
-          transition={{
-            duration: 0.15,
+            scale:
+              0.99,
           }}
         >
-          <h3 className="truncate text-lg font-black uppercase tracking-[-0.02em] transition-colors group-hover:text-primary">
-            {project.title}
+          <h3 className="truncate text-base font-black tracking-[-0.02em] transition-colors group-hover:text-primary sm:text-lg">
+            {
+              project.title
+            }
           </h3>
         </MotionLink>
 
-        <p className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
+        <p className="mt-1.5 flex items-center gap-1.5 text-xs text-muted-foreground">
           <CalendarDaysIcon
-            size={14}
+            size={
+              13
+            }
           />
 
-          Created{" "}
           {formatDate(
             project.createdAt,
           )}
         </p>
       </div>
 
+      {/* Progress */}
+
       <div className="min-w-0">
-        <div className="mb-2 flex items-center justify-between">
-          <span className="text-xs font-semibold text-muted-foreground">
+        <div className="mb-2 flex items-center justify-between gap-3">
+          <span className="text-xs text-muted-foreground">
             Progress
           </span>
 
-          <span className="text-xs font-black">
+          <span className="text-xs font-bold">
             {progress}%
           </span>
         </div>
 
         <Progress
-          value={progress}
-          className="h-2"
+          value={
+            progress
+          }
+          className="h-1.5"
         />
       </div>
 
-      <div className="absolute right-4 top-4 md:static">
+      {/* Status */}
+
+      <StatusIndicator
+        status={
+          project.status
+        }
+      />
+
+      {/* Menu */}
+
+      <div className="absolute right-0 top-4 md:static">
         <ProjectMenu
-          project={project}
+          project={
+            project
+          }
           hideStatus
         />
       </div>
     </motion.article>
+  );
+}
+
+/* =========================================================
+   PROJECT IDENTITY
+========================================================= */
+
+function ProjectIdentity({
+  project,
+  compact = false,
+}: {
+  project:
+    Project;
+
+  compact?:
+    boolean;
+}) {
+  return (
+    <div className="flex min-w-0 items-center gap-3">
+      <span
+        className={[
+          "flex shrink-0 items-center justify-center",
+          "bg-primary/[0.075] text-primary",
+
+          compact
+            ? "h-9 w-9 rounded-lg"
+            : "h-10 w-10 rounded-xl",
+        ].join(" ")}
+      >
+        {getProjectIcon(
+          project?.category ??
+            "default",
+        )}
+      </span>
+
+      <div className="min-w-0">
+        <p className="truncate text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+          {project.category ||
+            "General project"}
+        </p>
+
+        {project.projectCode && (
+          <p className="mt-0.5 truncate text-[0.62rem] text-muted-foreground/60">
+            {
+              project.projectCode
+            }
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* =========================================================
+   STATUS INDICATOR
+========================================================= */
+
+function StatusIndicator({
+  status,
+}: {
+  status?:
+    string;
+}) {
+  const appearance =
+    getStatusAppearance(
+      status,
+    );
+
+  return (
+    <span
+      className={[
+        "inline-flex w-fit shrink-0 items-center gap-2",
+        "text-xs font-semibold",
+        appearance.text,
+      ].join(" ")}
+    >
+      <span
+        className={`h-2 w-2 rounded-full ${appearance.dot}`}
+      />
+
+      {
+        appearance.label
+      }
+    </span>
   );
 }
 
@@ -471,7 +2230,8 @@ export function ListView({
 
 type ProjectMenuProps =
   ViewProps & {
-    hideStatus?: boolean;
+    hideStatus?:
+      boolean;
   };
 
 function ProjectMenu({
@@ -479,11 +2239,15 @@ function ProjectMenu({
   hideStatus = false,
 }: ProjectMenuProps) {
   return (
-    <div className="flex shrink-0 items-center gap-2">
+    <div className="flex shrink-0 items-center gap-3">
       {!hideStatus && (
-        <StatusBadge
-          status={project.status}
-        />
+        <div className="hidden sm:block">
+          <StatusIndicator
+            status={
+              project.status
+            }
+          />
+        </div>
       )}
 
       <DropdownMenu>
@@ -492,28 +2256,40 @@ function ProjectMenu({
             type="button"
             variant="ghost"
             size="icon"
-            className="h-10 w-10 rounded-full text-muted-foreground shadow-none hover:bg-muted hover:text-foreground"
+            className={[
+              "h-9 w-9 rounded-lg",
+              "text-muted-foreground shadow-none",
+              "hover:bg-muted hover:text-foreground",
+            ].join(" ")}
             aria-label={`Open menu for ${project.title}`}
           >
             <EllipsisVerticalIcon
-              size={18}
+              size={
+                17
+              }
             />
           </Button>
         </DropdownMenuTrigger>
 
         <DropdownMenuContent
           align="end"
-          className="w-52 rounded-2xl border-border bg-popover p-2 text-popover-foreground shadow-xl"
+          className={[
+            "w-52 rounded-xl border-border",
+            "bg-popover p-1.5 text-popover-foreground",
+            "shadow-lg",
+          ].join(" ")}
         >
           <DropdownMenuItem
             asChild
-            className="rounded-xl"
+            className="rounded-lg"
           >
             <Link
               to={`/projects/${project.id}/find-allocats`}
             >
               <UserPlusIcon
-                size={15}
+                size={
+                  14
+                }
               />
 
               Find Allocats
@@ -522,13 +2298,15 @@ function ProjectMenu({
 
           <DropdownMenuItem
             asChild
-            className="rounded-xl"
+            className="rounded-lg"
           >
             <Link
               to={`${project.id}`}
             >
               <FolderOpenIcon
-                size={15}
+                size={
+                  14
+                }
               />
 
               Open project
@@ -536,18 +2314,25 @@ function ProjectMenu({
           </DropdownMenuItem>
 
           <DropdownMenuItem
-            className="rounded-xl"
-            onSelect={(event) =>
+            className="rounded-lg"
+            onSelect={(
+              event,
+            ) =>
               event.preventDefault()
             }
           >
             <ProjectDetailsDialog
-              project={project}
+              project={
+                project
+              }
               trigger={
                 <>
                   <EyeIcon
-                    size={15}
+                    size={
+                      14
+                    }
                   />
+
                   View details
                 </>
               }
@@ -555,68 +2340,55 @@ function ProjectMenu({
           </DropdownMenuItem>
 
           <DropdownMenuItem
-            className="rounded-xl"
-            onSelect={(event) =>
+            className="rounded-lg"
+            onSelect={(
+              event,
+            ) =>
               event.preventDefault()
             }
           >
             <EditProjectDialog
-              project={project}
+              project={
+                project
+              }
               trigger={
                 <>
                   <Edit3Icon
-                    size={15}
+                    size={
+                      14
+                    }
                   />
+
                   Edit project
                 </>
               }
             />
           </DropdownMenuItem>
 
-          <DropdownMenuItem className="rounded-xl">
+          <DropdownMenuItem className="rounded-lg">
             <CircleDotIcon
-              size={15}
+              size={
+                14
+              }
             />
+
             Change status
           </DropdownMenuItem>
 
           <DropdownMenuSeparator />
 
-          <DropdownMenuItem className="rounded-xl text-destructive focus:bg-destructive/10 focus:text-destructive">
+          <DropdownMenuItem className="rounded-lg text-destructive focus:bg-destructive/10 focus:text-destructive">
             <XCircleIcon
-              size={15}
+              size={
+                14
+              }
             />
+
             Cancel project
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
-  );
-}
-
-/* =========================================================
-   STATUS BADGE
-========================================================= */
-
-function StatusBadge({
-  status,
-}: {
-  status?: string;
-}) {
-  const appearance =
-    getStatusAppearance(status);
-
-  const Icon =
-    appearance.icon;
-
-  return (
-    <Badge
-      variant="outline"
-      className={`h-7 rounded-full px-2.5 text-[0.65rem] font-semibold shadow-none ${appearance.badge}`}
-    >
-      <Icon size={12} />
-      {appearance.label}
-    </Badge>
   );
 }
 
@@ -628,27 +2400,33 @@ function ProjectDetailsDialog({
   project,
   trigger,
 }: DialogProps) {
-  const [open, setOpen] =
+  const [
+    open,
+    setOpen,
+  ] =
     useState(false);
 
   const [
     members,
     setMembers,
-  ] = useState<
-    ProjectAllocatMember[]
-  >([]);
+  ] =
+    useState<
+      ProjectAllocatMember[]
+    >([]);
 
   const [
     membersLoading,
     setMembersLoading,
-  ] = useState(false);
+  ] =
+    useState(false);
 
   const [
     membersError,
     setMembersError,
-  ] = useState<
-    string | null
-  >(null);
+  ] =
+    useState<
+      string | null
+    >(null);
 
   const progress =
     clampProgress(
@@ -679,7 +2457,9 @@ function ProjectDetailsDialog({
           true,
         );
 
-        setMembersError(null);
+        setMembersError(
+          null,
+        );
 
         const response =
           await api.get<
@@ -692,13 +2472,17 @@ function ProjectDetailsDialog({
             },
           );
 
-        if (!cancelled) {
+        if (
+          !cancelled
+        ) {
           setMembers(
             response.data,
           );
         }
       } catch (error) {
-        if (cancelled) {
+        if (
+          cancelled
+        ) {
           return;
         }
 
@@ -711,7 +2495,9 @@ function ProjectDetailsDialog({
           "Could not load the project team.",
         );
       } finally {
-        if (!cancelled) {
+        if (
+          !cancelled
+        ) {
           setMembersLoading(
             false,
           );
@@ -722,7 +2508,8 @@ function ProjectDetailsDialog({
     void loadMembers();
 
     return () => {
-      cancelled = true;
+      cancelled =
+        true;
     };
   }, [
     open,
@@ -745,8 +2532,12 @@ function ProjectDetailsDialog({
 
   return (
     <Dialog
-      open={open}
-      onOpenChange={setOpen}
+      open={
+        open
+      }
+      onOpenChange={
+        setOpen
+      }
     >
       <DialogTrigger asChild>
         <button
@@ -760,63 +2551,67 @@ function ProjectDetailsDialog({
       <DialogContent
         className={[
           "flex max-h-[90vh] flex-col overflow-hidden",
-          "rounded-[2rem] border-border bg-background p-0 text-foreground",
-          "sm:max-w-2xl",
+          "rounded-[1.5rem] border-border bg-background p-0",
+          "text-foreground sm:max-w-2xl",
         ].join(" ")}
       >
-        {/* Header */}
-        <DialogHeader className="shrink-0 border-b border-border px-6 pb-6 pt-7 text-left sm:px-8 sm:pt-8">
-          <div className="flex items-start gap-4">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/12 text-primary">
-              {getProjectIcon(
-                project?.category ??
-                  "default",
-              )}
-            </div>
+        {/* =================================================
+            HEADER
+        ================================================= */}
 
-            <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-2">
-                <StatusBadge
-                  status={
-                    project.status
-                  }
-                />
+        <DialogHeader className="shrink-0 border-b border-border px-6 pb-6 pt-7 text-left sm:px-8">
+          <ProjectIdentity
+            project={
+              project
+            }
+          />
 
-                {project.priority && (
-                  <Badge
-                    variant="outline"
-                    className={[
-                      "h-7 rounded-full px-2.5 text-[0.65rem]",
-                      "font-semibold capitalize shadow-none",
-                      priorityAppearance[
-                        priority
-                      ] ??
-                        priorityAppearance.standard,
-                    ].join(" ")}
-                  >
-                    {
-                      project.priority
-                    }
-                  </Badge>
-                )}
-              </div>
+          <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2">
+            <StatusIndicator
+              status={
+                project.status
+              }
+            />
 
-              <DialogTitle className="mt-4 break-words text-2xl font-black uppercase leading-tight tracking-[-0.03em] sm:text-3xl">
-                {project.title}
-              </DialogTitle>
-
-              <DialogDescription className="mt-3 max-w-xl text-sm leading-7 text-muted-foreground">
-                {project.description ||
-                  "No project description was provided."}
-              </DialogDescription>
-            </div>
+            {project.priority && (
+              <span
+                className={[
+                  "text-xs font-semibold capitalize",
+                  priorityAppearance[
+                    priority
+                  ] ??
+                    priorityAppearance.standard,
+                ].join(" ")}
+              >
+                {
+                  project.priority
+                }{" "}
+                priority
+              </span>
+            )}
           </div>
+
+          <DialogTitle className="mt-4 break-words text-2xl font-black leading-[1.08] tracking-[-0.03em] sm:text-3xl">
+            {
+              project.title
+            }
+          </DialogTitle>
+
+          <DialogDescription className="mt-3 max-w-xl text-sm leading-7 text-muted-foreground">
+            {project.description ||
+              "No project description was provided."}
+          </DialogDescription>
         </DialogHeader>
 
-        {/* Scrollable body */}
-        <div className="min-h-0 flex-1 space-y-7 overflow-y-auto px-6 py-7 sm:px-8">
+        {/* =================================================
+            BODY
+        ================================================= */}
+
+        <div className="min-h-0 flex-1 space-y-8 overflow-y-auto px-6 py-7 sm:px-8">
+
           {/* Dates */}
-          <div className="grid gap-4 sm:grid-cols-3">
+
+          <div className="grid gap-6 border-b border-border pb-7 sm:grid-cols-3">
             <DateDetail
               label="Created"
               value={
@@ -840,38 +2635,43 @@ function ProjectDetailsDialog({
           </div>
 
           {/* Progress */}
-          <section className="rounded-[1.5rem] border border-border bg-card p-5 text-card-foreground">
-            <div className="flex items-center justify-between gap-4">
+
+          <section>
+            <div className="flex items-end justify-between gap-5">
               <div>
-                <p className="text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                <p className="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                   Project progress
                 </p>
 
-                <div className="mt-2 flex items-center gap-2 text-sm font-semibold">
-                  <span
-                    className={`h-2 w-2 rounded-full ${status.dot}`}
+                <div className="mt-2">
+                  <StatusIndicator
+                    status={
+                      project.status
+                    }
                   />
-
-                  {
-                    status.label
-                  }
                 </div>
               </div>
 
-              <span className="text-3xl font-black tracking-[-0.04em]">
-                {progress}%
-              </span>
+              <p className="text-4xl font-black tracking-[-0.045em]">
+                {progress}
+                <span className="text-lg text-muted-foreground">
+                  %
+                </span>
+              </p>
             </div>
 
             <Progress
-              value={progress}
-              className="mt-5 h-2"
+              value={
+                progress
+              }
+              className="mt-5 h-1.5"
             />
           </section>
 
-          {/* Project info */}
-          <div className="grid gap-4 sm:grid-cols-2">
-            <DetailCard
+          {/* Information */}
+
+          <div className="grid gap-6 border-y border-border py-7 sm:grid-cols-2">
+            <DetailRow
               label="Category"
               value={
                 project.category
@@ -885,7 +2685,7 @@ function ProjectDetailsDialog({
               }
             />
 
-            <DetailCard
+            <DetailRow
               label="Project code"
               value={
                 project.projectCode ||
@@ -895,36 +2695,34 @@ function ProjectDetailsDialog({
           </div>
 
           {/* Team */}
-          <section className="border-t border-border pt-7">
-            <div className="flex items-center justify-between gap-4">
+
+          <section>
+            <div className="flex items-end justify-between gap-4">
               <div>
-                <p className="text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                <p className="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                   Project team
                 </p>
 
-                <h3 className="mt-1 text-lg font-black uppercase">
+                <h3 className="mt-1 text-lg font-black tracking-[-0.02em]">
                   Allocats
                 </h3>
               </div>
 
-              <Badge
-                variant="secondary"
-                className="rounded-full shadow-none"
-              >
-                <UsersIcon
-                  size={13}
-                />
+              <span className="text-xs font-semibold text-muted-foreground">
                 {
                   members.length
-                }
-              </Badge>
+                }{" "}
+                total
+              </span>
             </div>
 
             {membersLoading ? (
-              <div className="mt-6 flex min-h-28 items-center justify-center">
+              <div className="mt-6 flex min-h-28 items-center">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <LoaderCircleIcon
-                    size={17}
+                    size={
+                      16
+                    }
                     className="animate-spin"
                   />
 
@@ -932,7 +2730,7 @@ function ProjectDetailsDialog({
                 </div>
               </div>
             ) : membersError ? (
-              <div className="mt-4 rounded-[1.5rem] border border-destructive/20 bg-destructive/5 p-5">
+              <div className="mt-5 border-l-2 border-destructive pl-4">
                 <p className="text-sm text-destructive">
                   {
                     membersError
@@ -941,40 +2739,43 @@ function ProjectDetailsDialog({
               </div>
             ) : members.length ===
               0 ? (
-              <div className="mt-4 rounded-[1.5rem] border border-dashed border-border bg-muted/20 px-5 py-8 text-center">
+              <div className="mt-6 border-y border-border py-8">
                 <UsersIcon
-                  size={24}
-                  className="mx-auto text-muted-foreground"
+                  size={
+                    21
+                  }
+                  className="text-muted-foreground"
                 />
 
-                <p className="mt-3 text-sm font-semibold">
-                  No Allocats yet
+                <p className="mt-4 text-sm font-semibold">
+                  No Allocats yet.
                 </p>
 
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Invited and accepted
-                  professionals will
-                  appear here.
+                <p className="mt-1 max-w-sm text-xs leading-6 text-muted-foreground">
+                  Invited and accepted professionals will appear here.
                 </p>
 
                 <Button
                   asChild
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
-                  className="mt-5 rounded-full"
+                  className="mt-4 -ml-3 rounded-lg text-primary shadow-none"
                 >
                   <Link
                     to={`/projects/${project.id}/find-allocats`}
                   >
                     <UserPlusIcon
-                      size={14}
+                      size={
+                        14
+                      }
                     />
+
                     Find Allocats
                   </Link>
                 </Button>
               </div>
             ) : (
-              <div className="mt-5 space-y-7">
+              <div className="mt-6 space-y-8">
                 {acceptedMembers.length >
                   0 && (
                   <MemberSection
@@ -1001,12 +2802,15 @@ function ProjectDetailsDialog({
           </section>
         </div>
 
-        {/* Fixed footer */}
+        {/* =================================================
+            FOOTER
+        ================================================= */}
+
         <DialogFooter className="shrink-0 border-t border-border bg-background px-6 py-5 sm:px-8">
           <DialogClose asChild>
             <Button
-              variant="outline"
-              className="rounded-full px-6"
+              variant="ghost"
+              className="rounded-lg px-5 text-muted-foreground shadow-none"
             >
               Close
             </Button>
@@ -1014,7 +2818,7 @@ function ProjectDetailsDialog({
 
           <Button
             asChild
-            className="rounded-full px-6"
+            className="group rounded-lg px-6 shadow-none"
           >
             <Link
               to={`${project.id}`}
@@ -1022,7 +2826,10 @@ function ProjectDetailsDialog({
               Open project
 
               <ArrowRightIcon
-                size={15}
+                size={
+                  15
+                }
+                className="transition-transform group-hover:translate-x-0.5"
               />
             </Link>
           </Button>
@@ -1033,7 +2840,7 @@ function ProjectDetailsDialog({
 }
 
 /* =========================================================
-   PROJECT MEMBER SECTION
+   MEMBER SECTION
 ========================================================= */
 
 function MemberSection({
@@ -1041,9 +2848,14 @@ function MemberSection({
   description,
   members,
 }: {
-  title: string;
-  description: string;
-  members: ProjectAllocatMember[];
+  title:
+    string;
+
+  description:
+    string;
+
+  members:
+    ProjectAllocatMember[];
 }) {
   return (
     <div>
@@ -1052,19 +2864,21 @@ function MemberSection({
           {title}
         </h4>
 
-        <p className="mt-0.5 text-xs text-muted-foreground">
+        <p className="mt-1 text-xs leading-5 text-muted-foreground">
           {description}
         </p>
       </div>
 
-      <div className="space-y-2">
+      <div className="divide-y divide-border border-y border-border">
         {members.map(
           (member) => (
             <ProjectMemberRow
               key={
                 member.allocatProfileId
               }
-              member={member}
+              member={
+                member
+              }
             />
           ),
         )}
@@ -1074,22 +2888,23 @@ function MemberSection({
 }
 
 /* =========================================================
-   PROJECT MEMBER ROW
+   MEMBER ROW
 ========================================================= */
 
 function ProjectMemberRow({
   member,
 }: {
-  member: ProjectAllocatMember;
+  member:
+    ProjectAllocatMember;
 }) {
   const accepted =
     member.status ===
     "Accepted";
 
   return (
-    <div className="flex items-center justify-between gap-4 rounded-[1.25rem] border border-border bg-card p-4 text-card-foreground">
+    <div className="flex items-center justify-between gap-4 py-4">
       <div className="flex min-w-0 items-center gap-3">
-        <Avatar className="h-11 w-11 shrink-0 border border-border">
+        <Avatar className="h-10 w-10 shrink-0 border border-border">
           <AvatarImage
             src={
               member.avatarUrl
@@ -1100,7 +2915,7 @@ function ProjectMemberRow({
             className="object-cover"
           />
 
-          <AvatarFallback className="bg-primary/15 text-xs font-bold text-primary">
+          <AvatarFallback className="bg-primary/10 text-xs font-bold text-primary">
             {getInitials(
               member.fullName,
             )}
@@ -1110,29 +2925,32 @@ function ProjectMemberRow({
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <p className="truncate text-sm font-bold">
-              {member.fullName}
+              {
+                member.fullName
+              }
             </p>
 
             <span
               className={[
-                "inline-flex items-center gap-1 rounded-full px-2 py-0.5",
-                "text-[0.62rem] font-semibold",
+                "inline-flex items-center gap-1.5 text-[0.62rem] font-semibold",
+
                 accepted
-                  ? "bg-emerald-400/10 text-emerald-700 dark:text-emerald-300"
-                  : "bg-amber-400/10 text-amber-700 dark:text-amber-300",
+                  ? "text-emerald-700 dark:text-emerald-300"
+                  : "text-amber-700 dark:text-amber-300",
               ].join(" ")}
             >
-              {accepted ? (
-                <CheckCircle2Icon
-                  size={10}
-                />
-              ) : (
-                <Clock3Icon
-                  size={10}
-                />
-              )}
+              <span
+                className={[
+                  "h-1.5 w-1.5 rounded-full",
+                  accepted
+                    ? "bg-emerald-500"
+                    : "bg-amber-500",
+                ].join(" ")}
+              />
 
-              {member.status}
+              {
+                member.status
+              }
             </span>
           </div>
 
@@ -1147,11 +2965,14 @@ function ProjectMemberRow({
         type="button"
         variant="ghost"
         size="sm"
-        className="shrink-0 rounded-full text-xs text-primary"
+        className="shrink-0 rounded-lg px-3 text-xs text-primary shadow-none"
       >
         Profile
+
         <ArrowRightIcon
-          size={13}
+          size={
+            13
+          }
         />
       </Button>
     </div>
@@ -1166,44 +2987,53 @@ function DateDetail({
   label,
   value,
 }: {
-  label: string;
+  label:
+    string;
+
   value?:
     | string
     | Date
     | null;
 }) {
   return (
-    <div className="rounded-[1.25rem] border border-border bg-card p-4 text-card-foreground">
-      <p className="text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+    <div>
+      <p className="text-[0.6rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
         {label}
       </p>
 
       <p className="mt-2 flex items-center gap-2 text-sm font-semibold">
         <CalendarDaysIcon
-          size={15}
+          size={
+            14
+          }
           className="text-primary"
         />
 
-        {formatDate(value)}
+        {formatDate(
+          value,
+        )}
       </p>
     </div>
   );
 }
 
 /* =========================================================
-   DETAIL CARD
+   DETAIL ROW
 ========================================================= */
 
-function DetailCard({
+function DetailRow({
   label,
   value,
 }: {
-  label: string;
-  value: string;
+  label:
+    string;
+
+  value:
+    string;
 }) {
   return (
-    <div className="rounded-[1.25rem] border border-border bg-card p-4 text-card-foreground">
-      <p className="text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+    <div>
+      <p className="text-[0.6rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
         {label}
       </p>
 
@@ -1233,22 +3063,19 @@ function EditProjectDialog({
         </button>
       </DialogTrigger>
 
-      <DialogContent className="max-h-[90vh] overflow-y-auto rounded-[2rem] border-border bg-background text-foreground sm:max-w-2xl">
+      <DialogContent className="max-h-[90vh] overflow-y-auto rounded-[1.5rem] border-border bg-background text-foreground sm:max-w-2xl">
         <form>
           <DialogHeader className="text-left">
-            <p className="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-primary">
+            <p className="text-[0.62rem] font-semibold uppercase tracking-[0.17em] text-primary">
               Project settings
             </p>
 
-            <DialogTitle className="mt-2 text-2xl font-black uppercase tracking-[-0.03em]">
+            <DialogTitle className="mt-2 text-2xl font-black tracking-[-0.03em]">
               Edit project
             </DialogTitle>
 
-            <DialogDescription className="leading-7">
-              Update the project
-              information, dates and
-              priority. Save the changes
-              when you are finished.
+            <DialogDescription className="mt-2 leading-7">
+              Update the project information, dates and priority.
             </DialogDescription>
           </DialogHeader>
 
@@ -1256,6 +3083,7 @@ function EditProjectDialog({
             <div className="grid gap-2">
               <Label
                 htmlFor={`title-${project.id}`}
+                className="text-sm font-semibold"
               >
                 Project title
               </Label>
@@ -1266,13 +3094,14 @@ function EditProjectDialog({
                 defaultValue={
                   project.title
                 }
-                className="h-12 rounded-xl bg-card"
+                className="h-12 rounded-xl border-border bg-background shadow-none"
               />
             </div>
 
             <div className="grid gap-2">
               <Label
                 htmlFor={`description-${project.id}`}
+                className="text-sm font-semibold"
               >
                 Description
               </Label>
@@ -1283,7 +3112,7 @@ function EditProjectDialog({
                 defaultValue={
                   project.description
                 }
-                className="min-h-32 rounded-xl bg-card"
+                className="min-h-32 rounded-xl border-border bg-background shadow-none"
               />
             </div>
 
@@ -1291,6 +3120,7 @@ function EditProjectDialog({
               <div className="grid min-w-0 gap-2">
                 <Label
                   htmlFor={`start-date-${project.id}`}
+                  className="text-sm font-semibold"
                 >
                   Start date
                 </Label>
@@ -1310,6 +3140,7 @@ function EditProjectDialog({
               <div className="grid min-w-0 gap-2">
                 <Label
                   htmlFor={`due-date-${project.id}`}
+                  className="text-sm font-semibold"
                 >
                   Due date
                 </Label>
@@ -1327,12 +3158,12 @@ function EditProjectDialog({
               </div>
             </div>
 
-            <fieldset className="grid gap-3">
-              <legend className="text-sm font-medium">
+            <fieldset>
+              <legend className="text-sm font-semibold">
                 Priority
               </legend>
 
-              <div className="grid gap-3 sm:grid-cols-3">
+              <div className="mt-3 overflow-hidden rounded-xl border border-border sm:grid sm:grid-cols-3">
                 <PriorityOption
                   projectId={
                     project.id
@@ -1355,6 +3186,7 @@ function EditProjectDialog({
                     project.priority ===
                     "high"
                   }
+                  divided
                 />
 
                 <PriorityOption
@@ -1367,17 +3199,18 @@ function EditProjectDialog({
                     project.priority ===
                     "urgent"
                   }
+                  divided
                 />
               </div>
             </fieldset>
           </div>
 
-          <DialogFooter className="mt-8">
+          <DialogFooter className="mt-8 border-t border-border pt-6">
             <DialogClose asChild>
               <Button
                 type="button"
-                variant="outline"
-                className="rounded-full px-6"
+                variant="ghost"
+                className="rounded-lg px-5 text-muted-foreground shadow-none"
               >
                 Cancel
               </Button>
@@ -1385,7 +3218,7 @@ function EditProjectDialog({
 
             <Button
               type="submit"
-              className="rounded-full px-6"
+              className="rounded-lg px-6 shadow-none"
             >
               Save changes
             </Button>
@@ -1405,31 +3238,51 @@ function PriorityOption({
   value,
   label,
   defaultChecked,
+  divided = false,
 }: {
-  projectId: string;
-  value: string;
-  label: string;
-  defaultChecked: boolean;
+  projectId:
+    string;
+
+  value:
+    string;
+
+  label:
+    string;
+
+  defaultChecked:
+    boolean;
+
+  divided?:
+    boolean;
 }) {
   const inputId =
     `${value}-${projectId}`;
 
   return (
     <label
-      htmlFor={inputId}
+      htmlFor={
+        inputId
+      }
       className={[
-        "flex cursor-pointer items-center gap-3 rounded-xl",
-        "border border-border bg-card p-4 text-sm",
-        "transition-colors hover:border-primary/35",
-        "has-[:checked]:border-primary/40",
-        "has-[:checked]:bg-primary/10",
+        "flex cursor-pointer items-center gap-3 px-4 py-4",
+        "text-sm transition-colors",
+        "hover:bg-muted/30",
+        "has-[:checked]:bg-primary/[0.055]",
+
+        divided
+          ? "border-t border-border sm:border-l sm:border-t-0"
+          : "",
       ].join(" ")}
     >
       <input
         type="radio"
         name={`priority-${projectId}`}
-        id={inputId}
-        value={value}
+        id={
+          inputId
+        }
+        value={
+          value
+        }
         defaultChecked={
           defaultChecked
         }

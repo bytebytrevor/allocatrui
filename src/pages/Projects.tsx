@@ -3,38 +3,41 @@ import {
   useMemo,
   useState,
 } from "react";
-import { Link } from "react-router-dom";
+
+import {
+  Link,
+} from "react-router-dom";
 
 import {
   ArrowDownNarrowWideIcon,
   ArrowRightIcon,
-  BellRingIcon,
   BriefcaseBusinessIcon,
   CheckCircle2Icon,
   CircleDotIcon,
   Clock3Icon,
   FolderOpenIcon,
   Grid2X2Icon,
-  HistoryIcon,
   InboxIcon,
   LayoutListIcon,
   LightbulbIcon,
   LoaderCircleIcon,
-  MegaphoneIcon,
-  MessageSquareTextIcon,
   PlusIcon,
   RefreshCwIcon,
+  SearchIcon,
   SendIcon,
   SparklesIcon,
   XIcon,
 } from "lucide-react";
 
-import { toast } from "sonner";
+import {
+  toast,
+} from "sonner";
 
 import api from "@/api/axios";
-import Electricians from "@/assets/electrician-wide.svg";
 
-import { useAuth } from "@/auth/AuthContext";
+import {
+  useAuth,
+} from "@/auth/AuthContext";
 
 import DashboardMainNav from "@/components/DashboardMainNav";
 
@@ -43,8 +46,13 @@ import {
   ListView,
 } from "@/components/ProjectCard";
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import {
+  Badge,
+} from "@/components/ui/badge";
+
+import {
+  Button,
+} from "@/components/ui/button";
 
 import {
   Dialog,
@@ -54,10 +62,21 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-import type { Project } from "@/Types/project";
-import type { ProjectAllocatStatus } from "@/Types/enums";
+import type {
+  Project,
+} from "@/Types/project";
 
-type ProjectView = "grid" | "list";
+import type {
+  ProjectAllocatStatus,
+} from "@/Types/enums";
+
+/* =========================================================
+   TYPES
+========================================================= */
+
+type ProjectView =
+  | "grid"
+  | "list";
 
 type ProjectFilter =
   | "active"
@@ -73,11 +92,6 @@ type WorkFilter =
   | "active"
   | "completed";
 
-type SummaryTone =
-  | "primary"
-  | "amber"
-  | "emerald";
-
 type SummaryItem = {
   label: string;
   value: number;
@@ -87,7 +101,10 @@ type SummaryItem = {
     className?: string;
   }>;
 
-  tone?: SummaryTone;
+  emphasis?:
+    | "primary"
+    | "warning"
+    | "success";
 };
 
 export type WorkProject =
@@ -102,21 +119,38 @@ export type WorkProject =
       | null;
   };
 
+/* =========================================================
+   PAGE
+========================================================= */
+
 function Projects() {
-  const { user } = useAuth();
+  const {
+    user,
+  } = useAuth();
 
   const [
     workspaceSection,
     setWorkspaceSection,
-  ] = useState<WorkspaceSection>(
-    "projects",
-  );
+  ] =
+    useState<WorkspaceSection>(
+      "projects",
+    );
 
-  const [view, setView] =
-    useState<ProjectView>("grid");
+  const [
+    view,
+    setView,
+  ] =
+    useState<ProjectView>(
+      "grid",
+    );
 
-  const [filter, setFilter] =
-    useState<ProjectFilter>("active");
+  const [
+    filter,
+    setFilter,
+  ] =
+    useState<ProjectFilter>(
+      "active",
+    );
 
   const [
     workFilter,
@@ -130,15 +164,22 @@ function Projects() {
     projects,
     setProjects,
   ] =
-    useState<Project[]>([]);
+    useState<Project[]>(
+      [],
+    );
 
   const [
     workProjects,
     setWorkProjects,
   ] =
-    useState<WorkProject[]>([]);
+    useState<
+      WorkProject[]
+    >([]);
 
-  const [loading, setLoading] =
+  const [
+    loading,
+    setLoading,
+  ] =
     useState(true);
 
   const [
@@ -147,14 +188,17 @@ function Projects() {
   ] =
     useState(false);
 
-  const [error, setError] =
-    useState<Error | null>(null);
+  const [
+    error,
+    setError,
+  ] =
+    useState<
+      Error | null
+    >(null);
 
-  /*
-   * ==============================================
-   * LOAD PROJECTS OWNED BY USER
-   * ==============================================
-   */
+  /* =======================================================
+     LOAD OWN PROJECTS
+  ======================================================= */
 
   async function fetchProjects() {
     setLoading(true);
@@ -162,19 +206,25 @@ function Projects() {
 
     try {
       const response =
-        await api.get<Project[]>(
+        await api.get<
+          Project[]
+        >(
           "/projects/mine",
           {
-            withCredentials: true,
+            withCredentials:
+              true,
           },
         );
 
       setProjects(
         response.data,
       );
-    } catch (err: unknown) {
+    } catch (
+      err: unknown
+    ) {
       if (
-        err instanceof Error
+        err instanceof
+        Error
       ) {
         setError(err);
       } else {
@@ -189,18 +239,20 @@ function Projects() {
     }
   }
 
-  /*
-   * ==============================================
-   * LOAD ALLOCAT WORK
-   * ==============================================
-   */
+  /* =======================================================
+     LOAD ALLOCAT WORK
+  ======================================================= */
 
   async function fetchWorkProjects() {
-    if (!user?.isAllocat) {
+    if (
+      !user?.isAllocat
+    ) {
       return;
     }
 
-    setWorkLoading(true);
+    setWorkLoading(
+      true,
+    );
 
     try {
       const response =
@@ -271,11 +323,9 @@ function Projects() {
       .split(/\s+/)[0] ||
     "there";
 
-  /*
-   * ==============================================
-   * CLIENT PROJECT FILTERING
-   * ==============================================
-   */
+  /* =======================================================
+     CLIENT PROJECT FILTERING
+  ======================================================= */
 
   const closedProjects =
     useMemo(() => {
@@ -286,11 +336,11 @@ function Projects() {
               project.status,
             );
 
-          return (
-            status === "closed" ||
-            status === "complete" ||
-            status === "completed"
-          );
+          return [
+            "closed",
+            "complete",
+            "completed",
+          ].includes(status);
         },
       );
     }, [projects]);
@@ -305,17 +355,23 @@ function Projects() {
             );
 
           const isClosed =
-            status === "closed" ||
-            status === "complete" ||
-            status === "completed";
+            [
+              "closed",
+              "complete",
+              "completed",
+            ].includes(
+              status,
+            );
 
           if (isClosed) {
             return false;
           }
 
           const isPaused =
-            status === "paused" ||
-            status === "onhold";
+            status ===
+              "paused" ||
+            status ===
+              "onhold";
 
           const hasAcceptedAllocat =
             project.hasAcceptedAllocat ===
@@ -339,13 +395,19 @@ function Projects() {
             );
 
           const isClosed =
-            status === "closed" ||
-            status === "complete" ||
-            status === "completed";
+            [
+              "closed",
+              "complete",
+              "completed",
+            ].includes(
+              status,
+            );
 
           const isPaused =
-            status === "paused" ||
-            status === "onhold";
+            status ===
+              "paused" ||
+            status ===
+              "onhold";
 
           const hasAcceptedAllocat =
             project.hasAcceptedAllocat ===
@@ -363,13 +425,15 @@ function Projects() {
   const visibleProjects =
     useMemo(() => {
       if (
-        filter === "pending"
+        filter ===
+        "pending"
       ) {
         return pendingProjects;
       }
 
       if (
-        filter === "closed"
+        filter ===
+        "closed"
       ) {
         return closedProjects;
       }
@@ -382,11 +446,9 @@ function Projects() {
       closedProjects,
     ]);
 
-  /*
-   * ==============================================
-   * ALLOCAT WORK FILTERING
-   * ==============================================
-   */
+  /* =======================================================
+     ALLOCAT WORK FILTERING
+  ======================================================= */
 
   const invitations =
     useMemo(() => {
@@ -417,7 +479,9 @@ function Projects() {
             "closed",
             "complete",
             "completed",
-          ].includes(status);
+          ].includes(
+            status,
+          );
         },
       );
     }, [workProjects]);
@@ -442,7 +506,9 @@ function Projects() {
             "closed",
             "complete",
             "completed",
-          ].includes(status);
+          ].includes(
+            status,
+          );
         },
       );
     }, [workProjects]);
@@ -471,11 +537,9 @@ function Projects() {
       completedWork,
     ]);
 
-  /*
-   * ==============================================
-   * INVITATION ACTIONS
-   * ==============================================
-   */
+  /* =======================================================
+     INVITATION ACTIONS
+  ======================================================= */
 
   async function acceptInvitation(
     projectId: string,
@@ -485,7 +549,8 @@ function Projects() {
         `/projects/${projectId}/allocats/invite/accept`,
         {},
         {
-          withCredentials: true,
+          withCredentials:
+            true,
         },
       );
 
@@ -555,6 +620,10 @@ function Projects() {
     }
   }
 
+  /* =======================================================
+     STATES
+  ======================================================= */
+
   if (loading) {
     return (
       <WorkspaceLoading />
@@ -572,16 +641,30 @@ function Projects() {
   }
 
   const showEmptyWorkspace =
-    projects.length === 0 &&
+    projects.length ===
+      0 &&
     !user?.isAllocat;
 
+  /* =======================================================
+     RENDER
+  ======================================================= */
+
   return (
-    <div className="flex min-h-screen flex-col bg-background text-foreground transition-colors">
-      <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur-xl">
+    <div className="flex min-h-screen flex-col bg-background text-foreground">
+
+      {/* ===================================================
+          NAV
+      =================================================== */}
+
+      <header className="sticky top-0 z-40 border-b border-border/70 bg-background/90 backdrop-blur-xl">
         <div className="container mx-auto px-4 sm:px-5 md:px-8">
           <DashboardMainNav />
         </div>
       </header>
+
+      {/* ===================================================
+          CONTENT
+      =================================================== */}
 
       <main className="container mx-auto flex-1 px-5 py-8 sm:py-10 md:px-8 lg:py-12">
         {showEmptyWorkspace ? (
@@ -591,140 +674,157 @@ function Projects() {
             }
           />
         ) : (
-          <div className="grid min-w-0 gap-8 xl:grid-cols-[minmax(0,1fr)_340px] xl:gap-10">
+          <div className="grid min-w-0 gap-10 xl:grid-cols-[minmax(0,1fr)_280px] xl:gap-14">
+
+            {/* =================================================
+                MAIN COLUMN
+            ================================================= */}
+
             <section className="min-w-0">
-              {/* PAGE HEADER */}
+
+              {/* =================================================
+                  PAGE HEADER
+              ================================================= */}
 
               <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
-                <div className="min-w-0">
-                  <p className="mb-3 text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-primary sm:text-xs">
-                    Your workspace
+                <div className="min-w-0 max-w-2xl">
+                  <p className="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-primary">
+                    Workspace
                   </p>
 
-                  <h1 className="break-words text-3xl font-black uppercase leading-[0.96] tracking-[-0.035em] sm:text-4xl lg:text-5xl">
+                  <h1 className="mt-3 break-words text-3xl font-black leading-[1.06] tracking-[-0.035em] sm:text-4xl lg:text-5xl">
                     Welcome back,{" "}
                     <span className="text-primary">
                       {firstName}.
                     </span>
                   </h1>
 
-                  <p className="mt-4 max-w-2xl text-sm leading-7 text-muted-foreground sm:text-base">
+                  <p className="mt-4 max-w-xl text-sm leading-7 text-muted-foreground sm:text-base">
                     {workspaceSection ===
                     "projects"
-                      ? "Manage the projects you've created and the people helping you complete them."
-                      : "Manage invitations and projects you're working on for other clients."}
+                      ? "Your projects, people and progress in one place."
+                      : "Projects you've joined and invitations waiting for you."}
                   </p>
                 </div>
 
                 <Button
                   asChild
-                  className="h-12 w-full shrink-0 rounded-full px-7 shadow-none sm:w-auto"
+                  className="group h-11 w-full shrink-0 rounded-lg px-6 shadow-none sm:w-auto"
                 >
                   <Link to="/projects/new">
                     <PlusIcon
-                      size={17}
+                      size={16}
                     />
 
                     New project
+
+                    <ArrowRightIcon
+                      size={15}
+                      className="transition-transform duration-200 group-hover:translate-x-0.5"
+                    />
                   </Link>
                 </Button>
               </div>
 
-              {/* MAIN WORKSPACE TABS */}
+              {/* =================================================
+                  PRIMARY WORKSPACE TABS
+              ================================================= */}
 
-              <div className="mt-8 flex gap-2 overflow-x-auto border-b border-border">
-                <WorkspaceTab
-                  active={
-                    workspaceSection ===
-                    "projects"
-                  }
-                  onClick={() =>
-                    setWorkspaceSection(
-                      "projects",
-                    )
-                  }
-                  icon={
-                    BriefcaseBusinessIcon
-                  }
-                  label="My projects"
-                  count={
-                    projects.length
-                  }
-                />
-
-                {user?.isAllocat && (
+              <div className="mt-9 border-b border-border">
+                <div className="flex gap-7 overflow-x-auto">
                   <WorkspaceTab
                     active={
                       workspaceSection ===
-                      "work"
+                      "projects"
                     }
                     onClick={() =>
                       setWorkspaceSection(
-                        "work",
+                        "projects",
                       )
                     }
                     icon={
-                      SparklesIcon
+                      BriefcaseBusinessIcon
                     }
-                    label="My work"
+                    label="My projects"
                     count={
-                      invitations.length
-                    }
-                    attention={
-                      invitations.length >
-                      0
+                      projects.length
                     }
                   />
-                )}
+
+                  {user?.isAllocat && (
+                    <WorkspaceTab
+                      active={
+                        workspaceSection ===
+                        "work"
+                      }
+                      onClick={() =>
+                        setWorkspaceSection(
+                          "work",
+                        )
+                      }
+                      icon={
+                        SparklesIcon
+                      }
+                      label="My work"
+                      count={
+                        invitations.length
+                      }
+                      attention={
+                        invitations.length >
+                        0
+                      }
+                    />
+                  )}
+                </div>
               </div>
 
-              {/* ==========================================
+              {/* =================================================
                   MY PROJECTS
-                  ========================================== */}
+              ================================================= */}
 
               {workspaceSection ===
                 "projects" && (
                 <>
-                  <div className="mt-6">
-                    <WorkspaceSummary
-                      items={[
-                        {
-                          label:
-                            "Active projects",
-                          value:
-                            activeProjects.length,
-                          icon:
-                            CircleDotIcon,
-                          tone:
-                            "primary",
-                        },
-                        {
-                          label:
-                            "Pending",
-                          value:
-                            pendingProjects.length,
-                          icon:
-                            Clock3Icon,
-                          tone:
-                            "amber",
-                        },
-                        {
-                          label:
-                            "Closed",
-                          value:
-                            closedProjects.length,
-                          icon:
-                            CheckCircle2Icon,
-                          tone:
-                            "emerald",
-                        },
-                      ]}
-                    />
-                  </div>
+                  <WorkspaceSummary
+                    items={[
+                      {
+                        label:
+                          "Active projects",
+                        value:
+                          activeProjects.length,
+                        icon:
+                          CircleDotIcon,
+                        emphasis:
+                          "primary",
+                      },
 
-                  <div className="mt-6 flex flex-col gap-4 border-b border-border py-5 lg:flex-row lg:items-center lg:justify-between">
-                    <div className="flex max-w-full gap-2 overflow-x-auto pb-1">
-                      <FilterButton
+                      {
+                        label:
+                          "Pending",
+                        value:
+                          pendingProjects.length,
+                        icon:
+                          Clock3Icon,
+                        emphasis:
+                          "warning",
+                      },
+
+                      {
+                        label:
+                          "Closed",
+                        value:
+                          closedProjects.length,
+                        icon:
+                          CheckCircle2Icon,
+                        emphasis:
+                          "success",
+                      },
+                    ]}
+                  />
+
+                  <div className="mt-8 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+                    <StatusFilters>
+                      <StatusFilter
                         active={
                           filter ===
                           "active"
@@ -734,16 +834,13 @@ function Projects() {
                             "active",
                           )
                         }
-                        icon={
-                          CircleDotIcon
-                        }
                         label="Active"
                         count={
                           activeProjects.length
                         }
                       />
 
-                      <FilterButton
+                      <StatusFilter
                         active={
                           filter ===
                           "pending"
@@ -752,9 +849,6 @@ function Projects() {
                           setFilter(
                             "pending",
                           )
-                        }
-                        icon={
-                          Clock3Icon
                         }
                         label="Pending"
                         count={
@@ -766,7 +860,7 @@ function Projects() {
                         }
                       />
 
-                      <FilterButton
+                      <StatusFilter
                         active={
                           filter ===
                           "closed"
@@ -776,15 +870,12 @@ function Projects() {
                             "closed",
                           )
                         }
-                        icon={
-                          CheckCircle2Icon
-                        }
                         label="Closed"
                         count={
                           closedProjects.length
                         }
                       />
-                    </div>
+                    </StatusFilters>
 
                     <ViewControls
                       view={view}
@@ -806,54 +897,54 @@ function Projects() {
                 </>
               )}
 
-              {/* ==========================================
+              {/* =================================================
                   MY WORK
-                  ========================================== */}
+              ================================================= */}
 
               {workspaceSection ===
                 "work" &&
                 user?.isAllocat && (
                   <>
-                    <div className="mt-6">
-                      <WorkspaceSummary
-                        items={[
-                          {
-                            label:
-                              "Invitations",
-                            value:
-                              invitations.length,
-                            icon:
-                              InboxIcon,
-                            tone:
-                              "amber",
-                          },
-                          {
-                            label:
-                              "Active jobs",
-                            value:
-                              activeWork.length,
-                            icon:
-                              BriefcaseBusinessIcon,
-                            tone:
-                              "primary",
-                          },
-                          {
-                            label:
-                              "Completed",
-                            value:
-                              completedWork.length,
-                            icon:
-                              CheckCircle2Icon,
-                            tone:
-                              "emerald",
-                          },
-                        ]}
-                      />
-                    </div>
+                    <WorkspaceSummary
+                      items={[
+                        {
+                          label:
+                            "Invitations",
+                          value:
+                            invitations.length,
+                          icon:
+                            InboxIcon,
+                          emphasis:
+                            "warning",
+                        },
 
-                    <div className="mt-6 flex flex-col gap-4 border-b border-border py-5 lg:flex-row lg:items-center lg:justify-between">
-                      <div className="flex max-w-full gap-2 overflow-x-auto pb-1">
-                        <FilterButton
+                        {
+                          label:
+                            "Active jobs",
+                          value:
+                            activeWork.length,
+                          icon:
+                            BriefcaseBusinessIcon,
+                          emphasis:
+                            "primary",
+                        },
+
+                        {
+                          label:
+                            "Completed",
+                          value:
+                            completedWork.length,
+                          icon:
+                            CheckCircle2Icon,
+                          emphasis:
+                            "success",
+                        },
+                      ]}
+                    />
+
+                    <div className="mt-8 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+                      <StatusFilters>
+                        <StatusFilter
                           active={
                             workFilter ===
                             "invitations"
@@ -862,9 +953,6 @@ function Projects() {
                             setWorkFilter(
                               "invitations",
                             )
-                          }
-                          icon={
-                            InboxIcon
                           }
                           label="Invitations"
                           count={
@@ -876,7 +964,7 @@ function Projects() {
                           }
                         />
 
-                        <FilterButton
+                        <StatusFilter
                           active={
                             workFilter ===
                             "active"
@@ -886,16 +974,13 @@ function Projects() {
                               "active",
                             )
                           }
-                          icon={
-                            CircleDotIcon
-                          }
                           label="Active"
                           count={
                             activeWork.length
                           }
                         />
 
-                        <FilterButton
+                        <StatusFilter
                           active={
                             workFilter ===
                             "completed"
@@ -905,15 +990,12 @@ function Projects() {
                               "completed",
                             )
                           }
-                          icon={
-                            CheckCircle2Icon
-                          }
                           label="Completed"
                           count={
                             completedWork.length
                           }
                         />
-                      </div>
+                      </StatusFilters>
 
                       {workFilter !==
                         "invitations" && (
@@ -929,19 +1011,12 @@ function Projects() {
                     </div>
 
                     {workLoading ? (
-                      <div className="flex min-h-64 flex-col items-center justify-center">
-                        <LoaderCircleIcon className="h-7 w-7 animate-spin text-primary" />
-
-                        <p className="mt-4 text-sm text-muted-foreground">
-                          Loading your
-                          work...
-                        </p>
-                      </div>
+                      <InlineLoading />
                     ) : workFilter ===
                       "invitations" ? (
                       invitations.length >
                       0 ? (
-                        <div className="mt-6 grid gap-5 sm:grid-cols-2 2xl:grid-cols-3">
+                        <div className="mt-7 divide-y divide-border border-y border-border">
                           {invitations.map(
                             (
                               project,
@@ -970,7 +1045,7 @@ function Projects() {
                       ) : (
                         <WorkEmptyState
                           title="No invitations"
-                          description="New project invitations from clients will appear here."
+                          description="New project invitations will appear here when a client invites you to join their work."
                           icon={
                             InboxIcon
                           }
@@ -982,8 +1057,8 @@ function Projects() {
                         className={
                           view ===
                           "grid"
-                            ? "mt-6 grid min-w-0 gap-5 sm:grid-cols-2 2xl:grid-cols-3"
-                            : "mt-6 flex min-w-0 flex-col gap-4"
+                            ? "mt-7 grid min-w-0 gap-4 sm:grid-cols-2 2xl:grid-cols-3"
+                            : "mt-7 flex min-w-0 flex-col gap-3"
                         }
                       >
                         {visibleWork.map(
@@ -1035,6 +1110,10 @@ function Projects() {
                 )}
             </section>
 
+            {/* =================================================
+                SIDEBAR
+            ================================================= */}
+
             <DashboardSidebar />
           </div>
         )}
@@ -1043,33 +1122,35 @@ function Projects() {
   );
 }
 
-/*
- * ==============================================
- * SUMMARY
- * ==============================================
- */
+/* =========================================================
+   SUMMARY
+========================================================= */
 
 function WorkspaceSummary({
   items,
 }: {
-  items: SummaryItem[];
+  items:
+    SummaryItem[];
 }) {
   return (
-    <section className="overflow-hidden rounded-[1.5rem] border border-border bg-card text-card-foreground">
+    <section className="mt-7 border-y border-border">
       <div className="grid sm:grid-cols-3">
         {items.map(
-          (item, index) => {
+          (
+            item,
+            index,
+          ) => {
             const Icon =
               item.icon;
 
-            const iconStyle =
-              item.tone ===
-              "amber"
-                ? "bg-amber-300/15 text-amber-700 dark:bg-amber-400/10 dark:text-amber-300"
-                : item.tone ===
-                    "emerald"
-                  ? "bg-emerald-400/10 text-emerald-700 dark:text-emerald-300"
-                  : "bg-primary/10 text-primary";
+            const iconColor =
+              item.emphasis ===
+              "warning"
+                ? "text-amber-600 dark:text-amber-300"
+                : item.emphasis ===
+                    "success"
+                  ? "text-emerald-600 dark:text-emerald-300"
+                  : "text-primary";
 
             return (
               <article
@@ -1077,31 +1158,36 @@ function WorkspaceSummary({
                   item.label
                 }
                 className={[
-                  "flex items-center gap-4 px-5 py-5 sm:px-6",
-                  index > 0
+                  "flex items-center gap-4 py-5",
+                  "sm:px-6",
+
+                  index === 0
+                    ? "sm:pl-0"
+                    : "",
+
+                  index >
+                  0
                     ? "border-t border-border sm:border-l sm:border-t-0"
                     : "",
                 ].join(" ")}
               >
-                <span
-                  className={[
-                    "flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl",
-                    iconStyle,
-                  ].join(" ")}
-                >
-                  <Icon
-                    size={19}
-                  />
-                </span>
+                <Icon
+                  size={
+                    18
+                  }
+                  className={
+                    iconColor
+                  }
+                />
 
                 <div className="min-w-0">
-                  <p className="text-2xl font-black tracking-[-0.03em]">
+                  <p className="text-2xl font-black tracking-[-0.035em]">
                     {
                       item.value
                     }
                   </p>
 
-                  <p className="mt-0.5 truncate text-xs font-medium text-muted-foreground">
+                  <p className="mt-0.5 text-xs text-muted-foreground">
                     {
                       item.label
                     }
@@ -1116,11 +1202,9 @@ function WorkspaceSummary({
   );
 }
 
-/*
- * ==============================================
- * WORKSPACE TAB
- * ==============================================
- */
+/* =========================================================
+   PRIMARY WORKSPACE TAB
+========================================================= */
 
 function WorkspaceTab({
   active,
@@ -1130,42 +1214,46 @@ function WorkspaceTab({
   count,
   attention = false,
 }: {
-  active: boolean;
+  active:
+    boolean;
 
   onClick:
     () => void;
 
-  icon: React.ComponentType<{
-    size?: number;
-    className?: string;
-  }>;
+  icon:
+    React.ComponentType<{
+      size?: number;
+      className?: string;
+    }>;
 
-  label: string;
+  label:
+    string;
 
-  count?: number;
+  count?:
+    number;
 
-  attention?: boolean;
+  attention?:
+    boolean;
 }) {
   return (
     <button
       type="button"
-      onClick={onClick}
+      onClick={
+        onClick
+      }
       className={[
-        "relative flex h-12 shrink-0 items-center gap-2 px-4",
-        "text-sm font-semibold transition-colors",
+        "relative flex h-12 shrink-0 items-center gap-2.5",
+        "border-b-2 px-0 text-sm font-semibold",
+        "transition-colors duration-200",
+
         active
-          ? "text-foreground"
-          : "text-muted-foreground hover:text-foreground",
+          ? "border-primary text-foreground"
+          : "border-transparent text-muted-foreground hover:text-foreground",
       ].join(" ")}
     >
-      {attention && (
-        <span className="relative flex h-2.5 w-2.5">
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-60" />
-          <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-primary" />
-        </span>
-      )}
-
-      <Icon size={16} />
+      <Icon
+        size={16}
+      />
 
       {label}
 
@@ -1174,9 +1262,11 @@ function WorkspaceTab({
         count > 0 && (
           <span
             className={[
-              "rounded-full px-2 py-0.5 text-[0.65rem] font-bold",
+              "inline-flex min-w-5 items-center justify-center rounded-md px-1.5 py-0.5",
+              "text-[0.62rem] font-bold",
+
               attention
-                ? "bg-primary text-primary-foreground"
+                ? "bg-primary/12 text-primary"
                 : "bg-muted text-muted-foreground",
             ].join(" ")}
           >
@@ -1184,82 +1274,87 @@ function WorkspaceTab({
           </span>
         )}
 
-      {active && (
-        <span className="absolute inset-x-3 bottom-0 h-0.5 rounded-full bg-primary" />
+      {attention && (
+        <span className="relative ml-0.5 flex h-2 w-2">
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-50" />
+
+          <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
+        </span>
       )}
     </button>
   );
 }
 
-/*
- * ==============================================
- * FILTER BUTTON
- * ==============================================
- */
+/* =========================================================
+   STATUS FILTER GROUP
+========================================================= */
 
-function FilterButton({
+function StatusFilters({
+  children,
+}: {
+  children:
+    React.ReactNode;
+}) {
+  return (
+    <div className="flex max-w-full gap-6 overflow-x-auto border-b border-border">
+      {children}
+    </div>
+  );
+}
+
+/* =========================================================
+   STATUS FILTER
+========================================================= */
+
+function StatusFilter({
   active,
   label,
   count,
   onClick,
-  icon: Icon,
   attention = false,
 }: {
-  active: boolean;
+  active:
+    boolean;
 
-  label: string;
+  label:
+    string;
 
-  count: number;
+  count:
+    number;
 
   onClick:
     () => void;
 
-  icon: React.ComponentType<{
-    size?: number;
-    className?: string;
-  }>;
-
-  attention?: boolean;
+  attention?:
+    boolean;
 }) {
   return (
     <button
       type="button"
-      onClick={onClick}
+      onClick={
+        onClick
+      }
       className={[
-        "relative inline-flex h-10 shrink-0 items-center gap-2 rounded-full border px-4",
+        "relative flex h-10 shrink-0 items-center gap-2 border-b-2",
         "text-xs font-semibold transition-colors",
+
         active
-          ? "border-primary/30 bg-primary/15 text-foreground"
-          : "border-border bg-card text-muted-foreground hover:text-foreground",
+          ? "border-primary text-foreground"
+          : "border-transparent text-muted-foreground hover:text-foreground",
       ].join(" ")}
     >
       {attention && (
-        <span className="relative flex h-2.5 w-2.5">
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-60" />
-
-          <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-primary" />
-        </span>
-      )}
-
-      {attention ? (
-        <BellRingIcon
-          size={15}
-          className="text-amber-600 dark:text-primary"
-        />
-      ) : (
-        <Icon size={15} />
+        <span className="h-1.5 w-1.5 rounded-full bg-primary" />
       )}
 
       {label}
 
       <span
         className={[
-          "rounded-full px-2 py-0.5 text-[0.65rem]",
-          attention
-            ? "bg-primary text-background"
-            : active
-              ? "bg-primary text-primary-foreground"
-              : "bg-muted text-muted-foreground",
+          "text-[0.65rem]",
+          active
+            ? "text-primary"
+            : "text-muted-foreground/70",
         ].join(" ")}
       >
         {count}
@@ -1268,47 +1363,34 @@ function FilterButton({
   );
 }
 
-/*
- * ==============================================
- * VIEW CONTROLS
- * ==============================================
- */
+/* =========================================================
+   VIEW CONTROLS
+========================================================= */
 
 function ViewControls({
   view,
   setView,
 }: {
-  view: ProjectView;
+  view:
+    ProjectView;
 
-  setView: (
-    value: ProjectView,
-  ) => void;
+  setView:
+    (
+      value:
+        ProjectView,
+    ) => void;
 }) {
   return (
-    <div className="flex items-center gap-1 self-end rounded-full border border-border bg-card p-1 text-card-foreground lg:self-auto">
-      <Button
-        type="button"
-        variant="ghost"
-        size="sm"
-        className="h-9 rounded-full px-3 text-xs"
-      >
-        <HistoryIcon
-          size={15}
-        />
-
-        <span className="hidden sm:inline">
-          History
-        </span>
-      </Button>
+    <div className="flex shrink-0 items-center gap-1">
 
       <Button
         type="button"
         variant="ghost"
         size="sm"
-        className="h-9 rounded-full px-3 text-xs"
+        className="h-9 rounded-lg px-3 text-xs text-muted-foreground shadow-none"
       >
         <ArrowDownNarrowWideIcon
-          size={15}
+          size={14}
         />
 
         <span className="hidden sm:inline">
@@ -1316,52 +1398,58 @@ function ViewControls({
         </span>
       </Button>
 
-      <div className="mx-1 h-5 w-px bg-border" />
+      <div className="mx-1 h-4 w-px bg-border" />
 
       <Button
         type="button"
         variant={
-          view === "grid"
+          view ===
+          "grid"
             ? "secondary"
             : "ghost"
         }
         size="icon"
-        className="h-9 w-9 rounded-full"
+        className="h-9 w-9 rounded-lg shadow-none"
         onClick={() =>
-          setView("grid")
+          setView(
+            "grid",
+          )
         }
+        aria-label="Grid view"
       >
         <Grid2X2Icon
-          size={16}
+          size={15}
         />
       </Button>
 
       <Button
         type="button"
         variant={
-          view === "list"
+          view ===
+          "list"
             ? "secondary"
             : "ghost"
         }
         size="icon"
-        className="h-9 w-9 rounded-full"
+        className="h-9 w-9 rounded-lg shadow-none"
         onClick={() =>
-          setView("list")
+          setView(
+            "list",
+          )
         }
+        aria-label="List view"
       >
         <LayoutListIcon
-          size={17}
+          size={16}
         />
       </Button>
     </div>
   );
 }
 
-/*
- * ==============================================
- * PROJECT RESULTS
- * ==============================================
- */
+/* =========================================================
+   PROJECT RESULTS
+========================================================= */
 
 function ProjectResults({
   projects,
@@ -1378,26 +1466,27 @@ function ProjectResults({
     string;
 }) {
   if (
-    projects.length === 0
+    projects.length ===
+    0
   ) {
     return (
-      <div className="mt-6 rounded-[2rem] border border-dashed border-border bg-card/50 px-6 py-16 text-center">
-        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-muted">
+      <div className="mt-7 border-y border-border py-14">
+        <div className="max-w-md">
           <FolderOpenIcon
-            size={24}
+            size={23}
             className="text-muted-foreground"
           />
+
+          <h2 className="mt-5 text-xl font-black tracking-[-0.025em]">
+            No {emptyLabel}{" "}
+            projects.
+          </h2>
+
+          <p className="mt-2 text-sm leading-7 text-muted-foreground">
+            Projects matching this
+            status will appear here.
+          </p>
         </div>
-
-        <h2 className="mt-5 text-xl font-black uppercase tracking-[-0.025em]">
-          No {emptyLabel} projects
-        </h2>
-
-        <p className="mx-auto mt-2 max-w-md text-sm leading-7 text-muted-foreground">
-          Projects that match
-          this status will appear
-          here.
-        </p>
       </div>
     );
   }
@@ -1405,9 +1494,10 @@ function ProjectResults({
   return (
     <div
       className={
-        view === "grid"
-          ? "mt-6 grid min-w-0 gap-5 sm:grid-cols-2 2xl:grid-cols-3"
-          : "mt-6 flex min-w-0 flex-col gap-4"
+        view ===
+        "grid"
+          ? "mt-7 grid min-w-0 gap-4 sm:grid-cols-2 2xl:grid-cols-3"
+          : "mt-7 flex min-w-0 flex-col gap-3"
       }
     >
       {projects.map(
@@ -1437,11 +1527,9 @@ function ProjectResults({
   );
 }
 
-/*
- * ==============================================
- * INVITATION CARD
- * ==============================================
- */
+/* =========================================================
+   INVITATION CARD
+========================================================= */
 
 function InvitationCard({
   project,
@@ -1474,7 +1562,9 @@ function InvitationCard({
     >(null);
 
   async function handleAccept() {
-    if (responding) {
+    if (
+      responding
+    ) {
       return;
     }
 
@@ -1496,7 +1586,9 @@ function InvitationCard({
   }
 
   async function handleDecline() {
-    if (responding) {
+    if (
+      responding
+    ) {
       return;
     }
 
@@ -1519,106 +1611,110 @@ function InvitationCard({
 
   return (
     <>
-      <article className="flex h-full flex-col rounded-[1.75rem] border border-border bg-card p-5 text-card-foreground transition-all hover:border-primary/20 hover:shadow-md">
-        <div className="flex items-start justify-between gap-4">
-          <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-300/20 text-amber-700 dark:bg-amber-400/10 dark:text-amber-300">
-            <SendIcon
-              size={18}
-            />
-          </span>
+      <article className="group py-6 sm:py-7">
+        <div className="grid gap-5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="inline-flex items-center gap-2 text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-amber-700 dark:text-amber-300">
+                <SendIcon
+                  size={13}
+                />
 
-          <Badge
-            variant="outline"
-            className="rounded-full border-amber-400/30 bg-amber-300/10 text-amber-700 dark:text-amber-300"
-          >
-            Invitation
-          </Badge>
-        </div>
+                Project invitation
+              </span>
 
-        <h2 className="mt-5 text-lg font-black tracking-[-0.025em]">
-          {project.title}
-        </h2>
+              {project.invitedAt && (
+                <span className="text-xs text-muted-foreground">
+                  {formatShortDate(
+                    project.invitedAt,
+                  )}
+                </span>
+              )}
+            </div>
 
-        <p className="mt-3 line-clamp-3 text-sm leading-6 text-muted-foreground">
-          {
-            project.description
-          }
-        </p>
+            <h2 className="mt-3 text-xl font-black leading-tight tracking-[-0.025em]">
+              {
+                project.title
+              }
+            </h2>
 
-        {project.invitedAt && (
-          <p className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
-            <Clock3Icon
-              size={14}
-            />
+            <p className="mt-2 line-clamp-2 max-w-2xl text-sm leading-7 text-muted-foreground">
+              {
+                project.description
+              }
+            </p>
 
-            Invited{" "}
-            {formatShortDate(
-              project.invitedAt,
-            )}
-          </p>
-        )}
+            <button
+              type="button"
+              onClick={() =>
+                setDetailsOpen(
+                  true,
+                )
+              }
+              className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-primary transition-colors hover:text-primary/75"
+            >
+              Review project
 
-        <button
-          type="button"
-          onClick={() =>
-            setDetailsOpen(
-              true,
-            )
-          }
-          className="mt-4 inline-flex w-fit items-center gap-1 text-xs font-semibold text-primary hover:underline"
-        >
-          View project details
-
-          <ArrowRightIcon
-            size={13}
-          />
-        </button>
-
-        <div className="mt-auto grid grid-cols-2 gap-3 pt-6">
-          <Button
-            type="button"
-            variant="outline"
-            disabled={
-              responding !== null
-            }
-            onClick={() =>
-              void handleDecline()
-            }
-            className="h-10 rounded-full text-xs shadow-none"
-          >
-            {responding ===
-            "decline" ? (
-              <LoaderCircleIcon className="h-4 w-4 animate-spin" />
-            ) : (
-              <XIcon
-                size={15}
+              <ArrowRightIcon
+                size={13}
               />
-            )}
+            </button>
+          </div>
 
-            Decline
-          </Button>
+          <div className="flex items-center gap-2 sm:justify-end">
+            <Button
+              type="button"
+              variant="ghost"
+              disabled={
+                responding !==
+                null
+              }
+              onClick={() =>
+                void handleDecline()
+              }
+              className="h-10 rounded-lg px-4 text-xs text-muted-foreground shadow-none"
+            >
+              {responding ===
+              "decline" ? (
+                <LoaderCircleIcon
+                  size={15}
+                  className="animate-spin"
+                />
+              ) : (
+                <XIcon
+                  size={14}
+                />
+              )}
 
-          <Button
-            type="button"
-            disabled={
-              responding !== null
-            }
-            onClick={() =>
-              void handleAccept()
-            }
-            className="h-10 rounded-full text-xs shadow-none"
-          >
-            {responding ===
-            "accept" ? (
-              <LoaderCircleIcon className="h-4 w-4 animate-spin" />
-            ) : (
-              <CheckCircle2Icon
-                size={15}
-              />
-            )}
+              Decline
+            </Button>
 
-            Accept
-          </Button>
+            <Button
+              type="button"
+              disabled={
+                responding !==
+                null
+              }
+              onClick={() =>
+                void handleAccept()
+              }
+              className="h-10 rounded-lg px-5 text-xs shadow-none"
+            >
+              {responding ===
+              "accept" ? (
+                <LoaderCircleIcon
+                  size={15}
+                  className="animate-spin"
+                />
+              ) : (
+                <CheckCircle2Icon
+                  size={14}
+                />
+              )}
+
+              Accept
+            </Button>
+          </div>
         </div>
       </article>
 
@@ -1646,11 +1742,9 @@ function InvitationCard({
   );
 }
 
-/*
- * ==============================================
- * INVITATION DETAILS DIALOG
- * ==============================================
- */
+/* =========================================================
+   INVITATION DIALOG
+========================================================= */
 
 function ProjectInvitationDialog({
   project,
@@ -1684,101 +1778,99 @@ function ProjectInvitationDialog({
 }) {
   return (
     <Dialog
-      open={open}
+      open={
+        open
+      }
       onOpenChange={
         onOpenChange
       }
     >
-      <DialogContent className="max-h-[90vh] overflow-y-auto rounded-[2rem] sm:max-w-2xl">
-        <DialogHeader>
-          <div className="mb-3 flex">
-            <Badge
-              variant="outline"
-              className="rounded-full border-amber-400/30 bg-amber-300/10 text-amber-700 dark:text-amber-300"
-            >
-              Project invitation
-            </Badge>
-          </div>
+      <DialogContent className="max-h-[90vh] overflow-y-auto rounded-[1.5rem] border-border bg-background p-0 sm:max-w-2xl">
+        <DialogHeader className="border-b border-border px-6 pb-6 pt-7 text-left sm:px-8">
+          <Badge
+            variant="outline"
+            className="mb-3 w-fit rounded-md border-amber-500/20 bg-amber-400/10 text-amber-700 dark:text-amber-300"
+          >
+            Project invitation
+          </Badge>
 
-          <DialogTitle className="text-2xl font-black tracking-[-0.03em]">
+          <DialogTitle className="text-2xl font-black leading-tight tracking-[-0.03em]">
             {
               project.title
             }
           </DialogTitle>
 
-          <DialogDescription className="leading-6">
-            Review the project
-            before deciding
-            whether you'd like
-            to accept the work.
+          <DialogDescription className="mt-2 max-w-xl leading-7">
+            Review the project before deciding whether you want to join the work.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="mt-5 space-y-6">
-          <div>
-            <p className="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+        <div className="space-y-7 px-6 py-7 sm:px-8">
+          <section>
+            <p className="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
               Project description
             </p>
 
-            <p className="mt-2 whitespace-pre-line text-sm leading-7">
+            <p className="mt-3 whitespace-pre-line text-sm leading-7">
               {project.description ||
                 "No project description was provided."}
             </p>
-          </div>
+          </section>
 
-          <div className="grid gap-4 border-y border-border py-5 sm:grid-cols-2">
+          <div className="grid gap-5 border-y border-border py-5 sm:grid-cols-3">
             <ProjectDetail
               label="Status"
-              value="Awaiting your response"
+              value="Awaiting response"
             />
 
             {project.invitedAt && (
               <ProjectDetail
                 label="Invited"
-                value={formatShortDate(
-                  project.invitedAt,
-                )}
+                value={
+                  formatShortDate(
+                    project.invitedAt,
+                  )
+                }
               />
             )}
 
             {project.dueDate && (
               <ProjectDetail
-                label="Due date"
-                value={formatShortDate(
-                  project.dueDate,
-                )}
+                label="Due"
+                value={
+                  formatShortDate(
+                    project.dueDate,
+                  )
+                }
               />
             )}
           </div>
 
-          <div className="rounded-2xl bg-muted/40 p-4">
+          <div className="border-l-2 border-primary pl-4">
             <p className="text-xs leading-6 text-muted-foreground">
-              Accepting this invitation
-              will add the project to
-              your active work and give
-              you access to its
-              workspace and tasks.
+              Accepting gives you access to the project workspace and its tasks. Until then, you can only review these project details.
             </p>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="flex flex-col-reverse gap-2.5 border-t border-border pt-6 sm:flex-row sm:justify-end">
             <Button
               type="button"
-              variant="outline"
+              variant="ghost"
               disabled={
-                responding !== null
+                responding !==
+                null
               }
               onClick={() =>
                 void onDecline()
               }
-              className="h-11 rounded-full"
+              className="h-11 rounded-lg px-5 text-muted-foreground shadow-none"
             >
               {responding ===
               "decline" ? (
                 <LoaderCircleIcon className="h-4 w-4 animate-spin" />
               ) : (
                 <XIcon
-                  size={16}
+                  size={15}
                 />
               )}
 
@@ -1788,19 +1880,20 @@ function ProjectInvitationDialog({
             <Button
               type="button"
               disabled={
-                responding !== null
+                responding !==
+                null
               }
               onClick={() =>
                 void onAccept()
               }
-              className="h-11 rounded-full"
+              className="h-11 rounded-lg px-6 shadow-none"
             >
               {responding ===
               "accept" ? (
                 <LoaderCircleIcon className="h-4 w-4 animate-spin" />
               ) : (
                 <CheckCircle2Icon
-                  size={16}
+                  size={15}
                 />
               )}
 
@@ -1812,6 +1905,10 @@ function ProjectInvitationDialog({
     </Dialog>
   );
 }
+
+/* =========================================================
+   PROJECT DETAIL
+========================================================= */
 
 function ProjectDetail({
   label,
@@ -1825,22 +1922,36 @@ function ProjectDetail({
 }) {
   return (
     <div>
-      <p className="text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+      <p className="text-[0.6rem] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
         {label}
       </p>
 
-      <div className="mt-1 text-sm font-semibold">
+      <div className="mt-1.5 text-sm font-semibold">
         {value}
       </div>
     </div>
   );
 }
 
-/*
- * ==============================================
- * EMPTY WORK STATE
- * ==============================================
- */
+/* =========================================================
+   INLINE LOADING
+========================================================= */
+
+function InlineLoading() {
+  return (
+    <div className="flex min-h-56 items-center justify-center border-b border-border">
+      <div className="flex items-center gap-3 text-sm text-muted-foreground">
+        <LoaderCircleIcon className="h-5 w-5 animate-spin text-primary" />
+
+        Loading your work...
+      </div>
+    </div>
+  );
+}
+
+/* =========================================================
+   EMPTY WORK STATE
+========================================================= */
 
 function WorkEmptyState({
   title,
@@ -1853,34 +1964,35 @@ function WorkEmptyState({
   description:
     string;
 
-  icon: React.ComponentType<{
-    size?: number;
-  }>;
+  icon:
+    React.ComponentType<{
+      size?: number;
+      className?: string;
+    }>;
 }) {
   return (
-    <div className="mt-6 rounded-[2rem] border border-dashed border-border bg-card/50 px-6 py-16 text-center">
-      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+    <section className="mt-7 border-y border-border py-14">
+      <div className="max-w-md">
         <Icon
-          size={24}
+          size={22}
+          className="text-primary"
         />
+
+        <h2 className="mt-5 text-xl font-black tracking-[-0.025em]">
+          {title}.
+        </h2>
+
+        <p className="mt-2 text-sm leading-7 text-muted-foreground">
+          {description}
+        </p>
       </div>
-
-      <h2 className="mt-5 text-xl font-black uppercase tracking-[-0.025em]">
-        {title}
-      </h2>
-
-      <p className="mx-auto mt-2 max-w-md text-sm leading-7 text-muted-foreground">
-        {description}
-      </p>
-    </div>
+    </section>
   );
 }
 
-/*
- * ==============================================
- * EMPTY WORKSPACE
- * ==============================================
- */
+/* =========================================================
+   EMPTY WORKSPACE
+========================================================= */
 
 function EmptyWorkspace({
   firstName,
@@ -1889,105 +2001,87 @@ function EmptyWorkspace({
     string;
 }) {
   return (
-    <section className="flex min-h-[calc(100vh-12rem)] items-center justify-center py-10">
-      <div className="relative w-full max-w-3xl overflow-hidden rounded-[2rem] border border-border bg-card px-6 py-14 text-center text-card-foreground sm:rounded-[2.5rem] sm:px-10 sm:py-20">
-        <div className="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-primary/10 blur-3xl" />
+    <section className="flex min-h-[calc(100vh-11rem)] items-center">
+      <div className="w-full max-w-3xl py-16">
+        <p className="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-primary">
+          Welcome,{" "}
+          {firstName}
+        </p>
 
-        <div className="absolute -bottom-24 -left-20 h-64 w-64 rounded-full bg-amber-300/10 blur-3xl" />
+        <h1 className="mt-4 max-w-2xl text-4xl font-black leading-[1.02] tracking-[-0.04em] sm:text-5xl">
+          Nothing here yet.
+          <span className="block text-primary">
+            Start with the work.
+          </span>
+        </h1>
 
-        <div className="relative">
-          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-[1.75rem] bg-primary/15 text-primary sm:h-24 sm:w-24">
-            <BriefcaseBusinessIcon className="h-9 w-9 sm:h-11 sm:w-11" />
-          </div>
+        <p className="mt-6 max-w-xl text-sm leading-7 text-muted-foreground sm:text-base sm:leading-8">
+          Create your first project, define the outcome and then bring in the Allocats with the skills to move it forward.
+        </p>
 
-          <p className="mt-8 text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-primary sm:text-xs">
-            Welcome,{" "}
-            {firstName}
+        <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+          <Button
+            asChild
+            className="group h-11 rounded-lg px-6 shadow-none"
+          >
+            <Link to="/projects/new">
+              <PlusIcon
+                size={16}
+              />
+
+              Create project
+
+              <ArrowRightIcon
+                size={15}
+                className="transition-transform group-hover:translate-x-0.5"
+              />
+            </Link>
+          </Button>
+
+          <Button
+            asChild
+            variant="ghost"
+            className="h-11 rounded-lg px-5 text-muted-foreground shadow-none"
+          >
+            <Link to="/how-it-works">
+              See how Allocatr works
+            </Link>
+          </Button>
+        </div>
+
+        <div className="mt-12 max-w-xl border-t border-border pt-6">
+          <p className="text-xs leading-6 text-muted-foreground">
+            Once a project is created, you can find Allocats, invite them to the work and follow progress from this workspace.
           </p>
-
-          <h1 className="mx-auto mt-4 max-w-2xl break-words text-3xl font-black uppercase leading-[0.96] tracking-[-0.035em] sm:text-4xl md:text-5xl">
-            Your workspace is
-            ready for its{" "}
-            <span className="text-primary">
-              first project.
-            </span>
-          </h1>
-
-          <p className="mx-auto mt-6 max-w-xl text-sm leading-7 text-muted-foreground sm:text-base">
-            Describe the work,
-            set your expectations
-            and start connecting
-            with skilled
-            professionals who can
-            help move it forward.
-          </p>
-
-          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Button
-              asChild
-              className="h-12 w-full rounded-full px-8 shadow-none sm:w-auto"
-            >
-              <Link to="/projects/new">
-                <PlusIcon
-                  size={17}
-                />
-
-                Create your first
-                project
-              </Link>
-            </Button>
-
-            <Button
-              asChild
-              variant="outline"
-              className="h-12 w-full rounded-full px-8 shadow-none sm:w-auto"
-            >
-              <Link to="/how-it-works">
-                See how it works
-
-                <ArrowRightIcon
-                  size={16}
-                />
-              </Link>
-            </Button>
-          </div>
         </div>
       </div>
     </section>
   );
 }
 
-/*
- * ==============================================
- * LOADING
- * ==============================================
- */
+/* =========================================================
+   LOADING PAGE
+========================================================= */
 
 function WorkspaceLoading() {
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
-      <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur-xl">
+      <header className="sticky top-0 z-40 border-b border-border/70 bg-background/90 backdrop-blur-xl">
         <div className="container mx-auto px-4 sm:px-5 md:px-8">
           <DashboardMainNav />
         </div>
       </header>
 
-      <main className="container mx-auto flex flex-1 items-center justify-center px-5 py-20 md:px-8">
-        <div className="flex flex-col items-center text-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-primary/15">
-            <LoaderCircleIcon className="h-7 w-7 animate-spin text-primary" />
-          </div>
+      <main className="container mx-auto flex flex-1 items-center px-5 py-20 md:px-8">
+        <div>
+          <LoaderCircleIcon className="h-6 w-6 animate-spin text-primary" />
 
-          <h1 className="mt-6 text-2xl font-black uppercase tracking-[-0.03em]">
-            Loading your
-            workspace
+          <h1 className="mt-6 text-2xl font-black tracking-[-0.03em]">
+            Loading your workspace.
           </h1>
 
           <p className="mt-2 max-w-md text-sm leading-7 text-muted-foreground">
-            We are gathering
-            your projects and
-            recent workspace
-            activity.
+            Gathering your projects and work.
           </p>
         </div>
       </main>
@@ -1995,11 +2089,9 @@ function WorkspaceLoading() {
   );
 }
 
-/*
- * ==============================================
- * ERROR
- * ==============================================
- */
+/* =========================================================
+   ERROR PAGE
+========================================================= */
 
 function WorkspaceError({
   onRetry,
@@ -2009,41 +2101,36 @@ function WorkspaceError({
 }) {
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
-      <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur-xl">
+      <header className="sticky top-0 z-40 border-b border-border/70 bg-background/90 backdrop-blur-xl">
         <div className="container mx-auto px-4 sm:px-5 md:px-8">
           <DashboardMainNav />
         </div>
       </header>
 
-      <main className="container mx-auto flex flex-1 items-center justify-center px-5 py-20 md:px-8">
-        <div className="w-full max-w-xl rounded-[2rem] border border-border bg-card p-7 text-center text-card-foreground sm:p-10">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-destructive/10 text-destructive">
-            <FolderOpenIcon
-              size={28}
-            />
-          </div>
+      <main className="container mx-auto flex flex-1 items-center px-5 py-20 md:px-8">
+        <div className="max-w-lg">
+          <FolderOpenIcon
+            size={24}
+            className="text-destructive"
+          />
 
-          <h1 className="mt-6 text-2xl font-black uppercase tracking-[-0.03em] sm:text-3xl">
-            We could not load
-            your projects
+          <h1 className="mt-6 text-3xl font-black leading-tight tracking-[-0.035em]">
+            We could not load your workspace.
           </h1>
 
           <p className="mt-3 text-sm leading-7 text-muted-foreground">
-            Something interrupted
-            the connection to your
-            workspace. Try loading
-            the projects again.
+            Something interrupted the connection. Try loading the projects again.
           </p>
 
           <Button
             type="button"
-            className="mt-7 h-12 rounded-full px-7 shadow-none"
+            className="mt-7 h-11 rounded-lg px-6 shadow-none"
             onClick={() =>
               void onRetry()
             }
           >
             <RefreshCwIcon
-              size={16}
+              size={15}
             />
 
             Try again
@@ -2054,165 +2141,102 @@ function WorkspaceError({
   );
 }
 
-/*
- * ==============================================
- * SIDEBAR
- * ==============================================
- */
+/* =========================================================
+   SIDEBAR
+========================================================= */
 
 function DashboardSidebar() {
   return (
-    <aside className="hidden min-w-0 space-y-5 xl:block">
-      <article className="overflow-hidden rounded-[2rem] border border-border bg-card text-card-foreground">
-        <div className="relative aspect-[16/9] overflow-hidden bg-muted">
-          <img
-            src={
-              Electricians
-            }
-            alt="Featured skilled professional"
-            className="h-full w-full object-cover"
+    <aside className="hidden min-w-0 xl:block">
+      <div className="sticky top-28">
+
+        {/* Find skills */}
+
+        <section>
+          <SearchIcon
+            size={20}
+            className="text-primary"
           />
 
-          <Badge className="absolute left-4 top-4 rounded-full bg-background/90 text-foreground shadow-none backdrop-blur">
-            <SparklesIcon
-              size={13}
-            />
+          <p className="mt-5 text-[0.62rem] font-semibold uppercase tracking-[0.17em] text-muted-foreground">
+            Need another skill?
+          </p>
 
-            Featured
-          </Badge>
-        </div>
-
-        <div className="p-6">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/15 text-primary">
-            <MegaphoneIcon
-              size={21}
-            />
-          </div>
-
-          <h2 className="mt-6 text-xl font-black uppercase tracking-[-0.025em]">
-            Find the right
-            skills faster
+          <h2 className="mt-2 text-xl font-black leading-tight tracking-[-0.025em]">
+            Put another Allocat on the trail.
           </h2>
 
           <p className="mt-3 text-sm leading-7 text-muted-foreground">
-            Explore
-            professionals whose
-            experience may match
-            your upcoming project
-            requirements.
+            Browse professionals whose experience matches your next piece of work.
           </p>
 
-          <Button
-            asChild
-            variant="outline"
-            className="mt-6 h-11 rounded-full px-6 shadow-none"
+          <Link
+            to="/allocats"
+            className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-primary transition-colors hover:text-primary/75"
           >
-            <Link to="/allocats">
-              View professionals
+            Explore Allocats
 
-              <ArrowRightIcon
-                size={15}
-              />
-            </Link>
-          </Button>
-        </div>
-      </article>
-
-      <article className="rounded-[1.75rem] border border-border bg-card p-6 text-card-foreground">
-        <div className="flex items-start gap-4">
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-300/20 text-amber-700 dark:bg-amber-400/10 dark:text-amber-300">
-            <LightbulbIcon
-              size={21}
+            <ArrowRightIcon
+              size={14}
             />
-          </span>
+          </Link>
+        </section>
 
-          <div className="min-w-0">
-            <p className="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-              Workspace tip
-            </p>
+        <div className="my-8 h-px bg-border" />
 
-            <h2 className="mt-2 font-bold">
-              Start with a clear
-              outcome
-            </h2>
+        {/* Tip */}
 
-            <p className="mt-2 text-sm leading-7 text-muted-foreground">
-              Explain what a
-              completed project
-              should look like
-              before listing
-              individual tasks.
-            </p>
+        <section>
+          <LightbulbIcon
+            size={19}
+            className="text-amber-600 dark:text-amber-300"
+          />
 
-            <Link
-              className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline"
-              to="/how-it-works"
-            >
-              Learn more
+          <p className="mt-5 text-[0.62rem] font-semibold uppercase tracking-[0.17em] text-muted-foreground">
+            Workspace tip
+          </p>
 
-              <ArrowRightIcon
-                size={14}
-              />
-            </Link>
-          </div>
-        </div>
-      </article>
+          <h2 className="mt-2 font-bold">
+            Start with the outcome.
+          </h2>
 
-      <article className="rounded-[1.75rem] border border-border bg-card p-6 text-card-foreground">
-        <div className="flex items-start gap-4">
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-sky-300/20 text-sky-700 dark:bg-sky-400/10 dark:text-sky-300">
-            <MessageSquareTextIcon
-              size={21}
+          <p className="mt-2 text-sm leading-7 text-muted-foreground">
+            A clear result makes it easier for Allocats to understand the work and break it into useful tasks.
+          </p>
+
+          <Link
+            to="/how-it-works"
+            className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:text-primary/75"
+          >
+            Learn more
+
+            <ArrowRightIcon
+              size={14}
             />
-          </span>
+          </Link>
+        </section>
 
-          <div className="min-w-0">
-            <p className="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-              Recent activity
-            </p>
+        <div className="my-8 h-px bg-border" />
 
-            <h2 className="mt-2 font-bold">
-              Jean sent you a
-              message
-            </h2>
+        {/* Personality */}
 
-            <p className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
-              <Clock3Icon
-                size={13}
-              />
+        <section>
+          <p className="text-[0.62rem] font-semibold uppercase tracking-[0.17em] text-muted-foreground">
+            Allocatr
+          </p>
 
-              3 hours ago
-            </p>
-
-            <p className="mt-3 line-clamp-3 text-sm leading-7 text-muted-foreground">
-              I have reviewed the
-              project details and
-              added a few questions
-              before we begin.
-            </p>
-
-            <Link
-              className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline"
-              to="/messages"
-            >
-              View conversation
-
-              <ArrowRightIcon
-                size={14}
-              />
-            </Link>
-          </div>
-        </div>
-      </article>
+          <p className="mt-3 text-sm leading-7 text-muted-foreground">
+            Keep the work visible. Let the skilled paws handle the execution.
+          </p>
+        </section>
+      </div>
     </aside>
   );
 }
 
-/*
- * ==============================================
- * HELPERS
- * ==============================================
- */
+/* =========================================================
+   HELPERS
+========================================================= */
 
 function normalizeProjectStatus(
   status?: string,
@@ -2231,7 +2255,9 @@ function formatShortDate(
   value: string,
 ) {
   const date =
-    new Date(value);
+    new Date(
+      value,
+    );
 
   if (
     Number.isNaN(
@@ -2244,11 +2270,16 @@ function formatShortDate(
   return new Intl.DateTimeFormat(
     "en",
     {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
+      day:
+        "numeric",
+      month:
+        "short",
+      year:
+        "numeric",
     },
-  ).format(date);
+  ).format(
+    date,
+  );
 }
 
 export default Projects;

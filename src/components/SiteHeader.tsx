@@ -1,9 +1,19 @@
 // import { useEffect, useState } from "react";
-// import { Link, NavLink, useNavigate } from "react-router-dom";
 // import {
+//   Link,
+//   NavLink,
+//   useLocation,
+//   useNavigate,
+// } from "react-router-dom";
+// import {
+//   ArrowRightIcon,
 //   ArrowUpRightIcon,
 //   LogInIcon,
 //   MenuIcon,
+//   MoonIcon,
+//   PlusIcon,
+//   SearchIcon,
+//   SunIcon,
 //   XIcon,
 // } from "lucide-react";
 
@@ -11,7 +21,36 @@
 // import { Button } from "@/components/ui/button";
 // import { useAuth } from "@/auth/useAuth";
 
-// const navigation = [
+// type Theme = "light" | "dark";
+
+// type NavigationItem = {
+//   label: string;
+//   href: string;
+//   icon?: typeof SearchIcon;
+// };
+
+// const landingNavigation: NavigationItem[] = [
+//   {
+//     label: "Explore",
+//     href: "/allocats",
+//     icon: SearchIcon,
+//   },
+//   {
+//     label: "Post a task",
+//     href: "/projects/new",
+//     icon: PlusIcon,
+//   },
+//   {
+//     label: "How it works",
+//     href: "/how-it-works",
+//   },
+//   {
+//     label: "Become an Allocat",
+//     href: "/become-an-allocat",
+//   },
+// ];
+
+// const publicNavigation: NavigationItem[] = [
 //   {
 //     label: "About",
 //     href: "/about",
@@ -30,283 +69,583 @@
 //   },
 // ];
 
+// function getInitialTheme(): Theme {
+//   const storedTheme =
+//     localStorage.getItem("theme");
+
+//   if (
+//     storedTheme === "light" ||
+//     storedTheme === "dark"
+//   ) {
+//     return storedTheme;
+//   }
+
+//   return window.matchMedia(
+//     "(prefers-color-scheme: dark)",
+//   ).matches
+//     ? "dark"
+//     : "light";
+// }
+
 // function SiteHeader() {
 //   const { user } = useAuth();
+
+//   const location = useLocation();
 //   const navigate = useNavigate();
 
-//   const [isScrolled, setIsScrolled] = useState(false);
-//   const [isMenuOpen, setIsMenuOpen] = useState(false);
+//   const [theme, setTheme] =
+//     useState<Theme>(
+//       getInitialTheme,
+//     );
+
+//   const [
+//     isScrolled,
+//     setIsScrolled,
+//   ] = useState(false);
+
+//   const [
+//     isMenuOpen,
+//     setIsMenuOpen,
+//   ] = useState(false);
+
+//   const isLandingPage =
+//     location.pathname === "/";
+
+//   const navigation =
+//     isLandingPage
+//       ? landingNavigation
+//       : publicNavigation;
+
+//   useEffect(() => {
+//     const root =
+//       document.documentElement;
+
+//     root.classList.toggle(
+//       "dark",
+//       theme === "dark",
+//     );
+
+//     localStorage.setItem(
+//       "theme",
+//       theme,
+//     );
+//   }, [theme]);
 
 //   useEffect(() => {
 //     function handleScroll() {
-//       setIsScrolled(window.scrollY > 24);
+//       setIsScrolled(
+//         window.scrollY > 12,
+//       );
 //     }
 
 //     handleScroll();
 
-//     window.addEventListener("scroll", handleScroll, {
-//       passive: true,
-//     });
+//     window.addEventListener(
+//       "scroll",
+//       handleScroll,
+//       {
+//         passive: true,
+//       },
+//     );
 
 //     return () => {
-//       window.removeEventListener("scroll", handleScroll);
+//       window.removeEventListener(
+//         "scroll",
+//         handleScroll,
+//       );
 //     };
 //   }, []);
 
 //   useEffect(() => {
-//     document.body.style.overflow = isMenuOpen ? "hidden" : "";
+//     document.body.style.overflow =
+//       isMenuOpen
+//         ? "hidden"
+//         : "";
 
 //     return () => {
-//       document.body.style.overflow = "";
+//       document.body.style.overflow =
+//         "";
 //     };
 //   }, [isMenuOpen]);
 
 //   useEffect(() => {
-//     function handleEscape(event: KeyboardEvent) {
-//       if (event.key === "Escape") {
+//     function handleEscape(
+//       event: KeyboardEvent,
+//     ) {
+//       if (
+//         event.key === "Escape"
+//       ) {
 //         setIsMenuOpen(false);
 //       }
 //     }
 
-//     window.addEventListener("keydown", handleEscape);
+//     window.addEventListener(
+//       "keydown",
+//       handleEscape,
+//     );
 
 //     return () => {
-//       window.removeEventListener("keydown", handleEscape);
+//       window.removeEventListener(
+//         "keydown",
+//         handleEscape,
+//       );
 //     };
 //   }, []);
+
+//   useEffect(() => {
+//     setIsMenuOpen(false);
+//   }, [location.pathname]);
 
 //   function closeMenu() {
 //     setIsMenuOpen(false);
 //   }
 
-//   function handleLogin() {
-//     closeMenu();
-//     navigate(user ? "/projects" : "/login");
+//   function toggleTheme() {
+//     setTheme((current) =>
+//       current === "dark"
+//         ? "light"
+//         : "dark",
+//     );
 //   }
 
-//   function handlePostJob() {
+//   function handleLogin() {
 //     closeMenu();
-//     navigate(user ? "/projects/new" : "/register");
+
+//     navigate(
+//       user
+//         ? "/projects"
+//         : "/login",
+//     );
+//   }
+
+//   function handlePostTask() {
+//     closeMenu();
+
+//     navigate(
+//       user
+//         ? "/projects/new"
+//         : "/register",
+//     );
+//   }
+
+//   function getNavigationHref(
+//     item: NavigationItem,
+//   ) {
+//     if (
+//       item.href ===
+//         "/projects/new" &&
+//       !user
+//     ) {
+//       return "/register";
+//     }
+
+//     return item.href;
 //   }
 
 //   return (
 //     <>
 //       <header
 //         className={[
-//           "fixed inset-x-0 top-0 z-50 px-4 transition-all duration-300",
-//           "sm:px-5 md:px-8",
-//           isScrolled ? "pt-3" : "pt-4 sm:pt-5",
+//           "fixed inset-x-0 top-0 z-50",
+//           "transition-all duration-300",
+
+//           isScrolled
+//             ? "border-b border-border/70 bg-background/90 shadow-sm backdrop-blur-xl"
+//             : "border-b border-transparent bg-transparent shadow-none",
 //         ].join(" ")}
 //       >
-//         <div
-//           className={[
-//             "container mx-auto flex h-16 items-center justify-between",
-//             "rounded-full border px-4 transition-all duration-300",
-//             "sm:h-[72px] sm:px-5 lg:px-6",
-//             isScrolled
-//               ? "border-border/80 bg-background/95 shadow-lg shadow-black/5 backdrop-blur-xl"
-//               : "border-border/60 bg-background/75 shadow-sm backdrop-blur-xl",
-//           ].join(" ")}
-//         >
+//         <div className="mx-auto flex h-14 w-full max-w-7xl items-center justify-between px-5 sm:h-[60px] sm:px-8 lg:px-10">
 //           {/* Logo */}
+
 //           <Link
 //             to="/"
 //             onClick={closeMenu}
-//             className="group flex min-w-0 items-center gap-2.5"
+//             className="group flex min-w-0 shrink-0 items-center gap-2.5"
 //             aria-label="Allocatr home"
 //           >
-//             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/15 transition-transform duration-300 group-hover:rotate-6 group-hover:scale-105">
+//             <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/12 transition-transform duration-300 group-hover:rotate-3 group-hover:scale-105">
 //               <img
-//                 src={assets.allocatrIcon}
+//                 src={
+//                   assets.allocatrIcon
+//                 }
 //                 alt=""
-//                 className="h-7 w-7 object-contain"
+//                 className="h-5.5 w-5.5 object-contain"
 //               />
 //             </span>
 
-//             <span className="truncate text-lg font-black uppercase tracking-[-0.04em] sm:text-xl">
+//             <span className="text-base font-black uppercase tracking-[-0.045em] sm:text-lg">
 //               Allocatr
 //             </span>
 //           </Link>
 
 //           {/* Desktop navigation */}
+
 //           <nav
-//             className="hidden items-center gap-1 lg:flex"
+//             className="hidden h-full items-center lg:flex"
 //             aria-label="Main navigation"
 //           >
-//             {navigation.map((item) => (
-//               <NavLink
-//                 key={item.href}
-//                 to={item.href}
-//                 className={({ isActive }) =>
-//                   [
-//                     "relative rounded-full px-4 py-2 text-sm font-medium",
-//                     "transition-colors duration-200",
-//                     isActive
-//                       ? "bg-primary/15 text-foreground"
-//                       : "text-muted-foreground hover:bg-muted hover:text-foreground",
-//                   ].join(" ")
-//                 }
-//               >
-//                 {({ isActive }) => (
-//                   <>
-//                     {item.label}
+//             {navigation.map(
+//               (item) => {
+//                 const Icon =
+//                   item.icon;
 
-//                     {isActive && (
-//                       <span className="absolute bottom-1 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-primary" />
+//                 const href =
+//                   getNavigationHref(
+//                     item,
+//                   );
+
+//                 return (
+//                   <NavLink
+//                     key={
+//                       item.label
+//                     }
+//                     to={href}
+//                     className={({
+//                       isActive,
+//                     }) =>
+//                       [
+//                         "group relative flex h-full items-center gap-1.5 px-3.5",
+//                         "text-[0.82rem] font-medium transition-colors",
+
+//                         isActive
+//                           ? "text-foreground"
+//                           : "text-muted-foreground hover:text-foreground",
+//                       ].join(
+//                         " ",
+//                       )
+//                     }
+//                   >
+//                     {({
+//                       isActive,
+//                     }) => (
+//                       <>
+//                         {Icon && (
+//                           <Icon
+//                             size={
+//                               14
+//                             }
+//                           />
+//                         )}
+
+//                         {
+//                           item.label
+//                         }
+
+//                         <span
+//                           className={[
+//                             "absolute bottom-0 left-3 right-3 h-0.5",
+//                             "origin-center bg-primary transition-transform duration-200",
+
+//                             isActive
+//                               ? "scale-x-100"
+//                               : "scale-x-0 group-hover:scale-x-50",
+//                           ].join(
+//                             " ",
+//                           )}
+//                         />
+//                       </>
 //                     )}
-//                   </>
-//                 )}
-//               </NavLink>
-//             ))}
+//                   </NavLink>
+//                 );
+//               },
+//             )}
 //           </nav>
 
 //           {/* Desktop actions */}
-//           <div className="hidden items-center gap-2 lg:flex">
+
+//           <div className="hidden items-center gap-1 lg:flex">
 //             <Button
 //               type="button"
 //               variant="ghost"
-//               className="h-11 rounded-full px-5 shadow-none"
-//               onClick={handleLogin}
+//               size="icon"
+//               onClick={
+//                 toggleTheme
+//               }
+//               className="h-9 w-9 rounded-lg shadow-none"
+//               aria-label={
+//                 theme ===
+//                 "dark"
+//                   ? "Switch to light theme"
+//                   : "Switch to dark theme"
+//               }
 //             >
-//               <LogInIcon size={16} />
-//               {user ? "Dashboard" : "Log in"}
+//               {theme ===
+//               "dark" ? (
+//                 <SunIcon
+//                   size={16}
+//                 />
+//               ) : (
+//                 <MoonIcon
+//                   size={16}
+//                 />
+//               )}
+//             </Button>
+
+//             <div className="mx-1.5 h-4 w-px bg-border" />
+
+//             <Button
+//               type="button"
+//               variant="ghost"
+//               className="h-9 rounded-lg px-3.5 text-xs font-semibold shadow-none"
+//               onClick={
+//                 handleLogin
+//               }
+//             >
+//               <LogInIcon
+//                 size={14}
+//               />
+
+//               {user
+//                 ? "Dashboard"
+//                 : "Log in"}
 //             </Button>
 
 //             <Button
 //               type="button"
-//               className="h-11 rounded-full px-6 shadow-none"
-//               onClick={handlePostJob}
+//               className="ml-1 h-9 rounded-lg px-4 text-xs font-semibold shadow-none"
+//               onClick={
+//                 handlePostTask
+//               }
 //             >
-//               Post a job
-//               <ArrowUpRightIcon size={16} />
+//               Post a task
+
+//               <ArrowUpRightIcon
+//                 size={14}
+//               />
 //             </Button>
 //           </div>
 
-//           {/* Mobile menu button */}
-//           <button
-//             type="button"
-//             className={[
-//               "flex h-11 w-11 shrink-0 items-center justify-center",
-//               "rounded-full border bg-background transition-colors",
-//               "hover:bg-muted lg:hidden",
-//             ].join(" ")}
-//             onClick={() => setIsMenuOpen((current) => !current)}
-//             aria-label={isMenuOpen ? "Close navigation" : "Open navigation"}
-//             aria-expanded={isMenuOpen}
-//             aria-controls="mobile-navigation"
-//           >
-//             {isMenuOpen ? <XIcon size={21} /> : <MenuIcon size={21} />}
-//           </button>
+//           {/* Mobile actions */}
+
+//           <div className="flex items-center gap-1 lg:hidden">
+//             <Button
+//               type="button"
+//               variant="ghost"
+//               size="icon"
+//               onClick={
+//                 toggleTheme
+//               }
+//               className="h-9 w-9 rounded-lg shadow-none"
+//               aria-label={
+//                 theme ===
+//                 "dark"
+//                   ? "Switch to light theme"
+//                   : "Switch to dark theme"
+//               }
+//             >
+//               {theme ===
+//               "dark" ? (
+//                 <SunIcon
+//                   size={16}
+//                 />
+//               ) : (
+//                 <MoonIcon
+//                   size={16}
+//                 />
+//               )}
+//             </Button>
+
+//             <Button
+//               type="button"
+//               variant="ghost"
+//               size="icon"
+//               className="h-9 w-9 rounded-lg shadow-none"
+//               onClick={() =>
+//                 setIsMenuOpen(
+//                   (current) =>
+//                     !current,
+//                 )
+//               }
+//               aria-label={
+//                 isMenuOpen
+//                   ? "Close navigation"
+//                   : "Open navigation"
+//               }
+//               aria-expanded={
+//                 isMenuOpen
+//               }
+//               aria-controls="mobile-navigation"
+//             >
+//               {isMenuOpen ? (
+//                 <XIcon
+//                   size={19}
+//                 />
+//               ) : (
+//                 <MenuIcon
+//                   size={19}
+//                 />
+//               )}
+//             </Button>
+//           </div>
 //         </div>
 //       </header>
 
 //       {/* Mobile navigation */}
+
 //       <div
 //         className={[
-//           "fixed inset-0 z-40 transition-all duration-300 lg:hidden",
+//           "fixed inset-0 z-40 lg:hidden",
+//           "transition-all duration-300",
+
 //           isMenuOpen
 //             ? "pointer-events-auto visible opacity-100"
 //             : "pointer-events-none invisible opacity-0",
 //         ].join(" ")}
-//         aria-hidden={!isMenuOpen}
+//         aria-hidden={
+//           !isMenuOpen
+//         }
 //       >
 //         <button
 //           type="button"
-//           className="absolute inset-0 bg-foreground/25 backdrop-blur-sm"
-//           onClick={closeMenu}
+//           className="absolute inset-0 top-14 bg-foreground/15 backdrop-blur-sm sm:top-[60px]"
+//           onClick={
+//             closeMenu
+//           }
 //           aria-label="Close navigation"
 //         />
 
 //         <aside
 //           id="mobile-navigation"
 //           className={[
-//             "absolute inset-x-4 top-24 max-h-[calc(100vh-7rem)]",
-//             "overflow-y-auto rounded-[2rem] border bg-background p-5",
-//             "shadow-2xl shadow-black/15 transition-all duration-300",
-//             "sm:inset-x-5 md:inset-x-8",
+//             "absolute inset-x-0 top-14",
+//             "border-b border-border bg-background",
+//             "shadow-xl shadow-black/10",
+//             "transition-transform duration-300",
+//             "sm:top-[60px]",
+
 //             isMenuOpen
-//               ? "translate-y-0 scale-100"
-//               : "-translate-y-4 scale-[0.98]",
+//               ? "translate-y-0"
+//               : "-translate-y-4",
 //           ].join(" ")}
 //         >
-//           <div className="mb-5 flex items-center gap-3 rounded-2xl bg-muted/50 p-4">
-//             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-300/25">
-//               <img
-//                 src={assets.allocatrIcon}
-//                 alt=""
-//                 className="h-7 w-7 object-contain"
-//               />
-//             </div>
-
-//             <div className="min-w-0">
-//               <p className="text-sm font-bold">Find skills. Manage work.</p>
-
-//               <p className="mt-0.5 text-xs text-muted-foreground">
-//                 Everything you need to move a project forward.
-//               </p>
-//             </div>
-//           </div>
-
-//           <nav className="space-y-1" aria-label="Mobile navigation">
-//             <NavLink
-//               to="/"
-//               onClick={closeMenu}
-//               className={({ isActive }) =>
-//                 [
-//                   "flex min-h-12 items-center justify-between rounded-2xl",
-//                   "px-4 py-3 text-base font-semibold transition-colors",
-//                   isActive
-//                     ? "bg-primary/15"
-//                     : "hover:bg-muted",
-//                 ].join(" ")
-//               }
+//           <div className="mx-auto max-h-[calc(100vh-56px)] max-w-7xl overflow-y-auto px-5 py-5 sm:max-h-[calc(100vh-60px)] sm:px-8">
+//             <nav
+//               className="space-y-0"
+//               aria-label="Mobile navigation"
 //             >
-//               Home
-//               <ArrowUpRightIcon size={16} />
-//             </NavLink>
+//               {!isLandingPage && (
+//                 <NavLink
+//                   to="/"
+//                   onClick={
+//                     closeMenu
+//                   }
+//                   className={({
+//                     isActive,
+//                   }) =>
+//                     [
+//                       "group flex min-h-12 items-center justify-between",
+//                       "border-b border-border/60",
+//                       "text-sm font-semibold transition-colors",
 
-//             {navigation.map((item) => (
-//               <NavLink
-//                 key={item.href}
-//                 to={item.href}
-//                 onClick={closeMenu}
-//                 className={({ isActive }) =>
-//                   [
-//                     "flex min-h-12 items-center justify-between rounded-2xl",
-//                     "px-4 py-3 text-base font-semibold transition-colors",
-//                     isActive
-//                       ? "bg-primary/15"
-//                       : "hover:bg-muted",
-//                   ].join(" ")
+//                       isActive
+//                         ? "text-primary"
+//                         : "text-foreground hover:text-primary",
+//                     ].join(
+//                       " ",
+//                     )
+//                   }
+//                 >
+//                   Home
+
+//                   <ArrowRightIcon
+//                     size={15}
+//                     className="text-muted-foreground transition-transform group-hover:translate-x-1"
+//                   />
+//                 </NavLink>
+//               )}
+
+//               {navigation.map(
+//                 (item) => {
+//                   const Icon =
+//                     item.icon;
+
+//                   const href =
+//                     getNavigationHref(
+//                       item,
+//                     );
+
+//                   return (
+//                     <NavLink
+//                       key={
+//                         item.label
+//                       }
+//                       to={href}
+//                       onClick={
+//                         closeMenu
+//                       }
+//                       className={({
+//                         isActive,
+//                       }) =>
+//                         [
+//                           "group flex min-h-12 items-center justify-between",
+//                           "border-b border-border/60",
+//                           "text-sm font-semibold transition-colors",
+
+//                           isActive
+//                             ? "text-primary"
+//                             : "text-foreground hover:text-primary",
+//                         ].join(
+//                           " ",
+//                         )
+//                       }
+//                     >
+//                       <span className="flex items-center gap-2.5">
+//                         {Icon && (
+//                           <Icon
+//                             size={
+//                               15
+//                             }
+//                             className="text-muted-foreground"
+//                           />
+//                         )}
+
+//                         {
+//                           item.label
+//                         }
+//                       </span>
+
+//                       <ArrowRightIcon
+//                         size={15}
+//                         className="text-muted-foreground transition-transform group-hover:translate-x-1"
+//                       />
+//                     </NavLink>
+//                   );
+//                 },
+//               )}
+//             </nav>
+
+//             <div className="mt-5 grid gap-2.5 sm:grid-cols-2">
+//               <Button
+//                 type="button"
+//                 variant="outline"
+//                 className="h-10 rounded-lg text-xs shadow-none"
+//                 onClick={
+//                   handleLogin
 //                 }
 //               >
-//                 {item.label}
-//                 <ArrowUpRightIcon size={16} />
-//               </NavLink>
-//             ))}
-//           </nav>
+//                 <LogInIcon
+//                   size={14}
+//                 />
 
-//           <div className="my-5 h-px bg-border" />
+//                 {user
+//                   ? "Go to dashboard"
+//                   : "Log in"}
+//               </Button>
 
-//           <div className="grid gap-3 sm:grid-cols-2">
-//             <Button
-//               type="button"
-//               variant="outline"
-//               className="h-12 w-full rounded-full shadow-none"
-//               onClick={handleLogin}
-//             >
-//               <LogInIcon size={16} />
-//               {user ? "Go to dashboard" : "Log in"}
-//             </Button>
+//               <Button
+//                 type="button"
+//                 className="h-10 rounded-lg text-xs shadow-none"
+//                 onClick={
+//                   handlePostTask
+//                 }
+//               >
+//                 Post a task
 
-//             <Button
-//               type="button"
-//               className="h-12 w-full rounded-full shadow-none"
-//               onClick={handlePostJob}
-//             >
-//               Post a job
-//               <ArrowUpRightIcon size={16} />
-//             </Button>
+//                 <ArrowUpRightIcon
+//                   size={14}
+//                 />
+//               </Button>
+//             </div>
 //           </div>
 //         </aside>
 //       </div>
@@ -316,46 +655,58 @@
 
 // export default SiteHeader;
 
-import { useEffect, useState } from "react";
+
+import {
+  useEffect,
+  useState,
+} from "react";
+
 import {
   Link,
   NavLink,
   useLocation,
   useNavigate,
 } from "react-router-dom";
+
 import {
+  ArrowRightIcon,
   ArrowUpRightIcon,
   LogInIcon,
   MenuIcon,
   MoonIcon,
-  PlusIcon,
-  SearchIcon,
   SunIcon,
   XIcon,
 } from "lucide-react";
 
 import assets from "@/assets/assets";
-import { Button } from "@/components/ui/button";
-import { useAuth } from "@/auth/useAuth";
 
-type Theme = "light" | "dark";
+import {
+  Button,
+} from "@/components/ui/button";
+
+import {
+  useAuth,
+} from "@/auth/useAuth";
+
+type Theme =
+  | "light"
+  | "dark";
 
 type NavigationItem = {
   label: string;
   href: string;
-  icon?: typeof SearchIcon;
 };
+
+/*
+ * =========================================================
+ * NAVIGATION
+ * =========================================================
+ */
 
 const landingNavigation: NavigationItem[] = [
   {
     label: "Explore",
     href: "/allocats",
-    icon: SearchIcon,
-  },
-  {
-    label: "Post a task",
-    href: "/projects/new",
-    icon: PlusIcon,
   },
   {
     label: "How it works",
@@ -386,409 +737,749 @@ const publicNavigation: NavigationItem[] = [
   },
 ];
 
-function getInitialTheme(): Theme {
-  const storedTheme = localStorage.getItem("theme");
+/*
+ * =========================================================
+ * THEME
+ * =========================================================
+ */
 
-  if (storedTheme === "light" || storedTheme === "dark") {
+function getInitialTheme(): Theme {
+  const storedTheme =
+    localStorage.getItem("theme");
+
+  if (
+    storedTheme === "light" ||
+    storedTheme === "dark"
+  ) {
     return storedTheme;
   }
 
-  return window.matchMedia("(prefers-color-scheme: dark)").matches
+  return window.matchMedia(
+    "(prefers-color-scheme: dark)",
+  ).matches
     ? "dark"
     : "light";
 }
 
+/*
+ * =========================================================
+ * HEADER
+ * =========================================================
+ */
+
 function SiteHeader() {
-  const { user } = useAuth();
+  const { user } =
+    useAuth();
 
-  const location = useLocation();
-  const navigate = useNavigate();
+  const location =
+    useLocation();
 
-  const [theme, setTheme] = useState<Theme>(getInitialTheme);
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const navigate =
+    useNavigate();
 
-  const isLandingPage = location.pathname === "/";
+  const [
+    theme,
+    setTheme,
+  ] =
+    useState<Theme>(
+      getInitialTheme,
+    );
 
-  const navigation = isLandingPage
-    ? landingNavigation
-    : publicNavigation;
+  const [
+    isScrolled,
+    setIsScrolled,
+  ] =
+    useState(false);
+
+  const [
+    isMenuOpen,
+    setIsMenuOpen,
+  ] =
+    useState(false);
+
+  const isLandingPage =
+    location.pathname === "/";
+
+  const navigation =
+    isLandingPage
+      ? landingNavigation
+      : publicNavigation;
+
+  /*
+   * ---------------------------------------------------------
+   * THEME
+   * ---------------------------------------------------------
+   */
 
   useEffect(() => {
-    const root = document.documentElement;
+    const root =
+      document.documentElement;
 
-    root.classList.toggle("dark", theme === "dark");
-    localStorage.setItem("theme", theme);
+    root.classList.toggle(
+      "dark",
+      theme === "dark",
+    );
+
+    localStorage.setItem(
+      "theme",
+      theme,
+    );
   }, [theme]);
+
+  /*
+   * ---------------------------------------------------------
+   * SCROLL STATE
+   * ---------------------------------------------------------
+   */
 
   useEffect(() => {
     function handleScroll() {
-      setIsScrolled(window.scrollY > 24);
+      setIsScrolled(
+        window.scrollY > 14,
+      );
     }
 
     handleScroll();
 
-    window.addEventListener("scroll", handleScroll, {
-      passive: true,
-    });
+    window.addEventListener(
+      "scroll",
+      handleScroll,
+      {
+        passive: true,
+      },
+    );
 
     return () => {
-      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener(
+        "scroll",
+        handleScroll,
+      );
     };
   }, []);
 
+  /*
+   * ---------------------------------------------------------
+   * MOBILE BODY LOCK
+   * ---------------------------------------------------------
+   */
+
   useEffect(() => {
-    document.body.style.overflow = isMenuOpen ? "hidden" : "";
+    document.body.style.overflow =
+      isMenuOpen
+        ? "hidden"
+        : "";
 
     return () => {
-      document.body.style.overflow = "";
+      document.body.style.overflow =
+        "";
     };
-  }, [isMenuOpen]);
+  }, [
+    isMenuOpen,
+  ]);
+
+  /*
+   * ---------------------------------------------------------
+   * ESCAPE CLOSE
+   * ---------------------------------------------------------
+   */
 
   useEffect(() => {
-    function handleEscape(event: KeyboardEvent) {
-      if (event.key === "Escape") {
+    function handleEscape(
+      event: KeyboardEvent,
+    ) {
+      if (
+        event.key === "Escape"
+      ) {
         setIsMenuOpen(false);
       }
     }
 
-    window.addEventListener("keydown", handleEscape);
+    window.addEventListener(
+      "keydown",
+      handleEscape,
+    );
 
     return () => {
-      window.removeEventListener("keydown", handleEscape);
+      window.removeEventListener(
+        "keydown",
+        handleEscape,
+      );
     };
   }, []);
 
+  /*
+   * ---------------------------------------------------------
+   * CLOSE MENU AFTER ROUTE CHANGE
+   * ---------------------------------------------------------
+   */
+
   useEffect(() => {
     setIsMenuOpen(false);
-  }, [location.pathname]);
+  }, [
+    location.pathname,
+  ]);
+
+  /*
+   * ---------------------------------------------------------
+   * ACTIONS
+   * ---------------------------------------------------------
+   */
 
   function closeMenu() {
     setIsMenuOpen(false);
   }
 
   function toggleTheme() {
-    setTheme((currentTheme) =>
-      currentTheme === "dark" ? "light" : "dark",
+    setTheme(
+      (
+        current,
+      ) =>
+        current === "dark"
+          ? "light"
+          : "dark",
     );
   }
 
   function handleLogin() {
     closeMenu();
-    navigate(user ? "/projects" : "/login");
+
+    navigate(
+      user
+        ? "/projects"
+        : "/login",
+    );
   }
 
   function handlePostTask() {
     closeMenu();
-    navigate(user ? "/projects/new" : "/register");
+
+    navigate(
+      user
+        ? "/projects/new"
+        : "/register",
+    );
   }
 
-  function getNavigationHref(item: NavigationItem) {
-    if (item.href === "/projects/new" && !user) {
-      return "/register";
-    }
-
-    return item.href;
-  }
+  /*
+   * =========================================================
+   * RENDER
+   * =========================================================
+   */
 
   return (
     <>
       <header
         className={[
-          "fixed inset-x-0 top-0 z-50 px-4 transition-all duration-300",
-          "sm:px-5 md:px-8",
-          isScrolled ? "pt-3" : "pt-4 sm:pt-5",
+          "fixed inset-x-0 top-0 z-50",
+          "transition-[background-color,border-color,box-shadow,backdrop-filter]",
+          "duration-300",
+
+          isScrolled
+            ? [
+                "border-b border-border/60",
+                "bg-background/88",
+                "backdrop-blur-xl",
+                "shadow-[0_8px_30px_rgba(0,0,0,0.035)]",
+                "dark:shadow-[0_10px_34px_rgba(0,0,0,0.2)]",
+              ].join(" ")
+            : [
+                "border-b border-transparent",
+                "bg-transparent",
+                "shadow-none",
+              ].join(" "),
         ].join(" ")}
       >
         <div
           className={[
-            "container mx-auto flex h-16 items-center justify-between",
-            "rounded-full border px-4 transition-all duration-300",
-            "sm:h-[72px] sm:px-5 lg:px-6",
-            isScrolled
-              ? "border-border/80 bg-background/95 shadow-lg shadow-black/5 backdrop-blur-xl"
-              : "border-border/60 bg-background/75 shadow-sm backdrop-blur-xl",
+            "mx-auto flex w-full max-w-7xl items-center justify-between",
+            "h-14 px-5",
+            "sm:h-[60px] sm:px-8",
+            "lg:px-10",
           ].join(" ")}
         >
+          {/* =====================================================
+              LOGO
+          ===================================================== */}
+
           <Link
             to="/"
-            onClick={closeMenu}
-            className="group flex min-w-0 items-center gap-2.5"
+            onClick={
+              closeMenu
+            }
+            className={[
+              "group flex shrink-0 items-center gap-2.5",
+              "outline-none",
+            ].join(" ")}
             aria-label="Allocatr home"
           >
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/15 transition-transform duration-300 group-hover:rotate-6 group-hover:scale-105">
-              <img
-                src={assets.allocatrIcon}
-                alt=""
-                className="h-7 w-7 object-contain"
-              />
-            </span>
+            <img
+              src={
+                assets.allocatrIcon
+              }
+              alt=""
+              className={[
+                "h-7 w-7 object-contain",
+                "transition-transform duration-300",
+                "group-hover:-rotate-6",
+                "group-hover:scale-105",
+              ].join(" ")}
+            />
 
-            <span className="truncate text-lg font-black uppercase tracking-[-0.04em] sm:text-xl">
+            <span
+              className={[
+                "text-base font-black",
+                "tracking-[-0.035em]",
+                "sm:text-lg",
+              ].join(" ")}
+            >
               Allocatr
             </span>
           </Link>
 
+          {/* =====================================================
+              DESKTOP NAVIGATION
+          ===================================================== */}
+
           <nav
-            className="hidden items-center gap-1 lg:flex"
+            className="hidden h-full items-center lg:flex"
             aria-label="Main navigation"
           >
-            {navigation.map((item) => {
-              const Icon = item.icon;
-              const href = getNavigationHref(item);
-
-              return (
+            {navigation.map(
+              (
+                item,
+              ) => (
                 <NavLink
-                  key={item.label}
-                  to={href}
-                  className={({ isActive }) =>
+                  key={
+                    item.label
+                  }
+                  to={
+                    item.href
+                  }
+                  className={({
+                    isActive,
+                  }) =>
                     [
-                      "relative inline-flex items-center gap-2 rounded-full",
-                      "px-4 py-2 text-sm font-medium",
+                      "group relative flex h-full items-center px-4",
+                      "text-[0.82rem] font-medium",
                       "transition-colors duration-200",
+
                       isActive
-                        ? "bg-primary/15 text-foreground"
-                        : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                    ].join(" ")
+                        ? "text-foreground"
+                        : "text-muted-foreground hover:text-foreground",
+                    ].join(
+                      " ",
+                    )
                   }
                 >
-                  {({ isActive }) => (
+                  {({
+                    isActive,
+                  }) => (
                     <>
-                      {Icon && <Icon size={15} />}
+                      {
+                        item.label
+                      }
 
-                      {item.label}
+                      <span
+                        className={[
+                          "absolute bottom-[9px] left-1/2",
+                          "h-1 w-1 -translate-x-1/2 rounded-full",
+                          "bg-primary",
+                          "transition-all duration-200",
 
-                      {isActive && (
-                        <span className="absolute bottom-1 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-primary" />
-                      )}
+                          isActive
+                            ? "scale-100 opacity-100"
+                            : [
+                                "scale-0 opacity-0",
+                                "group-hover:scale-100",
+                                "group-hover:opacity-40",
+                              ].join(
+                                " ",
+                              ),
+                        ].join(
+                          " ",
+                        )}
+                      />
                     </>
                   )}
                 </NavLink>
-              );
-            })}
+              ),
+            )}
           </nav>
 
-          <div className="hidden items-center gap-2 lg:flex">
+          {/* =====================================================
+              DESKTOP ACTIONS
+          ===================================================== */}
+
+          <div className="hidden items-center gap-1 lg:flex">
+            {/* Theme */}
+
             <Button
               type="button"
               variant="ghost"
               size="icon"
-              onClick={toggleTheme}
-              className="h-11 w-11 rounded-full shadow-none"
+              onClick={
+                toggleTheme
+              }
+              className={[
+                "h-9 w-9 rounded-lg",
+                "text-muted-foreground shadow-none",
+                "hover:text-foreground",
+              ].join(" ")}
               aria-label={
-                theme === "dark"
+                theme ===
+                "dark"
                   ? "Switch to light theme"
                   : "Switch to dark theme"
               }
             >
-              {theme === "dark" ? (
-                <SunIcon size={18} />
+              {theme ===
+              "dark" ? (
+                <SunIcon
+                  size={16}
+                />
               ) : (
-                <MoonIcon size={18} />
+                <MoonIcon
+                  size={16}
+                />
               )}
             </Button>
+
+            {/* Tiny separation */}
+
+            <div className="mx-2 h-4 w-px bg-border/80" />
+
+            {/* Login */}
 
             <Button
               type="button"
               variant="ghost"
-              className="h-11 rounded-full px-5 shadow-none"
-              onClick={handleLogin}
+              className={[
+                "h-9 rounded-lg px-3.5",
+                "text-xs font-semibold",
+                "text-muted-foreground",
+                "shadow-none",
+                "hover:text-foreground",
+              ].join(" ")}
+              onClick={
+                handleLogin
+              }
             >
-              <LogInIcon size={16} />
+              <LogInIcon
+                size={14}
+              />
 
-              {user ? "Dashboard" : "Log in"}
+              {user
+                ? "Dashboard"
+                : "Log in"}
             </Button>
+
+            {/* Main CTA */}
 
             <Button
               type="button"
-              className="h-11 rounded-full px-6 shadow-none"
-              onClick={handlePostTask}
+              className={[
+                "ml-1 h-9 rounded-lg px-4",
+                "text-xs font-semibold",
+                "shadow-none",
+              ].join(" ")}
+              onClick={
+                handlePostTask
+              }
             >
               Post a task
-              <ArrowUpRightIcon size={16} />
+
+              <ArrowUpRightIcon
+                size={14}
+              />
             </Button>
           </div>
 
-          <div className="flex items-center gap-2 lg:hidden">
+          {/* =====================================================
+              MOBILE ACTIONS
+          ===================================================== */}
+
+          <div className="flex items-center gap-1 lg:hidden">
             <Button
               type="button"
               variant="ghost"
               size="icon"
-              onClick={toggleTheme}
-              className="h-11 w-11 rounded-full shadow-none"
+              onClick={
+                toggleTheme
+              }
+              className={[
+                "h-9 w-9 rounded-lg",
+                "text-muted-foreground shadow-none",
+              ].join(" ")}
               aria-label={
-                theme === "dark"
+                theme ===
+                "dark"
                   ? "Switch to light theme"
                   : "Switch to dark theme"
               }
             >
-              {theme === "dark" ? (
-                <SunIcon size={18} />
+              {theme ===
+              "dark" ? (
+                <SunIcon
+                  size={16}
+                />
               ) : (
-                <MoonIcon size={18} />
+                <MoonIcon
+                  size={16}
+                />
               )}
             </Button>
 
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="icon"
               className={[
-                "flex h-11 w-11 shrink-0 items-center justify-center",
-                "rounded-full border bg-background transition-colors",
-                "hover:bg-muted",
+                "h-9 w-9 rounded-lg",
+                "shadow-none",
               ].join(" ")}
               onClick={() =>
-                setIsMenuOpen((current) => !current)
+                setIsMenuOpen(
+                  (
+                    current,
+                  ) =>
+                    !current,
+                )
               }
               aria-label={
                 isMenuOpen
                   ? "Close navigation"
                   : "Open navigation"
               }
-              aria-expanded={isMenuOpen}
+              aria-expanded={
+                isMenuOpen
+              }
               aria-controls="mobile-navigation"
             >
               {isMenuOpen ? (
-                <XIcon size={21} />
+                <XIcon
+                  size={19}
+                />
               ) : (
-                <MenuIcon size={21} />
+                <MenuIcon
+                  size={19}
+                />
               )}
-            </button>
+            </Button>
           </div>
         </div>
       </header>
 
+      {/* =========================================================
+          MOBILE NAVIGATION
+      ========================================================= */}
+
       <div
         className={[
-          "fixed inset-0 z-40 transition-all duration-300 lg:hidden",
+          "fixed inset-0 z-40 lg:hidden",
+          "transition-all duration-300",
+
           isMenuOpen
             ? "pointer-events-auto visible opacity-100"
             : "pointer-events-none invisible opacity-0",
         ].join(" ")}
-        aria-hidden={!isMenuOpen}
+        aria-hidden={
+          !isMenuOpen
+        }
       >
+        {/* Backdrop */}
+
         <button
           type="button"
-          className="absolute inset-0 bg-foreground/25 backdrop-blur-sm"
-          onClick={closeMenu}
+          className={[
+            "absolute inset-0 top-14",
+            "bg-foreground/15 backdrop-blur-sm",
+            "sm:top-[60px]",
+          ].join(" ")}
+          onClick={
+            closeMenu
+          }
           aria-label="Close navigation"
         />
+
+        {/* Panel */}
 
         <aside
           id="mobile-navigation"
           className={[
-            "absolute inset-x-4 top-24 max-h-[calc(100vh-7rem)]",
-            "overflow-y-auto rounded-[2rem] border bg-background p-5",
-            "shadow-2xl shadow-black/15 transition-all duration-300",
-            "sm:inset-x-5 md:inset-x-8",
+            "absolute inset-x-0 top-14",
+            "border-b border-border/70",
+            "bg-background/98",
+            "backdrop-blur-xl",
+            "shadow-xl shadow-black/10",
+            "transition-all duration-300",
+            "sm:top-[60px]",
+
             isMenuOpen
-              ? "translate-y-0 scale-100"
-              : "-translate-y-4 scale-[0.98]",
+              ? "translate-y-0 opacity-100"
+              : "-translate-y-3 opacity-0",
           ].join(" ")}
         >
-          <div className="mb-5 flex items-center gap-3 rounded-2xl bg-muted/50 p-4">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary/15">
-              <img
-                src={assets.allocatrIcon}
-                alt=""
-                className="h-7 w-7 object-contain"
-              />
-            </div>
-
-            <div className="min-w-0">
-              <p className="text-sm font-bold">
-                {isLandingPage
-                  ? "Find skills. Move work forward."
-                  : "Everything you need to get work done."}
-              </p>
-
-              <p className="mt-0.5 text-xs text-muted-foreground">
-                {isLandingPage
-                  ? "Explore professionals or post your next task."
-                  : "Discover more about Allocatr."}
-              </p>
-            </div>
-          </div>
-
-          <nav
-            className="space-y-1"
-            aria-label="Mobile navigation"
+          <div
+            className={[
+              "mx-auto max-w-7xl",
+              "max-h-[calc(100vh-56px)] overflow-y-auto",
+              "px-5 pb-6 pt-3",
+              "sm:max-h-[calc(100vh-60px)] sm:px-8",
+            ].join(" ")}
           >
-            {!isLandingPage && (
-              <NavLink
-                to="/"
-                onClick={closeMenu}
-                className={({ isActive }) =>
-                  [
-                    "flex min-h-12 items-center justify-between rounded-2xl",
-                    "px-4 py-3 text-base font-semibold transition-colors",
-                    isActive
-                      ? "bg-primary/15"
-                      : "hover:bg-muted",
-                  ].join(" ")
-                }
-              >
-                Home
-                <ArrowUpRightIcon size={16} />
-              </NavLink>
-            )}
+            {/* Small personality line */}
 
-            {navigation.map((item) => {
-              const Icon = item.icon;
-              const href = getNavigationHref(item);
+            <div className="flex items-center justify-between border-b border-border/60 py-4">
+              <div className="flex items-center gap-2.5">
+                <img
+                  src={
+                    assets.allocatrIcon
+                  }
+                  alt=""
+                  className="h-5 w-5 object-contain"
+                />
 
-              return (
+                <span className="text-xs font-semibold text-muted-foreground">
+                  Follow the right trail.
+                </span>
+              </div>
+
+              <div className="flex items-center gap-1.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+
+                <span className="h-1 w-1 rounded-full bg-primary/50" />
+
+                <span className="h-1 w-1 rounded-full bg-primary/20" />
+              </div>
+            </div>
+
+            {/* Navigation */}
+
+            <nav
+              className="mt-1"
+              aria-label="Mobile navigation"
+            >
+              {!isLandingPage && (
                 <NavLink
-                  key={item.label}
-                  to={href}
-                  onClick={closeMenu}
-                  className={({ isActive }) =>
+                  to="/"
+                  onClick={
+                    closeMenu
+                  }
+                  className={({
+                    isActive,
+                  }) =>
                     [
-                      "flex min-h-12 items-center justify-between rounded-2xl",
-                      "px-4 py-3 text-base font-semibold transition-colors",
+                      "group flex min-h-14 items-center justify-between",
+                      "border-b border-border/60",
+                      "text-sm font-semibold",
+                      "transition-colors",
+
                       isActive
-                        ? "bg-primary/15"
-                        : "hover:bg-muted",
-                    ].join(" ")
+                        ? "text-primary"
+                        : "text-foreground hover:text-primary",
+                    ].join(
+                      " ",
+                    )
                   }
                 >
-                  <span className="flex items-center gap-3">
-                    {Icon && (
-                      <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-muted text-muted-foreground">
-                        <Icon size={16} />
-                      </span>
-                    )}
+                  Home
 
-                    {item.label}
-                  </span>
-
-                  <ArrowUpRightIcon size={16} />
+                  <ArrowRightIcon
+                    size={15}
+                    className="text-muted-foreground transition-transform duration-200 group-hover:translate-x-1"
+                  />
                 </NavLink>
-              );
-            })}
-          </nav>
+              )}
 
-          <div className="my-5 h-px bg-border" />
+              {navigation.map(
+                (
+                  item,
+                ) => (
+                  <NavLink
+                    key={
+                      item.label
+                    }
+                    to={
+                      item.href
+                    }
+                    onClick={
+                      closeMenu
+                    }
+                    className={({
+                      isActive,
+                    }) =>
+                      [
+                        "group flex min-h-14 items-center justify-between",
+                        "border-b border-border/60",
+                        "text-sm font-semibold",
+                        "transition-colors",
 
-          <div className="grid gap-3 sm:grid-cols-2">
-            <Button
-              type="button"
-              variant="outline"
-              className="h-12 w-full rounded-full shadow-none"
-              onClick={handleLogin}
-            >
-              <LogInIcon size={16} />
+                        isActive
+                          ? "text-primary"
+                          : "text-foreground hover:text-primary",
+                      ].join(
+                        " ",
+                      )
+                    }
+                  >
+                    <span className="flex items-center gap-3">
+                      <span
+                        className={[
+                          "h-1.5 w-1.5 rounded-full",
+                          "bg-primary/25",
+                          "transition-all duration-200",
+                          "group-hover:bg-primary",
+                        ].join(" ")}
+                      />
 
-              {user ? "Go to dashboard" : "Log in"}
-            </Button>
+                      {
+                        item.label
+                      }
+                    </span>
 
-            <Button
-              type="button"
-              className="h-12 w-full rounded-full shadow-none"
-              onClick={handlePostTask}
-            >
-              Post a task
-              <ArrowUpRightIcon size={16} />
-            </Button>
+                    <ArrowRightIcon
+                      size={15}
+                      className="text-muted-foreground transition-transform duration-200 group-hover:translate-x-1"
+                    />
+                  </NavLink>
+                ),
+              )}
+            </nav>
+
+            {/* Actions */}
+
+            <div className="mt-6 grid gap-2.5 sm:grid-cols-2">
+              <Button
+                type="button"
+                variant="outline"
+                className="h-11 rounded-lg text-xs shadow-none"
+                onClick={
+                  handleLogin
+                }
+              >
+                <LogInIcon
+                  size={14}
+                />
+
+                {user
+                  ? "Go to dashboard"
+                  : "Log in"}
+              </Button>
+
+              <Button
+                type="button"
+                className="h-11 rounded-lg text-xs shadow-none"
+                onClick={
+                  handlePostTask
+                }
+              >
+                Post a task
+
+                <ArrowUpRightIcon
+                  size={14}
+                />
+              </Button>
+            </div>
           </div>
         </aside>
       </div>
