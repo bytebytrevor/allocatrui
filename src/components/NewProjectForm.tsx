@@ -1,1450 +1,3 @@
-// import React, {
-//   useState,
-// } from "react";
-
-// import {
-//   ArrowLeftIcon,
-//   ArrowRightIcon,
-//   CalendarDaysIcon,
-//   CheckIcon,
-//   FileTextIcon,
-//   FolderOpenIcon,
-//   SearchIcon,
-//   SendIcon,
-//   XIcon,
-// } from "lucide-react";
-
-// import {
-//   zodResolver,
-// } from "@hookform/resolvers/zod";
-
-// import {
-//   Controller,
-//   useForm,
-// } from "react-hook-form";
-
-// import {
-//   useNavigate,
-// } from "react-router-dom";
-
-// import {
-//   toast,
-//   Toaster,
-// } from "sonner";
-
-// import * as z from "zod";
-
-// import api from "@/api/axios";
-
-// import {
-//   projectCategories,
-// } from "@/data/projectCategories";
-
-// import type {
-//   CreateProjectRequest,
-// } from "@/Types/createProjectRequest";
-
-// import type {
-//   Project,
-// } from "@/Types/project";
-
-// import {
-//   toLocalDateOnly,
-// } from "@/utils/date";
-
-// import {
-//   cn,
-// } from "@/lib/utils";
-
-// import {
-//   Button,
-// } from "./ui/button";
-
-// import {
-//   Input,
-// } from "./ui/input";
-
-// import {
-//   Field,
-//   FieldDescription,
-//   FieldError,
-//   FieldGroup,
-//   FieldLabel,
-// } from "@/components/ui/field";
-
-// import {
-//   InputGroup,
-//   InputGroupAddon,
-//   InputGroupText,
-//   InputGroupTextarea,
-// } from "@/components/ui/input-group";
-
-// import {
-//   Select,
-//   SelectContent,
-//   SelectGroup,
-//   SelectItem,
-//   SelectTrigger,
-//   SelectValue,
-// } from "@/components/ui/select";
-
-// import {
-//   Calendar28,
-// } from "./DatePicker";
-
-// import MultiFileUpload from "./MultiFileUpload";
-
-// /* =========================================================
-//    SCHEMA
-// ========================================================= */
-
-// const formSchema = z
-//   .object({
-//     title: z
-//       .string()
-//       .min(
-//         5,
-//         "Use at least 5 characters.",
-//       )
-//       .max(
-//         64,
-//         "Keep the title below 64 characters.",
-//       ),
-
-//     category: z
-//       .string()
-//       .min(
-//         1,
-//         "Choose a category.",
-//       ),
-
-//     tags: z
-//       .array(
-//         z.string().min(2),
-//       )
-//       .min(
-//         1,
-//         "Add at least one relevant tag.",
-//       ),
-
-//     startDate: z
-//       .date()
-//       .nullable(),
-
-//     endDate: z
-//       .date()
-//       .nullable(),
-
-//     description: z
-//       .string()
-//       .min(
-//         20,
-//         "Describe the project in at least 20 characters.",
-//       )
-//       .max(
-//         2000,
-//         "Keep the description below 2,000 characters.",
-//       ),
-
-//     priority: z.enum([
-//       "standard",
-//       "high",
-//       "urgent",
-//     ]),
-
-//     budget: z
-//       .string()
-//       .optional(),
-//   })
-//   .refine(
-//     (values) => {
-//       if (
-//         !values.startDate ||
-//         !values.endDate
-//       ) {
-//         return true;
-//       }
-
-//       return (
-//         values.endDate >=
-//         values.startDate
-//       );
-//     },
-//     {
-//       message:
-//         "The end date must be after the start date.",
-//       path: [
-//         "endDate",
-//       ],
-//     },
-//   );
-
-// type FormValues =
-//   z.infer<
-//     typeof formSchema
-//   >;
-
-// type Step =
-//   | 1
-//   | 2
-//   | 3;
-
-// type SubmitIntent =
-//   | "post"
-//   | "find";
-
-// /* =========================================================
-//    STEPS
-// ========================================================= */
-
-// const steps = [
-//   {
-//     number: 1,
-//     label: "Basics",
-//     description:
-//       "Title, category and skills",
-//     icon: FolderOpenIcon,
-//   },
-//   {
-//     number: 2,
-//     label: "Planning",
-//     description:
-//       "Dates, priority and budget",
-//     icon: CalendarDaysIcon,
-//   },
-//   {
-//     number: 3,
-//     label: "Brief",
-//     description:
-//       "Files and project description",
-//     icon: FileTextIcon,
-//   },
-// ] as const;
-
-// const stepFields: Record<
-//   Step,
-//   (
-//     keyof FormValues
-//   )[]
-// > = {
-//   1: [
-//     "title",
-//     "category",
-//     "tags",
-//   ],
-
-//   2: [
-//     "startDate",
-//     "endDate",
-//     "priority",
-//     "budget",
-//   ],
-
-//   3: [
-//     "description",
-//   ],
-// };
-
-// /* =========================================================
-//    FORM
-// ========================================================= */
-
-// function NewProjectForm() {
-//   const navigate =
-//     useNavigate();
-
-//   const [
-//     step,
-//     setStep,
-//   ] =
-//     useState<Step>(1);
-
-//   const [
-//     submitIntent,
-//     setSubmitIntent,
-//   ] =
-//     useState<SubmitIntent>(
-//       "post",
-//     );
-
-//   const today =
-//     new Date();
-
-//   const tomorrow =
-//     new Date(today);
-
-//   tomorrow.setDate(
-//     today.getDate() + 1,
-//   );
-
-//   const form =
-//     useForm<FormValues>({
-//       resolver:
-//         zodResolver(
-//           formSchema,
-//         ),
-
-//       defaultValues: {
-//         title: "",
-//         category: "",
-//         tags: [],
-//         description: "",
-//         startDate:
-//           today,
-//         endDate:
-//           tomorrow,
-//         priority:
-//           "standard",
-//         budget: "",
-//       },
-//     });
-
-//   const {
-//     isSubmitting,
-//   } =
-//     form.formState;
-
-//   async function handleNext() {
-//     const fields =
-//       stepFields[
-//         step
-//       ];
-
-//     const isValid =
-//       await form.trigger(
-//         fields,
-//         {
-//           shouldFocus:
-//             true,
-//         },
-//       );
-
-//     if (!isValid) {
-//       return;
-//     }
-
-//     if (step < 3) {
-//       setStep(
-//         (
-//           current,
-//         ) =>
-//           (current +
-//             1) as Step,
-//       );
-//     }
-//   }
-
-//   function handleBack() {
-//     if (step > 1) {
-//       setStep(
-//         (
-//           current,
-//         ) =>
-//           (current -
-//             1) as Step,
-//       );
-//     }
-//   }
-
-//   async function onSubmit(
-//     values: FormValues,
-//   ) {
-//     const payload: CreateProjectRequest =
-//       {
-//         title:
-//           values.title,
-
-//         description:
-//           values.description,
-
-//         category:
-//           values.category,
-
-//         tags:
-//           values.tags,
-
-//         startDate:
-//           toLocalDateOnly(
-//             values.startDate ??
-//               new Date(),
-//           ),
-
-//         dueDate:
-//           toLocalDateOnly(
-//             values.endDate ??
-//               new Date(),
-//           ),
-
-//         priority:
-//           values.priority,
-
-//         isPublic:
-//           false,
-
-//         allowBids:
-//           false,
-
-//         budget:
-//           Number(
-//             values.budget ||
-//               0,
-//           ),
-
-//         currency:
-//           "USD",
-//       };
-
-//     try {
-//       const response =
-//         await api.post<Project>(
-//           "projects",
-//           payload,
-//           {
-//             withCredentials:
-//               true,
-//           },
-//         );
-
-//       toast.success(
-//         "Project created successfully.",
-//       );
-
-//       if (
-//         submitIntent ===
-//         "find"
-//       ) {
-//         navigate(
-//           `/projects/${response.data.id}/allocats/find`,
-//         );
-
-//         return;
-//       }
-
-//       navigate(
-//         "/projects",
-//       );
-//     } catch {
-//       toast.error(
-//         "We could not create the project. Please try again.",
-//       );
-//     }
-//   }
-
-//   return (
-//     <>
-//       <Toaster
-//         richColors
-//         position="top-right"
-//       />
-
-//       {/* =====================================================
-//           PROGRESS
-//       ===================================================== */}
-
-//       <div className="mb-9">
-//         <div className="flex items-start">
-//           {steps.map(
-//             (
-//               item,
-//               index,
-//             ) => {
-//               const Icon =
-//                 item.icon;
-
-//               const isActive =
-//                 step ===
-//                 item.number;
-
-//               const isComplete =
-//                 step >
-//                 item.number;
-
-//               return (
-//                 <React.Fragment
-//                   key={
-//                     item.number
-//                   }
-//                 >
-//                   <button
-//                     type="button"
-//                     onClick={() => {
-//                       if (
-//                         item.number <
-//                         step
-//                       ) {
-//                         setStep(
-//                           item.number,
-//                         );
-//                       }
-//                     }}
-//                     className={cn(
-//                       "group min-w-0 flex-1 text-left",
-//                       isComplete
-//                         ? "cursor-pointer"
-//                         : "cursor-default",
-//                     )}
-//                   >
-//                     <div className="flex items-center gap-3">
-//                       <span
-//                         className={cn(
-//                           "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
-//                           "text-xs font-bold transition-colors duration-200",
-
-//                           isActive &&
-//                             "bg-primary text-primary-foreground",
-
-//                           isComplete &&
-//                             "bg-primary/10 text-primary",
-
-//                           !isActive &&
-//                             !isComplete &&
-//                             "bg-muted text-muted-foreground",
-//                         )}
-//                       >
-//                         {isComplete ? (
-//                           <CheckIcon
-//                             size={
-//                               15
-//                             }
-//                           />
-//                         ) : (
-//                           <Icon
-//                             size={
-//                               15
-//                             }
-//                           />
-//                         )}
-//                       </span>
-
-//                       <div className="hidden min-w-0 sm:block">
-//                         <p
-//                           className={cn(
-//                             "text-xs font-semibold",
-
-//                             isActive
-//                               ? "text-foreground"
-//                               : "text-muted-foreground",
-//                           )}
-//                         >
-//                           {
-//                             item.label
-//                           }
-//                         </p>
-
-//                         <p className="mt-0.5 hidden truncate text-[0.66rem] text-muted-foreground lg:block">
-//                           {
-//                             item.description
-//                           }
-//                         </p>
-//                       </div>
-//                     </div>
-//                   </button>
-
-//                   {index <
-//                     steps.length -
-//                       1 && (
-//                     <div className="mx-2 mt-[18px] h-px flex-1 bg-border sm:mx-3">
-//                       <div
-//                         className={cn(
-//                           "h-px origin-left bg-primary transition-transform duration-300",
-
-//                           step >
-//                             item.number
-//                             ? "scale-x-100"
-//                             : "scale-x-0",
-//                         )}
-//                       />
-//                     </div>
-//                   )}
-//                 </React.Fragment>
-//               );
-//             },
-//           )}
-//         </div>
-
-//         <div className="mt-5 flex items-center justify-between border-b border-border pb-4">
-//           <p className="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-//             Step {step} of{" "}
-//             {
-//               steps.length
-//             }
-//           </p>
-
-//           <p className="text-xs font-medium text-muted-foreground">
-//             {
-//               steps[
-//                 step -
-//                   1
-//               ].label
-//             }
-//           </p>
-//         </div>
-//       </div>
-
-//       {/* =====================================================
-//           FORM
-//       ===================================================== */}
-
-//       <form
-//         id="new-project"
-//         onSubmit={
-//           form.handleSubmit(
-//             onSubmit,
-//           )
-//         }
-//         className="min-w-0"
-//       >
-//         <FieldGroup className="gap-6">
-//           {/* =================================================
-//               STEP 1
-//           ================================================= */}
-
-//           {step === 1 && (
-//             <>
-//               <StepHeading
-//                 eyebrow="Project basics"
-//                 title="What are you working on?"
-//                 description="Give the project a clear identity before adding the planning details."
-//               />
-
-//               <Controller
-//                 name="title"
-//                 control={
-//                   form.control
-//                 }
-//                 render={({
-//                   field,
-//                   fieldState,
-//                 }) => (
-//                   <Field
-//                     data-invalid={
-//                       fieldState.invalid
-//                     }
-//                   >
-//                     <FieldLabel className="text-sm font-semibold">
-//                       Project
-//                       title
-//                     </FieldLabel>
-
-//                     <Input
-//                       {...field}
-//                       placeholder="Example: Redesign company website"
-//                       className={[
-//                         "h-12 rounded-xl",
-//                         "border-border bg-background",
-//                         "px-4 shadow-none",
-//                         "focus-visible:ring-1",
-//                         "focus-visible:ring-primary/50",
-//                       ].join(
-//                         " ",
-//                       )}
-//                     />
-
-//                     <FieldDescription className="text-xs leading-5">
-//                       Keep it
-//                       short and
-//                       focused on
-//                       the outcome.
-//                     </FieldDescription>
-
-//                     <FieldError
-//                       errors={[
-//                         fieldState.error,
-//                       ]}
-//                     />
-//                   </Field>
-//                 )}
-//               />
-
-//               <Controller
-//                 name="category"
-//                 control={
-//                   form.control
-//                 }
-//                 render={({
-//                   field,
-//                   fieldState,
-//                 }) => (
-//                   <Field
-//                     data-invalid={
-//                       fieldState.invalid
-//                     }
-//                   >
-//                     <FieldLabel className="text-sm font-semibold">
-//                       Category
-//                     </FieldLabel>
-
-//                     <Select
-//                       value={
-//                         field.value
-//                       }
-//                       onValueChange={
-//                         field.onChange
-//                       }
-//                     >
-//                       <SelectTrigger
-//                         className={cn(
-//                           "h-12 w-full rounded-xl border-border bg-background px-4 shadow-none",
-//                           "focus:ring-1 focus:ring-primary/50",
-
-//                           fieldState.invalid &&
-//                             "border-destructive",
-//                         )}
-//                       >
-//                         <SelectValue placeholder="Select a project category" />
-//                       </SelectTrigger>
-
-//                       <SelectContent>
-//                         <SelectGroup>
-//                           {projectCategories.map(
-//                             (
-//                               category,
-//                             ) => (
-//                               <SelectItem
-//                                 key={
-//                                   category
-//                                 }
-//                                 value={
-//                                   category
-//                                 }
-//                               >
-//                                 {
-//                                   category
-//                                 }
-//                               </SelectItem>
-//                             ),
-//                           )}
-//                         </SelectGroup>
-//                       </SelectContent>
-//                     </Select>
-
-//                     <FieldError
-//                       errors={[
-//                         fieldState.error,
-//                       ]}
-//                     />
-//                   </Field>
-//                 )}
-//               />
-
-//               <Controller
-//                 name="tags"
-//                 control={
-//                   form.control
-//                 }
-//                 render={({
-//                   field,
-//                   fieldState,
-//                 }) => (
-//                   <Field
-//                     data-invalid={
-//                       fieldState.invalid
-//                     }
-//                   >
-//                     <FieldLabel className="text-sm font-semibold">
-//                       Skills
-//                       and tags
-//                     </FieldLabel>
-
-//                     <TagsInput
-//                       value={
-//                         field.value
-//                       }
-//                       onChange={
-//                         field.onChange
-//                       }
-//                       disabled={
-//                         !form.watch(
-//                           "category",
-//                         )
-//                       }
-//                       invalid={
-//                         fieldState.invalid
-//                       }
-//                     />
-
-//                     <FieldDescription className="text-xs leading-5">
-//                       Add the
-//                       skills that
-//                       matter most
-//                       for the job.
-//                     </FieldDescription>
-
-//                     <FieldError
-//                       errors={[
-//                         fieldState.error,
-//                       ]}
-//                     />
-//                   </Field>
-//                 )}
-//               />
-//             </>
-//           )}
-
-//           {/* =================================================
-//               STEP 2
-//           ================================================= */}
-
-//           {step === 2 && (
-//             <>
-//               <StepHeading
-//                 eyebrow="Planning"
-//                 title="Set the project expectations."
-//                 description="Add the working dates, urgency and an estimated budget."
-//               />
-
-//               <div className="grid gap-5 sm:grid-cols-2">
-//                 <Controller
-//                   name="startDate"
-//                   control={
-//                     form.control
-//                   }
-//                   render={({
-//                     field,
-//                   }) => (
-//                     <Calendar28
-//                       id="startDate"
-//                       label="Start date"
-//                       value={
-//                         field.value
-//                       }
-//                       onChange={
-//                         field.onChange
-//                       }
-//                       className="h-12 rounded-xl border-border bg-background shadow-none"
-//                     />
-//                   )}
-//                 />
-
-//                 <Controller
-//                   name="endDate"
-//                   control={
-//                     form.control
-//                   }
-//                   render={({
-//                     field,
-//                     fieldState,
-//                   }) => (
-//                     <Field
-//                       data-invalid={
-//                         fieldState.invalid
-//                       }
-//                     >
-//                       <Calendar28
-//                         id="endDate"
-//                         label="End date"
-//                         value={
-//                           field.value
-//                         }
-//                         onChange={
-//                           field.onChange
-//                         }
-//                         className="h-12 rounded-xl border-border bg-background shadow-none"
-//                       />
-
-//                       <FieldError
-//                         errors={[
-//                           fieldState.error,
-//                         ]}
-//                       />
-//                     </Field>
-//                   )}
-//                 />
-//               </div>
-
-//               <Controller
-//                 name="priority"
-//                 control={
-//                   form.control
-//                 }
-//                 render={({
-//                   field,
-//                 }) => (
-//                   <Field>
-//                     <FieldLabel className="text-sm font-semibold">
-//                       Priority
-//                     </FieldLabel>
-
-//                     <div className="overflow-hidden rounded-xl ring-1 ring-border sm:grid sm:grid-cols-3">
-//                       {[
-//                         {
-//                           value:
-//                             "standard",
-//                           label:
-//                             "Standard",
-//                           description:
-//                             "Normal timeline",
-//                         },
-//                         {
-//                           value:
-//                             "high",
-//                           label:
-//                             "High",
-//                           description:
-//                             "Needs attention soon",
-//                         },
-//                         {
-//                           value:
-//                             "urgent",
-//                           label:
-//                             "Urgent",
-//                           description:
-//                             "Immediate priority",
-//                         },
-//                       ].map(
-//                         (
-//                           priority,
-//                           index,
-//                         ) => {
-//                           const isSelected =
-//                             field.value ===
-//                             priority.value;
-
-//                           return (
-//                             <label
-//                               key={
-//                                 priority.value
-//                               }
-//                               className={cn(
-//                                 "relative flex cursor-pointer items-center gap-3 px-4 py-4 transition-colors",
-
-//                                 index >
-//                                   0 &&
-//                                   "border-t border-border sm:border-l sm:border-t-0",
-
-//                                 isSelected
-//                                   ? "bg-primary/[0.055]"
-//                                   : "bg-background hover:bg-muted/30",
-//                               )}
-//                             >
-//                               <input
-//                                 type="radio"
-//                                 value={
-//                                   priority.value
-//                                 }
-//                                 checked={
-//                                   isSelected
-//                                 }
-//                                 onChange={() =>
-//                                   field.onChange(
-//                                     priority.value,
-//                                   )
-//                                 }
-//                                 className="sr-only"
-//                               />
-
-//                               <span
-//                                 className={cn(
-//                                   "flex h-4 w-4 shrink-0 items-center justify-center rounded-full border transition-colors",
-
-//                                   isSelected
-//                                     ? "border-primary bg-primary text-primary-foreground"
-//                                     : "border-border bg-background",
-//                                 )}
-//                               >
-//                                 {isSelected && (
-//                                   <CheckIcon
-//                                     size={
-//                                       9
-//                                     }
-//                                     strokeWidth={
-//                                       3
-//                                     }
-//                                   />
-//                                 )}
-//                               </span>
-
-//                               <span className="min-w-0">
-//                                 <span className="block text-xs font-semibold">
-//                                   {
-//                                     priority.label
-//                                   }
-//                                 </span>
-
-//                                 <span className="mt-0.5 block text-[0.65rem] leading-5 text-muted-foreground">
-//                                   {
-//                                     priority.description
-//                                   }
-//                                 </span>
-//                               </span>
-//                             </label>
-//                           );
-//                         },
-//                       )}
-//                     </div>
-//                   </Field>
-//                 )}
-//               />
-
-//               <Controller
-//                 name="budget"
-//                 control={
-//                   form.control
-//                 }
-//                 render={({
-//                   field,
-//                 }) => (
-//                   <Field>
-//                     <FieldLabel className="text-sm font-semibold">
-//                       Estimated
-//                       budget
-//                     </FieldLabel>
-
-//                     <div className="relative">
-//                       <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground">
-//                         USD
-//                       </span>
-
-//                       <Input
-//                         type="number"
-//                         min="0"
-//                         step="0.01"
-//                         {...field}
-//                         placeholder="0.00"
-//                         className={[
-//                           "h-12 rounded-xl",
-//                           "border-border bg-background",
-//                           "pl-14 shadow-none",
-//                           "focus-visible:ring-1",
-//                           "focus-visible:ring-primary/50",
-//                         ].join(
-//                           " ",
-//                         )}
-//                       />
-//                     </div>
-
-//                     <FieldDescription className="text-xs leading-5">
-//                       Leave this
-//                       blank if the
-//                       budget is
-//                       still
-//                       flexible.
-//                     </FieldDescription>
-//                   </Field>
-//                 )}
-//               />
-//             </>
-//           )}
-
-//           {/* =================================================
-//               STEP 3
-//           ================================================= */}
-
-//           {step === 3 && (
-//             <>
-//               <StepHeading
-//                 eyebrow="Project brief"
-//                 title="Give Allocats the full picture."
-//                 description="Explain the outcome, important requirements and anything they should know before accepting the work."
-//               />
-
-//               <Field>
-//                 <FieldLabel className="text-sm font-semibold">
-//                   Supporting
-//                   files
-//                 </FieldLabel>
-
-//                 <div className="border-y border-border py-4">
-//                   <MultiFileUpload
-//                     autoUpload={
-//                       false
-//                     }
-//                   />
-//                 </div>
-
-//                 <FieldDescription className="text-xs leading-5">
-//                   Add briefs,
-//                   references,
-//                   photos or any
-//                   files that make
-//                   the work easier
-//                   to understand.
-//                 </FieldDescription>
-//               </Field>
-
-//               <Controller
-//                 name="description"
-//                 control={
-//                   form.control
-//                 }
-//                 render={({
-//                   field,
-//                   fieldState,
-//                 }) => (
-//                   <Field
-//                     data-invalid={
-//                       fieldState.invalid
-//                     }
-//                   >
-//                     <FieldLabel className="text-sm font-semibold">
-//                       Project
-//                       description
-//                     </FieldLabel>
-
-//                     <InputGroup
-//                       className={cn(
-//                         "overflow-hidden rounded-xl border-border bg-background shadow-none",
-
-//                         fieldState.invalid &&
-//                           "border-destructive",
-//                       )}
-//                     >
-//                       <InputGroupTextarea
-//                         {...field}
-//                         rows={
-//                           9
-//                         }
-//                         placeholder="Describe the goals, deliverables, requirements and what a successful result should look like."
-//                         className="min-h-[210px] resize-none bg-transparent px-4 py-4 leading-7"
-//                       />
-
-//                       <InputGroupAddon
-//                         align="block-end"
-//                         className="border-t border-border px-4 py-2.5"
-//                       >
-//                         <InputGroupText className="ml-auto text-[0.65rem] text-muted-foreground">
-//                           {
-//                             field
-//                               .value
-//                               .length
-//                           }
-//                           /2000
-//                         </InputGroupText>
-//                       </InputGroupAddon>
-//                     </InputGroup>
-
-//                     <FieldError
-//                       errors={[
-//                         fieldState.error,
-//                       ]}
-//                     />
-//                   </Field>
-//                 )}
-//               />
-//             </>
-//           )}
-//         </FieldGroup>
-
-//         {/* =====================================================
-//             ACTIONS
-//         ===================================================== */}
-
-//         <div className="mt-9 flex flex-col-reverse gap-3 border-t border-border pt-6 sm:flex-row sm:items-center sm:justify-between">
-//           <div>
-//             {step > 1 && (
-//               <Button
-//                 type="button"
-//                 variant="ghost"
-//                 onClick={
-//                   handleBack
-//                 }
-//                 className="h-11 w-full rounded-lg px-4 text-muted-foreground shadow-none sm:w-auto"
-//               >
-//                 <ArrowLeftIcon
-//                   size={
-//                     15
-//                   }
-//                 />
-
-//                 Previous
-//               </Button>
-//             )}
-//           </div>
-
-//           {step < 3 ? (
-//             <Button
-//               type="button"
-//               onClick={
-//                 handleNext
-//               }
-//               className="group h-11 w-full rounded-lg px-6 shadow-none sm:w-auto"
-//             >
-//               Continue
-
-//               <ArrowRightIcon
-//                 size={
-//                   15
-//                 }
-//                 className="transition-transform group-hover:translate-x-1"
-//               />
-//             </Button>
-//           ) : (
-//             <div className="flex flex-col gap-2.5 sm:flex-row">
-//               <Button
-//                 type="submit"
-//                 variant="outline"
-//                 disabled={
-//                   isSubmitting
-//                 }
-//                 onClick={() =>
-//                   setSubmitIntent(
-//                     "find",
-//                   )
-//                 }
-//                 className="h-11 rounded-lg px-5 shadow-none"
-//               >
-//                 <SearchIcon
-//                   size={
-//                     15
-//                   }
-//                 />
-
-//                 {isSubmitting &&
-//                 submitIntent ===
-//                   "find"
-//                   ? "Creating..."
-//                   : "Create & find Allocats"}
-//               </Button>
-
-//               <Button
-//                 type="submit"
-//                 disabled={
-//                   isSubmitting
-//                 }
-//                 onClick={() =>
-//                   setSubmitIntent(
-//                     "post",
-//                   )
-//                 }
-//                 className="h-11 rounded-lg px-6 shadow-none"
-//               >
-//                 <SendIcon
-//                   size={
-//                     15
-//                   }
-//                 />
-
-//                 {isSubmitting &&
-//                 submitIntent ===
-//                   "post"
-//                   ? "Creating..."
-//                   : "Create project"}
-//               </Button>
-//             </div>
-//           )}
-//         </div>
-//       </form>
-//     </>
-//   );
-// }
-
-// /* =========================================================
-//    STEP HEADING
-// ========================================================= */
-
-// function StepHeading({
-//   eyebrow,
-//   title,
-//   description,
-// }: {
-//   eyebrow: string;
-//   title: string;
-//   description: string;
-// }) {
-//   return (
-//     <div className="mb-2 max-w-2xl">
-//       <p className="text-[0.62rem] font-semibold uppercase tracking-[0.17em] text-primary">
-//         {eyebrow}
-//       </p>
-
-//       <h3 className="mt-2 text-xl font-bold leading-tight tracking-[-0.02em] sm:text-2xl">
-//         {title}
-//       </h3>
-
-//       <p className="mt-2 text-sm leading-7 text-muted-foreground">
-//         {description}
-//       </p>
-//     </div>
-//   );
-// }
-
-// /* =========================================================
-//    TAGS INPUT
-// ========================================================= */
-
-// type TagsInputProps = {
-//   value: string[];
-//   onChange: (
-//     value: string[],
-//   ) => void;
-//   disabled?: boolean;
-//   invalid?: boolean;
-// };
-
-// function TagsInput({
-//   value,
-//   onChange,
-//   disabled,
-//   invalid,
-// }: TagsInputProps) {
-//   const [
-//     input,
-//     setInput,
-//   ] =
-//     useState("");
-
-//   function addTag(
-//     tag: string,
-//   ) {
-//     const cleanTag =
-//       tag
-//         .trim()
-//         .toLowerCase();
-
-//     if (
-//       !cleanTag ||
-//       value.includes(
-//         cleanTag,
-//       )
-//     ) {
-//       return;
-//     }
-
-//     onChange([
-//       ...value,
-//       cleanTag,
-//     ]);
-//   }
-
-//   function commitTag() {
-//     addTag(input);
-//     setInput("");
-//   }
-
-//   function handleKeyDown(
-//     event: React.KeyboardEvent<HTMLInputElement>,
-//   ) {
-//     if (
-//       event.key ===
-//         "Enter" ||
-//       event.key === ","
-//     ) {
-//       event.preventDefault();
-
-//       commitTag();
-//     }
-
-//     if (
-//       event.key ===
-//         "Backspace" &&
-//       !input &&
-//       value.length >
-//         0
-//     ) {
-//       onChange(
-//         value.slice(
-//           0,
-//           -1,
-//         ),
-//       );
-//     }
-//   }
-
-//   function removeTag(
-//     tag: string,
-//   ) {
-//     onChange(
-//       value.filter(
-//         (item) =>
-//           item !==
-//           tag,
-//       ),
-//     );
-//   }
-
-//   return (
-//     <div
-//       className={cn(
-//         "flex min-h-12 flex-wrap items-center gap-2 rounded-xl border bg-background px-2.5 py-2",
-//         "transition-colors focus-within:ring-1 focus-within:ring-primary/50",
-
-//         invalid
-//           ? "border-destructive"
-//           : "border-border",
-
-//         disabled &&
-//           "cursor-not-allowed opacity-60",
-//       )}
-//     >
-//       {value.map(
-//         (tag) => (
-//           <span
-//             key={tag}
-//             className={[
-//               "inline-flex h-7 items-center gap-1.5 rounded-lg",
-//               "bg-muted px-2.5 text-[0.68rem] font-semibold",
-//               "text-foreground",
-//             ].join(
-//               " ",
-//             )}
-//           >
-//             {tag}
-
-//             <button
-//               type="button"
-//               onClick={() =>
-//                 removeTag(
-//                   tag,
-//                 )
-//               }
-//               disabled={
-//                 disabled
-//               }
-//               className="text-muted-foreground transition-colors hover:text-foreground"
-//               aria-label={`Remove ${tag}`}
-//             >
-//               <XIcon
-//                 size={
-//                   11
-//                 }
-//               />
-//             </button>
-//           </span>
-//         ),
-//       )}
-
-//       <Input
-//         value={
-//           input
-//         }
-//         onChange={(
-//           event,
-//         ) =>
-//           setInput(
-//             event.target
-//               .value,
-//           )
-//         }
-//         onKeyDown={
-//           handleKeyDown
-//         }
-//         onBlur={() => {
-//           if (
-//             input.trim()
-//           ) {
-//             commitTag();
-//           }
-//         }}
-//         placeholder={
-//           disabled
-//             ? "Choose a category first"
-//             : value.length
-//               ? "Add another skill"
-//               : "Type a skill and press Enter"
-//         }
-//         disabled={
-//           disabled
-//         }
-//         className="h-8 min-w-[170px] flex-1 border-0 bg-transparent px-1.5 text-sm shadow-none focus-visible:ring-0"
-//       />
-//     </div>
-//   );
-// }
-
-// export default NewProjectForm;
-
-
-
 import React, {
   useRef,
   useState,
@@ -1453,13 +6,13 @@ import React, {
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
-  CalendarDaysIcon,
   CheckIcon,
-  FileTextIcon,
-  FolderOpenIcon,
+  CircleDollarSignIcon,
   LoaderCircleIcon,
+  PlusIcon,
   SearchIcon,
   SendIcon,
+  SparklesIcon,
   XIcon,
 } from "lucide-react";
 
@@ -1573,7 +126,7 @@ const formSchema = z
       )
       .min(
         1,
-        "Add at least one relevant tag.",
+        "Add at least one relevant skill.",
       ),
 
     startDate: z
@@ -1655,23 +208,14 @@ const steps = [
   {
     number: 1,
     label: "Basics",
-    description:
-      "Title, category and skills",
-    icon: FolderOpenIcon,
   },
   {
     number: 2,
     label: "Planning",
-    description:
-      "Dates, priority and budget",
-    icon: CalendarDaysIcon,
   },
   {
     number: 3,
     label: "Brief",
-    description:
-      "Files and project description",
-    icon: FileTextIcon,
   },
 ] as const;
 
@@ -1721,10 +265,6 @@ function NewProjectForm() {
       "post",
     );
 
-  /*
-   * The ref guarantees that onSubmit immediately
-   * sees which submit button was clicked.
-   */
   const submitIntentRef =
     useRef<SubmitIntent>(
       "post",
@@ -1768,18 +308,15 @@ function NewProjectForm() {
     form.formState;
 
   /* =======================================================
-     STEP NAVIGATION
+     NAVIGATION
   ======================================================= */
 
   async function handleNext() {
-    const fields =
-      stepFields[
-        step
-      ];
-
     const isValid =
       await form.trigger(
-        fields,
+        stepFields[
+          step
+        ],
         {
           shouldFocus:
             true,
@@ -1894,11 +431,6 @@ function NewProjectForm() {
         "Project created successfully.",
       );
 
-      /*
-       * Option 1:
-       * Create project and immediately
-       * continue to finding Allocats.
-       */
       if (
         intent ===
         "find"
@@ -1910,15 +442,12 @@ function NewProjectForm() {
         return;
       }
 
-      /*
-       * Option 2:
-       * Create project and return to
-       * the normal project workspace.
-       */
       navigate(
         "/projects",
       );
-    } catch (error) {
+    } catch (
+      error
+    ) {
       console.error(
         "Could not create project:",
         error,
@@ -1942,144 +471,147 @@ function NewProjectForm() {
       ===================================================== */}
 
       <div className="mb-9">
-        <div className="flex items-start">
-          {steps.map(
-            (
-              item,
-              index,
-            ) => {
-              const Icon =
-                item.icon;
+        <div className="flex items-center justify-between gap-5">
+          <div className="flex min-w-0 items-center">
+            {steps.map(
+              (
+                item,
+                index,
+              ) => {
+                const isActive =
+                  step ===
+                  item.number;
 
-              const isActive =
-                step ===
-                item.number;
+                const isComplete =
+                  step >
+                  item.number;
 
-              const isComplete =
-                step >
-                item.number;
-
-              return (
-                <React.Fragment
-                  key={
-                    item.number
-                  }
-                >
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (
-                        item.number <
-                        step
-                      ) {
-                        setStep(
-                          item.number,
-                        );
-                      }
-                    }}
-                    className={cn(
-                      "group min-w-0 flex-1 text-left",
-
-                      isComplete
-                        ? "cursor-pointer"
-                        : "cursor-default",
-                    )}
+                return (
+                  <React.Fragment
+                    key={
+                      item.number
+                    }
                   >
-                    <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      disabled={
+                        item.number >
+                        step
+                      }
+                      onClick={() => {
+                        if (
+                          item.number <
+                          step
+                        ) {
+                          setStep(
+                            item.number,
+                          );
+                        }
+                      }}
+                      className={cn(
+                        "group flex shrink-0 items-center gap-2",
+
+                        item.number <
+                          step
+                          ? "cursor-pointer"
+                          : "cursor-default",
+                      )}
+                    >
                       <span
                         className={cn(
-                          "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
+                          "relative flex h-8 w-8 items-center justify-center",
 
-                          "text-xs font-bold transition-colors duration-200",
+                          "rounded-lg border text-[0.66rem] font-bold",
+
+                          "transition-all duration-200",
 
                           isActive &&
-                            "bg-primary text-primary-foreground",
+                            [
+                              "border-primary",
+                              "bg-primary",
+                              "text-primary-foreground",
+                              "shadow-sm shadow-primary/10",
+                            ].join(
+                              " ",
+                            ),
 
                           isComplete &&
-                            "bg-primary/10 text-primary",
+                            [
+                              "border-primary/20",
+                              "bg-primary/[0.07]",
+                              "text-primary",
+                            ].join(
+                              " ",
+                            ),
 
                           !isActive &&
                             !isComplete &&
-                            "bg-muted text-muted-foreground",
+                            [
+                              "border-border",
+                              "bg-background",
+                              "text-muted-foreground",
+                            ].join(
+                              " ",
+                            ),
                         )}
                       >
                         {isComplete ? (
                           <CheckIcon
                             size={
-                              15
+                              13
+                            }
+                            strokeWidth={
+                              2.6
                             }
                           />
                         ) : (
-                          <Icon
-                            size={
-                              15
-                            }
-                          />
+                          item.number
                         )}
                       </span>
 
-                      <div className="hidden min-w-0 sm:block">
-                        <p
-                          className={cn(
-                            "text-xs font-semibold",
-
-                            isActive
-                              ? "text-foreground"
-                              : "text-muted-foreground",
-                          )}
-                        >
-                          {
-                            item.label
-                          }
-                        </p>
-
-                        <p className="mt-0.5 hidden truncate text-[0.66rem] text-muted-foreground lg:block">
-                          {
-                            item.description
-                          }
-                        </p>
-                      </div>
-                    </div>
-                  </button>
-
-                  {index <
-                    steps.length -
-                      1 && (
-                    <div className="mx-2 mt-[18px] h-px flex-1 bg-border sm:mx-3">
-                      <div
+                      <span
                         className={cn(
-                          "h-px origin-left bg-primary transition-transform duration-300",
+                          "hidden text-xs font-semibold sm:block",
 
-                          step >
-                            item.number
-                            ? "scale-x-100"
-                            : "scale-x-0",
+                          isActive
+                            ? "text-foreground"
+                            : "text-muted-foreground",
                         )}
-                      />
-                    </div>
-                  )}
-                </React.Fragment>
-              );
-            },
-          )}
-        </div>
+                      >
+                        {
+                          item.label
+                        }
+                      </span>
+                    </button>
 
-        <div className="mt-5 flex items-center justify-between border-b border-border pb-4">
-          <p className="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-            Step {step} of{" "}
+                    {index <
+                      steps.length -
+                        1 && (
+                      <div className="mx-3 h-px w-5 overflow-hidden bg-border sm:w-10">
+                        <div
+                          className={cn(
+                            "h-full origin-left bg-primary transition-transform duration-300",
+
+                            step >
+                              item.number
+                              ? "scale-x-100"
+                              : "scale-x-0",
+                          )}
+                        />
+                      </div>
+                    )}
+                  </React.Fragment>
+                );
+              },
+            )}
+          </div>
+
+          <span className="shrink-0 text-[0.64rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            {step} of{" "}
             {
               steps.length
             }
-          </p>
-
-          <p className="text-xs font-medium text-muted-foreground">
-            {
-              steps[
-                step -
-                  1
-              ].label
-            }
-          </p>
+          </span>
         </div>
       </div>
 
@@ -2096,8 +628,7 @@ function NewProjectForm() {
         }
         className="min-w-0"
       >
-        <FieldGroup className="gap-6">
-
+        <FieldGroup className="gap-7">
           {/* =================================================
               STEP 1
           ================================================= */}
@@ -2105,9 +636,9 @@ function NewProjectForm() {
           {step === 1 && (
             <>
               <StepHeading
-                eyebrow="Project basics"
-                title="What are you working on?"
-                description="Give the project a clear identity before adding the planning details."
+                eyebrow="Start here"
+                title="Give the project an identity."
+                description="Keep it simple. A clear title, category and the skills required are enough to get started."
               />
 
               <Controller
@@ -2130,22 +661,29 @@ function NewProjectForm() {
 
                     <Input
                       {...field}
-                      placeholder="Example: Redesign company website"
-                      className={[
-                        "h-12 rounded-xl",
-                        "border-border bg-background",
-                        "px-4 shadow-none",
-                        "focus-visible:ring-1",
-                        "focus-visible:ring-primary/50",
-                      ].join(
-                        " ",
+                      placeholder="Redesign company website"
+                      className={cn(
+                        "h-12 rounded-xl border-border/90",
+
+                        "bg-muted/[0.18] px-4 shadow-none",
+
+                        "transition-colors",
+
+                        "hover:bg-muted/[0.28]",
+
+                        "focus-visible:bg-background",
+
+                        "focus-visible:ring-1 focus-visible:ring-primary/40",
+
+                        fieldState.invalid &&
+                          "border-destructive",
                       )}
                     />
 
-                    <FieldDescription className="text-xs leading-5">
-                      Keep it short
-                      and focused on
-                      the outcome.
+                    <FieldDescription className="text-[0.68rem]">
+                      Make the
+                      outcome obvious
+                      at a glance.
                     </FieldDescription>
 
                     <FieldError
@@ -2185,15 +723,17 @@ function NewProjectForm() {
                     >
                       <SelectTrigger
                         className={cn(
-                          "h-12 w-full rounded-xl border-border bg-background px-4 shadow-none",
+                          "h-12 w-full rounded-xl border-border/90",
 
-                          "focus:ring-1 focus:ring-primary/50",
+                          "bg-muted/[0.18] px-4 shadow-none",
+
+                          "transition-colors hover:bg-muted/[0.28]",
 
                           fieldState.invalid &&
                             "border-destructive",
                         )}
                       >
-                        <SelectValue placeholder="Select a project category" />
+                        <SelectValue placeholder="Choose the closest category" />
                       </SelectTrigger>
 
                       <SelectContent>
@@ -2244,11 +784,10 @@ function NewProjectForm() {
                     }
                   >
                     <FieldLabel className="text-sm font-semibold">
-                      Skills and
-                      tags
+                      Skills needed
                     </FieldLabel>
 
-                    <TagsInput
+                    <SkillsInput
                       value={
                         field.value
                       }
@@ -2265,11 +804,11 @@ function NewProjectForm() {
                       }
                     />
 
-                    <FieldDescription className="text-xs leading-5">
-                      Add the
+                    <FieldDescription className="text-[0.68rem]">
+                      Add only the
                       skills that
-                      matter most
-                      for the job.
+                      actually matter
+                      for this job.
                     </FieldDescription>
 
                     <FieldError
@@ -2290,9 +829,9 @@ function NewProjectForm() {
           {step === 2 && (
             <>
               <StepHeading
-                eyebrow="Planning"
-                title="Set the project expectations."
-                description="Add the working dates, urgency and an estimated budget."
+                eyebrow="Set the pace"
+                title="When should the work happen?"
+                description="Add a sensible timeline, priority and budget. These can still be adjusted later."
               />
 
               <div className="grid gap-5 sm:grid-cols-2">
@@ -2313,7 +852,7 @@ function NewProjectForm() {
                       onChange={
                         field.onChange
                       }
-                      className="h-12 rounded-xl border-border bg-background shadow-none"
+                      className="h-12 rounded-xl border-border/90 bg-muted/[0.18] shadow-none"
                     />
                   )}
                 />
@@ -2334,14 +873,14 @@ function NewProjectForm() {
                     >
                       <Calendar28
                         id="endDate"
-                        label="End date"
+                        label="Due date"
                         value={
                           field.value
                         }
                         onChange={
                           field.onChange
                         }
-                        className="h-12 rounded-xl border-border bg-background shadow-none"
+                        className="h-12 rounded-xl border-border/90 bg-muted/[0.18] shadow-none"
                       />
 
                       <FieldError
@@ -2367,7 +906,7 @@ function NewProjectForm() {
                       Priority
                     </FieldLabel>
 
-                    <div className="overflow-hidden rounded-xl ring-1 ring-border sm:grid sm:grid-cols-3">
+                    <div className="grid gap-2 sm:grid-cols-3">
                       {[
                         {
                           value:
@@ -2375,7 +914,7 @@ function NewProjectForm() {
                           label:
                             "Standard",
                           description:
-                            "Normal timeline",
+                            "Normal pace",
                         },
                         {
                           value:
@@ -2383,7 +922,7 @@ function NewProjectForm() {
                           label:
                             "High",
                           description:
-                            "Needs attention soon",
+                            "Needs attention",
                         },
                         {
                           value:
@@ -2391,84 +930,100 @@ function NewProjectForm() {
                           label:
                             "Urgent",
                           description:
-                            "Immediate priority",
+                            "Time-sensitive",
                         },
                       ].map(
                         (
-                          priority,
-                          index,
+                          option,
                         ) => {
                           const isSelected =
                             field.value ===
-                            priority.value;
+                            option.value;
 
                           return (
                             <label
                               key={
-                                priority.value
+                                option.value
                               }
                               className={cn(
-                                "relative flex cursor-pointer items-center gap-3 px-4 py-4 transition-colors",
+                                "group relative cursor-pointer rounded-xl",
 
-                                index >
-                                  0 &&
-                                  "border-t border-border sm:border-l sm:border-t-0",
+                                "border px-4 py-3.5",
+
+                                "transition-all duration-200",
 
                                 isSelected
-                                  ? "bg-primary/[0.055]"
-                                  : "bg-background hover:bg-muted/30",
+                                  ? [
+                                      "border-primary/30",
+                                      "bg-primary/[0.055]",
+                                      "shadow-sm shadow-primary/[0.04]",
+                                    ].join(
+                                      " ",
+                                    )
+                                  : [
+                                      "border-border/90",
+                                      "bg-muted/[0.15]",
+                                      "hover:bg-muted/30",
+                                      "hover:border-foreground/10",
+                                    ].join(
+                                      " ",
+                                    ),
                               )}
                             >
                               <input
                                 type="radio"
                                 value={
-                                  priority.value
+                                  option.value
                                 }
                                 checked={
                                   isSelected
                                 }
                                 onChange={() =>
                                   field.onChange(
-                                    priority.value,
+                                    option.value,
                                   )
                                 }
                                 className="sr-only"
                               />
 
-                              <span
-                                className={cn(
-                                  "flex h-4 w-4 shrink-0 items-center justify-center rounded-full border transition-colors",
-
-                                  isSelected
-                                    ? "border-primary bg-primary text-primary-foreground"
-                                    : "border-border bg-background",
-                                )}
-                              >
-                                {isSelected && (
-                                  <CheckIcon
-                                    size={
-                                      9
+                              <div className="flex items-start justify-between gap-3">
+                                <div>
+                                  <p className="text-xs font-bold">
+                                    {
+                                      option.label
                                     }
-                                    strokeWidth={
-                                      3
+                                  </p>
+
+                                  <p className="mt-1 text-[0.65rem] text-muted-foreground">
+                                    {
+                                      option.description
                                     }
-                                  />
-                                )}
-                              </span>
+                                  </p>
+                                </div>
 
-                              <span className="min-w-0">
-                                <span className="block text-xs font-semibold">
-                                  {
-                                    priority.label
-                                  }
-                                </span>
+                                <span
+                                  className={cn(
+                                    "flex h-4 w-4 items-center justify-center rounded-full border",
 
-                                <span className="mt-0.5 block text-[0.65rem] leading-5 text-muted-foreground">
-                                  {
-                                    priority.description
-                                  }
+                                    "transition-colors",
+
+                                    isSelected
+                                      ? "border-primary bg-primary text-primary-foreground"
+                                      : "border-border bg-background",
+                                  )}
+                                >
+                                  {isSelected && (
+                                    <CheckIcon
+                                      size={
+                                        9
+                                      }
+                                      strokeWidth={
+                                        3
+                                      }
+                                    />
+                                  )}
                                 </span>
-                              </span>
+                              </div>
                             </label>
                           );
                         },
@@ -2492,34 +1047,74 @@ function NewProjectForm() {
                       budget
                     </FieldLabel>
 
-                    <div className="relative">
-                      <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground">
-                        USD
-                      </span>
+                    <div
+                      className={cn(
+                        "group flex h-12 items-center overflow-hidden rounded-xl",
 
-                      <Input
-                        type="number"
-                        min="0"
-                        step="0.01"
+                        "border border-border/90 bg-muted/[0.18]",
+
+                        "transition-colors",
+
+                        "hover:bg-muted/[0.28]",
+
+                        "focus-within:border-primary/35",
+
+                        "focus-within:bg-background",
+
+                        "focus-within:ring-1 focus-within:ring-primary/30",
+                      )}
+                    >
+                      <div className="flex h-full items-center gap-2 border-r border-border/80 px-4 text-muted-foreground">
+                        <CircleDollarSignIcon
+                          size={
+                            15
+                          }
+                        />
+
+                        <span className="text-[0.68rem] font-bold uppercase tracking-[0.08em]">
+                          USD
+                        </span>
+                      </div>
+
+                      <input
                         {...field}
+                        type="text"
+                        inputMode="decimal"
                         placeholder="0.00"
-                        className={[
-                          "h-12 rounded-xl",
-                          "border-border bg-background",
-                          "pl-14 shadow-none",
-                          "focus-visible:ring-1",
-                          "focus-visible:ring-primary/50",
-                        ].join(
-                          " ",
+                        onChange={(
+                          event,
+                        ) => {
+                          const value =
+                            event.target.value;
+
+                          if (
+                            value ===
+                              "" ||
+                            /^\d*\.?\d{0,2}$/.test(
+                              value,
+                            )
+                          ) {
+                            field.onChange(
+                              value,
+                            );
+                          }
+                        }}
+                        className={cn(
+                          "h-full min-w-0 flex-1 bg-transparent px-4",
+
+                          "text-sm font-semibold outline-none",
+
+                          "placeholder:font-normal placeholder:text-muted-foreground/55",
                         )}
                       />
                     </div>
 
-                    <FieldDescription className="text-xs leading-5">
-                      Leave this
-                      blank if the
-                      budget is
-                      still flexible.
+                    <FieldDescription className="text-[0.68rem]">
+                      Optional.
+                      Leave blank if
+                      you want to
+                      agree on price
+                      later.
                     </FieldDescription>
                   </Field>
                 )}
@@ -2534,34 +1129,10 @@ function NewProjectForm() {
           {step === 3 && (
             <>
               <StepHeading
-                eyebrow="Project brief"
-                title="Give Allocats the full picture."
-                description="Explain the outcome, important requirements and anything they should know before accepting the work."
+                eyebrow="One last thing"
+                title="Tell them what success looks like."
+                description="Give the Allocat enough context to understand the job without writing a novel."
               />
-
-              <Field>
-                <FieldLabel className="text-sm font-semibold">
-                  Supporting
-                  files
-                </FieldLabel>
-
-                <div className="border-y border-border py-4">
-                  <MultiFileUpload
-                    autoUpload={
-                      false
-                    }
-                  />
-                </div>
-
-                <FieldDescription className="text-xs leading-5">
-                  Add briefs,
-                  references,
-                  photos or any
-                  files that make
-                  the work easier
-                  to understand.
-                </FieldDescription>
-              </Field>
 
               <Controller
                 name="description"
@@ -2578,13 +1149,16 @@ function NewProjectForm() {
                     }
                   >
                     <FieldLabel className="text-sm font-semibold">
-                      Project
-                      description
+                      Project brief
                     </FieldLabel>
 
                     <InputGroup
                       className={cn(
-                        "overflow-hidden rounded-xl border-border bg-background shadow-none",
+                        "overflow-hidden rounded-xl",
+
+                        "border-border/90 bg-muted/[0.15] shadow-none",
+
+                        "transition-colors focus-within:bg-background",
 
                         fieldState.invalid &&
                           "border-destructive",
@@ -2593,17 +1167,17 @@ function NewProjectForm() {
                       <InputGroupTextarea
                         {...field}
                         rows={
-                          9
+                          8
                         }
-                        placeholder="Describe the goals, deliverables, requirements and what a successful result should look like."
-                        className="min-h-[210px] resize-none bg-transparent px-4 py-4 leading-7"
+                        placeholder="What needs to be delivered? What matters most? Are there any requirements, references or constraints?"
+                        className="min-h-[190px] resize-none bg-transparent px-4 py-4 text-sm leading-7"
                       />
 
                       <InputGroupAddon
                         align="block-end"
-                        className="border-t border-border px-4 py-2.5"
+                        className="border-t border-border/70 bg-muted/[0.08] px-4 py-2.5"
                       >
-                        <InputGroupText className="ml-auto text-[0.65rem] text-muted-foreground">
+                        <InputGroupText className="ml-auto text-[0.64rem] text-muted-foreground">
                           {
                             field
                               .value
@@ -2622,6 +1196,35 @@ function NewProjectForm() {
                   </Field>
                 )}
               />
+
+              <Field>
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <FieldLabel className="text-sm font-semibold">
+                      Supporting
+                      files
+                    </FieldLabel>
+
+                    <p className="mt-1 text-[0.68rem] text-muted-foreground">
+                      References help,
+                      but they are not
+                      required.
+                    </p>
+                  </div>
+
+                  <span className="rounded-md bg-muted px-2 py-1 text-[0.62rem] font-semibold text-muted-foreground">
+                    Optional
+                  </span>
+                </div>
+
+                <div className="mt-3 overflow-hidden rounded-xl border border-dashed border-border/90 bg-muted/[0.1] p-3 transition-colors hover:bg-muted/[0.18]">
+                  <MultiFileUpload
+                    autoUpload={
+                      false
+                    }
+                  />
+                </div>
+              </Field>
             </>
           )}
         </FieldGroup>
@@ -2630,141 +1233,182 @@ function NewProjectForm() {
             ACTIONS
         ===================================================== */}
 
-        <div className="mt-9 flex flex-col-reverse gap-4 border-t border-border pt-6 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            {step > 1 && (
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={
-                  handleBack
-                }
-                disabled={
-                  isSubmitting
-                }
-                className="h-11 w-full rounded-lg px-4 text-muted-foreground shadow-none sm:w-auto"
-              >
-                <ArrowLeftIcon
-                  size={
-                    15
-                  }
-                />
-
-                Previous
-              </Button>
-            )}
-          </div>
-
+        <div className="mt-10 border-t border-border/80 pt-6">
           {step < 3 ? (
-            <Button
-              type="button"
-              onClick={
-                handleNext
-              }
-              className="group h-11 w-full rounded-lg px-6 shadow-none sm:w-auto"
-            >
-              Continue
-
-              <ArrowRightIcon
-                size={
-                  15
-                }
-                className="transition-transform group-hover:translate-x-1"
-              />
-            </Button>
-          ) : (
-            <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
-              {/* ===============================================
-                  CREATE PROJECT ONLY
-              =============================================== */}
-
-              <Button
-                type="submit"
-                variant="outline"
-                disabled={
-                  isSubmitting
-                }
-                onClick={() =>
-                  setIntent(
-                    "post",
-                  )
-                }
-                className="h-11 rounded-lg px-5 shadow-none"
-              >
-                {isSubmitting &&
-                submitIntent ===
-                  "post" ? (
-                  <>
-                    <LoaderCircleIcon
-                      size={
-                        15
-                      }
-                      className="animate-spin"
-                    />
-
-                    Creating...
-                  </>
-                ) : (
-                  <>
-                    <SendIcon
-                      size={
-                        15
-                      }
-                    />
-
-                    Create project
-                  </>
-                )}
-              </Button>
-
-              {/* ===============================================
-                  CREATE + FIND ALLOCATS
-              =============================================== */}
-
-              <Button
-                type="submit"
-                disabled={
-                  isSubmitting
-                }
-                onClick={() =>
-                  setIntent(
-                    "find",
-                  )
-                }
-                className="group h-11 rounded-lg px-6 shadow-none"
-              >
-                {isSubmitting &&
-                submitIntent ===
-                  "find" ? (
-                  <>
-                    <LoaderCircleIcon
-                      size={
-                        15
-                      }
-                      className="animate-spin"
-                    />
-
-                    Creating...
-                  </>
-                ) : (
-                  <>
-                    <SearchIcon
-                      size={
-                        15
-                      }
-                    />
-
-                    Create & find Allocats
-
-                    <ArrowRightIcon
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                {step > 1 && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={
+                      handleBack
+                    }
+                    className="h-10 rounded-lg px-3 text-xs text-muted-foreground shadow-none"
+                  >
+                    <ArrowLeftIcon
                       size={
                         14
                       }
-                      className="transition-transform group-hover:translate-x-1"
                     />
-                  </>
+
+                    Previous
+                  </Button>
                 )}
+              </div>
+
+              <Button
+                type="button"
+                onClick={
+                  handleNext
+                }
+                className="group h-10 rounded-lg px-5 text-xs shadow-none"
+              >
+                Continue
+
+                <ArrowRightIcon
+                  size={
+                    14
+                  }
+                  className="transition-transform group-hover:translate-x-1"
+                />
               </Button>
+            </div>
+          ) : (
+            <div>
+              <div className="mb-5 flex items-start gap-3">
+                <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/[0.08] text-primary">
+                  <SparklesIcon
+                    size={
+                      14
+                    }
+                  />
+                </span>
+
+                <div>
+                  <p className="text-sm font-bold">
+                    Ready to
+                    create it.
+                  </p>
+
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                    Save the
+                    project now,
+                    or immediately
+                    continue to
+                    matching
+                    Allocats.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={
+                    handleBack
+                  }
+                  disabled={
+                    isSubmitting
+                  }
+                  className="h-10 rounded-lg px-3 text-xs text-muted-foreground shadow-none"
+                >
+                  <ArrowLeftIcon
+                    size={
+                      14
+                    }
+                  />
+
+                  Previous
+                </Button>
+
+                <div className="flex flex-col gap-2.5 sm:flex-row">
+                  <Button
+                    type="submit"
+                    variant="outline"
+                    disabled={
+                      isSubmitting
+                    }
+                    onClick={() =>
+                      setIntent(
+                        "post",
+                      )
+                    }
+                    className="h-11 rounded-lg px-5 text-xs shadow-none"
+                  >
+                    {isSubmitting &&
+                    submitIntent ===
+                      "post" ? (
+                      <>
+                        <LoaderCircleIcon
+                          size={
+                            14
+                          }
+                          className="animate-spin"
+                        />
+
+                        Creating...
+                      </>
+                    ) : (
+                      <>
+                        <SendIcon
+                          size={
+                            14
+                          }
+                        />
+
+                        Create project
+                      </>
+                    )}
+                  </Button>
+
+                  <Button
+                    type="submit"
+                    disabled={
+                      isSubmitting
+                    }
+                    onClick={() =>
+                      setIntent(
+                        "find",
+                      )
+                    }
+                    className="group h-11 rounded-lg px-5 text-xs shadow-none"
+                  >
+                    {isSubmitting &&
+                    submitIntent ===
+                      "find" ? (
+                      <>
+                        <LoaderCircleIcon
+                          size={
+                            14
+                          }
+                          className="animate-spin"
+                        />
+
+                        Creating...
+                      </>
+                    ) : (
+                      <>
+                        <SearchIcon
+                          size={
+                            14
+                          }
+                        />
+
+                        Create & find Allocats
+
+                        <ArrowRightIcon
+                          size={
+                            13
+                          }
+                          className="transition-transform group-hover:translate-x-1"
+                        />
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
             </div>
           )}
         </div>
@@ -2787,16 +1431,20 @@ function StepHeading({
   description: string;
 }) {
   return (
-    <div className="mb-2 max-w-2xl">
-      <p className="text-[0.62rem] font-semibold uppercase tracking-[0.17em] text-primary">
-        {eyebrow}
-      </p>
+    <div className="mb-1 max-w-2xl">
+      <div className="mb-3 flex items-center gap-2">
+        <span className="h-1.5 w-1.5 rounded-full bg-primary" />
 
-      <h3 className="mt-2 text-xl font-bold leading-tight tracking-[-0.02em] sm:text-2xl">
+        <p className="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-primary">
+          {eyebrow}
+        </p>
+      </div>
+
+      <h3 className="text-xl font-black leading-tight tracking-[-0.025em] sm:text-2xl">
         {title}
       </h3>
 
-      <p className="mt-2 text-sm leading-7 text-muted-foreground">
+      <p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">
         {description}
       </p>
     </div>
@@ -2804,10 +1452,10 @@ function StepHeading({
 }
 
 /* =========================================================
-   TAGS INPUT
+   SKILLS INPUT
 ========================================================= */
 
-type TagsInputProps = {
+type SkillsInputProps = {
   value: string[];
 
   onChange: (
@@ -2818,30 +1466,30 @@ type TagsInputProps = {
   invalid?: boolean;
 };
 
-function TagsInput({
+function SkillsInput({
   value,
   onChange,
   disabled,
   invalid,
-}: TagsInputProps) {
+}: SkillsInputProps) {
   const [
     input,
     setInput,
   ] =
     useState("");
 
-  function addTag(
-    tag: string,
+  function addSkill(
+    skill: string,
   ) {
-    const cleanTag =
-      tag
+    const cleanSkill =
+      skill
         .trim()
         .toLowerCase();
 
     if (
-      !cleanTag ||
+      !cleanSkill ||
       value.includes(
-        cleanTag,
+        cleanSkill,
       )
     ) {
       return;
@@ -2849,13 +1497,16 @@ function TagsInput({
 
     onChange([
       ...value,
-      cleanTag,
+      cleanSkill,
     ]);
+
+    setInput("");
   }
 
-  function commitTag() {
-    addTag(input);
-    setInput("");
+  function handleAdd() {
+    addSkill(
+      input,
+    );
   }
 
   function handleKeyDown(
@@ -2864,11 +1515,12 @@ function TagsInput({
     if (
       event.key ===
         "Enter" ||
-      event.key === ","
+      event.key ===
+        ","
     ) {
       event.preventDefault();
 
-      commitTag();
+      handleAdd();
     }
 
     if (
@@ -2887,14 +1539,16 @@ function TagsInput({
     }
   }
 
-  function removeTag(
-    tag: string,
+  function removeSkill(
+    skill: string,
   ) {
     onChange(
       value.filter(
-        (item) =>
+        (
+          item,
+        ) =>
           item !==
-          tag,
+          skill,
       ),
     );
   }
@@ -2902,89 +1556,159 @@ function TagsInput({
   return (
     <div
       className={cn(
-        "flex min-h-12 flex-wrap items-center gap-2 rounded-xl border bg-background px-2.5 py-2",
+        "overflow-hidden rounded-xl border",
 
-        "transition-colors focus-within:ring-1 focus-within:ring-primary/50",
+        "bg-muted/[0.14] transition-all",
+
+        "focus-within:bg-background",
+
+        "focus-within:ring-1 focus-within:ring-primary/35",
 
         invalid
           ? "border-destructive"
-          : "border-border",
+          : "border-border/90",
 
         disabled &&
-          "cursor-not-allowed opacity-60",
+          "pointer-events-none opacity-50",
       )}
     >
-      {value.map(
-        (tag) => (
-          <span
-            key={tag}
-            className={[
-              "inline-flex h-7 items-center gap-1.5 rounded-lg",
-              "bg-muted px-2.5 text-[0.68rem] font-semibold",
-              "text-foreground",
-            ].join(
-              " ",
-            )}
-          >
-            {tag}
+      {/* INPUT ROW */}
 
-            <button
-              type="button"
-              onClick={() =>
-                removeTag(
-                  tag,
-                )
-              }
-              disabled={
-                disabled
-              }
-              className="text-muted-foreground transition-colors hover:text-foreground"
-              aria-label={`Remove ${tag}`}
-            >
-              <XIcon
-                size={
-                  11
-                }
-              />
-            </button>
-          </span>
-        ),
-      )}
-
-      <Input
-        value={
-          input
-        }
-        onChange={(
-          event,
-        ) =>
-          setInput(
-            event.target
-              .value,
-          )
-        }
-        onKeyDown={
-          handleKeyDown
-        }
-        onBlur={() => {
-          if (
-            input.trim()
-          ) {
-            commitTag();
+      <div className="flex min-h-12 items-center gap-2 px-3">
+        <input
+          value={
+            input
           }
-        }}
-        placeholder={
-          disabled
-            ? "Choose a category first"
-            : value.length
-              ? "Add another skill"
-              : "Type a skill and press Enter"
-        }
-        disabled={
-          disabled
-        }
-        className="h-8 min-w-[170px] flex-1 border-0 bg-transparent px-1.5 text-sm shadow-none focus-visible:ring-0"
-      />
+          onChange={(
+            event,
+          ) =>
+            setInput(
+              event.target
+                .value,
+            )
+          }
+          onKeyDown={
+            handleKeyDown
+          }
+          placeholder={
+            disabled
+              ? "Choose a category first"
+              : "e.g. React, branding, plumbing"
+          }
+          disabled={
+            disabled
+          }
+          className={cn(
+            "h-11 min-w-0 flex-1 bg-transparent",
+
+            "text-sm outline-none",
+
+            "placeholder:text-muted-foreground/55",
+          )}
+        />
+
+        <button
+          type="button"
+          onClick={
+            handleAdd
+          }
+          disabled={
+            disabled ||
+            !input.trim()
+          }
+          className={cn(
+            "flex h-8 shrink-0 items-center gap-1.5 rounded-lg px-3",
+
+            "text-[0.68rem] font-semibold",
+
+            "transition-colors",
+
+            input.trim()
+              ? [
+                  "bg-primary/[0.09]",
+                  "text-primary",
+                  "hover:bg-primary/[0.14]",
+                ].join(
+                  " ",
+                )
+              : [
+                  "bg-muted",
+                  "text-muted-foreground/50",
+                ].join(
+                  " ",
+                ),
+          )}
+        >
+          <PlusIcon
+            size={
+              12
+            }
+          />
+
+          Add
+        </button>
+      </div>
+
+      {/* SELECTED SKILLS */}
+
+      {value.length >
+        0 && (
+        <div className="border-t border-border/70 px-3 py-3">
+          <div className="flex flex-wrap gap-2">
+            {value.map(
+              (
+                skill,
+              ) => (
+                <span
+                  key={
+                    skill
+                  }
+                  className={cn(
+                    "group inline-flex items-center gap-2 rounded-lg",
+
+                    "border border-primary/10 bg-primary/[0.055]",
+
+                    "px-2.5 py-1.5",
+
+                    "text-[0.68rem] font-semibold text-foreground",
+                  )}
+                >
+                  <span className="h-1.5 w-1.5 rounded-full bg-primary/70" />
+
+                  {
+                    skill
+                  }
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      removeSkill(
+                        skill,
+                      )
+                    }
+                    className={cn(
+                      "ml-0.5 flex h-4 w-4 items-center justify-center rounded-sm",
+
+                      "text-muted-foreground",
+
+                      "transition-colors",
+
+                      "hover:bg-primary/10 hover:text-primary",
+                    )}
+                    aria-label={`Remove ${skill}`}
+                  >
+                    <XIcon
+                      size={
+                        10
+                      }
+                    />
+                  </button>
+                </span>
+              ),
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
