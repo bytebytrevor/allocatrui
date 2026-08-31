@@ -71,8 +71,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       },
     );
 
+    console.log("AUTH /me RESPONSE:", res.data);
+    console.log("AUTH USER ID:", res.data.userId);
+
     setUser({
-      id: res.data.id,
+      userId: res.data.userId,
       email: res.data.email,
       fullName: res.data.fullName,
       avatarUrl: res.data.avatarUrl,

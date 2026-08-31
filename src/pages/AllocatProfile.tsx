@@ -1611,73 +1611,30 @@ function AllocatProfileSkeleton() {
    HELPERS
 ========================================================= */
 
-function getInitials(
-  name?: string,
-) {
-  if (
-    !name
-  ) {
+function getInitials(name?: string) {
+  if (!name) {
     return "A";
   }
 
-  return name
-    .trim()
-    .split(
-      /\s+/,
-    )
-    .slice(
-      0,
-      2,
-    )
-    .map(
-      (
-        part,
-      ) =>
-        part
-          .charAt(
-            0,
-          )
-          .toUpperCase(),
-    )
-    .join(
-      "",
-    );
+  return name.trim().split(/\s+/,).slice(0, 2,)
+    .map((part) => part.charAt(0).toUpperCase())
+    .join("");
 }
 
-function getFirstName(
-  name?: string,
-) {
-  return (
-    name
-      ?.trim()
-      .split(
-        /\s+/,
-      )[0] ||
-    "this Allocat"
-  );
+function getFirstName(name?: string) {
+  return (name?.trim().split(/\s+/,)[0] || "this Allocat");
 }
 
-function getScoreLabel(
-  score: number,
-) {
-  if (
-    score >=
-    90
-  ) {
+function getScoreLabel(score: number) {
+  if (score >= 90) {
     return "Outstanding profile";
   }
 
-  if (
-    score >=
-    75
-  ) {
+  if (score >= 75) {
     return "Strong profile";
   }
 
-  if (
-    score >=
-    50
-  ) {
+  if (score >= 50) {
     return "Good foundation";
   }
 
