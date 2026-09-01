@@ -1,26 +1,66 @@
-import type { Project } from "./project"
+// import type { Project } from "./project"
+
+// export type AllocatProfile = {
+//     allocatrUserId: string,
+//     fullName: string,
+//     avatarUrl: string,
+//     IdNumber: string,
+//     email: string,
+//     bio: string,
+//     headline: string,
+//     title: string
+//     skills: string[],
+//     rating: number,
+//     ratingCount: number,
+//     completedProjects: number,
+//     availability: boolean,
+//     verified: boolean,
+//     location: string,
+//     hourlyRate: number,
+//     currency: string,
+//     responseTime: number,
+//     level: number,
+//     yearsExperience: number,
+//     professionalScore: number,
+//     joinedAt: string
+//     projects: Project[]
+// }
+
+import type { Project } from "./project";
 
 export type AllocatProfile = {
-    allocatrUserId: string,
-    fullName: string,
-    IdNumber: string,
-    email: string,
-    bio: string,
-    headline: string,
-    title: string
-    skills: string[],
-    rating: number,
-    ratingCount: number,
-    completedProjects: number,
-    availability: boolean,
-    verified: boolean,
-    location: string,
-    hourlyRate: number,
-    currency: string,
-    responseTime: number,
-    level: number,
-    yearsExperience: number,
-    professionalScore: number,
-    joinedAt: string
-    projects: Project[]
-}
+  allocatrUserId: string;
+  fullName: string;
+  IdNumber: string;
+
+  avatarUrl?: string | null;
+
+  email: string;
+  bio: string;
+  headline: string;
+  title: string;
+
+  skills: string[];
+
+  rating: number;
+  ratingCount: number;
+  completedProjects: number;
+
+  availability: boolean;
+  verified: boolean;
+
+  location: string;
+
+  hourlyRate: number;
+  currency: string;
+
+  responseTime: number;
+  level: number;
+
+  yearsExperience: number;
+  professionalScore: number;
+
+  joinedAt: string;
+
+  projects: Project[];
+};

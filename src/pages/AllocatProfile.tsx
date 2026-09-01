@@ -1,32 +1,44 @@
 import {
+  type ChangeEvent,
+  type FormEvent,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
-
-import {
-  Link,
-} from "react-router-dom";
 
 import {
   ArrowRightIcon,
   BadgeCheckIcon,
   BriefcaseBusinessIcon,
+  CameraIcon,
+  CheckIcon,
   Clock3Icon,
-  EditIcon,
+  Edit3Icon,
   EyeIcon,
+  FileCheck2Icon,
+  FileTextIcon,
   FolderCheckIcon,
-  MailCheckIcon,
+  GraduationCapIcon,
+  LoaderCircleIcon,
+  MailIcon,
   MapPinIcon,
+  PhoneIcon,
+  PlusIcon,
+  SaveIcon,
   ShieldCheckIcon,
+  Trash2Icon,
+  UploadCloudIcon,
   UserRoundCheckIcon,
+  UserRoundIcon,
+  XIcon,
 } from "lucide-react";
 
 import api from "@/api/axios";
 
-import type {
-  AllocatProfile,
-} from "@/Types/allocatProfile";
+import { useAuth } from "@/auth/useAuth";
+
+import type { AllocatProfile } from "@/Types/allocatProfile";
 
 import DashboardMainNav from "@/components/DashboardMainNav";
 
@@ -36,188 +48,649 @@ import {
   AvatarImage,
 } from "@/components/ui/avatar";
 
-import {
-  Button,
-} from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Textarea } from "@/components/ui/textarea";
 
-import {
-  Progress,
-} from "@/components/ui/progress";
+/* =========================================================
+   TYPES
+========================================================= */
 
-import {
-  Skeleton,
-} from "@/components/ui/skeleton";
+type AccountUser = {
+  id?: string;
+  userId?: string;
+  fullName?: string;
+  email?: string;
+  phoneNumber?: string;
+  location?: string;
+  avatarUrl?: string | null;
+  emailConfirmed?: boolean;
+};
+
+type AccountDraft = {
+  fullName: string;
+  phoneNumber: string;
+  location: string;
+};
+
+type AboutDraft = {
+  headline: string;
+  bio: string;
+};
+
+type WorkDraft = {
+  availability: string;
+  hourlyRate: number;
+  yearsExperience: number;
+};
+
+type CredentialDocument = {
+  id: string;
+  fileName: string;
+  url?: string;
+  uploadedAt?: string;
+  status?: string;
+};
+
+type ExtendedAllocatProfile = AllocatProfile & {
+  credentials?: CredentialDocument[];
+};
+
+type EditingSection =
+  | "account"
+  | "about"
+  | "skills"
+  | "work"
+  | null;
+
+/* =========================================================
+   CONSTANTS
+========================================================= */
+
+const MAX_AVATAR_SIZE = 5 * 1024 * 1024;
+
+const ACCEPTED_AVATAR_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+];
+
+const ACCEPTED_CREDENTIAL_TYPES = [
+  "application/pdf",
+  "image/jpeg",
+  "image/png",
+];
 
 /* =========================================================
    PAGE
 ========================================================= */
 
 function AllocatProfile() {
-  const [
-    allocatProfile,
-    setAllocatProfile,
-  ] =
-    useState<AllocatProfile | null>(
-      null,
-    );
+  const { user, refreshUser } = useAuth();
 
-  const [
-    loading,
-    setLoading,
-  ] =
-    useState(true);
+  const accountUser = user as AccountUser | null;
 
-  const [
-    error,
-    setError,
-  ] =
-    useState<Error | null>(
-      null,
-    );
+  const [allocatProfile, setAllocatProfile] =
+    useState<ExtendedAllocatProfile | null>(null);
+
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  const [editingSection, setEditingSection] =
+    useState<EditingSection>(null);
+
+  const [savingSection, setSavingSection] =
+    useState<EditingSection>(null);
 
   /* =======================================================
-     LOAD
+     ACCOUNT
+  ======================================================= */
+
+  const [accountDraft, setAccountDraft] = useState<AccountDraft>({
+    fullName: "",
+    phoneNumber: "",
+    location: "",
+  });
+
+  /* =======================================================
+     ABOUT
+  ======================================================= */
+
+  const [aboutDraft, setAboutDraft] = useState<AboutDraft>({
+    headline: "",
+    bio: "",
+  });
+
+  /* =======================================================
+     SKILLS
+  ======================================================= */
+
+  const [skillsDraft, setSkillsDraft] = useState<string[]>([]);
+  const [skillInput, setSkillInput] = useState("");
+
+  /* =======================================================
+     WORK
+  ======================================================= */
+
+  const [workDraft, setWorkDraft] = useState<WorkDraft>({
+    availability: "",
+    hourlyRate: 0,
+    yearsExperience: 0,
+  });
+
+  /* =======================================================
+     AVATAR
+  ======================================================= */
+
+  const avatarInputRef = useRef<HTMLInputElement | null>(null);
+
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [avatarProgress, setAvatarProgress] = useState(0);
+
+  /* =======================================================
+     CREDENTIALS
+  ======================================================= */
+
+  const credentialInputRef = useRef<HTMLInputElement | null>(null);
+
+  const [credentialFiles, setCredentialFiles] = useState<File[]>([]);
+  const [uploadingCredentials, setUploadingCredentials] = useState(false);
+
+  /* =======================================================
+     LOAD PROFILE
+  ======================================================= */
+
+  async function fetchAllocatProfile() {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const response = await api.get<ExtendedAllocatProfile>(
+        "/allocats/profiles/me",
+        {
+          withCredentials: true,
+        },
+      );
+
+      setAllocatProfile(response.data);
+    } catch (err: unknown) {
+      setError(
+        err instanceof Error
+          ? err
+          : new Error("Could not load Allocat profile."),
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    void fetchAllocatProfile();
+  }, []);
+
+  /* =======================================================
+     SYNC DRAFTS
   ======================================================= */
 
   useEffect(() => {
-    let cancelled =
-      false;
+    setAccountDraft({
+      fullName:
+        accountUser?.fullName ??
+        allocatProfile?.fullName ??
+        "",
+      phoneNumber:
+        accountUser?.phoneNumber ??
+        "",
+      location:
+        accountUser?.location ??
+        allocatProfile?.location ??
+        "",
+    });
+  }, [
+    accountUser?.fullName,
+    accountUser?.phoneNumber,
+    accountUser?.location,
+    allocatProfile?.fullName,
+    allocatProfile?.location,
+  ]);
 
-    async function fetchAllocatProfile() {
-      try {
-        setLoading(
-          true,
-        );
-
-        setError(
-          null,
-        );
-
-        const response =
-          await api.get<AllocatProfile>(
-            "/allocats/profiles/me",
-            {
-              withCredentials:
-                true,
-            },
-          );
-
-        if (
-          cancelled
-        ) {
-          return;
-        }
-
-        setAllocatProfile(
-          response.data,
-        );
-      } catch (
-        err: unknown
-      ) {
-        if (
-          cancelled
-        ) {
-          return;
-        }
-
-        setError(
-          err instanceof Error
-            ? err
-            : new Error(
-                "Could not load Allocat profile.",
-              ),
-        );
-      } finally {
-        if (
-          !cancelled
-        ) {
-          setLoading(
-            false,
-          );
-        }
-      }
+  useEffect(() => {
+    if (!allocatProfile) {
+      return;
     }
 
-    void fetchAllocatProfile();
+    setAboutDraft({
+      headline: allocatProfile.headline ?? "",
+      bio: allocatProfile.bio ?? "",
+    });
 
+    setSkillsDraft(allocatProfile.skills ?? []);
+
+    setWorkDraft({
+      availability: allocatProfile.availability ?? "",
+      hourlyRate: allocatProfile.hourlyRate ?? 0,
+      yearsExperience: allocatProfile.yearsExperience ?? 0,
+    });
+  }, [allocatProfile]);
+
+  /* =======================================================
+     AVATAR PREVIEW CLEANUP
+  ======================================================= */
+
+  useEffect(() => {
     return () => {
-      cancelled =
-        true;
+      if (avatarPreview) {
+        URL.revokeObjectURL(avatarPreview);
+      }
     };
-  }, []);
+  }, [avatarPreview]);
 
   /* =======================================================
      DERIVED
   ======================================================= */
 
-  const initials =
-    useMemo(
-      () =>
-        getInitials(
-          allocatProfile?.fullName,
-        ),
-      [
-        allocatProfile?.fullName,
-      ],
+  const initials = useMemo(() => {
+    return getInitials(
+      accountUser?.fullName ??
+      allocatProfile?.fullName,
     );
+  }, [
+    accountUser?.fullName,
+    allocatProfile?.fullName,
+  ]);
 
-  const rating =
-    allocatProfile?.rating ??
-    0;
+  const displayedAvatar =
+    avatarPreview ??
+    accountUser?.avatarUrl ??
+    allocatProfile?.avatarUrl ??
+    undefined;
 
-  const ratingCount =
-    allocatProfile?.ratingCount ??
-    0;
+  const rating = allocatProfile?.rating ?? 0;
+  const ratingCount = allocatProfile?.ratingCount ?? 0;
+  const completedProjects = allocatProfile?.completedProjects ?? 0;
+  const professionalScore = allocatProfile?.professionalScore ?? 0;
 
-  const completedProjects =
-    allocatProfile?.completedProjects ??
-    0;
-
-  const yearsExperience =
-    allocatProfile?.yearsExperience ??
-    0;
-
-  const professionalScore =
-    allocatProfile?.professionalScore ??
-    0;
-
-  const hourlyRate =
-    allocatProfile?.hourlyRate ??
-    0;
-
-  const skills =
-    allocatProfile?.skills ??
-    [];
+  const credentials = allocatProfile?.credentials ?? [];
 
   const isAvailable =
-    Boolean(
-      allocatProfile?.availability,
-    ) &&
-    !allocatProfile?.availability
-      ?.toLowerCase()
-      .includes(
-        "unavailable",
+    Boolean(allocatProfile?.availability) &&
+    !String(allocatProfile?.availability)
+      .toLowerCase()
+      .includes("unavailable");
+
+  /* =======================================================
+     EDITING
+  ======================================================= */
+
+  function startEditing(section: Exclude<EditingSection, null>) {
+    if (savingSection) {
+      return;
+    }
+
+    setEditingSection(section);
+  }
+
+  function cancelEditing() {
+    if (!allocatProfile) {
+      return;
+    }
+
+    setAccountDraft({
+      fullName:
+        accountUser?.fullName ??
+        allocatProfile.fullName ??
+        "",
+      phoneNumber:
+        accountUser?.phoneNumber ??
+        "",
+      location:
+        accountUser?.location ??
+        allocatProfile.location ??
+        "",
+    });
+
+    setAboutDraft({
+      headline: allocatProfile.headline ?? "",
+      bio: allocatProfile.bio ?? "",
+    });
+
+    setSkillsDraft(allocatProfile.skills ?? []);
+
+    setWorkDraft({
+      availability: allocatProfile.availability ?? "",
+      hourlyRate: allocatProfile.hourlyRate ?? 0,
+      yearsExperience: allocatProfile.yearsExperience ?? 0,
+    });
+
+    setSkillInput("");
+    setEditingSection(null);
+  }
+
+  /* =======================================================
+     ACCOUNT SAVE
+  ======================================================= */
+
+  async function saveAccount(event?: FormEvent) {
+    event?.preventDefault();
+
+    if (!accountDraft.fullName.trim()) {
+      return;
+    }
+
+    try {
+      setSavingSection("account");
+
+      await api.patch(
+        "/profiles",
+        {
+          fullName: accountDraft.fullName.trim(),
+          phoneNumber: accountDraft.phoneNumber.trim() || null,
+          location: accountDraft.location.trim() || null,
+        },
+        {
+          withCredentials: true,
+        },
       );
+
+      await refreshUser();
+      await fetchAllocatProfile();
+
+      setEditingSection(null);
+    } catch (error) {
+      console.error("Could not update account:", error);
+    } finally {
+      setSavingSection(null);
+    }
+  }
+
+  /* =======================================================
+     ABOUT SAVE
+  ======================================================= */
+
+  async function saveAbout() {
+    try {
+      setSavingSection("about");
+
+      await api.patch(
+        "/allocats/profiles/me",
+        {
+          headline: aboutDraft.headline.trim() || null,
+          bio: aboutDraft.bio.trim() || null,
+        },
+        {
+          withCredentials: true,
+        },
+      );
+
+      await fetchAllocatProfile();
+
+      setEditingSection(null);
+    } catch (error) {
+      console.error("Could not update profile introduction:", error);
+    } finally {
+      setSavingSection(null);
+    }
+  }
+
+  /* =======================================================
+     SKILLS
+  ======================================================= */
+
+  function addSkill() {
+    const value = skillInput.trim().replace(/\s+/g, " ");
+
+    if (!value) {
+      return;
+    }
+
+    const alreadyExists = skillsDraft.some(
+      (skill) => skill.toLowerCase() === value.toLowerCase(),
+    );
+
+    if (alreadyExists) {
+      setSkillInput("");
+      return;
+    }
+
+    setSkillsDraft((current) => [...current, value]);
+    setSkillInput("");
+  }
+
+  function removeSkill(skill: string) {
+    setSkillsDraft((current) =>
+      current.filter((item) => item !== skill),
+    );
+  }
+
+  async function saveSkills() {
+    try {
+      setSavingSection("skills");
+
+      await api.patch(
+        "/allocats/profiles/me/skills",
+        {
+          skills: skillsDraft,
+        },
+        {
+          withCredentials: true,
+        },
+      );
+
+      await fetchAllocatProfile();
+
+      setEditingSection(null);
+    } catch (error) {
+      console.error("Could not update skills:", error);
+    } finally {
+      setSavingSection(null);
+    }
+  }
+
+  /* =======================================================
+     WORK DETAILS
+  ======================================================= */
+
+  async function saveWorkDetails() {
+    try {
+      setSavingSection("work");
+
+      await api.patch(
+        "/allocats/profiles/me",
+        {
+          availability: workDraft.availability.trim() || null,
+          hourlyRate: workDraft.hourlyRate,
+          yearsExperience: workDraft.yearsExperience,
+        },
+        {
+          withCredentials: true,
+        },
+      );
+
+      await fetchAllocatProfile();
+
+      setEditingSection(null);
+    } catch (error) {
+      console.error("Could not update work details:", error);
+    } finally {
+      setSavingSection(null);
+    }
+  }
+
+  /* =======================================================
+     AVATAR
+  ======================================================= */
+
+  function handleAvatarChange(event: ChangeEvent<HTMLInputElement>) {
+    const selectedFile = event.target.files?.[0] ?? null;
+
+    if (!selectedFile) {
+      return;
+    }
+
+    if (!ACCEPTED_AVATAR_TYPES.includes(selectedFile.type)) {
+      event.target.value = "";
+      return;
+    }
+
+    if (selectedFile.size > MAX_AVATAR_SIZE) {
+      event.target.value = "";
+      return;
+    }
+
+    if (avatarPreview) {
+      URL.revokeObjectURL(avatarPreview);
+    }
+
+    setAvatarFile(selectedFile);
+    setAvatarPreview(URL.createObjectURL(selectedFile));
+    setAvatarProgress(0);
+  }
+
+  function clearAvatarSelection() {
+    if (avatarPreview) {
+      URL.revokeObjectURL(avatarPreview);
+    }
+
+    setAvatarFile(null);
+    setAvatarPreview(null);
+    setAvatarProgress(0);
+
+    if (avatarInputRef.current) {
+      avatarInputRef.current.value = "";
+    }
+  }
+
+  async function uploadAvatar() {
+    if (!avatarFile || uploadingAvatar) {
+      return;
+    }
+
+    const data = new FormData();
+    data.append("file", avatarFile);
+
+    try {
+      setUploadingAvatar(true);
+      setAvatarProgress(0);
+
+      await api.post(
+        "/profiles/profile-picture",
+        data,
+        {
+          withCredentials: true,
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+          onUploadProgress: (event) => {
+            if (!event.total) {
+              return;
+            }
+
+            setAvatarProgress(
+              Math.round((event.loaded * 100) / event.total),
+            );
+          },
+        },
+      );
+
+      await refreshUser();
+      await fetchAllocatProfile();
+
+      clearAvatarSelection();
+    } catch (error) {
+      console.error("Could not upload profile picture:", error);
+    } finally {
+      setUploadingAvatar(false);
+    }
+  }
+
+  /* =======================================================
+     CREDENTIALS
+  ======================================================= */
+
+  function handleCredentialFiles(event: ChangeEvent<HTMLInputElement>) {
+    const incomingFiles = Array.from(event.target.files ?? []);
+
+    const acceptedFiles = incomingFiles.filter((file) =>
+      ACCEPTED_CREDENTIAL_TYPES.includes(file.type),
+    );
+
+    setCredentialFiles((current) => {
+      const next = [...current];
+
+      acceptedFiles.forEach((incoming) => {
+        const exists = next.some(
+          (existing) =>
+            existing.name === incoming.name &&
+            existing.size === incoming.size,
+        );
+
+        if (!exists) {
+          next.push(incoming);
+        }
+      });
+
+      return next;
+    });
+
+    event.target.value = "";
+  }
+
+  function removeCredentialFile(index: number) {
+    setCredentialFiles((current) =>
+      current.filter((_, currentIndex) => currentIndex !== index),
+    );
+  }
+
+  async function uploadCredentials() {
+    if (credentialFiles.length === 0 || uploadingCredentials) {
+      return;
+    }
+
+    const data = new FormData();
+
+    credentialFiles.forEach((file) => {
+      data.append("credentialFiles", file);
+    });
+
+    try {
+      setUploadingCredentials(true);
+
+      await api.post(
+        "/allocats/profiles/me/credentials",
+        data,
+        {
+          withCredentials: true,
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        },
+      );
+
+      setCredentialFiles([]);
+
+      await fetchAllocatProfile();
+    } catch (error) {
+      console.error("Could not upload credentials:", error);
+    } finally {
+      setUploadingCredentials(false);
+    }
+  }
 
   /* =======================================================
      STATES
   ======================================================= */
 
-  if (
-    loading
-  ) {
-    return (
-      <AllocatProfileSkeleton />
-    );
+  if (loading) {
+    return <AllocatProfileSkeleton />;
   }
 
-  if (
-    error ||
-    !allocatProfile
-  ) {
-    return (
-      <AllocatProfileError />
-    );
+  if (error || !allocatProfile) {
+    return <AllocatProfileError />;
   }
 
   /* =======================================================
@@ -226,7 +699,6 @@ function AllocatProfile() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-
       {/* ===================================================
           NAV
       =================================================== */}
@@ -252,236 +724,331 @@ function AllocatProfile() {
       =================================================== */}
 
       <main className="container mx-auto px-5 py-8 md:px-8 lg:py-12">
-
         {/* =================================================
-            PROFILE HERO
+            ACCOUNT IDENTITY
         ================================================= */}
 
         <section className="pb-8">
-
           <div className="flex flex-col gap-8 xl:flex-row xl:items-end xl:justify-between">
-
-            {/* Identity */}
-
             <div className="flex min-w-0 flex-col gap-5 sm:flex-row sm:items-center">
+              {/* Avatar */}
 
               <div className="relative w-fit shrink-0">
-
-                <Avatar
-                  className={[
-                    "h-24 w-24 sm:h-28 sm:w-28",
-                    "border border-border",
-                    "bg-muted/30",
-                    "shadow-sm",
-                  ].join(
-                    " ",
-                  )}
-                >
+                <Avatar className="h-24 w-24 border border-border bg-muted/30 shadow-sm sm:h-28 sm:w-28">
                   <AvatarImage
-                    src={
-                      allocatProfile.avatarUrl
-                    }
+                    src={displayedAvatar}
                     alt={
-                      allocatProfile.fullName
-                        ? `${allocatProfile.fullName}'s profile`
+                      accountUser?.fullName
+                        ? `${accountUser.fullName}'s profile`
                         : "Allocat profile"
                     }
                     className="object-cover"
                   />
 
                   <AvatarFallback className="bg-primary/[0.08] text-2xl font-black text-primary">
-                    {
-                      initials
-                    }
+                    {initials}
                   </AvatarFallback>
                 </Avatar>
 
                 {allocatProfile.isVerified && (
                   <span
-                    className={[
-                      "absolute -bottom-1 -right-1",
-                      "flex h-8 w-8 items-center justify-center",
-                      "rounded-lg border-[3px] border-background",
-                      "bg-primary text-primary-foreground",
-                      "shadow-sm",
-                    ].join(
-                      " ",
-                    )}
+                    className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-lg border-[3px] border-background bg-primary text-primary-foreground shadow-sm"
                     title="Verified Allocat"
                   >
-                    <BadgeCheckIcon
-                      size={
-                        14
-                      }
-                    />
+                    <BadgeCheckIcon size={14} />
                   </span>
                 )}
 
+                {editingSection === "account" && (
+                  <button
+                    type="button"
+                    onClick={() => avatarInputRef.current?.click()}
+                    className="absolute -left-1 -top-1 flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-background text-muted-foreground shadow-sm transition-colors hover:text-primary"
+                    aria-label="Change profile picture"
+                  >
+                    <CameraIcon size={14} />
+                  </button>
+                )}
               </div>
 
+              {/* Identity */}
+
               <div className="min-w-0">
-
                 <div className="flex flex-wrap items-center gap-2">
-
                   <p className="text-[0.62rem] font-semibold uppercase tracking-[0.17em] text-primary">
                     Professional profile
                   </p>
 
                   {allocatProfile.level && (
                     <span className="rounded-md bg-primary/[0.07] px-2 py-1 text-[0.6rem] font-semibold text-primary">
-                      {
-                        allocatProfile.level
-                      }
+                      {allocatProfile.level}
                     </span>
                   )}
-
                 </div>
 
                 <h1 className="mt-2 break-words text-3xl font-black leading-[1.02] tracking-[-0.04em] sm:text-4xl lg:text-[2.75rem]">
-                  {
+                  {accountUser?.fullName ||
                     allocatProfile.fullName ||
-                    "Allocat professional"
-                  }
+                    "Allocat professional"}
                 </h1>
 
                 <p className="mt-2 max-w-2xl text-sm font-medium leading-6 text-foreground/75 sm:text-base">
-                  {
-                    allocatProfile.headline ||
-                    "Professional service provider"
-                  }
+                  {allocatProfile.headline ||
+                    "Professional service provider"}
                 </p>
 
                 <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-muted-foreground">
-
                   <span className="inline-flex items-center gap-1.5">
-                    <MapPinIcon
-                      size={
-                        13
-                      }
-                    />
+                    <MapPinIcon size={13} />
 
-                    {
+                    {accountUser?.location ||
                       allocatProfile.location ||
-                      "Location not listed"
-                    }
+                      "Location not listed"}
                   </span>
 
                   <span className="inline-flex items-center gap-1.5">
-
                     <span
                       className={[
                         "h-1.5 w-1.5 rounded-full",
-
                         isAvailable
                           ? "bg-emerald-500"
                           : "bg-muted-foreground/40",
-                      ].join(
-                        " ",
-                      )}
+                      ].join(" ")}
                     />
 
-                    {
-                      allocatProfile.availability ||
-                      "Availability not set"
-                    }
-
+                    {allocatProfile.availability ||
+                      "Availability not set"}
                   </span>
 
                   {allocatProfile.responseTime && (
                     <span className="inline-flex items-center gap-1.5">
-                      <Clock3Icon
-                        size={
-                          13
-                        }
-                      />
-
-                      {
-                        allocatProfile.responseTime
-                      }
+                      <Clock3Icon size={13} />
+                      {allocatProfile.responseTime}
                     </span>
                   )}
-
                 </div>
-
               </div>
-
             </div>
 
-            {/* Actions */}
+            {/* Header actions */}
 
-            <div className="flex shrink-0 flex-wrap gap-2">
-
+            <div className="flex shrink-0 items-center gap-2">
               <Button
                 type="button"
                 variant="outline"
-                className={[
-                  "h-10 rounded-lg px-4",
-                  "text-xs font-semibold shadow-none",
-                  "hover:border-primary/25",
-                ].join(
-                  " ",
-                )}
+                className="h-10 rounded-lg px-4 text-xs font-semibold shadow-none"
               >
-                <EyeIcon
-                  size={
-                    14
-                  }
-                />
-
+                <EyeIcon size={14} />
                 Preview as client
               </Button>
 
               <Button
-                asChild
-                className="group h-10 rounded-lg px-4 text-xs font-semibold shadow-none"
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => startEditing("account")}
+                className="h-10 w-10 rounded-lg text-muted-foreground shadow-none hover:text-primary"
+                aria-label="Edit account details"
               >
-                <Link to="/allocats/profile/edit">
-
-                  <EditIcon
-                    size={
-                      14
-                    }
-                  />
-
-                  Edit profile
-
-                  <ArrowRightIcon
-                    size={
-                      12
-                    }
-                    className="ml-0.5 transition-transform duration-200 group-hover:translate-x-0.5"
-                  />
-
-                </Link>
+                <Edit3Icon size={15} />
               </Button>
-
             </div>
-
           </div>
 
+          {/* ===============================================
+              ACCOUNT EDITOR
+          =============================================== */}
+
+          {editingSection === "account" && (
+            <form
+              onSubmit={saveAccount}
+              className="mt-7 rounded-xl border border-border bg-muted/[0.08] p-5"
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-xs font-bold">
+                    Account identity
+                  </p>
+
+                  <p className="mt-1 text-[0.66rem] leading-5 text-muted-foreground">
+                    These details belong to your main Allocatr account and
+                    are shared across the platform.
+                  </p>
+                </div>
+
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={cancelEditing}
+                  className="h-8 w-8 rounded-lg"
+                >
+                  <XIcon size={14} />
+                </Button>
+              </div>
+
+              <div className="mt-5 grid gap-5 sm:grid-cols-2">
+                <ProfileField label="Full name">
+                  <div className="relative">
+                    <UserRoundIcon
+                      size={15}
+                      className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground"
+                    />
+
+                    <Input
+                      value={accountDraft.fullName}
+                      onChange={(event) =>
+                        setAccountDraft((current) => ({
+                          ...current,
+                          fullName: event.target.value,
+                        }))
+                      }
+                      className="h-11 rounded-lg bg-background pl-10 shadow-none"
+                    />
+                  </div>
+                </ProfileField>
+
+                <ProfileField label="Phone number">
+                  <div className="relative">
+                    <PhoneIcon
+                      size={15}
+                      className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground"
+                    />
+
+                    <Input
+                      type="tel"
+                      value={accountDraft.phoneNumber}
+                      onChange={(event) =>
+                        setAccountDraft((current) => ({
+                          ...current,
+                          phoneNumber: event.target.value,
+                        }))
+                      }
+                      className="h-11 rounded-lg bg-background pl-10 shadow-none"
+                    />
+                  </div>
+                </ProfileField>
+
+                <ProfileField label="Location">
+                  <div className="relative">
+                    <MapPinIcon
+                      size={15}
+                      className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground"
+                    />
+
+                    <Input
+                      value={accountDraft.location}
+                      onChange={(event) =>
+                        setAccountDraft((current) => ({
+                          ...current,
+                          location: event.target.value,
+                        }))
+                      }
+                      className="h-11 rounded-lg bg-background pl-10 shadow-none"
+                    />
+                  </div>
+                </ProfileField>
+
+                <ProfileField label="Email">
+                  <div className="relative">
+                    <MailIcon
+                      size={15}
+                      className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground"
+                    />
+
+                    <Input
+                      value={accountUser?.email ?? ""}
+                      readOnly
+                      className="h-11 rounded-lg bg-muted/20 pl-10 text-muted-foreground shadow-none"
+                    />
+                  </div>
+                </ProfileField>
+              </div>
+
+              {/* Avatar selection */}
+
+              <input
+                ref={avatarInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                className="hidden"
+                onChange={handleAvatarChange}
+              />
+
+              {avatarFile && (
+                <div className="mt-5 flex items-center gap-3 rounded-lg border border-border bg-background px-4 py-3">
+                  <CameraIcon
+                    size={15}
+                    className="shrink-0 text-primary"
+                  />
+
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-xs font-semibold">
+                      {avatarFile.name}
+                    </p>
+
+                    <p className="mt-0.5 text-[0.62rem] text-muted-foreground">
+                      {(avatarFile.size / (1024 * 1024)).toFixed(2)} MB
+                    </p>
+                  </div>
+
+                  {!uploadingAvatar && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={clearAvatarSelection}
+                      className="h-8 w-8 rounded-lg"
+                    >
+                      <Trash2Icon size={13} />
+                    </Button>
+                  )}
+
+                  <Button
+                    type="button"
+                    onClick={() => void uploadAvatar()}
+                    disabled={uploadingAvatar}
+                    className="h-8 rounded-lg px-3 text-[0.68rem] shadow-none"
+                  >
+                    {uploadingAvatar ? (
+                      <>
+                        <LoaderCircleIcon
+                          size={13}
+                          className="animate-spin"
+                        />
+                        {avatarProgress}%
+                      </>
+                    ) : (
+                      "Upload"
+                    )}
+                  </Button>
+                </div>
+              )}
+
+              <SectionActions
+                saving={savingSection === "account"}
+                onCancel={cancelEditing}
+              />
+            </form>
+          )}
+
           {/* =================================================
-              SUMMARY BAR
-              OPEN LEFT + RIGHT
+              SUMMARY
           ================================================= */}
 
           <div className="mt-8 border-y border-border">
-
             <div className="grid sm:grid-cols-2 xl:grid-cols-4">
-
               <ProfileStat
                 label="Hourly rate"
-                value={`US$${hourlyRate}`}
+                value={`US$${allocatProfile.hourlyRate ?? 0}`}
                 suffix="/hour"
               />
 
               <ProfileStat
                 label="Experience"
-                value={
-                  yearsExperience
-                }
+                value={allocatProfile.yearsExperience ?? 0}
                 suffix={
-                  yearsExperience ===
-                    1
+                  allocatProfile.yearsExperience === 1
                     ? "year"
                     : "years"
                 }
@@ -490,22 +1057,11 @@ function AllocatProfile() {
 
               <ProfileStat
                 label="Rating"
-                value={
-                  rating >
-                  0
-                    ? rating.toFixed(
-                        1,
-                      )
-                    : "New"
-                }
+                value={rating > 0 ? rating.toFixed(1) : "New"}
                 suffix={
-                  ratingCount >
-                  0
+                  ratingCount > 0
                     ? `${ratingCount} ${
-                        ratingCount ===
-                          1
-                          ? "review"
-                          : "reviews"
+                        ratingCount === 1 ? "review" : "reviews"
                       }`
                     : undefined
                 }
@@ -514,22 +1070,16 @@ function AllocatProfile() {
 
               <ProfileStat
                 label="Completed"
-                value={
-                  completedProjects
-                }
+                value={completedProjects}
                 suffix={
-                  completedProjects ===
-                    1
+                  completedProjects === 1
                     ? "project"
                     : "projects"
                 }
                 divided
               />
-
             </div>
-
           </div>
-
         </section>
 
         {/* =================================================
@@ -537,13 +1087,7 @@ function AllocatProfile() {
         ================================================= */}
 
         <div className="grid items-start gap-10 pt-8 xl:grid-cols-[minmax(0,1fr)_300px] xl:gap-14">
-
-          {/* =================================================
-              PROFILE CONTENT
-          ================================================= */}
-
           <div className="min-w-0">
-
             {/* =============================================
                 ABOUT
             ============================================= */}
@@ -551,17 +1095,59 @@ function AllocatProfile() {
             <ProfileSection
               eyebrow="Overview"
               title={`About ${getFirstName(
+                accountUser?.fullName ??
                 allocatProfile.fullName,
               )}`}
+              editing={editingSection === "about"}
+              onEdit={() => startEditing("about")}
+              onCancel={cancelEditing}
             >
+              {editingSection === "about" ? (
+                <div className="max-w-3xl">
+                  <ProfileField label="Professional headline">
+                    <Input
+                      value={aboutDraft.headline}
+                      maxLength={120}
+                      placeholder="e.g. Senior Product Designer"
+                      onChange={(event) =>
+                        setAboutDraft((current) => ({
+                          ...current,
+                          headline: event.target.value,
+                        }))
+                      }
+                      className="h-11 rounded-lg bg-background shadow-none"
+                    />
+                  </ProfileField>
 
-              <p className="max-w-3xl whitespace-pre-line text-sm leading-8 text-muted-foreground sm:text-[0.95rem]">
-                {
-                  allocatProfile.bio ||
-                  "This Allocat has not added a professional bio yet."
-                }
-              </p>
+                  <div className="mt-5">
+                    <ProfileField label="Professional bio">
+                      <Textarea
+                        value={aboutDraft.bio}
+                        maxLength={1000}
+                        onChange={(event) =>
+                          setAboutDraft((current) => ({
+                            ...current,
+                            bio: event.target.value,
+                          }))
+                        }
+                        placeholder="Tell clients about your experience, strengths and the kind of work you do best."
+                        className="min-h-40 resize-none rounded-xl bg-background leading-7 shadow-none"
+                      />
+                    </ProfileField>
+                  </div>
 
+                  <SectionActions
+                    saving={savingSection === "about"}
+                    onSave={() => void saveAbout()}
+                    onCancel={cancelEditing}
+                  />
+                </div>
+              ) : (
+                <p className="max-w-3xl whitespace-pre-line text-sm leading-8 text-muted-foreground sm:text-[0.95rem]">
+                  {allocatProfile.bio ||
+                    "Add a short professional introduction so clients can understand the work you do best."}
+                </p>
+              )}
             </ProfileSection>
 
             {/* =============================================
@@ -572,111 +1158,345 @@ function AllocatProfile() {
               eyebrow="Expertise"
               title="Skills"
               divided
+              editing={editingSection === "skills"}
+              onEdit={() => startEditing("skills")}
+              onCancel={cancelEditing}
             >
-
-              {skills.length >
-              0 ? (
-                <div className="flex max-w-3xl flex-wrap gap-2">
-
-                  {skills.map(
-                    (
-                      skill,
-                    ) => (
+              {editingSection === "skills" ? (
+                <div className="max-w-3xl">
+                  <div className="flex min-h-12 flex-wrap items-center gap-2 rounded-xl border border-border bg-background px-3 py-2 focus-within:border-primary/35">
+                    {skillsDraft.map((skill) => (
                       <span
-                        key={
-                          skill
-                        }
-                        className={[
-                          "rounded-lg",
-                          "border border-primary/10",
-                          "bg-primary/[0.055]",
-                          "px-3 py-1.5",
-                          "text-xs font-semibold text-primary",
-                          "transition-colors",
-                          "hover:border-primary/20",
-                          "hover:bg-primary/[0.09]",
-                        ].join(
-                          " ",
-                        )}
+                        key={skill}
+                        className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-primary/[0.07] px-2.5 text-[0.68rem] font-semibold text-primary"
                       >
-                        {
-                          skill
-                        }
-                      </span>
-                    ),
-                  )}
+                        {skill}
 
+                        <button
+                          type="button"
+                          onClick={() => removeSkill(skill)}
+                          className="text-primary/60 hover:text-primary"
+                        >
+                          <XIcon size={10} />
+                        </button>
+                      </span>
+                    ))}
+
+                    <input
+                      value={skillInput}
+                      onChange={(event) =>
+                        setSkillInput(event.target.value)
+                      }
+                      onKeyDown={(event) => {
+                        if (
+                          event.key === "Enter" ||
+                          event.key === ","
+                        ) {
+                          event.preventDefault();
+                          addSkill();
+                        }
+                      }}
+                      placeholder="Add a skill"
+                      className="h-8 min-w-[180px] flex-1 bg-transparent px-1 text-sm outline-none placeholder:text-muted-foreground"
+                    />
+                  </div>
+
+                  <p className="mt-2 text-[0.62rem] text-muted-foreground">
+                    Press Enter or comma to add each skill.
+                  </p>
+
+                  <SectionActions
+                    saving={savingSection === "skills"}
+                    onSave={() => void saveSkills()}
+                    onCancel={cancelEditing}
+                  />
+                </div>
+              ) : allocatProfile.skills?.length ? (
+                <div className="flex max-w-3xl flex-wrap gap-2">
+                  {allocatProfile.skills.map((skill) => (
+                    <span
+                      key={skill}
+                      className="rounded-lg border border-primary/10 bg-primary/[0.055] px-3 py-1.5 text-xs font-semibold text-primary"
+                    >
+                      {skill}
+                    </span>
+                  ))}
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground">
-                  No skills have been added yet.
-                </p>
+                <EmptySection
+                  message="Add skills so clients can find you for the right work."
+                  action="Add skills"
+                  onClick={() => startEditing("skills")}
+                />
               )}
-
             </ProfileSection>
 
             {/* =============================================
-                PROFESSIONAL DETAILS
+                WORK DETAILS
             ============================================= */}
 
             <ProfileSection
               eyebrow="Professional"
               title="Working details"
               divided
+              editing={editingSection === "work"}
+              onEdit={() => startEditing("work")}
+              onCancel={cancelEditing}
             >
+              {editingSection === "work" ? (
+                <div className="max-w-3xl">
+                  <div className="grid gap-6 sm:grid-cols-2">
+                    <ProfileField label="Availability">
+                      <Input
+                        value={workDraft.availability}
+                        placeholder="Available"
+                        onChange={(event) =>
+                          setWorkDraft((current) => ({
+                            ...current,
+                            availability: event.target.value,
+                          }))
+                        }
+                        className="h-11 rounded-lg bg-background shadow-none"
+                      />
+                    </ProfileField>
 
-              <div className="grid max-w-3xl gap-3 sm:grid-cols-2">
+                    <ProfileField label="Hourly rate">
+                      <div className="relative">
+                        <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground">
+                          US$
+                        </span>
 
-                <DetailItem
-                  icon={
-                    BriefcaseBusinessIcon
+                        <Input
+                          type="number"
+                          min={0}
+                          value={workDraft.hourlyRate}
+                          onChange={(event) =>
+                            setWorkDraft((current) => ({
+                              ...current,
+                              hourlyRate: Number(event.target.value),
+                            }))
+                          }
+                          className="h-11 rounded-lg bg-background pl-11 shadow-none"
+                        />
+                      </div>
+                    </ProfileField>
+
+                    <ProfileField label="Years of experience">
+                      <Input
+                        type="number"
+                        min={0}
+                        max={60}
+                        value={workDraft.yearsExperience}
+                        onChange={(event) =>
+                          setWorkDraft((current) => ({
+                            ...current,
+                            yearsExperience: Number(event.target.value),
+                          }))
+                        }
+                        className="h-11 rounded-lg bg-background shadow-none"
+                      />
+                    </ProfileField>
+                  </div>
+
+                  <SectionActions
+                    saving={savingSection === "work"}
+                    onSave={() => void saveWorkDetails()}
+                    onCancel={cancelEditing}
+                  />
+                </div>
+              ) : (
+                <div className="grid max-w-3xl gap-3 sm:grid-cols-2">
+                  <DetailItem
+                    icon={BriefcaseBusinessIcon}
+                    label="Experience"
+                    value={`${allocatProfile.yearsExperience ?? 0} ${
+                      allocatProfile.yearsExperience === 1
+                        ? "year"
+                        : "years"
+                    }`}
+                  />
+
+                  <DetailItem
+                    icon={MapPinIcon}
+                    label="Location"
+                    value={
+                      accountUser?.location ||
+                      allocatProfile.location ||
+                      "Not listed"
+                    }
+                  />
+
+                  <DetailItem
+                    icon={Clock3Icon}
+                    label="Availability"
+                    value={
+                      allocatProfile.availability ||
+                      "Not specified"
+                    }
+                  />
+
+                  <DetailItem
+                    icon={FolderCheckIcon}
+                    label="Completed work"
+                    value={`${completedProjects} ${
+                      completedProjects === 1
+                        ? "project"
+                        : "projects"
+                    }`}
+                  />
+                </div>
+              )}
+            </ProfileSection>
+
+            {/* =============================================
+                QUALIFICATIONS
+            ============================================= */}
+
+            <ProfileSection
+              eyebrow="Qualifications"
+              title="Credentials & training"
+              divided
+              action={
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() =>
+                    credentialInputRef.current?.click()
                   }
-                  label="Experience"
-                  value={`${yearsExperience} ${
-                    yearsExperience ===
-                      1
-                      ? "year"
-                      : "years"
-                  }`}
-                />
+                  className="h-9 rounded-lg px-3 text-xs font-semibold text-muted-foreground shadow-none hover:text-primary"
+                >
+                  <PlusIcon size={14} />
+                  Add document
+                </Button>
+              }
+            >
+              <input
+                ref={credentialInputRef}
+                type="file"
+                multiple
+                accept=".pdf,.png,.jpg,.jpeg"
+                className="hidden"
+                onChange={handleCredentialFiles}
+              />
 
-                <DetailItem
-                  icon={
-                    MapPinIcon
-                  }
-                  label="Location"
-                  value={
-                    allocatProfile.location ||
-                    "Not listed"
-                  }
-                />
+              {credentials.length > 0 && (
+                <div className="max-w-3xl divide-y divide-border border-y border-border">
+                  {credentials.map((credential) => (
+                    <CredentialRow
+                      key={credential.id}
+                      credential={credential}
+                    />
+                  ))}
+                </div>
+              )}
 
-                <DetailItem
-                  icon={
-                    Clock3Icon
-                  }
-                  label="Availability"
-                  value={
-                    allocatProfile.availability ||
-                    "Not specified"
-                  }
-                />
+              {credentials.length === 0 &&
+                credentialFiles.length === 0 && (
+                  <div className="max-w-3xl rounded-xl border border-dashed border-border bg-muted/[0.08] px-5 py-7">
+                    <GraduationCapIcon
+                      size={20}
+                      className="text-primary"
+                    />
 
-                <DetailItem
-                  icon={
-                    FolderCheckIcon
-                  }
-                  label="Completed work"
-                  value={`${completedProjects} ${
-                    completedProjects ===
-                      1
-                      ? "project"
-                      : "projects"
-                  }`}
-                />
+                    <p className="mt-4 text-sm font-semibold">
+                      Add your qualifications
+                    </p>
 
-              </div>
+                    <p className="mt-1 max-w-lg text-xs leading-6 text-muted-foreground">
+                      Upload certificates, degrees or professional training
+                      documents that support your expertise.
+                    </p>
 
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() =>
+                        credentialInputRef.current?.click()
+                      }
+                      className="mt-5 h-9 rounded-lg px-4 text-xs shadow-none"
+                    >
+                      <UploadCloudIcon size={14} />
+                      Upload documents
+                    </Button>
+                  </div>
+                )}
+
+              {credentialFiles.length > 0 && (
+                <div className="mt-5 max-w-3xl rounded-xl border border-border bg-muted/[0.08] p-4">
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <p className="text-xs font-semibold">
+                        Ready to upload
+                      </p>
+
+                      <p className="mt-1 text-[0.62rem] text-muted-foreground">
+                        {credentialFiles.length}{" "}
+                        {credentialFiles.length === 1
+                          ? "document"
+                          : "documents"}
+                      </p>
+                    </div>
+
+                    <Button
+                      type="button"
+                      onClick={() => void uploadCredentials()}
+                      disabled={uploadingCredentials}
+                      className="h-9 rounded-lg px-4 text-xs shadow-none"
+                    >
+                      {uploadingCredentials ? (
+                        <>
+                          <LoaderCircleIcon
+                            size={14}
+                            className="animate-spin"
+                          />
+                          Uploading
+                        </>
+                      ) : (
+                        <>
+                          <UploadCloudIcon size={14} />
+                          Upload
+                        </>
+                      )}
+                    </Button>
+                  </div>
+
+                  <div className="mt-4 divide-y divide-border border-y border-border">
+                    {credentialFiles.map((file, index) => (
+                      <div
+                        key={`${file.name}-${file.size}`}
+                        className="flex items-center gap-3 py-3"
+                      >
+                        <FileTextIcon
+                          size={14}
+                          className="shrink-0 text-muted-foreground"
+                        />
+
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-xs font-semibold">
+                            {file.name}
+                          </p>
+
+                          <p className="mt-0.5 text-[0.6rem] text-muted-foreground">
+                            {formatFileSize(file.size)}
+                          </p>
+                        </div>
+
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() =>
+                            removeCredentialFile(index)
+                          }
+                          className="h-7 w-7 rounded-md"
+                        >
+                          <XIcon size={12} />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </ProfileSection>
 
             {/* =============================================
@@ -688,42 +1508,26 @@ function AllocatProfile() {
               title="Completed projects"
               divided
               action={
-                completedProjects >
-                0 ? (
+                completedProjects > 0 ? (
                   <button
                     type="button"
-                    className={[
-                      "group inline-flex items-center gap-1.5",
-                      "text-xs font-semibold text-primary",
-                      "transition-colors hover:text-primary/70",
-                    ].join(
-                      " ",
-                    )}
+                    className="group inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:text-primary/70"
                   >
                     View all
 
                     <ArrowRightIcon
-                      size={
-                        13
-                      }
-                      className="transition-transform duration-200 group-hover:translate-x-0.5"
+                      size={13}
+                      className="transition-transform group-hover:translate-x-0.5"
                     />
                   </button>
                 ) : undefined
               }
             >
-
-              {completedProjects >
-              0 ? (
-                <CompletedProjectSummary
-                  count={
-                    completedProjects
-                  }
-                />
+              {completedProjects > 0 ? (
+                <CompletedProjectSummary count={completedProjects} />
               ) : (
                 <EmptyProjectHistory />
               )}
-
             </ProfileSection>
 
             {/* =============================================
@@ -736,13 +1540,9 @@ function AllocatProfile() {
               divided
               last
             >
-
               <div className="grid gap-3 md:grid-cols-3">
-
                 <VerificationItem
-                  icon={
-                    ShieldCheckIcon
-                  }
+                  icon={ShieldCheckIcon}
                   title="Identity"
                   description="Identity document"
                   status={
@@ -750,39 +1550,43 @@ function AllocatProfile() {
                       ? "Verified"
                       : "Pending"
                   }
-                  verified={
-                    Boolean(
-                      allocatProfile.isVerified,
-                    )
-                  }
+                  verified={Boolean(allocatProfile.isVerified)}
                 />
 
                 <VerificationItem
-                  icon={
-                    BadgeCheckIcon
-                  }
+                  icon={FileCheck2Icon}
                   title="Credentials"
-                  description="Professional documents"
-                  status="Under review"
+                  description={
+                    credentials.length > 0
+                      ? `${credentials.length} document${
+                          credentials.length === 1 ? "" : "s"
+                        } submitted`
+                      : "No documents submitted"
+                  }
+                  status={
+                    credentials.length > 0
+                      ? "Under review"
+                      : "Not added"
+                  }
                 />
 
                 <VerificationItem
-                  icon={
-                    MailCheckIcon
-                  }
+                  icon={MailIcon}
                   title="Email"
                   description={
+                    accountUser?.email ||
                     allocatProfile.email ||
                     "Account email"
                   }
-                  status="Verified"
-                  verified
+                  status={
+                    accountUser?.emailConfirmed === false
+                      ? "Pending"
+                      : "Verified"
+                  }
+                  verified={accountUser?.emailConfirmed !== false}
                 />
-
               </div>
-
             </ProfileSection>
-
           </div>
 
           {/* =================================================
@@ -790,111 +1594,38 @@ function AllocatProfile() {
           ================================================= */}
 
           <aside className="min-w-0 xl:sticky xl:top-24">
-
-            {/* =============================================
-                PROFESSIONAL SCORE
-            ============================================= */}
-
-            <section
-              className={[
-                "rounded-2xl",
-                "border border-border",
-                "bg-card",
-                "p-5",
-              ].join(
-                " ",
-              )}
-            >
-
+            <section className="rounded-2xl border border-border bg-card p-5">
               <div className="flex items-start justify-between gap-4">
-
                 <div>
-
                   <p className="text-[0.6rem] font-semibold uppercase tracking-[0.15em] text-primary">
                     Professional score
                   </p>
 
                   <h2 className="mt-2 text-lg font-black tracking-[-0.025em]">
-                    {
-                      getScoreLabel(
-                        professionalScore,
-                      )
-                    }
+                    {getScoreLabel(professionalScore)}
                   </h2>
-
                 </div>
 
                 <span className="text-2xl font-black tracking-[-0.04em] text-primary">
-                  {
-                    professionalScore
-                  }
-                  %
+                  {professionalScore}%
                 </span>
-
               </div>
 
               <Progress
-                value={
-                  professionalScore
-                }
+                value={professionalScore}
                 className="mt-5 h-1.5"
               />
 
-              <div className="mt-4 flex items-center gap-2">
-
-                <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-
-                <p className="text-[0.62rem] font-medium text-muted-foreground">
-                  {
-                    professionalScore >=
-                    75
-                      ? "Your profile is performing well"
-                      : "There is room to strengthen your profile"
-                  }
-                </p>
-
-              </div>
-
-              <p className="mt-3 text-xs leading-6 text-muted-foreground">
-                Build your reputation through completed work, client feedback and verified information.
+              <p className="mt-4 text-xs leading-6 text-muted-foreground">
+                Build your reputation through completed work, client
+                feedback, qualifications and verified information.
               </p>
-
-              <button
-                type="button"
-                className={[
-                  "group mt-4 inline-flex items-center gap-1.5",
-                  "text-xs font-semibold text-primary",
-                  "transition-colors hover:text-primary/70",
-                ].join(
-                  " ",
-                )}
-              >
-                Improve profile
-
-                <ArrowRightIcon
-                  size={
-                    12
-                  }
-                  className="transition-transform duration-200 group-hover:translate-x-0.5"
-                />
-              </button>
-
             </section>
 
-            {/* =============================================
-                WORK PREFERENCES
-            ============================================= */}
-
             <section className="mt-5 rounded-2xl border border-border/80 p-5">
-
               <div className="flex items-center gap-2">
-
                 <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/[0.07] text-primary">
-                  <BriefcaseBusinessIcon
-                    size={
-                      14
-                    }
-                  />
+                  <BriefcaseBusinessIcon size={14} />
                 </span>
 
                 <div>
@@ -906,11 +1637,9 @@ function AllocatProfile() {
                     Current working setup
                   </p>
                 </div>
-
               </div>
 
               <div className="mt-5 grid gap-4">
-
                 <SidebarDetail
                   label="Availability"
                   value={
@@ -922,61 +1651,214 @@ function AllocatProfile() {
                 <SidebarDetail
                   label="Response"
                   value={
-                    allocatProfile.responseTime ||
+                    String(allocatProfile.responseTime || "") ||
                     "Not available"
                   }
                 />
 
                 <SidebarDetail
                   label="Rate"
-                  value={`US$${hourlyRate}/hr`}
+                  value={`US$${allocatProfile.hourlyRate ?? 0}/hr`}
                   strong
                 />
-
               </div>
-
             </section>
 
-            {/* =============================================
-                VERIFIED
-            ============================================= */}
-
             {allocatProfile.isVerified && (
-
               <section className="mt-5 flex items-start gap-3 rounded-xl bg-emerald-400/[0.05] px-4 py-4">
-
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-400/[0.1] text-emerald-700 dark:text-emerald-300">
-
-                  <BadgeCheckIcon
-                    size={
-                      16
-                    }
-                  />
-
+                  <BadgeCheckIcon size={16} />
                 </span>
 
                 <div>
-
                   <p className="text-xs font-semibold">
                     Verified Allocat
                   </p>
 
                   <p className="mt-1 text-[0.66rem] leading-5 text-muted-foreground">
-                    Identity information has been verified for this professional profile.
+                    Identity information has been verified for this
+                    professional profile.
                   </p>
-
                 </div>
-
               </section>
-
             )}
-
           </aside>
+        </div>
+      </main>
+    </div>
+  );
+}
 
+/* =========================================================
+   PROFILE SECTION
+========================================================= */
+
+function ProfileSection({
+  eyebrow,
+  title,
+  action,
+  editing = false,
+  onEdit,
+  onCancel,
+  children,
+  divided = false,
+  last = false,
+}: {
+  eyebrow: string;
+  title: string;
+  action?: React.ReactNode;
+  editing?: boolean;
+  onEdit?: () => void;
+  onCancel?: () => void;
+  children: React.ReactNode;
+  divided?: boolean;
+  last?: boolean;
+}) {
+  return (
+    <section
+      className={[
+        divided ? "border-t border-border/50 pt-9" : "",
+        !last ? "pb-10" : "",
+      ].join(" ")}
+    >
+      <div className="mb-6 flex items-start justify-between gap-5">
+        <div>
+          <p className="text-[0.6rem] font-semibold uppercase tracking-[0.15em] text-primary">
+            {eyebrow}
+          </p>
+
+          <h2 className="mt-1.5 text-xl font-black tracking-[-0.025em] sm:text-2xl">
+            {title}
+          </h2>
         </div>
 
-      </main>
+        <div className="flex items-center gap-1">
+          {action}
 
+          {onEdit && !editing && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={onEdit}
+              className="h-9 w-9 rounded-lg text-muted-foreground shadow-none hover:text-primary"
+              aria-label={`Edit ${title}`}
+            >
+              <Edit3Icon size={14} />
+            </Button>
+          )}
+
+          {editing && onCancel && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={onCancel}
+              className="h-9 w-9 rounded-lg text-muted-foreground shadow-none"
+              aria-label="Cancel editing"
+            >
+              <XIcon size={14} />
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {children}
+    </section>
+  );
+}
+
+/* =========================================================
+   SECTION ACTIONS
+========================================================= */
+
+function SectionActions({
+  saving,
+  onSave,
+  onCancel,
+}: {
+  saving: boolean;
+  onSave?: () => void;
+  onCancel: () => void;
+}) {
+  return (
+    <div className="mt-6 flex items-center justify-end gap-2">
+      <Button
+        type="button"
+        variant="ghost"
+        onClick={onCancel}
+        disabled={saving}
+        className="h-9 rounded-lg px-4 text-xs shadow-none"
+      >
+        Cancel
+      </Button>
+
+      {onSave ? (
+        <Button
+          type="button"
+          onClick={onSave}
+          disabled={saving}
+          className="h-9 rounded-lg px-4 text-xs shadow-none"
+        >
+          {saving ? (
+            <>
+              <LoaderCircleIcon
+                size={13}
+                className="animate-spin"
+              />
+              Saving
+            </>
+          ) : (
+            <>
+              <SaveIcon size={13} />
+              Save
+            </>
+          )}
+        </Button>
+      ) : (
+        <Button
+          type="submit"
+          disabled={saving}
+          className="h-9 rounded-lg px-4 text-xs shadow-none"
+        >
+          {saving ? (
+            <>
+              <LoaderCircleIcon
+                size={13}
+                className="animate-spin"
+              />
+              Saving
+            </>
+          ) : (
+            <>
+              <CheckIcon size={13} />
+              Save
+            </>
+          )}
+        </Button>
+      )}
+    </div>
+  );
+}
+
+/* =========================================================
+   PROFILE FIELD
+========================================================= */
+
+function ProfileField({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="grid gap-2">
+      <Label className="text-xs font-semibold">
+        {label}
+      </Label>
+
+      {children}
     </div>
   );
 }
@@ -992,133 +1874,35 @@ function ProfileStat({
   divided = false,
 }: {
   label: string;
-
-  value:
-    React.ReactNode;
-
-  suffix?:
-    React.ReactNode;
-
-  divided?:
-    boolean;
+  value: React.ReactNode;
+  suffix?: React.ReactNode;
+  divided?: boolean;
 }) {
   return (
     <div
       className={[
-        "group relative min-w-0 px-5 py-4",
-
-        "transition-colors",
-
-        "hover:bg-muted/[0.15]",
-
+        "min-w-0 px-5 py-4 transition-colors hover:bg-muted/[0.15]",
         divided
           ? "border-t border-border sm:border-l sm:border-t-0"
           : "",
-      ].join(
-        " ",
-      )}
+      ].join(" ")}
     >
-
       <p className="text-[0.58rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-        {
-          label
-        }
+        {label}
       </p>
 
       <div className="mt-1.5 flex min-w-0 items-baseline gap-1.5">
-
         <p className="truncate text-xl font-black tracking-[-0.04em] sm:text-[1.35rem]">
-          {
-            value
-          }
+          {value}
         </p>
 
         {suffix && (
           <span className="min-w-0 truncate text-[0.62rem] font-medium text-muted-foreground">
-            {
-              suffix
-            }
+            {suffix}
           </span>
         )}
-
       </div>
-
     </div>
-  );
-}
-
-/* =========================================================
-   PROFILE SECTION
-========================================================= */
-
-function ProfileSection({
-  eyebrow,
-  title,
-  action,
-  children,
-  divided = false,
-  last = false,
-}: {
-  eyebrow: string;
-
-  title: string;
-
-  action?:
-    React.ReactNode;
-
-  children:
-    React.ReactNode;
-
-  divided?:
-    boolean;
-
-  last?:
-    boolean;
-}) {
-  return (
-    <section
-      className={[
-        divided
-          ? "border-t border-border/50 pt-9"
-          : "",
-
-        !last
-          ? "pb-10"
-          : "",
-      ].join(
-        " ",
-      )}
-    >
-
-      <div className="mb-6 flex items-end justify-between gap-5">
-
-        <div>
-
-          <p className="text-[0.6rem] font-semibold uppercase tracking-[0.15em] text-primary">
-            {
-              eyebrow
-            }
-          </p>
-
-          <h2 className="mt-1.5 text-xl font-black tracking-[-0.025em] sm:text-2xl">
-            {
-              title
-            }
-          </h2>
-
-        </div>
-
-        {
-          action
-        }
-
-      </div>
-
-      {
-        children
-      }
-
-    </section>
   );
 }
 
@@ -1131,64 +1915,154 @@ function DetailItem({
   label,
   value,
 }: {
-  icon:
-    React.ComponentType<{
-      size?: number;
-      className?: string;
-    }>;
-
+  icon: React.ComponentType<{
+    size?: number;
+    className?: string;
+  }>;
   label: string;
-
   value: string;
 }) {
   return (
-    <div
-      className={[
-        "group flex items-center gap-3",
-        "rounded-xl",
-        "border border-border/75",
-        "bg-background",
-        "px-4 py-4",
-        "transition-colors",
-        "hover:bg-muted/[0.16]",
-      ].join(
-        " ",
-      )}
-    >
-
-      <span
-        className={[
-          "flex h-8 w-8 shrink-0 items-center justify-center",
-          "rounded-lg",
-          "bg-primary/[0.07]",
-          "text-primary",
-        ].join(
-          " ",
-        )}
-      >
-        <Icon
-          size={
-            14
-          }
-        />
+    <div className="group flex items-center gap-3 rounded-xl border border-border/75 bg-background px-4 py-4 transition-colors hover:bg-muted/[0.16]">
+      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/[0.07] text-primary">
+        <Icon size={14} />
       </span>
 
       <div className="min-w-0">
-
         <p className="text-[0.6rem] font-medium text-muted-foreground">
-          {
-            label
-          }
+          {label}
         </p>
 
         <p className="mt-0.5 truncate text-sm font-semibold">
-          {
-            value
-          }
+          {value}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+/* =========================================================
+   CREDENTIAL ROW
+========================================================= */
+
+function CredentialRow({
+  credential,
+}: {
+  credential: CredentialDocument;
+}) {
+  const status = credential.status ?? "Submitted";
+
+  return (
+    <div className="flex items-center gap-3 py-4">
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/[0.07] text-primary">
+        <FileTextIcon size={15} />
+      </span>
+
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-xs font-semibold">
+          {credential.fileName}
         </p>
 
+        <p className="mt-1 text-[0.62rem] text-muted-foreground">
+          {credential.uploadedAt
+            ? formatShortDate(credential.uploadedAt)
+            : "Professional credential"}
+        </p>
       </div>
 
+      <span className="rounded-md bg-muted px-2 py-1 text-[0.58rem] font-semibold text-muted-foreground">
+        {status}
+      </span>
+    </div>
+  );
+}
+
+/* =========================================================
+   VERIFICATION
+========================================================= */
+
+function VerificationItem({
+  icon: Icon,
+  title,
+  description,
+  status,
+  verified = false,
+}: {
+  icon: React.ComponentType<{
+    size?: number;
+    className?: string;
+  }>;
+  title: string;
+  description: string;
+  status: string;
+  verified?: boolean;
+}) {
+  return (
+    <div className="rounded-xl border border-border/75 bg-background p-4 transition-colors hover:bg-muted/[0.12]">
+      <div className="flex items-start justify-between gap-3">
+        <span
+          className={[
+            "flex h-8 w-8 items-center justify-center rounded-lg",
+            verified
+              ? "bg-emerald-400/[0.08] text-emerald-700 dark:text-emerald-300"
+              : "bg-muted text-muted-foreground",
+          ].join(" ")}
+        >
+          <Icon size={14} />
+        </span>
+
+        <span
+          className={[
+            "text-[0.58rem] font-semibold",
+            verified
+              ? "text-emerald-700 dark:text-emerald-300"
+              : "text-muted-foreground",
+          ].join(" ")}
+        >
+          {status}
+        </span>
+      </div>
+
+      <p className="mt-4 text-xs font-semibold">
+        {title}
+      </p>
+
+      <p className="mt-1 truncate text-[0.64rem] leading-5 text-muted-foreground">
+        {description}
+      </p>
+    </div>
+  );
+}
+
+/* =========================================================
+   SIDEBAR DETAIL
+========================================================= */
+
+function SidebarDetail({
+  label,
+  value,
+  strong = false,
+}: {
+  label: string;
+  value: string;
+  strong?: boolean;
+}) {
+  return (
+    <div className="grid grid-cols-[82px_minmax(0,1fr)] items-start gap-3">
+      <p className="text-[0.62rem] text-muted-foreground">
+        {label}
+      </p>
+
+      <p
+        className={[
+          "break-words text-right text-xs",
+          strong
+            ? "font-black tracking-[-0.01em] text-primary"
+            : "font-semibold",
+        ].join(" ")}
+      >
+        {value}
+      </p>
     </div>
   );
 }
@@ -1205,185 +2079,27 @@ function CompletedProjectSummary({
   return (
     <button
       type="button"
-      className={[
-        "group flex w-full items-center gap-4",
-        "rounded-xl border border-border/75",
-        "bg-background",
-        "px-5 py-5 text-left",
-        "transition-colors",
-        "hover:bg-muted/[0.15]",
-      ].join(
-        " ",
-      )}
+      className="group flex w-full items-center gap-4 rounded-xl border border-border/75 bg-background px-5 py-5 text-left transition-colors hover:bg-muted/[0.15]"
     >
-
       <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/[0.08] text-primary">
-
-        <FolderCheckIcon
-          size={
-            17
-          }
-        />
-
+        <FolderCheckIcon size={17} />
       </span>
 
       <div className="min-w-0 flex-1">
-
         <p className="text-sm font-semibold">
-          {count} completed{" "}
-          {count ===
-          1
-            ? "project"
-            : "projects"}
+          {count} completed {count === 1 ? "project" : "projects"}
         </p>
 
         <p className="mt-1 max-w-xl text-xs leading-6 text-muted-foreground">
           Completed work and client feedback build your professional history.
         </p>
-
       </div>
 
       <ArrowRightIcon
-        size={
-          14
-        }
-        className={[
-          "shrink-0 text-muted-foreground",
-          "transition-all",
-          "group-hover:translate-x-0.5",
-          "group-hover:text-primary",
-        ].join(
-          " ",
-        )}
+        size={14}
+        className="shrink-0 text-muted-foreground transition-all group-hover:translate-x-0.5 group-hover:text-primary"
       />
-
     </button>
-  );
-}
-
-/* =========================================================
-   VERIFICATION ITEM
-========================================================= */
-
-function VerificationItem({
-  icon: Icon,
-  title,
-  description,
-  status,
-  verified = false,
-}: {
-  icon:
-    React.ComponentType<{
-      size?: number;
-      className?: string;
-    }>;
-
-  title: string;
-
-  description: string;
-
-  status: string;
-
-  verified?: boolean;
-}) {
-  return (
-    <div className="rounded-xl border border-border/75 bg-background p-4 transition-colors hover:bg-muted/[0.12]">
-
-      <div className="flex items-start justify-between gap-3">
-
-        <span
-          className={[
-            "flex h-8 w-8 items-center justify-center rounded-lg",
-
-            verified
-              ? "bg-emerald-400/[0.08] text-emerald-700 dark:text-emerald-300"
-              : "bg-muted text-muted-foreground",
-          ].join(
-            " ",
-          )}
-        >
-          <Icon
-            size={
-              14
-            }
-          />
-        </span>
-
-        <span
-          className={[
-            "text-[0.58rem] font-semibold",
-
-            verified
-              ? "text-emerald-700 dark:text-emerald-300"
-              : "text-muted-foreground",
-          ].join(
-            " ",
-          )}
-        >
-          {
-            status
-          }
-        </span>
-
-      </div>
-
-      <p className="mt-4 text-xs font-semibold">
-        {
-          title
-        }
-      </p>
-
-      <p className="mt-1 truncate text-[0.64rem] leading-5 text-muted-foreground">
-        {
-          description
-        }
-      </p>
-
-    </div>
-  );
-}
-
-/* =========================================================
-   SIDEBAR DETAIL
-========================================================= */
-
-function SidebarDetail({
-  label,
-  value,
-  strong = false,
-}: {
-  label: string;
-
-  value: string;
-
-  strong?: boolean;
-}) {
-  return (
-    <div className="grid grid-cols-[82px_minmax(0,1fr)] items-start gap-3">
-
-      <p className="text-[0.62rem] text-muted-foreground">
-        {
-          label
-        }
-      </p>
-
-      <p
-        className={[
-          "break-words text-right text-xs",
-
-          strong
-            ? "font-black tracking-[-0.01em] text-primary"
-            : "font-semibold",
-        ].join(
-          " ",
-        )}
-      >
-        {
-          value
-        }
-      </p>
-
-    </div>
   );
 }
 
@@ -1394,33 +2110,54 @@ function SidebarDetail({
 function EmptyProjectHistory() {
   return (
     <div className="rounded-xl border border-dashed border-border bg-muted/[0.08] px-5 py-6">
-
       <div className="flex items-start gap-3">
-
         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-background text-muted-foreground ring-1 ring-border/70">
-
-          <FolderCheckIcon
-            size={
-              15
-            }
-          />
-
+          <FolderCheckIcon size={15} />
         </span>
 
         <div>
-
           <p className="text-sm font-semibold">
             No completed projects yet
           </p>
 
           <p className="mt-1 max-w-lg text-xs leading-6 text-muted-foreground">
-            Completed work and client feedback will appear here as your project history grows.
+            Completed work and client feedback will appear here as your
+            project history grows.
           </p>
-
         </div>
-
       </div>
+    </div>
+  );
+}
 
+/* =========================================================
+   EMPTY SECTION
+========================================================= */
+
+function EmptySection({
+  message,
+  action,
+  onClick,
+}: {
+  message: string;
+  action: string;
+  onClick: () => void;
+}) {
+  return (
+    <div className="flex max-w-3xl items-center justify-between gap-5 rounded-xl border border-dashed border-border px-5 py-5">
+      <p className="text-xs leading-6 text-muted-foreground">
+        {message}
+      </p>
+
+      <Button
+        type="button"
+        variant="ghost"
+        onClick={onClick}
+        className="h-9 shrink-0 rounded-lg px-3 text-xs font-semibold text-primary shadow-none"
+      >
+        <PlusIcon size={13} />
+        {action}
+      </Button>
     </div>
   );
 }
@@ -1432,7 +2169,6 @@ function EmptyProjectHistory() {
 function AllocatProfileError() {
   return (
     <div className="min-h-screen bg-background text-foreground">
-
       <header className="border-b border-border/60">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <DashboardMainNav />
@@ -1440,17 +2176,9 @@ function AllocatProfileError() {
       </header>
 
       <main className="container mx-auto px-5 py-20 md:px-8">
-
         <div className="mx-auto max-w-md text-center">
-
           <span className="mx-auto flex h-11 w-11 items-center justify-center rounded-xl bg-muted text-muted-foreground">
-
-            <UserRoundCheckIcon
-              size={
-                19
-              }
-            />
-
+            <UserRoundCheckIcon size={19} />
           </span>
 
           <h1 className="mt-5 text-xl font-black">
@@ -1463,18 +2191,13 @@ function AllocatProfileError() {
 
           <Button
             type="button"
-            onClick={() =>
-              window.location.reload()
-            }
+            onClick={() => window.location.reload()}
             className="mt-6 h-10 rounded-lg px-5 text-xs shadow-none"
           >
             Try again
           </Button>
-
         </div>
-
       </main>
-
     </div>
   );
 }
@@ -1486,7 +2209,6 @@ function AllocatProfileError() {
 function AllocatProfileSkeleton() {
   return (
     <div className="min-h-screen bg-background text-foreground">
-
       <header className="border-b border-border/60">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <DashboardMainNav />
@@ -1494,115 +2216,62 @@ function AllocatProfileSkeleton() {
       </header>
 
       <main className="container mx-auto px-5 py-10 md:px-8 lg:py-12">
-
         <div className="flex items-center gap-5">
-
           <Skeleton className="h-24 w-24 rounded-full" />
 
           <div className="space-y-3">
-
             <Skeleton className="h-7 w-56" />
-
             <Skeleton className="h-4 w-80 max-w-full" />
-
             <Skeleton className="h-3 w-48" />
-
           </div>
-
         </div>
 
-        {/* Open-left/open-right summary */}
-
         <div className="mt-8 border-y border-border">
-
           <div className="grid sm:grid-cols-2 lg:grid-cols-4">
-
-            {Array.from({
-              length:
-                4,
-            }).map(
-              (
-                _,
-                index,
-              ) => (
-                <div
-                  key={
-                    index
-                  }
-                  className={[
-                    "px-5 py-4",
-
-                    index >
-                    0
-                      ? "border-t border-border sm:border-l sm:border-t-0"
-                      : "",
-                  ].join(
-                    " ",
-                  )}
-                >
-
-                  <Skeleton className="h-3 w-16" />
-
-                  <Skeleton className="mt-3 h-6 w-24" />
-
-                </div>
-              ),
-            )}
-
+            {Array.from({ length: 4 }).map((_, index) => (
+              <div
+                key={index}
+                className={
+                  index > 0
+                    ? "border-t border-border px-5 py-4 sm:border-l sm:border-t-0"
+                    : "px-5 py-4"
+                }
+              >
+                <Skeleton className="h-3 w-16" />
+                <Skeleton className="mt-3 h-6 w-24" />
+              </div>
+            ))}
           </div>
-
         </div>
 
         <div className="mt-10 grid gap-12 xl:grid-cols-[minmax(0,1fr)_300px]">
-
-          <div>
-
-            <div className="pb-10">
-
+          <div className="space-y-10">
+            <div>
               <Skeleton className="h-3 w-20" />
-
               <Skeleton className="mt-3 h-7 w-48" />
-
               <Skeleton className="mt-6 h-4 w-full" />
-
               <Skeleton className="mt-2 h-4 w-5/6" />
-
               <Skeleton className="mt-2 h-4 w-3/4" />
-
             </div>
 
-            <div className="border-t border-border/50 py-9">
-
+            <div className="border-t border-border/50 pt-9">
               <Skeleton className="h-3 w-16" />
-
               <Skeleton className="mt-3 h-7 w-28" />
 
               <div className="mt-5 flex gap-2">
-
                 <Skeleton className="h-8 w-24 rounded-lg" />
-
                 <Skeleton className="h-8 w-28 rounded-lg" />
-
                 <Skeleton className="h-8 w-20 rounded-lg" />
-
               </div>
-
             </div>
-
           </div>
 
           <div className="hidden space-y-5 xl:block">
-
             <Skeleton className="h-52 rounded-2xl" />
-
             <Skeleton className="h-40 rounded-2xl" />
-
           </div>
-
         </div>
-
       </main>
-
     </div>
   );
 }
@@ -1616,13 +2285,16 @@ function getInitials(name?: string) {
     return "A";
   }
 
-  return name.trim().split(/\s+/,).slice(0, 2,)
+  return name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
     .map((part) => part.charAt(0).toUpperCase())
     .join("");
 }
 
 function getFirstName(name?: string) {
-  return (name?.trim().split(/\s+/,)[0] || "this Allocat");
+  return name?.trim().split(/\s+/)[0] || "this Allocat";
 }
 
 function getScoreLabel(score: number) {
@@ -1639,6 +2311,28 @@ function getScoreLabel(score: number) {
   }
 
   return "Build your profile";
+}
+
+function formatFileSize(size: number) {
+  if (size < 1024 * 1024) {
+    return `${Math.max(1, Math.round(size / 1024))} KB`;
+  }
+
+  return `${(size / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function formatShortDate(value: string) {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "Date unavailable";
+  }
+
+  return new Intl.DateTimeFormat("en", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  }).format(date);
 }
 
 export default AllocatProfile;
