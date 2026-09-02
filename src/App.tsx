@@ -1,6 +1,6 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import AllocatsSearch from "./pages/AllocatsSearch";
-import AllocatProfile from "./pages/AllocatProfile";
+import AllocatProfilePage from "./pages/AllocatProfile";
 import Dashboard from "./pages/Dashboard";
 import Calendar from "./components/Calendar";
 import ProjectManager from "./components/ProjectManager";
@@ -13,17 +13,20 @@ import Transactions from "./components/Transactions";
 import Favorites from "./components/Favorites";
 import CreateProject from "./pages/CreateProject";
 import FindAllocats from "./pages/FindAllocats";
+import VerifyEmail from "@/pages/Auth/VerifyEmail";
 import { useEffect } from "react";
 import "./App.css";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 import Profile from "./pages/Profile";
+import AppToaster from "@/components/AppToaster";
 
 
 import { AuthProvider } from "./auth/AuthContext";
 import { RequireAuth } from "./auth/RequireAuth";
 import CreateAllocatProfile from "./pages/CreateAllocatProfile";
 import AboutPage from "./pages/AboutPage";
+import { CheckCircle2Icon, AlertCircleIcon, InfoIcon, TriangleAlertIcon } from "lucide-react";
 
 function App() {
   const theme = localStorage.getItem("theme") || "light";
@@ -56,7 +59,10 @@ function App() {
       path: "/allocats", Component: AllocatsSearch,
     },        
     {
-      path: "/allocats/:profileId", Component: AllocatProfile,
+      path: "/allocats/:profileId", Component: AllocatProfilePage,
+    },
+    {
+      path: "/verify-email", Component: VerifyEmail,
     },
     {      
       path: "/about",
@@ -96,7 +102,7 @@ function App() {
         },
         {
           path: "allocats/profile",
-          Component: AllocatProfile,
+          Component: AllocatProfilePage,
         },
         {
           path: "allocats/profile/create",
@@ -109,12 +115,14 @@ function App() {
       ],
     },
   ]);
+  
 
   return (
     <>
       <AuthProvider>
           <RouterProvider router={router}/>
       </AuthProvider>
+      <AppToaster />
     </>
   );
 }

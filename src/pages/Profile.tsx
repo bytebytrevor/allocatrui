@@ -14,61 +14,53 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
 
 import {
   AlertCircleIcon,
   BadgeCheckIcon,
   CameraIcon,
-  CheckCircle2Icon,
   Clock3Icon,
   ImageIcon,
   LoaderCircleIcon,
   LockKeyholeIcon,
+  MailCheckIcon,
   MailIcon,
   MapPinIcon,
   PhoneIcon,
+  RefreshCwIcon,
   SaveIcon,
   ShieldCheckIcon,
   Trash2Icon,
   UserRoundIcon,
 } from "lucide-react";
 
+import { isAxiosError } from "axios";
+import { toast } from "sonner";
+
 import {
   type ChangeEvent,
+  type ComponentType,
   type FormEvent,
+  type ReactNode,
+  useCallback,
   useEffect,
   useMemo,
   useRef,
   useState,
 } from "react";
 
+import type { ProfileUser } from "@/Types/profileUser";
+
 /* =========================================================
    TYPES
 ========================================================= */
-
-type ProfileUser = {
-  id?: string;
-  fullName?: string;
-  email?: string;
-  phoneNumber?: string;
-  location?: string;
-  avatarUrl?: string | null;
-  createdAt?: string;
-  emailConfirmed?: boolean;
-};
 
 type ProfileForm = {
   fullName: string;
   phoneNumber: string;
   location: string;
 };
-
-type MessageState =
-  | {
-      type: "success" | "error";
-      text: string;
-    }
-  | null;
 
 /* =========================================================
    CONSTANTS
@@ -82,12 +74,15 @@ const ACCEPTED_IMAGE_TYPES = [
   "image/webp",
 ];
 
+const EMAIL_VERIFICATION_ENDPOINT =
+  "/profiles/me/email-verification";
+
 /* =========================================================
    HELPERS
 ========================================================= */
 
-function getInitials(name?: string) {
-  if (!name) {
+function getInitials(name?: string | null) {
+  if (!name?.trim()) {
     return "U";
   }
 
@@ -99,7 +94,7 @@ function getInitials(name?: string) {
     .join("");
 }
 
-function formatDate(date?: string) {
+function formatDate(date?: string | null) {
   if (!date) {
     return "Not available";
   }
@@ -117,7 +112,7 @@ function formatDate(date?: string) {
   }).format(parsedDate);
 }
 
-function formatDateShort(date?: string) {
+function formatDateShort(date?: string | null) {
   if (!date) {
     return "Not available";
   }
@@ -134,16 +129,35 @@ function formatDateShort(date?: string) {
   }).format(parsedDate);
 }
 
+function getApiErrorMessage(
+  error: unknown,
+  fallback: string,
+) {
+  if (
+    isAxiosError(error) &&
+    typeof error.response?.data?.message === "string"
+  ) {
+    return error.response.data.message;
+  }
+
+  return fallback;
+}
+
 /* =========================================================
    PAGE
 ========================================================= */
 
 export default function Profile() {
-  const { user, refreshUser } = useAuth();
-
-  const profileUser = user as ProfileUser | null;
+  const { refreshUser } = useAuth();
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const [profileUser, setProfileUser] =
+    useState<ProfileUser | null>(null);
+
+  const [loadingProfile, setLoadingProfile] = useState(true);
+  const [profileLoadError, setProfileLoadError] =
+    useState<string | null>(null);
 
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -153,27 +167,72 @@ export default function Profile() {
 
   const [savingProfile, setSavingProfile] = useState(false);
 
-  const [pictureMessage, setPictureMessage] =
-    useState<MessageState>(null);
+  const [sendingVerification, setSendingVerification] =
+    useState(false);
 
-  const [profileMessage, setProfileMessage] =
-    useState<MessageState>(null);
+  const [pictureError, setPictureError] =
+    useState<string | null>(null);
+
+  const [profileError, setProfileError] =
+    useState<string | null>(null);
+
+  const [verificationError, setVerificationError] =
+    useState<string | null>(null);
 
   const [profileForm, setProfileForm] = useState<ProfileForm>({
-    fullName: profileUser?.fullName ?? "",
-    phoneNumber: profileUser?.phoneNumber ?? "",
-    location: profileUser?.location ?? "",
+    fullName: "",
+    phoneNumber: "",
+    location: "",
   });
 
   /* =======================================================
-     SYNC PROFILE
+     LOAD PROFILE
+  ======================================================= */
+
+  const fetchProfile = useCallback(async () => {
+    try {
+      setLoadingProfile(true);
+      setProfileLoadError(null);
+
+      const response = await api.get<ProfileUser>(
+        "/profiles/me",
+        {
+          withCredentials: true,
+        },
+      );
+
+      setProfileUser(response.data);
+    } catch (error) {
+      console.error("Could not load profile:", error);
+
+      setProfileLoadError(
+        getApiErrorMessage(
+          error,
+          "Your profile could not be loaded. Please try again.",
+        ),
+      );
+    } finally {
+      setLoadingProfile(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void fetchProfile();
+  }, [fetchProfile]);
+
+  /* =======================================================
+     SYNC FORM
   ======================================================= */
 
   useEffect(() => {
+    if (!profileUser) {
+      return;
+    }
+
     setProfileForm({
-      fullName: profileUser?.fullName ?? "",
-      phoneNumber: profileUser?.phoneNumber ?? "",
-      location: profileUser?.location ?? "",
+      fullName: profileUser.fullName ?? "",
+      phoneNumber: profileUser.phoneNumber ?? "",
+      location: profileUser.location ?? "",
     });
   }, [
     profileUser?.fullName,
@@ -219,26 +278,26 @@ export default function Profile() {
       (profileUser?.location ?? "").trim();
 
   const profileCompletion = useMemo(() => {
-    const fields = [
-      Boolean(profileUser?.fullName),
-      Boolean(profileUser?.email),
-      Boolean(profileUser?.phoneNumber),
-      Boolean(profileUser?.location),
-      Boolean(profileUser?.avatarUrl),
+    if (!profileUser) {
+      return 0;
+    }
+
+    const requirements = [
+      Boolean(profileUser.fullName?.trim()),
+      Boolean(profileUser.email?.trim()),
+      profileUser.emailConfirmed,
+      Boolean(profileUser.phoneNumber?.trim()),
+      Boolean(profileUser.location?.trim()),
+      Boolean(profileUser.avatarUrl),
     ];
 
-    const completedFields = fields.filter(Boolean).length;
+    const completed =
+      requirements.filter(Boolean).length;
 
     return Math.round(
-      (completedFields / fields.length) * 100,
+      (completed / requirements.length) * 100,
     );
-  }, [
-    profileUser?.fullName,
-    profileUser?.email,
-    profileUser?.phoneNumber,
-    profileUser?.location,
-    profileUser?.avatarUrl,
-  ]);
+  }, [profileUser]);
 
   /* =======================================================
      PROFILE PICTURE
@@ -247,29 +306,32 @@ export default function Profile() {
   function handleFileChange(
     event: ChangeEvent<HTMLInputElement>,
   ) {
-    const selectedFile = event.target.files?.[0] ?? null;
+    const selectedFile =
+      event.target.files?.[0] ?? null;
 
-    setPictureMessage(null);
+    setPictureError(null);
 
     if (!selectedFile) {
       return;
     }
 
-    if (!ACCEPTED_IMAGE_TYPES.includes(selectedFile.type)) {
-      setPictureMessage({
-        type: "error",
-        text: "Choose a JPEG, PNG or WebP image.",
-      });
+    if (
+      !ACCEPTED_IMAGE_TYPES.includes(
+        selectedFile.type,
+      )
+    ) {
+      setPictureError(
+        "Choose a JPEG, PNG or WebP image.",
+      );
 
       event.target.value = "";
       return;
     }
 
     if (selectedFile.size > MAX_FILE_SIZE) {
-      setPictureMessage({
-        type: "error",
-        text: "The image must be smaller than 5 MB.",
-      });
+      setPictureError(
+        "The image must be smaller than 5 MB.",
+      );
 
       event.target.value = "";
       return;
@@ -279,10 +341,8 @@ export default function Profile() {
       URL.revokeObjectURL(preview);
     }
 
-    const previewUrl = URL.createObjectURL(selectedFile);
-
     setFile(selectedFile);
-    setPreview(previewUrl);
+    setPreview(URL.createObjectURL(selectedFile));
     setUploadProgress(0);
   }
 
@@ -294,6 +354,7 @@ export default function Profile() {
     setFile(null);
     setPreview(null);
     setUploadProgress(0);
+    setPictureError(null);
 
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
@@ -307,13 +368,16 @@ export default function Profile() {
 
     setUploading(true);
     setUploadProgress(0);
-    setPictureMessage(null);
+    setPictureError(null);
 
     const formData = new FormData();
+
     formData.append("file", file);
 
     try {
-      await api.post(
+      const response = await api.post<{
+        avatarUrl: string;
+      }>(
         "/profiles/profile-picture",
         formData,
         {
@@ -333,18 +397,24 @@ export default function Profile() {
         },
       );
 
-      /*
-       * The backend updates AllocatrUser.AvatarUrl.
-       * Refreshing the authenticated user pulls the new URL
-       * back into AuthContext.
-       */
+      setProfileUser((current) => {
+        if (!current) {
+          return current;
+        }
+
+        return {
+          ...current,
+          avatarUrl: response.data.avatarUrl,
+        };
+      });
+
       await refreshUser();
 
       clearSelectedFile();
 
-      setPictureMessage({
-        type: "success",
-        text: "Your profile picture has been updated.",
+      toast.success("Profile picture updated", {
+        description:
+          "Your new picture is now visible across Allocatr.",
       });
     } catch (error) {
       console.error(
@@ -352,10 +422,12 @@ export default function Profile() {
         error,
       );
 
-      setPictureMessage({
-        type: "error",
-        text: "The image could not be uploaded. Please try again.",
-      });
+      setPictureError(
+        getApiErrorMessage(
+          error,
+          "The image could not be uploaded. Please try again.",
+        ),
+      );
     } finally {
       setUploading(false);
     }
@@ -375,7 +447,7 @@ export default function Profile() {
       [name]: value,
     }));
 
-    setProfileMessage(null);
+    setProfileError(null);
   }
 
   async function saveProfile(
@@ -383,21 +455,21 @@ export default function Profile() {
   ) {
     event.preventDefault();
 
+    setProfileError(null);
+
     if (!profileForm.fullName.trim()) {
-      setProfileMessage({
-        type: "error",
-        text: "Enter your full name before saving.",
-      });
+      setProfileError(
+        "Enter your full name before saving.",
+      );
 
       return;
     }
 
     setSavingProfile(true);
-    setProfileMessage(null);
 
     try {
-      await api.patch(
-        "/profile",
+      const response = await api.patch<ProfileUser>(
+        "/profiles/me",
         {
           fullName: profileForm.fullName.trim(),
           phoneNumber:
@@ -410,11 +482,13 @@ export default function Profile() {
         },
       );
 
+      setProfileUser(response.data);
+
       await refreshUser();
 
-      setProfileMessage({
-        type: "success",
-        text: "Your profile details have been saved.",
+      toast.success("Profile updated", {
+        description:
+          "Your personal information has been saved.",
       });
     } catch (error) {
       console.error(
@@ -422,13 +496,85 @@ export default function Profile() {
         error,
       );
 
-      setProfileMessage({
-        type: "error",
-        text: "Your profile could not be saved. Please try again.",
-      });
+      setProfileError(
+        getApiErrorMessage(
+          error,
+          "Your profile could not be saved. Please try again.",
+        ),
+      );
     } finally {
       setSavingProfile(false);
     }
+  }
+
+  /* =======================================================
+     EMAIL VERIFICATION
+  ======================================================= */
+
+  async function sendVerificationEmail() {
+    if (
+      !profileUser?.email ||
+      profileUser.emailConfirmed ||
+      sendingVerification
+    ) {
+      return;
+    }
+
+    setSendingVerification(true);
+    setVerificationError(null);
+
+    try {
+      await api.post(
+        EMAIL_VERIFICATION_ENDPOINT,
+        {},
+        {
+          withCredentials: true,
+        },
+      );
+
+      toast.success("Verification email sent", {
+        description:
+          `Check ${profileUser.email} for your verification link.`,
+      });
+    } catch (error) {
+      console.error(
+        "Could not send verification email:",
+        error,
+      );
+
+      setVerificationError(
+        getApiErrorMessage(
+          error,
+          "We could not send the verification email. Please try again.",
+        ),
+      );
+    } finally {
+      setSendingVerification(false);
+    }
+  }
+
+  /* =======================================================
+     LOADING
+  ======================================================= */
+
+  if (loadingProfile) {
+    return <ProfileLoading />;
+  }
+
+  /* =======================================================
+     LOAD ERROR
+  ======================================================= */
+
+  if (profileLoadError || !profileUser) {
+    return (
+      <ProfileErrorPage
+        message={
+          profileLoadError ??
+          "Your profile could not be loaded."
+        }
+        onRetry={fetchProfile}
+      />
+    );
   }
 
   /* =======================================================
@@ -483,49 +629,37 @@ export default function Profile() {
               </p>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2">
-              {profileUser?.emailConfirmed !== false && (
-                <Badge
-                  variant="outline"
-                  className={[
-                    "h-8 rounded-lg",
-                    "border-emerald-500/15",
-                    "bg-emerald-400/[0.06]",
-                    "px-3",
-                    "text-[0.68rem] font-semibold",
-                    "text-emerald-700",
-                    "shadow-none",
-                    "dark:text-emerald-300",
-                  ].join(" ")}
-                >
-                  <BadgeCheckIcon size={12} />
-                  Verified
-                </Badge>
-              )}
+            <Badge
+              variant="outline"
+              className="h-8 w-fit rounded-lg border-border bg-transparent px-3 text-[0.68rem] font-semibold shadow-none"
+            >
+              <UserRoundIcon size={12} />
 
-              <Badge
-                variant="outline"
-                className={[
-                  "h-8 rounded-lg",
-                  "border-border",
-                  "bg-muted/30",
-                  "px-3",
-                  "text-[0.68rem] font-semibold",
-                  "shadow-none",
-                ].join(" ")}
-              >
-                <UserRoundIcon size={12} />
-                Client account
-              </Badge>
-            </div>
+              {profileUser.isAllocat
+                ? "Allocat account"
+                : "Client account"}
+            </Badge>
           </div>
 
           {/* =================================================
-              ACCOUNT SUMMARY
+              VERIFICATION NOTICE
+          ================================================= */}
+
+          {!profileUser.emailConfirmed && (
+            <EmailVerificationWarning
+              email={profileUser.email}
+              sending={sendingVerification}
+              error={verificationError}
+              onVerify={sendVerificationEmail}
+            />
+          )}
+
+          {/* =================================================
+              SUMMARY
           ================================================= */}
 
           <div className="mt-8 border-y border-border">
-            <div className="grid sm:grid-cols-2 xl:grid-cols-4">
+            <div className="grid sm:grid-cols-3">
               <SummaryStat
                 label="Profile"
                 value={`${profileCompletion}%`}
@@ -533,19 +667,9 @@ export default function Profile() {
               />
 
               <SummaryStat
-                label="Email"
-                value={
-                  profileUser?.emailConfirmed === false
-                    ? "Pending"
-                    : "Verified"
-                }
-                divided
-              />
-
-              <SummaryStat
                 label="Location"
                 value={
-                  profileUser?.location ||
+                  profileUser.location ||
                   "Not added"
                 }
                 divided
@@ -553,7 +677,9 @@ export default function Profile() {
 
               <SummaryStat
                 label="Member since"
-                value={formatDateShort(profileUser?.createdAt)}
+                value={formatDateShort(
+                  profileUser.createdAt,
+                )}
                 divided
               />
             </div>
@@ -561,7 +687,7 @@ export default function Profile() {
         </section>
 
         {/* =================================================
-            CONTENT GRID
+            CONTENT
         ================================================= */}
 
         <div className="grid min-w-0 items-start gap-10 pt-8 lg:grid-cols-[300px_minmax(0,1fr)] xl:grid-cols-[320px_minmax(0,1fr)] xl:gap-14">
@@ -574,7 +700,7 @@ export default function Profile() {
                 PROFILE PICTURE
             ============================================= */}
 
-            <section className="rounded-2xl border border-border bg-card p-6">
+            <section className="rounded-2xl border border-border bg-transparent p-6">
               <div className="flex items-center justify-between gap-4">
                 <div>
                   <p className="text-[0.62rem] font-semibold uppercase tracking-[0.15em] text-primary">
@@ -593,19 +719,17 @@ export default function Profile() {
 
               <div className="mt-7 flex flex-col items-center text-center">
                 <div className="relative">
-                  <Avatar className="h-28 w-28 border border-border shadow-sm">
+                  <Avatar className="h-28 w-28 border border-border bg-transparent shadow-sm">
                     <AvatarImage
                       src={displayedImage}
-                      alt={
-                        profileUser?.fullName
-                          ? `${profileUser.fullName}'s profile`
-                          : "User profile"
-                      }
+                      alt={`${profileUser.fullName}'s profile`}
                       className="object-cover"
                     />
 
                     <AvatarFallback className="bg-primary/[0.08] text-2xl font-black text-primary">
-                      {getInitials(profileUser?.fullName)}
+                      {getInitials(
+                        profileUser.fullName,
+                      )}
                     </AvatarFallback>
                   </Avatar>
 
@@ -618,7 +742,7 @@ export default function Profile() {
                     className={[
                       "absolute -bottom-1 -right-1",
                       "flex h-9 w-9 items-center justify-center",
-                      "rounded-lg border-4 border-card",
+                      "rounded-lg border-4 border-background",
                       "bg-primary text-primary-foreground",
                       "transition-all duration-200",
                       "hover:-translate-y-0.5 hover:scale-[1.03]",
@@ -632,17 +756,27 @@ export default function Profile() {
                 </div>
 
                 <h2 className="mt-5 max-w-full break-words text-lg font-bold tracking-[-0.025em]">
-                  {profileUser?.fullName || "Allocatr user"}
+                  {profileUser.fullName}
                 </h2>
 
-                <p className="mt-1 max-w-full break-all text-xs text-muted-foreground">
-                  {profileUser?.email || "No email available"}
-                </p>
+                <div className="mt-1 flex max-w-full items-center justify-center gap-1.5">
+                  <p className="min-w-0 truncate text-xs text-muted-foreground">
+                    {profileUser.email ||
+                      "No email available"}
+                  </p>
 
-                <div className="mt-4 inline-flex items-center gap-1.5 rounded-md bg-muted/40 px-2.5 py-1.5 text-[0.65rem] text-muted-foreground">
+                  {profileUser.emailConfirmed && (
+                    <BadgeCheckIcon
+                      size={12}
+                      className="shrink-0 text-emerald-600 dark:text-emerald-300"
+                    />
+                  )}
+                </div>
+
+                <div className="mt-4 inline-flex items-center gap-1.5 rounded-md border border-border/60 px-2.5 py-1.5 text-[0.65rem] text-muted-foreground">
                   <MapPinIcon size={11} />
 
-                  {profileUser?.location ||
+                  {profileUser.location ||
                     "Location not added"}
                 </div>
               </div>
@@ -684,7 +818,7 @@ export default function Profile() {
                         type="button"
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 rounded-lg text-muted-foreground shadow-none hover:bg-muted hover:text-foreground"
+                        className="h-8 w-8 rounded-lg text-muted-foreground shadow-none hover:bg-muted/40 hover:text-foreground"
                         onClick={clearSelectedFile}
                         aria-label="Remove selected image"
                       >
@@ -716,17 +850,19 @@ export default function Profile() {
                 </div>
               )}
 
-              {pictureMessage && (
-                <InlineMessage message={pictureMessage} />
+              {pictureError && (
+                <InlineError
+                  message={pictureError}
+                />
               )}
 
-              {/* Actions */}
+              {/* Picture actions */}
 
               <div className="mt-6 grid gap-2">
                 <Button
                   type="button"
                   variant="outline"
-                  className="h-10 rounded-lg text-xs font-semibold shadow-none"
+                  className="h-10 rounded-lg bg-transparent text-xs font-semibold shadow-none"
                   onClick={() =>
                     fileInputRef.current?.click()
                   }
@@ -736,7 +872,7 @@ export default function Profile() {
 
                   {file
                     ? "Choose another"
-                    : profileUser?.avatarUrl
+                    : profileUser.avatarUrl
                       ? "Change picture"
                       : "Choose image"}
                 </Button>
@@ -783,7 +919,7 @@ export default function Profile() {
                     </p>
 
                     <p className="mt-1 text-[0.62rem] leading-5 text-muted-foreground">
-                      Complete your basic account details.
+                      Complete and verify your account details.
                     </p>
                   </div>
 
@@ -797,15 +933,13 @@ export default function Profile() {
                   className="mt-3 h-1.5"
                 />
               </div>
-
-              
             </section>
 
             {/* =============================================
-                TRUST NOTE
+                TRUST
             ============================================= */}
 
-            <section className="mt-5 flex items-start gap-3 rounded-xl bg-muted/[0.18] px-4 py-4">
+            <section className="mt-5 flex items-start gap-3 rounded-xl bg-muted/[0.12] px-4 py-4">
               <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-400/[0.08] text-emerald-700 dark:text-emerald-300">
                 <ShieldCheckIcon size={16} />
               </span>
@@ -816,8 +950,8 @@ export default function Profile() {
                 </p>
 
                 <p className="mt-1 text-[0.66rem] leading-5 text-muted-foreground">
-                  Accurate contact information helps with project
-                  updates and important account notices.
+                  Accurate and verified information improves account
+                  security and keeps project communication reliable.
                 </p>
               </div>
             </section>
@@ -828,10 +962,6 @@ export default function Profile() {
           ================================================= */}
 
           <div className="min-w-0">
-            {/* =============================================
-                PERSONAL INFO
-            ============================================= */}
-
             <form onSubmit={saveProfile}>
               <ProfileSection
                 eyebrow="Personal details"
@@ -839,6 +969,10 @@ export default function Profile() {
                 description="The basic information shown throughout your workspace."
               >
                 <div className="grid gap-6">
+                  {/* =========================================
+                      FULL NAME
+                  ========================================= */}
+
                   <ProfileField
                     label="Full name"
                     description="The name shown to other people on Allocatr."
@@ -857,7 +991,8 @@ export default function Profile() {
                         placeholder="Enter your full name"
                         className={[
                           "h-11 rounded-lg",
-                          "border-border bg-background",
+                          "!bg-transparent",
+                          "border-border",
                           "pl-10 shadow-none",
                           "focus-visible:border-primary/40",
                           "focus-visible:ring-1",
@@ -868,39 +1003,76 @@ export default function Profile() {
                     </div>
                   </ProfileField>
 
+                  {/* =========================================
+                      EMAIL
+                  ========================================= */}
+
                   <ProfileField
                     label="Email address"
-                    description="Email changes are managed through account settings."
+                    description="Your sign-in email is tied to your account and cannot be changed from this page."
                   >
-                    <div className="relative">
-                      <MailIcon
-                        size={15}
-                        className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground"
-                      />
+                    <div className="flex flex-col gap-2.5 sm:flex-row">
+                      <div className="relative min-w-0 flex-1">
+                        <MailIcon
+                          size={15}
+                          className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/80"
+                        />
 
-                      <Input
-                        id="email"
-                        type="email"
-                        value={profileUser?.email ?? ""}
-                        readOnly
-                        className={[
-                          "h-11 rounded-lg",
-                          "border-border",
-                          "bg-muted/20",
-                          "pl-10 pr-24",
-                          "text-muted-foreground",
-                          "shadow-none",
-                        ].join(" ")}
-                      />
+                        <Input
+                          id="email"
+                          type="email"
+                          value={
+                            profileUser.email ?? ""
+                          }
+                          disabled
+                          className={[
+                            "h-11 rounded-lg",
+                            "!bg-muted/[0.2]",
+                            "border-border/70",
+                            "pl-10 pr-10",
+                            "font-medium",
+                            "text-muted-foreground",
+                            "shadow-none",
+                            "disabled:cursor-not-allowed",
+                            "disabled:opacity-100",
+                            "disabled:text-muted-foreground",
+                          ].join(" ")}
+                        />
 
-                      {profileUser?.emailConfirmed !== false && (
-                        <span className="pointer-events-none absolute right-3.5 top-1/2 flex -translate-y-1/2 items-center gap-1 text-[0.62rem] font-semibold text-emerald-600 dark:text-emerald-300">
-                          <BadgeCheckIcon size={12} />
+                        <LockKeyholeIcon
+                          size={13}
+                          className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/55"
+                        />
+                      </div>
+
+                      {profileUser.emailConfirmed ? (
+                        <div
+                          className={[
+                            "flex h-11 shrink-0 items-center gap-1.5",
+                            "rounded-lg border border-border/70",
+                            "bg-transparent px-3.5",
+                            "text-xs font-semibold",
+                            "text-emerald-700",
+                            "dark:text-emerald-300",
+                          ].join(" ")}
+                        >
+                          <BadgeCheckIcon size={13} />
                           Verified
-                        </span>
+                        </div>
+                      ) : (
+                        <VerificationButton
+                          sending={sendingVerification}
+                          disabled={!profileUser.email}
+                          onVerify={sendVerificationEmail}
+                          size="field"
+                        />
                       )}
                     </div>
                   </ProfileField>
+
+                  {/* =========================================
+                      PHONE + LOCATION
+                  ========================================= */}
 
                   <div className="grid gap-6 sm:grid-cols-2">
                     <ProfileField label="Phone number">
@@ -919,7 +1091,8 @@ export default function Profile() {
                           placeholder="+263..."
                           className={[
                             "h-11 rounded-lg",
-                            "border-border bg-background",
+                            "!bg-transparent",
+                            "border-border",
                             "pl-10 shadow-none",
                             "focus-visible:border-primary/40",
                             "focus-visible:ring-1",
@@ -945,7 +1118,8 @@ export default function Profile() {
                           placeholder="City, country"
                           className={[
                             "h-11 rounded-lg",
-                            "border-border bg-background",
+                            "!bg-transparent",
+                            "border-border",
                             "pl-10 shadow-none",
                             "focus-visible:border-primary/40",
                             "focus-visible:ring-1",
@@ -958,9 +1132,15 @@ export default function Profile() {
                   </div>
                 </div>
 
-                {profileMessage && (
-                  <InlineMessage message={profileMessage} />
+                {profileError && (
+                  <InlineError
+                    message={profileError}
+                  />
                 )}
+
+                {/* =========================================
+                    SAVE
+                ========================================= */}
 
                 <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <p
@@ -990,7 +1170,6 @@ export default function Profile() {
                           size={14}
                           className="animate-spin"
                         />
-
                         Saving
                       </>
                     ) : (
@@ -1020,33 +1199,43 @@ export default function Profile() {
                   icon={MailIcon}
                   label="Email"
                   value={
-                    profileUser?.emailConfirmed === false
-                      ? "Not verified"
-                      : "Verified"
+                    profileUser.emailConfirmed
+                      ? "Verified"
+                      : "Verification required"
                   }
                   status={
-                    profileUser?.emailConfirmed === false
-                      ? "warning"
-                      : "success"
+                    profileUser.emailConfirmed
+                      ? "success"
+                      : "pending"
                   }
                 />
 
                 <AccountItem
                   icon={Clock3Icon}
                   label="Member since"
-                  value={formatDate(profileUser?.createdAt)}
+                  value={formatDate(
+                    profileUser.createdAt,
+                  )}
                 />
 
                 <AccountItem
                   icon={UserRoundIcon}
                   label="Account type"
-                  value="Client"
+                  value={
+                    profileUser.isAllocat
+                      ? "Allocat"
+                      : "Client"
+                  }
                 />
 
                 <AccountItem
                   icon={LockKeyholeIcon}
                   label="Profile visibility"
-                  value="Private account"
+                  value={
+                    profileUser.isAllocat
+                      ? "Professional account"
+                      : "Private account"
+                  }
                 />
               </div>
             </ProfileSection>
@@ -1054,6 +1243,151 @@ export default function Profile() {
         </div>
       </main>
     </div>
+  );
+}
+
+/* =========================================================
+   EMAIL VERIFICATION WARNING
+========================================================= */
+
+function EmailVerificationWarning({
+  email,
+  sending,
+  error,
+  onVerify,
+}: {
+  email: string | null;
+  sending: boolean;
+  error: string | null;
+  onVerify: () => Promise<void>;
+}) {
+  return (
+    <section
+      className={[
+        "mt-7 rounded-xl border",
+        "border-border/70",
+        "bg-muted/[0.12]",
+        "px-4 py-4 sm:px-5",
+      ].join(" ")}
+      aria-label="Email verification required"
+    >
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+        <div className="flex min-w-0 flex-1 items-start gap-3.5">
+          <span
+            className={[
+              "mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center",
+              "rounded-lg",
+              "bg-primary/[0.07]",
+              "text-primary",
+            ].join(" ")}
+          >
+            <MailCheckIcon size={15} />
+          </span>
+
+          <div className="min-w-0">
+            <p className="text-sm font-semibold tracking-[-0.01em]">
+              Email verification required
+            </p>
+
+            <p className="mt-1 text-xs leading-5 text-muted-foreground">
+              Confirm{" "}
+              {email ? (
+                <span className="font-medium text-foreground">
+                  {email}
+                </span>
+              ) : (
+                "your email address"
+              )}{" "}
+              to complete your profile and keep your account
+              information verified.
+            </p>
+
+            {error && (
+              <div
+                className="mt-3 flex items-start gap-2 text-xs text-destructive"
+                role="alert"
+              >
+                <AlertCircleIcon
+                  size={13}
+                  className="mt-0.5 shrink-0"
+                />
+
+                <p className="leading-5">
+                  {error}
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <VerificationButton
+          sending={sending}
+          disabled={!email}
+          onVerify={onVerify}
+        />
+      </div>
+    </section>
+  );
+}
+
+/* =========================================================
+   VERIFICATION BUTTON
+========================================================= */
+
+function VerificationButton({
+  sending,
+  disabled,
+  onVerify,
+  size = "default",
+}: {
+  sending: boolean;
+  disabled: boolean;
+  onVerify: () => Promise<void>;
+  size?: "default" | "field";
+}) {
+  return (
+    <Button
+      type="button"
+      variant="outline"
+      onClick={() => void onVerify()}
+      disabled={
+        sending ||
+        disabled
+      }
+      className={[
+        "shrink-0 rounded-lg",
+        "border-primary/20",
+        "bg-transparent",
+        "text-xs font-semibold text-primary",
+        "shadow-none",
+        "transition-colors",
+        "hover:border-primary/30",
+        "hover:bg-primary/[0.05]",
+        "hover:text-primary",
+        "disabled:border-border",
+        "disabled:bg-transparent",
+        "disabled:text-muted-foreground",
+        "disabled:opacity-60",
+        size === "field"
+          ? "h-11 px-4"
+          : "h-9 px-3.5",
+      ].join(" ")}
+    >
+      {sending ? (
+        <>
+          <LoaderCircleIcon
+            size={13}
+            className="animate-spin"
+          />
+          Sending
+        </>
+      ) : (
+        <>
+          <MailCheckIcon size={13} />
+          Verify email
+        </>
+      )}
+    </Button>
   );
 }
 
@@ -1068,16 +1402,15 @@ function SummaryStat({
   divided = false,
 }: {
   label: string;
-  value: React.ReactNode;
-  suffix?: React.ReactNode;
+  value: ReactNode;
+  suffix?: ReactNode;
   divided?: boolean;
 }) {
   return (
     <div
       className={[
         "min-w-0 px-5 py-4",
-        "transition-colors",
-        "hover:bg-muted/[0.14]",
+        "transition-colors hover:bg-muted/[0.1]",
         divided
           ? "border-t border-border sm:border-l sm:border-t-0"
           : "",
@@ -1117,7 +1450,7 @@ function ProfileSection({
   eyebrow: string;
   title: string;
   description: string;
-  children: React.ReactNode;
+  children: ReactNode;
   divided?: boolean;
   last?: boolean;
 }) {
@@ -1162,7 +1495,7 @@ function ProfileField({
 }: {
   label: string;
   description?: string;
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <div className="grid gap-2">
@@ -1193,35 +1526,17 @@ function AccountItem({
   value,
   status,
 }: {
-  icon: React.ComponentType<{
+  icon: ComponentType<{
     size?: number;
     className?: string;
   }>;
   label: string;
   value: string;
-  status?: "success" | "warning";
+  status?: "success" | "pending";
 }) {
   return (
-    <div
-      className={[
-        "group flex items-center gap-3",
-        "rounded-xl border border-border/75",
-        "bg-background px-4 py-4",
-        "transition-colors",
-        "hover:bg-muted/[0.14]",
-      ].join(" ")}
-    >
-      <span
-        className={[
-          "flex h-8 w-8 shrink-0 items-center justify-center",
-          "rounded-lg",
-          "bg-muted/60",
-          "text-muted-foreground",
-          "transition-colors",
-          "group-hover:bg-primary/[0.07]",
-          "group-hover:text-primary",
-        ].join(" ")}
-      >
+    <div className="group flex items-center gap-3 rounded-xl border border-border/75 bg-transparent px-4 py-4 transition-colors hover:bg-muted/[0.1]">
+      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted/40 text-muted-foreground transition-colors group-hover:bg-primary/[0.07] group-hover:text-primary">
         <Icon size={14} />
       </span>
 
@@ -1242,7 +1557,7 @@ function AccountItem({
             "text-[0.58rem] font-semibold",
             status === "success"
               ? "bg-emerald-400/[0.08] text-emerald-700 dark:text-emerald-300"
-              : "bg-amber-400/[0.08] text-amber-700 dark:text-amber-300",
+              : "bg-primary/[0.07] text-primary",
           ].join(" ")}
         >
           {status === "success"
@@ -1255,45 +1570,145 @@ function AccountItem({
 }
 
 /* =========================================================
-   INLINE MESSAGE
+   INLINE ERROR
 ========================================================= */
 
-function InlineMessage({
+function InlineError({
   message,
 }: {
-  message: Exclude<MessageState, null>;
+  message: string;
 }) {
-  const success = message.type === "success";
-
   return (
     <div
-      className={[
-        "mt-5 flex items-start gap-2.5 rounded-lg border px-3.5 py-3 text-xs",
-        success
-          ? "border-emerald-500/20 bg-emerald-400/[0.06] text-emerald-700 dark:text-emerald-300"
-          : "border-destructive/20 bg-destructive/[0.06] text-destructive",
-      ].join(" ")}
-      role={
-        success
-          ? "status"
-          : "alert"
-      }
+      className="mt-4 flex items-start gap-2.5 rounded-lg border border-destructive/20 bg-destructive/[0.05] px-3.5 py-3 text-xs text-destructive"
+      role="alert"
     >
-      {success ? (
-        <CheckCircle2Icon
-          size={15}
-          className="mt-0.5 shrink-0"
-        />
-      ) : (
-        <AlertCircleIcon
-          size={15}
-          className="mt-0.5 shrink-0"
-        />
-      )}
+      <AlertCircleIcon
+        size={15}
+        className="mt-0.5 shrink-0"
+      />
 
       <p className="leading-5">
-        {message.text}
+        {message}
       </p>
+    </div>
+  );
+}
+
+/* =========================================================
+   LOADING
+========================================================= */
+
+function ProfileLoading() {
+  return (
+    <div className="min-h-screen bg-background text-foreground">
+      <header className="border-b border-border/60">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <DashboardMainNav />
+        </div>
+      </header>
+
+      <main className="container mx-auto px-5 py-10 md:px-8 lg:py-12">
+        <div className="max-w-xl">
+          <Skeleton className="h-3 w-24" />
+          <Skeleton className="mt-4 h-10 w-48" />
+          <Skeleton className="mt-4 h-4 w-full" />
+          <Skeleton className="mt-2 h-4 w-4/5" />
+        </div>
+
+        <Skeleton className="mt-7 h-[74px] w-full rounded-xl" />
+
+        <div className="mt-8 border-y border-border">
+          <div className="grid sm:grid-cols-3">
+            {Array.from({ length: 3 }).map((_, index) => (
+              <div
+                key={index}
+                className={[
+                  "px-5 py-4",
+                  index > 0
+                    ? "border-t border-border sm:border-l sm:border-t-0"
+                    : "",
+                ].join(" ")}
+              >
+                <Skeleton className="h-3 w-16" />
+                <Skeleton className="mt-3 h-6 w-24" />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-8 grid gap-10 lg:grid-cols-[300px_minmax(0,1fr)] xl:grid-cols-[320px_minmax(0,1fr)]">
+          <Skeleton className="h-[520px] rounded-2xl" />
+
+          <div>
+            <Skeleton className="h-3 w-24" />
+            <Skeleton className="mt-3 h-7 w-48" />
+            <Skeleton className="mt-3 h-4 w-80 max-w-full" />
+
+            <div className="mt-8 space-y-6">
+              <Skeleton className="h-11 w-full rounded-lg" />
+
+              <div className="flex gap-3">
+                <Skeleton className="h-11 flex-1 rounded-lg" />
+                <Skeleton className="h-11 w-28 rounded-lg" />
+              </div>
+
+              <div className="grid gap-6 sm:grid-cols-2">
+                <Skeleton className="h-11 rounded-lg" />
+                <Skeleton className="h-11 rounded-lg" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
+
+/* =========================================================
+   ERROR PAGE
+========================================================= */
+
+function ProfileErrorPage({
+  message,
+  onRetry,
+}: {
+  message: string;
+  onRetry: () => Promise<void>;
+}) {
+  return (
+    <div className="min-h-screen bg-background text-foreground">
+      <header className="border-b border-border/60">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <DashboardMainNav />
+        </div>
+      </header>
+
+      <main className="container mx-auto px-5 py-20 md:px-8">
+        <div className="max-w-md">
+          <AlertCircleIcon
+            size={22}
+            className="text-destructive"
+          />
+
+          <h1 className="mt-5 text-2xl font-black tracking-[-0.03em]">
+            Could not load your profile
+          </h1>
+
+          <p className="mt-2 text-sm leading-7 text-muted-foreground">
+            {message}
+          </p>
+
+          <Button
+            type="button"
+            onClick={() => void onRetry()}
+            className="mt-6 h-10 rounded-lg px-5 text-xs font-semibold shadow-none"
+          >
+            <RefreshCwIcon size={14} />
+            Try again
+          </Button>
+        </div>
+      </main>
     </div>
   );
 }

@@ -4,13 +4,6 @@ import type { User } from "@/Types/user";
 
 import api from "@/api/axios";
 
-// export type User = {
-//   email: string;
-//   fullName?: string;
-//   avatarUrl?: string; // user profile picture
-//   isAllocat?: boolean
-// };
-
 type AuthContextType = {
   user: User | null;
   loading: boolean;
