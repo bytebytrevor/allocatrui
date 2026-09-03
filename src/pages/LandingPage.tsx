@@ -1,4 +1,1333 @@
-// import { useEffect } from "react";
+// // import { useEffect } from "react";
+// // import {
+// //   Link,
+// //   useNavigate,
+// // } from "react-router-dom";
+// // import {
+// //   motion,
+// //   useScroll,
+// //   useSpring,
+// // } from "framer-motion";
+// // import {
+// //   ArrowRightIcon,
+// //   ArrowUpRightIcon,
+// //   BriefcaseBusinessIcon,
+// //   CheckCircle2Icon,
+// //   HammerIcon,
+// //   LaptopIcon,
+// //   PaintbrushIcon,
+// //   ShieldCheckIcon,
+// //   StarIcon,
+// //   TruckIcon,
+// //   UsersIcon,
+// //   WrenchIcon,
+// // } from "lucide-react";
+
+// // import SiteHeader from "@/components/SiteHeader";
+// // import assets from "@/assets/assets";
+// // import { Button } from "@/components/ui/button";
+// // import { useAuth } from "@/auth/useAuth";
+
+// // const services = [
+// //   {
+// //     title: "Home repairs",
+// //     description:
+// //       "Plumbing, electrical work, roofing and everyday maintenance.",
+// //     icon: WrenchIcon,
+// //   },
+// //   {
+// //     title: "Construction",
+// //     description:
+// //       "Builders, painters, welders, tilers and specialist trades.",
+// //     icon: HammerIcon,
+// //   },
+// //   {
+// //     title: "Delivery",
+// //     description:
+// //       "Reliable transport, courier and moving support when needed.",
+// //     icon: TruckIcon,
+// //   },
+// //   {
+// //     title: "Creative work",
+// //     description:
+// //       "Design, photography, video, branding and content support.",
+// //     icon: PaintbrushIcon,
+// //   },
+// //   {
+// //     title: "Technology",
+// //     description:
+// //       "Web development, computer repair and technical assistance.",
+// //     icon: LaptopIcon,
+// //   },
+// //   {
+// //     title: "Business support",
+// //     description:
+// //       "Administration, bookkeeping, consulting and project support.",
+// //     icon: BriefcaseBusinessIcon,
+// //   },
+// // ];
+
+// // const workflow = [
+// //   {
+// //     number: "01",
+// //     title: "Post",
+// //     description:
+// //       "Describe the work, set expectations and share the details professionals need.",
+// //   },
+// //   {
+// //     number: "02",
+// //     title: "Match",
+// //     description:
+// //       "Find Allocats whose experience and skills closely fit your project.",
+// //   },
+// //   {
+// //     number: "03",
+// //     title: "Manage",
+// //     description:
+// //       "Track tasks, deadlines, progress and communication until the work is complete.",
+// //   },
+// // ];
+
+// // const trustPoints = [
+// //   {
+// //     icon: UsersIcon,
+// //     title: "Professional profiles",
+// //     description:
+// //       "See experience, skills and relevant work information before making a decision.",
+// //   },
+// //   {
+// //     icon: StarIcon,
+// //     title: "Relevant experience",
+// //     description:
+// //       "Search for people based on what they can actually do, not only broad job titles.",
+// //   },
+// //   {
+// //     icon: ShieldCheckIcon,
+// //     title: "Clear project visibility",
+// //     description:
+// //       "Follow the work, comments, progress and completion from one shared workspace.",
+// //   },
+// // ];
+
+// // const HERO_IMAGE =
+// //   "https://images.pexels.com/photos/5973958/pexels-photo-5973958.jpeg";
+
+// // const PEOPLE_IMAGE =
+// //   "https://images.pexels.com/photos/6791496/pexels-photo-6791496.jpeg";
+
+// // function LandingPage() {
+// //   const { user } = useAuth();
+// //   const navigate = useNavigate();
+
+// //   const {
+// //     scrollYProgress,
+// //   } = useScroll();
+
+// //   const scaleX =
+// //     useSpring(
+// //       scrollYProgress,
+// //       {
+// //         stiffness: 120,
+// //         damping: 30,
+// //         restDelta: 0.001,
+// //       },
+// //     );
+
+// //   useEffect(() => {
+// //     if (user) {
+// //       navigate(
+// //         "/projects",
+// //         {
+// //           replace: true,
+// //         },
+// //       );
+// //     }
+// //   }, [
+// //     user,
+// //     navigate,
+// //   ]);
+
+// //   if (user) {
+// //     return null;
+// //   }
+
+// //   return (
+// //     <>
+// //       <motion.div
+// //         className="fixed inset-x-0 top-0 z-[100] h-[2px] origin-left bg-primary"
+// //         style={{
+// //           scaleX,
+// //         }}
+// //       />
+
+// //       <SiteHeader />
+
+// //       <main className="min-w-0 overflow-x-hidden bg-background text-foreground">
+
+// //         {/* =========================================================
+// //             HERO
+// //         ========================================================= */}
+
+// //         <section className="relative min-h-screen overflow-hidden pt-20 sm:pt-24">
+// //           {/* background personality */}
+// //           <div className="pointer-events-none absolute inset-0 overflow-hidden">
+// //             <div className="absolute -right-24 top-28 h-[420px] w-[420px] rounded-full border border-primary/10" />
+
+// //             <div className="absolute -right-6 top-44 h-[280px] w-[280px] rounded-full border border-primary/10" />
+
+// //             <motion.div
+// //               className="absolute right-[9%] top-[23%] hidden flex-col gap-3 lg:flex"
+// //               initial={{
+// //                 opacity: 0,
+// //                 x: 30,
+// //               }}
+// //               animate={{
+// //                 opacity: 1,
+// //                 x: 0,
+// //               }}
+// //               transition={{
+// //                 delay: 0.8,
+// //                 duration: 0.7,
+// //               }}
+// //             >
+// //               {[88, 110, 72].map(
+// //                 (
+// //                   width,
+// //                   index,
+// //                 ) => (
+// //                   <span
+// //                     key={width}
+// //                     className="block h-px origin-right bg-primary/20"
+// //                     style={{
+// //                       width,
+// //                       transform: `rotate(${
+// //                         index === 0
+// //                           ? "-8deg"
+// //                           : index === 2
+// //                             ? "8deg"
+// //                             : "0deg"
+// //                       })`,
+// //                     }}
+// //                   />
+// //                 ),
+// //               )}
+// //             </motion.div>
+// //           </div>
+
+// //           <div className="container relative mx-auto px-5 md:px-8">
+// //             <div className="grid min-h-[calc(100vh-5rem)] items-center gap-12 py-12 lg:grid-cols-[0.88fr_1.12fr] lg:gap-16 lg:py-16">
+
+// //               {/* copy */}
+// //               <motion.div
+// //                 className="relative z-10 max-w-3xl"
+// //                 initial={{
+// //                   opacity: 0,
+// //                   y: 26,
+// //                 }}
+// //                 animate={{
+// //                   opacity: 1,
+// //                   y: 0,
+// //                 }}
+// //                 transition={{
+// //                   duration: 0.75,
+// //                   ease: "easeOut",
+// //                 }}
+// //               >
+// //                 <motion.div
+// //                   className="mb-6 inline-flex items-center gap-2.5 rounded-full border border-primary/15 bg-primary/[0.06] px-3.5 py-2"
+// //                   initial={{
+// //                     opacity: 0,
+// //                     scale: 0.96,
+// //                   }}
+// //                   animate={{
+// //                     opacity: 1,
+// //                     scale: 1,
+// //                   }}
+// //                   transition={{
+// //                     delay: 0.18,
+// //                     duration: 0.5,
+// //                   }}
+// //                 >
+// //                   <img
+// //                     src={
+// //                       assets.allocatrIcon
+// //                     }
+// //                     alt=""
+// //                     className="h-5 w-5 object-contain"
+// //                   />
+
+// //                   <span className="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-primary">
+// //                     Work, properly allocated
+// //                   </span>
+// //                 </motion.div>
+
+// //                 <h1 className="max-w-4xl text-5xl font-black uppercase leading-[0.88] tracking-[-0.055em] sm:text-6xl md:text-7xl lg:text-[5.2rem] xl:text-[6.1rem]">
+// //                   The right skill.
+
+// //                   <span className="block text-primary">
+// //                     Right when you need it.
+// //                   </span>
+// //                 </h1>
+
+// //                 <motion.p
+// //                   className="mt-7 max-w-xl text-base leading-8 text-muted-foreground sm:text-lg"
+// //                   initial={{
+// //                     opacity: 0,
+// //                     y: 16,
+// //                   }}
+// //                   animate={{
+// //                     opacity: 1,
+// //                     y: 0,
+// //                   }}
+// //                   transition={{
+// //                     delay: 0.28,
+// //                     duration: 0.65,
+// //                   }}
+// //                 >
+// //                   Find skilled professionals,
+// //                   bring them into your project
+// //                   and keep the work moving from
+// //                   first task to final approval.
+// //                 </motion.p>
+
+// //                 <motion.div
+// //                   className="mt-9 flex flex-col gap-3 sm:flex-row"
+// //                   initial={{
+// //                     opacity: 0,
+// //                     y: 16,
+// //                   }}
+// //                   animate={{
+// //                     opacity: 1,
+// //                     y: 0,
+// //                   }}
+// //                   transition={{
+// //                     delay: 0.4,
+// //                     duration: 0.65,
+// //                   }}
+// //                 >
+// //                   <Button
+// //                     asChild
+// //                     className="group h-12 rounded-xl px-7 shadow-none"
+// //                   >
+// //                     <Link to="/allocats">
+// //                       Find an Allocat
+
+// //                       <ArrowRightIcon
+// //                         size={17}
+// //                         className="transition-transform group-hover:translate-x-1"
+// //                       />
+// //                     </Link>
+// //                   </Button>
+
+// //                   <Button
+// //                     asChild
+// //                     variant="outline"
+// //                     className="h-12 rounded-xl px-7 shadow-none"
+// //                   >
+// //                     <Link to="/register">
+// //                       Post a task
+// //                     </Link>
+// //                   </Button>
+// //                 </motion.div>
+
+// //                 <motion.div
+// //                   className="mt-9 flex flex-wrap items-center gap-x-5 gap-y-3 text-xs text-muted-foreground"
+// //                   initial={{
+// //                     opacity: 0,
+// //                   }}
+// //                   animate={{
+// //                     opacity: 1,
+// //                   }}
+// //                   transition={{
+// //                     delay: 0.65,
+// //                   }}
+// //                 >
+// //                   <span className="flex items-center gap-2">
+// //                     <CheckCircle2Icon
+// //                       size={14}
+// //                       className="text-primary"
+// //                     />
+
+// //                     Skill matched
+// //                   </span>
+
+// //                   <span className="flex items-center gap-2">
+// //                     <CheckCircle2Icon
+// //                       size={14}
+// //                       className="text-primary"
+// //                     />
+
+// //                     Work tracked
+// //                   </span>
+
+// //                   <span className="hidden text-muted-foreground/70 sm:inline">
+// //                     No catnap required.
+// //                   </span>
+// //                 </motion.div>
+// //               </motion.div>
+
+// //               {/* visual */}
+// //               <motion.div
+// //                 className="relative min-h-[500px] sm:min-h-[560px] lg:min-h-[620px]"
+// //                 initial={{
+// //                   opacity: 0,
+// //                   x: 45,
+// //                   scale: 0.97,
+// //                 }}
+// //                 animate={{
+// //                   opacity: 1,
+// //                   x: 0,
+// //                   scale: 1,
+// //                 }}
+// //                 transition={{
+// //                   delay: 0.16,
+// //                   duration: 0.85,
+// //                   ease: "easeOut",
+// //                 }}
+// //               >
+// //                 <div className="absolute inset-x-5 bottom-0 top-5 overflow-hidden rounded-[2rem] bg-muted sm:inset-x-10 lg:left-16 lg:right-0">
+// //                   <img
+// //                     src={
+// //                       HERO_IMAGE
+// //                     }
+// //                     alt="Skilled professional working"
+// //                     className="h-full w-full object-cover transition-transform duration-[1400ms] hover:scale-[1.025]"
+// //                   />
+
+// //                   <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-black/5" />
+
+// //                   <motion.div
+// //                     className="absolute left-5 top-5 flex items-center gap-3 rounded-xl border border-white/15 bg-black/25 px-3 py-2 text-white backdrop-blur-md"
+// //                     initial={{
+// //                       opacity: 0,
+// //                       y: -10,
+// //                     }}
+// //                     animate={{
+// //                       opacity: 1,
+// //                       y: 0,
+// //                     }}
+// //                     transition={{
+// //                       delay: 0.7,
+// //                     }}
+// //                   >
+// //                     <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/15">
+// //                       <img
+// //                         src={
+// //                           assets.allocatrIcon
+// //                         }
+// //                         alt=""
+// //                         className="h-5 w-5"
+// //                       />
+// //                     </span>
+
+// //                     <div>
+// //                       <p className="text-[0.58rem] uppercase tracking-[0.15em] text-white/60">
+// //                         Allocat spotted
+// //                       </p>
+
+// //                       <p className="text-xs font-semibold">
+// //                         Skilled & ready
+// //                       </p>
+// //                     </div>
+// //                   </motion.div>
+// //                 </div>
+
+// //                 <motion.div
+// //                   className="absolute bottom-7 left-0 w-[88%] max-w-md rounded-[1.5rem] border border-border/70 bg-background/95 p-5 shadow-2xl backdrop-blur-xl sm:bottom-10 sm:p-6"
+// //                   initial={{
+// //                     opacity: 0,
+// //                     y: 30,
+// //                   }}
+// //                   animate={{
+// //                     opacity: 1,
+// //                     y: 0,
+// //                   }}
+// //                   transition={{
+// //                     delay: 0.65,
+// //                     duration: 0.65,
+// //                   }}
+// //                   whileHover={{
+// //                     y: -5,
+// //                   }}
+// //                 >
+// //                   <div className="flex items-center justify-between gap-4">
+// //                     <div>
+// //                       <p className="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+// //                         Live project
+// //                       </p>
+
+// //                       <p className="mt-1 text-lg font-black">
+// //                         Office renovation
+// //                       </p>
+// //                     </div>
+
+// //                     <span className="rounded-full bg-emerald-400/10 px-3 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-300">
+// //                       Active
+// //                     </span>
+// //                   </div>
+
+// //                   <div className="mt-5 grid grid-cols-3 gap-2.5">
+// //                     <HeroMetric
+// //                       label="Progress"
+// //                       value="68%"
+// //                     />
+
+// //                     <HeroMetric
+// //                       label="Tasks"
+// //                       value="12"
+// //                     />
+
+// //                     <HeroMetric
+// //                       label="Allocats"
+// //                       value="3"
+// //                     />
+// //                   </div>
+
+// //                   <div className="mt-5">
+// //                     <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+// //                       <motion.div
+// //                         className="h-full rounded-full bg-primary"
+// //                         initial={{
+// //                           width: 0,
+// //                         }}
+// //                         animate={{
+// //                           width:
+// //                             "68%",
+// //                         }}
+// //                         transition={{
+// //                           delay: 1,
+// //                           duration: 1.1,
+// //                           ease: "easeOut",
+// //                         }}
+// //                       />
+// //                     </div>
+// //                   </div>
+// //                 </motion.div>
+// //               </motion.div>
+// //             </div>
+
+// //             <motion.div
+// //               className="hidden items-center gap-3 pb-7 text-[0.62rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground md:flex"
+// //               initial={{
+// //                 opacity: 0,
+// //               }}
+// //               animate={{
+// //                 opacity: 1,
+// //               }}
+// //               transition={{
+// //                 delay: 1,
+// //               }}
+// //             >
+// //               <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+// //               <span className="h-1.5 w-1.5 rounded-full bg-primary/55" />
+// //               <span className="h-1.5 w-1.5 rounded-full bg-primary/25" />
+
+// //               Follow the trail
+// //             </motion.div>
+// //           </div>
+// //         </section>
+
+// //         {/* =========================================================
+// //             WORKFLOW
+// //         ========================================================= */}
+
+// //         <section className="border-y border-border bg-muted/20">
+// //           <div className="container mx-auto px-5 py-20 md:px-8 lg:py-28">
+// //             <div className="grid gap-12 lg:grid-cols-[0.78fr_1.22fr] lg:gap-20">
+// //               <motion.div
+// //                 className="max-w-xl"
+// //                 initial={{
+// //                   opacity: 0,
+// //                   y: 24,
+// //                 }}
+// //                 whileInView={{
+// //                   opacity: 1,
+// //                   y: 0,
+// //                 }}
+// //                 viewport={{
+// //                   once: true,
+// //                   amount: 0.3,
+// //                 }}
+// //                 transition={{
+// //                   duration: 0.6,
+// //                 }}
+// //               >
+// //                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-primary sm:text-xs">
+// //                   One platform
+// //                 </p>
+
+// //                 <h2 className="mt-4 text-4xl font-black uppercase leading-[0.94] tracking-[-0.045em] sm:text-5xl lg:text-6xl">
+// //                   Spot the skill.
+
+// //                   <span className="block text-primary">
+// //                     Pounce on the work.
+// //                   </span>
+// //                 </h2>
+
+// //                 <p className="mt-6 max-w-lg text-sm leading-7 text-muted-foreground sm:text-base sm:leading-8">
+// //                   Find the person, agree on the
+// //                   work and keep delivery moving
+// //                   without jumping between
+// //                   disconnected tools.
+// //                 </p>
+// //               </motion.div>
+
+// //               <div className="divide-y divide-border border-y border-border">
+// //                 {workflow.map(
+// //                   (
+// //                     item,
+// //                     index,
+// //                   ) => (
+// //                     <motion.article
+// //                       key={
+// //                         item.number
+// //                       }
+// //                       className="group grid gap-4 py-7 sm:grid-cols-[60px_150px_1fr] sm:items-start sm:gap-6 sm:py-8"
+// //                       initial={{
+// //                         opacity: 0,
+// //                         x: 20,
+// //                       }}
+// //                       whileInView={{
+// //                         opacity: 1,
+// //                         x: 0,
+// //                       }}
+// //                       viewport={{
+// //                         once: true,
+// //                         amount: 0.4,
+// //                       }}
+// //                       transition={{
+// //                         delay:
+// //                           index *
+// //                           0.1,
+// //                         duration: 0.5,
+// //                       }}
+// //                     >
+// //                       <span className="text-xs font-semibold text-muted-foreground transition-all group-hover:translate-x-1 group-hover:text-primary">
+// //                         {
+// //                           item.number
+// //                         }
+// //                       </span>
+
+// //                       <h3 className="text-xl font-black uppercase">
+// //                         {
+// //                           item.title
+// //                         }
+// //                       </h3>
+
+// //                       <p className="max-w-lg text-sm leading-7 text-muted-foreground">
+// //                         {
+// //                           item.description
+// //                         }
+// //                       </p>
+// //                     </motion.article>
+// //                   ),
+// //                 )}
+// //               </div>
+// //             </div>
+// //           </div>
+// //         </section>
+
+// //         {/* =========================================================
+// //             MEET THE ALLOCATS
+// //         ========================================================= */}
+
+// //         <section className="container mx-auto px-5 py-20 md:px-8 lg:py-32">
+// //           <motion.div
+// //             className="overflow-hidden rounded-[2rem] bg-foreground text-background"
+// //             initial={{
+// //               opacity: 0,
+// //               y: 35,
+// //             }}
+// //             whileInView={{
+// //               opacity: 1,
+// //               y: 0,
+// //             }}
+// //             viewport={{
+// //               once: true,
+// //               amount: 0.2,
+// //             }}
+// //             transition={{
+// //               duration: 0.7,
+// //             }}
+// //           >
+// //             <div className="grid lg:grid-cols-2">
+// //               <div className="p-7 sm:p-10 lg:p-16">
+// //                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-background/55 sm:text-xs">
+// //                   Meet the Allocats
+// //                 </p>
+
+// //                 <h2 className="mt-5 max-w-xl text-4xl font-black uppercase leading-[0.94] tracking-[-0.045em] sm:text-5xl lg:text-6xl">
+// //                   Sharp skills.
+
+// //                   <span className="block text-amber-300">
+// //                     Zero chasing.
+// //                   </span>
+// //                 </h2>
+
+// //                 <p className="mt-6 max-w-lg text-sm leading-7 text-background/70 sm:text-base sm:leading-8">
+// //                   They know their craft, know
+// //                   their tools and know how to
+// //                   get moving. From trades to
+// //                   technology, Allocats bring
+// //                   real experience to real work.
+// //                 </p>
+
+// //                 <p className="mt-5 text-xs italic text-background/45">
+// //                   Victory stretch optional.
+// //                 </p>
+
+// //                 <Button
+// //                   asChild
+// //                   variant="secondary"
+// //                   className="mt-8 h-12 rounded-xl px-6 shadow-none"
+// //                 >
+// //                   <Link to="/allocats">
+// //                     Explore professionals
+
+// //                     <ArrowRightIcon
+// //                       size={16}
+// //                     />
+// //                   </Link>
+// //                 </Button>
+// //               </div>
+
+// //               <div className="min-h-[420px] overflow-hidden lg:min-h-full">
+// //                 <motion.img
+// //                   src={
+// //                     PEOPLE_IMAGE
+// //                   }
+// //                   alt="People collaborating in a workshop"
+// //                   className="h-full w-full object-cover"
+// //                   initial={{
+// //                     scale: 1.06,
+// //                   }}
+// //                   whileInView={{
+// //                     scale: 1,
+// //                   }}
+// //                   viewport={{
+// //                     once: true,
+// //                   }}
+// //                   transition={{
+// //                     duration: 1.1,
+// //                     ease: "easeOut",
+// //                   }}
+// //                 />
+// //               </div>
+// //             </div>
+// //           </motion.div>
+// //         </section>
+
+// //         {/* =========================================================
+// //             PRODUCT
+// //         ========================================================= */}
+
+// //         <section className="bg-muted/20 py-20 lg:py-32">
+// //           <div className="container mx-auto px-5 md:px-8">
+// //             <motion.div
+// //               className="mx-auto max-w-3xl text-center"
+// //               initial={{
+// //                 opacity: 0,
+// //                 y: 25,
+// //               }}
+// //               whileInView={{
+// //                 opacity: 1,
+// //                 y: 0,
+// //               }}
+// //               viewport={{
+// //                 once: true,
+// //                 amount: 0.3,
+// //               }}
+// //               transition={{
+// //                 duration: 0.6,
+// //               }}
+// //             >
+// //               <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-primary sm:text-xs">
+// //                 Built for the work after the match
+// //               </p>
+
+// //               <h2 className="mt-4 text-4xl font-black uppercase leading-[0.94] tracking-[-0.045em] sm:text-5xl lg:text-6xl">
+// //                 The hunt ends.
+
+// //                 <span className="block text-primary">
+// //                   The work begins.
+// //                 </span>
+// //               </h2>
+
+// //               <p className="mx-auto mt-6 max-w-2xl text-sm leading-7 text-muted-foreground sm:text-base sm:leading-8">
+// //                 See tasks, deadlines, progress,
+// //                 people and comments in one
+// //                 shared project workspace.
+// //               </p>
+// //             </motion.div>
+
+// //             <motion.div
+// //               className="mt-12 overflow-hidden rounded-[2rem] border border-border bg-background p-3 shadow-xl sm:p-5 lg:p-7"
+// //               initial={{
+// //                 opacity: 0,
+// //                 y: 35,
+// //                 scale: 0.98,
+// //               }}
+// //               whileInView={{
+// //                 opacity: 1,
+// //                 y: 0,
+// //                 scale: 1,
+// //               }}
+// //               viewport={{
+// //                 once: true,
+// //                 amount: 0.2,
+// //               }}
+// //               transition={{
+// //                 duration: 0.75,
+// //               }}
+// //             >
+// //               <div className="rounded-[1.4rem] bg-muted/30 p-3 sm:p-5 lg:p-8">
+// //                 <img
+// //                   src={
+// //                     assets.computerPhone
+// //                   }
+// //                   alt="Allocatr project workspace"
+// //                   className="mx-auto block h-auto w-full max-w-6xl object-contain"
+// //                 />
+// //               </div>
+// //             </motion.div>
+
+// //             <div className="mx-auto mt-8 grid max-w-5xl gap-6 sm:grid-cols-3">
+// //               {[
+// //                 {
+// //                   title:
+// //                     "Track tasks",
+// //                   description:
+// //                     "See what is pending, active and complete.",
+// //                 },
+// //                 {
+// //                   title:
+// //                     "Follow progress",
+// //                   description:
+// //                     "Clients stay informed without controlling execution.",
+// //                 },
+// //                 {
+// //                   title:
+// //                     "Keep context",
+// //                   description:
+// //                     "Comments and project information stay with the job.",
+// //                 },
+// //               ].map(
+// //                 (
+// //                   item,
+// //                   index,
+// //                 ) => (
+// //                   <motion.div
+// //                     key={
+// //                       item.title
+// //                     }
+// //                     className="border-l-2 border-primary pl-4"
+// //                     initial={{
+// //                       opacity: 0,
+// //                       y: 14,
+// //                     }}
+// //                     whileInView={{
+// //                       opacity: 1,
+// //                       y: 0,
+// //                     }}
+// //                     viewport={{
+// //                       once: true,
+// //                     }}
+// //                     transition={{
+// //                       delay:
+// //                         index *
+// //                         0.08,
+// //                       duration:
+// //                         0.45,
+// //                     }}
+// //                   >
+// //                     <h3 className="text-sm font-bold">
+// //                       {
+// //                         item.title
+// //                       }
+// //                     </h3>
+
+// //                     <p className="mt-2 text-xs leading-6 text-muted-foreground">
+// //                       {
+// //                         item.description
+// //                       }
+// //                     </p>
+// //                   </motion.div>
+// //                 ),
+// //               )}
+// //             </div>
+// //           </div>
+// //         </section>
+
+// //         {/* =========================================================
+// //             SERVICES
+// //         ========================================================= */}
+
+// //         <section className="container mx-auto px-5 py-20 md:px-8 lg:py-28">
+// //           <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+// //             <motion.div
+// //               className="max-w-2xl"
+// //               initial={{
+// //                 opacity: 0,
+// //                 y: 20,
+// //               }}
+// //               whileInView={{
+// //                 opacity: 1,
+// //                 y: 0,
+// //               }}
+// //               viewport={{
+// //                 once: true,
+// //               }}
+// //             >
+// //               <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-primary sm:text-xs">
+// //                 Explore skills
+// //               </p>
+
+// //               <h2 className="mt-4 text-4xl font-black uppercase leading-[0.94] tracking-[-0.045em] sm:text-5xl">
+// //                 Whatever needs doing.
+// //               </h2>
+// //             </motion.div>
+
+// //             <Button
+// //               asChild
+// //               variant="ghost"
+// //               className="w-fit rounded-xl"
+// //             >
+// //               <Link to="/allocats">
+// //                 View all
+
+// //                 <ArrowRightIcon
+// //                   size={16}
+// //                 />
+// //               </Link>
+// //             </Button>
+// //           </div>
+
+// //           <div className="mt-10 grid gap-px overflow-hidden rounded-[1.5rem] border border-border bg-border sm:grid-cols-2 lg:grid-cols-3">
+// //             {services.map(
+// //               (
+// //                 service,
+// //                 index,
+// //               ) => {
+// //                 const Icon =
+// //                   service.icon;
+
+// //                 return (
+// //                   <motion.div
+// //                     key={
+// //                       service.title
+// //                     }
+// //                     initial={{
+// //                       opacity: 0,
+// //                       y: 18,
+// //                     }}
+// //                     whileInView={{
+// //                       opacity: 1,
+// //                       y: 0,
+// //                     }}
+// //                     viewport={{
+// //                       once: true,
+// //                       amount: 0.25,
+// //                     }}
+// //                     transition={{
+// //                       delay:
+// //                         index *
+// //                         0.055,
+// //                       duration:
+// //                         0.45,
+// //                     }}
+// //                   >
+// //                     <Link
+// //                       to="/allocats"
+// //                       className="group flex h-full min-h-[270px] flex-col bg-background p-6 transition-colors hover:bg-muted/40 sm:p-8"
+// //                     >
+// //                       <Icon
+// //                         size={22}
+// //                         className="text-primary transition-transform duration-300 group-hover:-rotate-6 group-hover:scale-110"
+// //                       />
+
+// //                       <h3 className="mt-10 text-xl font-black uppercase tracking-[-0.02em]">
+// //                         {
+// //                           service.title
+// //                         }
+// //                       </h3>
+
+// //                       <p className="mt-3 text-sm leading-7 text-muted-foreground">
+// //                         {
+// //                           service.description
+// //                         }
+// //                       </p>
+
+// //                       <ArrowUpRightIcon
+// //                         size={18}
+// //                         className="mt-auto pt-8 transition-transform duration-200 group-hover:translate-x-1 group-hover:-translate-y-1"
+// //                       />
+// //                     </Link>
+// //                   </motion.div>
+// //                 );
+// //               },
+// //             )}
+// //           </div>
+// //         </section>
+
+// //         {/* =========================================================
+// //             CLIENT / ALLOCAT
+// //         ========================================================= */}
+
+// //         <section className="container mx-auto px-5 pb-20 md:px-8 lg:pb-32">
+// //           <div className="grid gap-5 lg:grid-cols-2">
+// //             <motion.article
+// //               className="rounded-[2rem] border border-border bg-muted/30 p-7 sm:p-10 lg:p-12"
+// //               initial={{
+// //                 opacity: 0,
+// //                 x: -25,
+// //               }}
+// //               whileInView={{
+// //                 opacity: 1,
+// //                 x: 0,
+// //               }}
+// //               viewport={{
+// //                 once: true,
+// //                 amount: 0.25,
+// //               }}
+// //               transition={{
+// //                 duration: 0.6,
+// //               }}
+// //             >
+// //               <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-primary sm:text-xs">
+// //                 For clients
+// //               </p>
+
+// //               <h3 className="mt-5 max-w-xl text-3xl font-black uppercase leading-[0.96] tracking-[-0.04em] sm:text-4xl">
+// //                 Find the skill.
+// //                 <br />
+// //                 Keep control of the outcome.
+// //               </h3>
+
+// //               <p className="mt-5 max-w-lg text-sm leading-7 text-muted-foreground sm:text-base">
+// //                 Create projects, invite
+// //                 professionals, follow progress,
+// //                 comment on the work and approve
+// //                 completion when the job is done.
+// //               </p>
+
+// //               <Button
+// //                 asChild
+// //                 className="mt-8 h-11 rounded-xl px-6 shadow-none"
+// //               >
+// //                 <Link to="/register">
+// //                   Post a task
+
+// //                   <ArrowRightIcon
+// //                     size={15}
+// //                   />
+// //                 </Link>
+// //               </Button>
+// //             </motion.article>
+
+// //             <motion.article
+// //               className="relative overflow-hidden rounded-[2rem] bg-primary p-7 text-primary-foreground sm:p-10 lg:p-12"
+// //               initial={{
+// //                 opacity: 0,
+// //                 x: 25,
+// //               }}
+// //               whileInView={{
+// //                 opacity: 1,
+// //                 x: 0,
+// //               }}
+// //               viewport={{
+// //                 once: true,
+// //                 amount: 0.25,
+// //               }}
+// //               transition={{
+// //                 duration: 0.6,
+// //               }}
+// //             >
+// //               <div className="pointer-events-none absolute -right-12 -top-12 h-44 w-44 rounded-full border border-primary-foreground/10" />
+
+// //               <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-primary-foreground/65 sm:text-xs">
+// //                 For Allocats
+// //               </p>
+
+// //               <h3 className="mt-5 max-w-xl text-3xl font-black uppercase leading-[0.96] tracking-[-0.04em] sm:text-4xl">
+// //                 Put your skills
+// //                 <br />
+// //                 on the prowl.
+// //               </h3>
+
+// //               <p className="mt-5 max-w-lg text-sm leading-7 text-primary-foreground/75 sm:text-base">
+// //                 Build your profile, receive
+// //                 project opportunities, manage
+// //                 tasks and keep your work
+// //                 organized from one place.
+// //               </p>
+
+// //               <Button
+// //                 asChild
+// //                 variant="secondary"
+// //                 className="mt-8 h-11 rounded-xl px-6 shadow-none"
+// //               >
+// //                 <Link to="/become-an-allocat">
+// //                   Become an Allocat
+
+// //                   <ArrowRightIcon
+// //                     size={15}
+// //                   />
+// //                 </Link>
+// //               </Button>
+// //             </motion.article>
+// //           </div>
+// //         </section>
+
+// //         {/* =========================================================
+// //             TRUST
+// //         ========================================================= */}
+
+// //         <section className="border-y border-border bg-muted/20">
+// //           <div className="container mx-auto px-5 py-20 md:px-8 lg:py-28">
+// //             <div className="grid gap-10 lg:grid-cols-[0.75fr_1.25fr] lg:gap-20">
+// //               <motion.div
+// //                 className="max-w-lg"
+// //                 initial={{
+// //                   opacity: 0,
+// //                   y: 20,
+// //                 }}
+// //                 whileInView={{
+// //                   opacity: 1,
+// //                   y: 0,
+// //                 }}
+// //                 viewport={{
+// //                   once: true,
+// //                 }}
+// //               >
+// //                 <ShieldCheckIcon
+// //                   size={28}
+// //                   className="text-primary"
+// //                 />
+
+// //                 <h2 className="mt-6 text-4xl font-black uppercase leading-[0.94] tracking-[-0.045em] sm:text-5xl">
+// //                   Confidence before
+
+// //                   <span className="block text-primary">
+// //                     the work begins.
+// //                   </span>
+// //                 </h2>
+// //               </motion.div>
+
+// //               <div className="divide-y divide-border">
+// //                 {trustPoints.map(
+// //                   (
+// //                     point,
+// //                     index,
+// //                   ) => {
+// //                     const Icon =
+// //                       point.icon;
+
+// //                     return (
+// //                       <motion.article
+// //                         key={
+// //                           point.title
+// //                         }
+// //                         className="grid gap-4 py-6 sm:grid-cols-[48px_180px_1fr] sm:items-start sm:gap-6"
+// //                         initial={{
+// //                           opacity: 0,
+// //                           x: 18,
+// //                         }}
+// //                         whileInView={{
+// //                           opacity: 1,
+// //                           x: 0,
+// //                         }}
+// //                         viewport={{
+// //                           once: true,
+// //                         }}
+// //                         transition={{
+// //                           delay:
+// //                             index *
+// //                             0.08,
+// //                         }}
+// //                       >
+// //                         <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+// //                           <Icon
+// //                             size={18}
+// //                           />
+// //                         </span>
+
+// //                         <h3 className="text-sm font-bold">
+// //                           {
+// //                             point.title
+// //                           }
+// //                         </h3>
+
+// //                         <p className="text-sm leading-7 text-muted-foreground">
+// //                           {
+// //                             point.description
+// //                           }
+// //                         </p>
+// //                       </motion.article>
+// //                     );
+// //                   },
+// //                 )}
+// //               </div>
+// //             </div>
+// //           </div>
+// //         </section>
+
+// //         {/* =========================================================
+// //             FINAL CTA
+// //         ========================================================= */}
+
+// //         <section className="bg-background px-5 py-8 md:px-8 lg:py-12">
+// //           <motion.div
+// //             className="container mx-auto overflow-hidden rounded-[2rem] bg-foreground text-background"
+// //             initial={{
+// //               opacity: 0,
+// //               y: 30,
+// //             }}
+// //             whileInView={{
+// //               opacity: 1,
+// //               y: 0,
+// //             }}
+// //             viewport={{
+// //               once: true,
+// //               amount: 0.2,
+// //             }}
+// //             transition={{
+// //               duration: 0.65,
+// //             }}
+// //           >
+// //             <div className="relative px-6 py-14 sm:px-10 sm:py-20 lg:px-16 lg:py-24">
+// //               <div className="absolute -right-32 -top-32 h-80 w-80 rounded-full border border-background/10" />
+
+// //               <div className="absolute -right-12 top-10 h-44 w-44 rounded-full border border-background/10" />
+
+// //               <div className="relative grid gap-10 lg:grid-cols-[1fr_auto] lg:items-end">
+// //                 <div className="max-w-4xl">
+// //                   <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-background/55 sm:text-xs">
+// //                     Ready to move?
+// //                   </p>
+
+// //                   <h2 className="mt-5 text-4xl font-black uppercase leading-[0.92] tracking-[-0.05em] sm:text-5xl lg:text-6xl xl:text-7xl">
+// //                     Find the right person.
+
+// //                     <span className="block text-amber-300">
+// //                       Get the work moving.
+// //                     </span>
+// //                   </h2>
+
+// //                   <p className="mt-6 max-w-2xl text-sm leading-7 text-background/70 sm:text-base sm:leading-8">
+// //                     Whether you need a
+// //                     professional or want to put
+// //                     your own skills to work,
+// //                     Allocatr gives you one place
+// //                     to connect and keep the
+// //                     project moving.
+// //                   </p>
+// //                 </div>
+
+// //                 <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
+// //                   <Button
+// //                     asChild
+// //                     variant="secondary"
+// //                     className="h-12 rounded-xl px-7 shadow-none"
+// //                   >
+// //                     <Link to="/allocats">
+// //                       Find Allocats
+
+// //                       <ArrowRightIcon
+// //                         size={16}
+// //                       />
+// //                     </Link>
+// //                   </Button>
+
+// //                   <Button
+// //                     asChild
+// //                     variant="outline"
+// //                     className="h-12 rounded-xl border-background/20 bg-transparent px-7 text-background shadow-none hover:bg-background/10 hover:text-background"
+// //                   >
+// //                     <Link to="/become-an-allocat">
+// //                       Become an Allocat
+// //                     </Link>
+// //                   </Button>
+// //                 </div>
+// //               </div>
+// //             </div>
+// //           </motion.div>
+// //         </section>
+
+// //         {/* =========================================================
+// //             FOOTER
+// //         ========================================================= */}
+
+// //         <footer className="bg-background px-5 py-8 md:px-8">
+// //           <div className="container mx-auto flex flex-col gap-6 border-t border-border pt-8 text-sm md:flex-row md:items-center md:justify-between">
+// //             <p className="text-muted-foreground">
+// //               © {new Date().getFullYear()}{" "}
+// //               Allocatr. Work, properly
+// //               allocated.
+// //             </p>
+
+// //             <nav className="flex flex-wrap gap-x-5 gap-y-3">
+// //               <Link
+// //                 to="/about"
+// //                 className="hover:underline"
+// //               >
+// //                 About
+// //               </Link>
+
+// //               <Link
+// //                 to="/how-it-works"
+// //                 className="hover:underline"
+// //               >
+// //                 How it works
+// //               </Link>
+
+// //               <Link
+// //                 to="/terms"
+// //                 className="hover:underline"
+// //               >
+// //                 Terms
+// //               </Link>
+
+// //               <Link
+// //                 to="/privacy"
+// //                 className="hover:underline"
+// //               >
+// //                 Privacy
+// //               </Link>
+// //             </nav>
+// //           </div>
+// //         </footer>
+// //       </main>
+// //     </>
+// //   );
+// // }
+
+// // function HeroMetric({
+// //   label,
+// //   value,
+// // }: {
+// //   label: string;
+// //   value: string;
+// // }) {
+// //   return (
+// //     <div className="rounded-xl bg-muted p-3">
+// //       <p className="text-[0.6rem] text-muted-foreground">
+// //         {label}
+// //       </p>
+
+// //       <p className="mt-1 text-xl font-black">
+// //         {value}
+// //       </p>
+// //     </div>
+// //   );
+// // }
+
+// // export default LandingPage;
+
+
+// import {
+//   useEffect,
+//   useRef,
+// } from "react";
 // import {
 //   Link,
 //   useNavigate,
@@ -9,6 +1338,7 @@
 //   useSpring,
 // } from "framer-motion";
 // import {
+//   ArrowLeftIcon,
 //   ArrowRightIcon,
 //   ArrowUpRightIcon,
 //   BriefcaseBusinessIcon,
@@ -109,6 +1439,29 @@
 //   },
 // ];
 
+// const serviceImages: Record<
+//   string,
+//   string
+// > = {
+//   "Home repairs":
+//     "https://images.pexels.com/photos/5691622/pexels-photo-5691622.jpeg",
+
+//   Construction:
+//     "https://images.pexels.com/photos/3760529/pexels-photo-3760529.jpeg",
+
+//   Delivery:
+//     "https://images.pexels.com/photos/4391470/pexels-photo-4391470.jpeg",
+
+//   "Creative work":
+//     "https://images.pexels.com/photos/196644/pexels-photo-196644.jpeg",
+
+//   Technology:
+//     "https://images.pexels.com/photos/546819/pexels-photo-546819.jpeg",
+
+//   "Business support":
+//     "https://images.pexels.com/photos/3183150/pexels-photo-3183150.jpeg",
+// };
+
 // const HERO_IMAGE =
 //   "https://images.pexels.com/photos/5973958/pexels-photo-5973958.jpeg";
 
@@ -118,6 +1471,9 @@
 // function LandingPage() {
 //   const { user } = useAuth();
 //   const navigate = useNavigate();
+
+//   const sliderRef =
+//     useRef<HTMLDivElement>(null);
 
 //   const {
 //     scrollYProgress,
@@ -147,6 +1503,21 @@
 //     navigate,
 //   ]);
 
+//   function scrollServices(
+//     direction:
+//       | "left"
+//       | "right",
+//   ) {
+//     sliderRef.current?.scrollBy({
+//       left:
+//         direction ===
+//         "left"
+//           ? -340
+//           : 340,
+//       behavior: "smooth",
+//     });
+//   }
+
 //   if (user) {
 //     return null;
 //   }
@@ -169,55 +1540,87 @@
 //         ========================================================= */}
 
 //         <section className="relative min-h-screen overflow-hidden pt-20 sm:pt-24">
-//           {/* background personality */}
 //           <div className="pointer-events-none absolute inset-0 overflow-hidden">
-//             <div className="absolute -right-24 top-28 h-[420px] w-[420px] rounded-full border border-primary/10" />
-
-//             <div className="absolute -right-6 top-44 h-[280px] w-[280px] rounded-full border border-primary/10" />
+//             <div className="absolute -right-40 top-16 h-[560px] w-[560px] rounded-full bg-primary/[0.03] blur-3xl" />
 
 //             <motion.div
-//               className="absolute right-[9%] top-[23%] hidden flex-col gap-3 lg:flex"
+//               className="absolute -right-48 top-20 h-[560px] w-[560px] rounded-full border border-primary/[0.08]"
 //               initial={{
 //                 opacity: 0,
-//                 x: 30,
+//                 scale: 0.9,
+//               }}
+//               animate={{
+//                 opacity: 1,
+//                 scale: 1,
+//               }}
+//               transition={{
+//                 duration: 1.2,
+//                 ease: "easeOut",
+//               }}
+//             />
+
+//             <motion.div
+//               className="absolute -right-24 top-44 h-[360px] w-[360px] rounded-full border border-primary/[0.06]"
+//               initial={{
+//                 opacity: 0,
+//                 scale: 0.86,
+//               }}
+//               animate={{
+//                 opacity: 1,
+//                 scale: 1,
+//               }}
+//               transition={{
+//                 delay: 0.15,
+//                 duration: 1.1,
+//                 ease: "easeOut",
+//               }}
+//             />
+
+//             <motion.div
+//               className="absolute right-8 top-[14.5rem] h-[190px] w-[190px] rounded-full border border-primary/[0.045]"
+//               initial={{
+//                 opacity: 0,
+//                 scale: 0.8,
+//               }}
+//               animate={{
+//                 opacity: 1,
+//                 scale: 1,
+//               }}
+//               transition={{
+//                 delay: 0.25,
+//                 duration: 1,
+//                 ease: "easeOut",
+//               }}
+//             />
+
+//             <motion.div
+//               className="absolute right-[8%] top-[22%] hidden items-center gap-3 lg:flex"
+//               initial={{
+//                 opacity: 0,
+//                 x: 18,
 //               }}
 //               animate={{
 //                 opacity: 1,
 //                 x: 0,
 //               }}
 //               transition={{
-//                 delay: 0.8,
-//                 duration: 0.7,
+//                 delay: 0.85,
+//                 duration: 0.6,
 //               }}
 //             >
-//               {[88, 110, 72].map(
-//                 (
-//                   width,
-//                   index,
-//                 ) => (
-//                   <span
-//                     key={width}
-//                     className="block h-px origin-right bg-primary/20"
-//                     style={{
-//                       width,
-//                       transform: `rotate(${
-//                         index === 0
-//                           ? "-8deg"
-//                           : index === 2
-//                             ? "8deg"
-//                             : "0deg"
-//                       })`,
-//                     }}
-//                   />
-//                 ),
-//               )}
+//               <span className="h-2 w-2 rounded-full bg-primary" />
+
+//               <span className="h-1.5 w-1.5 rounded-full bg-primary/50" />
+
+//               <span className="h-1 w-1 rounded-full bg-primary/20" />
 //             </motion.div>
 //           </div>
 
 //           <div className="container relative mx-auto px-5 md:px-8">
-//             <div className="grid min-h-[calc(100vh-5rem)] items-center gap-12 py-12 lg:grid-cols-[0.88fr_1.12fr] lg:gap-16 lg:py-16">
+//             <div className="grid min-h-[calc(100vh-5rem)] items-center gap-12 py-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16 lg:py-16">
 
-//               {/* copy */}
+//               {/* Copy */}
+
 //               <motion.div
 //                 className="relative z-10 max-w-3xl"
 //                 initial={{
@@ -234,7 +1637,7 @@
 //                 }}
 //               >
 //                 <motion.div
-//                   className="mb-6 inline-flex items-center gap-2.5 rounded-full border border-primary/15 bg-primary/[0.06] px-3.5 py-2"
+//                   className="mb-6 inline-flex items-center gap-2.5 rounded-full border border-primary/15 bg-primary/[0.05] px-3.5 py-2"
 //                   initial={{
 //                     opacity: 0,
 //                     scale: 0.96,
@@ -261,10 +1664,10 @@
 //                   </span>
 //                 </motion.div>
 
-//                 <h1 className="max-w-4xl text-5xl font-black uppercase leading-[0.88] tracking-[-0.055em] sm:text-6xl md:text-7xl lg:text-[5.2rem] xl:text-[6.1rem]">
+//                 <h1 className="max-w-4xl text-5xl font-black leading-[1.01] tracking-[-0.03em] sm:text-6xl md:text-7xl lg:text-[5rem] xl:text-[5.8rem]">
 //                   The right skill.
 
-//                   <span className="block text-primary">
+//                   <span className="mt-2 block text-primary">
 //                     Right when you need it.
 //                   </span>
 //                 </h1>
@@ -314,7 +1717,7 @@
 
 //                       <ArrowRightIcon
 //                         size={17}
-//                         className="transition-transform group-hover:translate-x-1"
+//                         className="transition-transform duration-200 group-hover:translate-x-1"
 //                       />
 //                     </Link>
 //                   </Button>
@@ -360,15 +1763,16 @@
 //                     Work tracked
 //                   </span>
 
-//                   <span className="hidden text-muted-foreground/70 sm:inline">
+//                   <span className="hidden italic text-muted-foreground/60 sm:inline">
 //                     No catnap required.
 //                   </span>
 //                 </motion.div>
 //               </motion.div>
 
-//               {/* visual */}
+//               {/* Visual */}
+
 //               <motion.div
-//                 className="relative min-h-[500px] sm:min-h-[560px] lg:min-h-[620px]"
+//                 className="relative min-h-[500px] sm:min-h-[570px] lg:min-h-[630px]"
 //                 initial={{
 //                   opacity: 0,
 //                   x: 45,
@@ -385,19 +1789,19 @@
 //                   ease: "easeOut",
 //                 }}
 //               >
-//                 <div className="absolute inset-x-5 bottom-0 top-5 overflow-hidden rounded-[2rem] bg-muted sm:inset-x-10 lg:left-16 lg:right-0">
+//                 <div className="absolute inset-x-5 bottom-0 top-5 overflow-hidden rounded-[2rem] bg-muted shadow-xl sm:inset-x-10 lg:left-16 lg:right-0">
 //                   <img
 //                     src={
 //                       HERO_IMAGE
 //                     }
 //                     alt="Skilled professional working"
-//                     className="h-full w-full object-cover transition-transform duration-[1400ms] hover:scale-[1.025]"
+//                     className="h-full w-full object-cover transition-transform duration-[1600ms] hover:scale-[1.02]"
 //                   />
 
-//                   <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-black/5" />
+//                   <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-black/[0.03] to-black/5" />
 
 //                   <motion.div
-//                     className="absolute left-5 top-5 flex items-center gap-3 rounded-xl border border-white/15 bg-black/25 px-3 py-2 text-white backdrop-blur-md"
+//                     className="absolute left-5 top-5 flex items-center gap-3 rounded-2xl border border-white/15 bg-black/25 px-3 py-2.5 text-white backdrop-blur-xl"
 //                     initial={{
 //                       opacity: 0,
 //                       y: -10,
@@ -410,7 +1814,7 @@
 //                       delay: 0.7,
 //                     }}
 //                   >
-//                     <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/15">
+//                     <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/10">
 //                       <img
 //                         src={
 //                           assets.allocatrIcon
@@ -421,11 +1825,11 @@
 //                     </span>
 
 //                     <div>
-//                       <p className="text-[0.58rem] uppercase tracking-[0.15em] text-white/60">
+//                       <p className="text-[0.56rem] uppercase tracking-[0.15em] text-white/55">
 //                         Allocat spotted
 //                       </p>
 
-//                       <p className="text-xs font-semibold">
+//                       <p className="mt-0.5 text-xs font-semibold">
 //                         Skilled & ready
 //                       </p>
 //                     </div>
@@ -433,7 +1837,7 @@
 //                 </div>
 
 //                 <motion.div
-//                   className="absolute bottom-7 left-0 w-[88%] max-w-md rounded-[1.5rem] border border-border/70 bg-background/95 p-5 shadow-2xl backdrop-blur-xl sm:bottom-10 sm:p-6"
+//                   className="absolute bottom-7 left-0 w-[88%] max-w-md rounded-[1.6rem] border border-border bg-card/95 p-5 text-card-foreground shadow-xl backdrop-blur-xl sm:bottom-10 sm:p-6"
 //                   initial={{
 //                     opacity: 0,
 //                     y: 30,
@@ -450,18 +1854,20 @@
 //                     y: -5,
 //                   }}
 //                 >
-//                   <div className="flex items-center justify-between gap-4">
+//                   <div className="flex items-start justify-between gap-4">
 //                     <div>
 //                       <p className="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
 //                         Live project
 //                       </p>
 
-//                       <p className="mt-1 text-lg font-black">
+//                       <p className="mt-1 text-lg font-black tracking-[-0.02em]">
 //                         Office renovation
 //                       </p>
 //                     </div>
 
-//                     <span className="rounded-full bg-emerald-400/10 px-3 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-300">
+//                     <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/15 bg-emerald-400/10 px-3 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-300">
+//                       <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+
 //                       Active
 //                     </span>
 //                   </div>
@@ -484,6 +1890,16 @@
 //                   </div>
 
 //                   <div className="mt-5">
+//                     <div className="mb-2 flex justify-between text-[0.6rem] font-medium text-muted-foreground">
+//                       <span>
+//                         Project progress
+//                       </span>
+
+//                       <span>
+//                         68%
+//                       </span>
+//                     </div>
+
 //                     <div className="h-1.5 overflow-hidden rounded-full bg-muted">
 //                       <motion.div
 //                         className="h-full rounded-full bg-primary"
@@ -491,8 +1907,7 @@
 //                           width: 0,
 //                         }}
 //                         animate={{
-//                           width:
-//                             "68%",
+//                           width: "68%",
 //                         }}
 //                         transition={{
 //                           delay: 1,
@@ -507,7 +1922,7 @@
 //             </div>
 
 //             <motion.div
-//               className="hidden items-center gap-3 pb-7 text-[0.62rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground md:flex"
+//               className="hidden items-center justify-between pb-7 pt-5 md:flex"
 //               initial={{
 //                 opacity: 0,
 //               }}
@@ -518,11 +1933,19 @@
 //                 delay: 1,
 //               }}
 //             >
-//               <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-//               <span className="h-1.5 w-1.5 rounded-full bg-primary/55" />
-//               <span className="h-1.5 w-1.5 rounded-full bg-primary/25" />
+//               <div className="flex items-center gap-3 text-[0.62rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+//                 <span className="h-1.5 w-1.5 rounded-full bg-primary" />
 
-//               Follow the trail
+//                 <span className="h-1.5 w-1.5 rounded-full bg-primary/55" />
+
+//                 <span className="h-1.5 w-1.5 rounded-full bg-primary/25" />
+
+//                 Follow the trail
+//               </div>
+
+//               <span className="text-[0.6rem] uppercase tracking-[0.16em] text-muted-foreground/60">
+//                 Find · Match · Move
+//               </span>
 //             </motion.div>
 //           </div>
 //         </section>
@@ -548,15 +1971,12 @@
 //                   once: true,
 //                   amount: 0.3,
 //                 }}
-//                 transition={{
-//                   duration: 0.6,
-//                 }}
 //               >
 //                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-primary sm:text-xs">
 //                   One platform
 //                 </p>
 
-//                 <h2 className="mt-4 text-4xl font-black uppercase leading-[0.94] tracking-[-0.045em] sm:text-5xl lg:text-6xl">
+//                 <h2 className="mt-4 text-4xl font-black uppercase leading-[1] tracking-[-0.035em] sm:text-5xl lg:text-6xl">
 //                   Spot the skill.
 
 //                   <span className="block text-primary">
@@ -599,7 +2019,8 @@
 //                         delay:
 //                           index *
 //                           0.1,
-//                         duration: 0.5,
+//                         duration:
+//                           0.5,
 //                       }}
 //                     >
 //                       <span className="text-xs font-semibold text-muted-foreground transition-all group-hover:translate-x-1 group-hover:text-primary">
@@ -629,11 +2050,17 @@
 
 //         {/* =========================================================
 //             MEET THE ALLOCATS
+//             Strategic inversion
 //         ========================================================= */}
 
 //         <section className="container mx-auto px-5 py-20 md:px-8 lg:py-32">
 //           <motion.div
-//             className="overflow-hidden rounded-[2rem] bg-foreground text-background"
+//             className={[
+//               "overflow-hidden rounded-[2rem] border",
+//               "border-foreground/10 bg-foreground text-background",
+//               "shadow-lg",
+//               "dark:border-border dark:bg-card dark:text-card-foreground",
+//             ].join(" ")}
 //             initial={{
 //               opacity: 0,
 //               y: 35,
@@ -650,54 +2077,74 @@
 //               duration: 0.7,
 //             }}
 //           >
-//             <div className="grid lg:grid-cols-2">
-//               <div className="p-7 sm:p-10 lg:p-16">
-//                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-background/55 sm:text-xs">
-//                   Meet the Allocats
-//                 </p>
+//             <div className="grid lg:grid-cols-[0.9fr_1.1fr]">
+//               <div className="relative overflow-hidden p-7 sm:p-10 lg:p-16">
+//                 <img
+//                   src={
+//                     assets.allocatrIcon
+//                   }
+//                   alt=""
+//                   className={[
+//                     "pointer-events-none absolute -bottom-10 -left-8",
+//                     "w-44 rotate-[8deg] opacity-[0.035]",
+//                     "sm:w-56",
+//                     "dark:opacity-[0.045]",
+//                   ].join(" ")}
+//                 />
 
-//                 <h2 className="mt-5 max-w-xl text-4xl font-black uppercase leading-[0.94] tracking-[-0.045em] sm:text-5xl lg:text-6xl">
-//                   Sharp skills.
+//                 <div className="relative">
+//                   <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-primary sm:text-xs">
+//                     Meet the Allocats
+//                   </p>
 
-//                   <span className="block text-amber-300">
-//                     Zero chasing.
-//                   </span>
-//                 </h2>
+//                   <h2 className="mt-5 max-w-xl text-4xl font-black uppercase leading-[1] tracking-[-0.035em] sm:text-5xl lg:text-6xl">
+//                     Sharp skills.
 
-//                 <p className="mt-6 max-w-lg text-sm leading-7 text-background/70 sm:text-base sm:leading-8">
-//                   They know their craft, know
-//                   their tools and know how to
-//                   get moving. From trades to
-//                   technology, Allocats bring
-//                   real experience to real work.
-//                 </p>
+//                     <span className="block text-primary">
+//                       Zero chasing.
+//                     </span>
+//                   </h2>
 
-//                 <p className="mt-5 text-xs italic text-background/45">
-//                   Victory stretch optional.
-//                 </p>
+//                   <p className="mt-6 max-w-lg text-sm leading-7 text-background/65 sm:text-base sm:leading-8 dark:text-muted-foreground">
+//                     They know their craft,
+//                     know their tools and know
+//                     how to get moving. From
+//                     trades to technology,
+//                     Allocats bring real
+//                     experience to real work.
+//                   </p>
 
-//                 <Button
-//                   asChild
-//                   variant="secondary"
-//                   className="mt-8 h-12 rounded-xl px-6 shadow-none"
-//                 >
-//                   <Link to="/allocats">
-//                     Explore professionals
+//                   <p className="mt-5 text-xs italic text-background/45 dark:text-muted-foreground/60">
+//                     Victory stretch optional.
+//                   </p>
 
-//                     <ArrowRightIcon
-//                       size={16}
-//                     />
-//                   </Link>
-//                 </Button>
+//                   <Button
+//                     asChild
+//                     variant="secondary"
+//                     className={[
+//                       "mt-8 h-12 rounded-xl px-6 shadow-none",
+//                       "dark:bg-primary dark:text-primary-foreground",
+//                       "dark:hover:bg-primary/90",
+//                     ].join(" ")}
+//                   >
+//                     <Link to="/allocats">
+//                       Explore professionals
+
+//                       <ArrowRightIcon
+//                         size={16}
+//                       />
+//                     </Link>
+//                   </Button>
+//                 </div>
 //               </div>
 
-//               <div className="min-h-[420px] overflow-hidden lg:min-h-full">
+//               <div className="relative min-h-[420px] overflow-hidden lg:min-h-full">
 //                 <motion.img
 //                   src={
 //                     PEOPLE_IMAGE
 //                   }
 //                   alt="People collaborating in a workshop"
-//                   className="h-full w-full object-cover"
+//                   className="absolute inset-0 h-full w-full object-cover"
 //                   initial={{
 //                     scale: 1.06,
 //                   }}
@@ -709,9 +2156,14 @@
 //                   }}
 //                   transition={{
 //                     duration: 1.1,
-//                     ease: "easeOut",
 //                   }}
 //                 />
+
+//                 <div className="absolute inset-0 bg-gradient-to-r from-black/15 via-transparent to-transparent" />
+
+//                 <div className="absolute bottom-6 right-6 rounded-full border border-white/15 bg-black/25 px-4 py-2 text-xs font-medium text-white backdrop-blur-lg">
+//                   Skill in motion
+//                 </div>
 //               </div>
 //             </div>
 //           </motion.div>
@@ -737,15 +2189,12 @@
 //                 once: true,
 //                 amount: 0.3,
 //               }}
-//               transition={{
-//                 duration: 0.6,
-//               }}
 //             >
 //               <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-primary sm:text-xs">
 //                 Built for the work after the match
 //               </p>
 
-//               <h2 className="mt-4 text-4xl font-black uppercase leading-[0.94] tracking-[-0.045em] sm:text-5xl lg:text-6xl">
+//               <h2 className="mt-4 text-4xl font-black uppercase leading-[1] tracking-[-0.035em] sm:text-5xl lg:text-6xl">
 //                 The hunt ends.
 
 //                 <span className="block text-primary">
@@ -754,14 +2203,15 @@
 //               </h2>
 
 //               <p className="mx-auto mt-6 max-w-2xl text-sm leading-7 text-muted-foreground sm:text-base sm:leading-8">
-//                 See tasks, deadlines, progress,
-//                 people and comments in one
-//                 shared project workspace.
+//                 See tasks, deadlines,
+//                 progress, people and comments
+//                 in one shared project
+//                 workspace.
 //               </p>
 //             </motion.div>
 
 //             <motion.div
-//               className="mt-12 overflow-hidden rounded-[2rem] border border-border bg-background p-3 shadow-xl sm:p-5 lg:p-7"
+//               className="mt-12 overflow-hidden rounded-[2rem] border border-border bg-card p-3 text-card-foreground shadow-lg sm:p-5 lg:p-7"
 //               initial={{
 //                 opacity: 0,
 //                 y: 35,
@@ -780,7 +2230,7 @@
 //                 duration: 0.75,
 //               }}
 //             >
-//               <div className="rounded-[1.4rem] bg-muted/30 p-3 sm:p-5 lg:p-8">
+//               <div className="rounded-[1.5rem] bg-muted/30 p-3 sm:p-5 lg:p-8">
 //                 <img
 //                   src={
 //                     assets.computerPhone
@@ -791,7 +2241,7 @@
 //               </div>
 //             </motion.div>
 
-//             <div className="mx-auto mt-8 grid max-w-5xl gap-6 sm:grid-cols-3">
+//             <div className="mx-auto mt-10 grid max-w-5xl gap-7 sm:grid-cols-3">
 //               {[
 //                 {
 //                   title:
@@ -820,7 +2270,7 @@
 //                     key={
 //                       item.title
 //                     }
-//                     className="border-l-2 border-primary pl-4"
+//                     className="border-l-2 border-primary pl-5"
 //                     initial={{
 //                       opacity: 0,
 //                       y: 14,
@@ -836,8 +2286,6 @@
 //                       delay:
 //                         index *
 //                         0.08,
-//                       duration:
-//                         0.45,
 //                     }}
 //                   >
 //                     <h3 className="text-sm font-bold">
@@ -859,113 +2307,255 @@
 //         </section>
 
 //         {/* =========================================================
-//             SERVICES
+//             SKILLS SLIDER
+//             Contained
 //         ========================================================= */}
 
-//         <section className="container mx-auto px-5 py-20 md:px-8 lg:py-28">
-//           <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
-//             <motion.div
-//               className="max-w-2xl"
-//               initial={{
-//                 opacity: 0,
-//                 y: 20,
-//               }}
-//               whileInView={{
-//                 opacity: 1,
-//                 y: 0,
-//               }}
-//               viewport={{
-//                 once: true,
-//               }}
-//             >
-//               <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-primary sm:text-xs">
-//                 Explore skills
-//               </p>
+//         <section className="py-20 lg:py-28">
+//           <div className="container mx-auto px-5 md:px-8">
+//             <div className="flex flex-col gap-7 lg:flex-row lg:items-end lg:justify-between">
+//               <motion.div
+//                 className="max-w-2xl"
+//                 initial={{
+//                   opacity: 0,
+//                   y: 20,
+//                 }}
+//                 whileInView={{
+//                   opacity: 1,
+//                   y: 0,
+//                 }}
+//                 viewport={{
+//                   once: true,
+//                 }}
+//               >
+//                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-primary sm:text-xs">
+//                   Explore skills
+//                 </p>
 
-//               <h2 className="mt-4 text-4xl font-black uppercase leading-[0.94] tracking-[-0.045em] sm:text-5xl">
-//                 Whatever needs doing.
-//               </h2>
-//             </motion.div>
+//                 <h2 className="mt-4 text-4xl font-black leading-[1.02] tracking-[-0.035em] sm:text-5xl lg:text-6xl">
+//                   Whatever needs{" "}
 
-//             <Button
-//               asChild
-//               variant="ghost"
-//               className="w-fit rounded-xl"
-//             >
-//               <Link to="/allocats">
-//                 View all
+//                   <span className="text-primary">
+//                     doing.
+//                   </span>
+//                 </h2>
 
-//                 <ArrowRightIcon
-//                   size={16}
-//                 />
-//               </Link>
-//             </Button>
-//           </div>
+//                 <p className="mt-5 max-w-lg text-sm leading-7 text-muted-foreground sm:text-base">
+//                   Browse a wide range of
+//                   skills and find the right
+//                   professional for your next
+//                   project.
+//                 </p>
+//               </motion.div>
 
-//           <div className="mt-10 grid gap-px overflow-hidden rounded-[1.5rem] border border-border bg-border sm:grid-cols-2 lg:grid-cols-3">
-//             {services.map(
-//               (
-//                 service,
-//                 index,
-//               ) => {
-//                 const Icon =
-//                   service.icon;
+//               <div className="flex flex-wrap items-center gap-3">
+//                 <button
+//                   type="button"
+//                   onClick={() =>
+//                     scrollServices(
+//                       "left",
+//                     )
+//                   }
+//                   className={[
+//                     "flex h-11 w-11 items-center justify-center rounded-full",
+//                     "border border-border bg-card text-card-foreground",
+//                     "transition-all duration-200",
+//                     "hover:border-primary/40 hover:text-primary",
+//                   ].join(" ")}
+//                   aria-label="Previous skills"
+//                 >
+//                   <ArrowLeftIcon
+//                     size={18}
+//                   />
+//                 </button>
 
-//                 return (
-//                   <motion.div
-//                     key={
-//                       service.title
-//                     }
-//                     initial={{
-//                       opacity: 0,
-//                       y: 18,
-//                     }}
-//                     whileInView={{
-//                       opacity: 1,
-//                       y: 0,
-//                     }}
-//                     viewport={{
-//                       once: true,
-//                       amount: 0.25,
-//                     }}
-//                     transition={{
-//                       delay:
-//                         index *
-//                         0.055,
-//                       duration:
-//                         0.45,
-//                     }}
-//                   >
-//                     <Link
-//                       to="/allocats"
-//                       className="group flex h-full min-h-[270px] flex-col bg-background p-6 transition-colors hover:bg-muted/40 sm:p-8"
-//                     >
-//                       <Icon
-//                         size={22}
-//                         className="text-primary transition-transform duration-300 group-hover:-rotate-6 group-hover:scale-110"
-//                       />
+//                 <button
+//                   type="button"
+//                   onClick={() =>
+//                     scrollServices(
+//                       "right",
+//                     )
+//                   }
+//                   className={[
+//                     "flex h-11 w-11 items-center justify-center rounded-full",
+//                     "border border-border bg-card text-card-foreground",
+//                     "transition-all duration-200",
+//                     "hover:border-primary/40 hover:text-primary",
+//                   ].join(" ")}
+//                   aria-label="More skills"
+//                 >
+//                   <ArrowRightIcon
+//                     size={18}
+//                   />
+//                 </button>
 
-//                       <h3 className="mt-10 text-xl font-black uppercase tracking-[-0.02em]">
-//                         {
+//                 <Button
+//                   asChild
+//                   variant="outline"
+//                   className="ml-1 h-11 rounded-xl px-5 shadow-none"
+//                 >
+//                   <Link to="/allocats">
+//                     View all skills
+
+//                     <ArrowUpRightIcon
+//                       size={15}
+//                     />
+//                   </Link>
+//                 </Button>
+//               </div>
+//             </div>
+
+//             <div className="relative mt-10 md:mt-12">
+//               <div
+//                 ref={sliderRef}
+//                 className={[
+//                   "flex snap-x snap-mandatory gap-4 overflow-x-auto pb-4",
+//                   "scroll-smooth md:gap-5",
+//                   "[scrollbar-width:none]",
+//                   "[&::-webkit-scrollbar]:hidden",
+//                 ].join(" ")}
+//               >
+//                 {services.map(
+//                   (
+//                     service,
+//                     index,
+//                   ) => {
+//                     const Icon =
+//                       service.icon;
+
+//                     const image =
+//                       serviceImages[
+//                         service.title
+//                       ];
+
+//                     return (
+//                       <motion.article
+//                         key={
 //                           service.title
 //                         }
-//                       </h3>
+//                         className={[
+//                           "group flex min-h-[460px] shrink-0 snap-start flex-col",
+//                           "w-[84%] overflow-hidden rounded-[1.75rem]",
+//                           "border border-border bg-card text-card-foreground",
+//                           "transition-all duration-300",
+//                           "hover:-translate-y-1 hover:border-primary/25",
+//                           "hover:shadow-lg hover:shadow-black/5",
+//                           "dark:hover:shadow-black/20",
+//                           "sm:w-[47%]",
+//                           "lg:w-[31.5%]",
+//                         ].join(" ")}
+//                         initial={{
+//                           opacity: 0,
+//                           x: 26,
+//                         }}
+//                         whileInView={{
+//                           opacity: 1,
+//                           x: 0,
+//                         }}
+//                         viewport={{
+//                           once: true,
+//                           amount: 0.15,
+//                         }}
+//                         transition={{
+//                           delay:
+//                             index *
+//                             0.055,
+//                           duration:
+//                             0.5,
+//                         }}
+//                       >
+//                         <div className="relative h-[220px] overflow-hidden bg-muted">
+//                           <img
+//                             src={image}
+//                             alt={
+//                               service.title
+//                             }
+//                             className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.035]"
+//                           />
 
-//                       <p className="mt-3 text-sm leading-7 text-muted-foreground">
-//                         {
-//                           service.description
-//                         }
-//                       </p>
+//                           <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent" />
 
-//                       <ArrowUpRightIcon
-//                         size={18}
-//                         className="mt-auto pt-8 transition-transform duration-200 group-hover:translate-x-1 group-hover:-translate-y-1"
-//                       />
-//                     </Link>
-//                   </motion.div>
-//                 );
-//               },
-//             )}
+//                           <span className="absolute left-4 top-4 rounded-lg border border-white/15 bg-black/30 px-2.5 py-1.5 text-[0.62rem] font-bold text-white backdrop-blur-md">
+//                             {String(
+//                               index +
+//                                 1,
+//                             ).padStart(
+//                               2,
+//                               "0",
+//                             )}
+//                           </span>
+//                         </div>
+
+//                         <div className="flex flex-1 flex-col p-5 sm:p-6">
+//                           <div className="flex items-center justify-between gap-4">
+//                             <Icon
+//                               size={21}
+//                               className="text-primary"
+//                             />
+
+//                             <span className="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+//                               Skill category
+//                             </span>
+//                           </div>
+
+//                           <h3 className="mt-5 text-xl font-black tracking-[-0.025em]">
+//                             {
+//                               service.title
+//                             }
+//                           </h3>
+
+//                           <p className="mt-3 text-sm leading-7 text-muted-foreground">
+//                             {
+//                               service.description
+//                             }
+//                           </p>
+
+//                           <div className="mt-auto pt-7">
+//                             <div className="h-px bg-border" />
+
+//                             <Link
+//                               to="/allocats"
+//                               className="mt-5 flex items-center justify-between text-sm font-semibold text-primary"
+//                             >
+//                               Explore
+
+//                               <ArrowRightIcon
+//                                 size={16}
+//                                 className="transition-transform duration-200 group-hover:translate-x-1"
+//                               />
+//                             </Link>
+//                           </div>
+//                         </div>
+//                       </motion.article>
+//                     );
+//                   },
+//                 )}
+//               </div>
+
+//               {/* Small cue that more cards exist */}
+
+//               <div className="pointer-events-none absolute bottom-4 right-0 top-0 w-10 bg-gradient-to-l from-background to-transparent sm:w-16" />
+//             </div>
+
+//             <div className="mt-3 flex flex-col gap-3 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+//               <div className="flex items-center gap-3">
+//                 <span className="flex gap-1.5">
+//                   <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+
+//                   <span className="h-1.5 w-1.5 rounded-full bg-primary/50" />
+
+//                   <span className="h-1.5 w-1.5 rounded-full bg-primary/20" />
+//                 </span>
+
+//                 New skills keep
+//                 joining the platform.
+//               </div>
+
+//               <span className="text-muted-foreground/65">
+//                 Follow the trail and
+//                 find your match.
+//               </span>
+//             </div>
 //           </div>
 //         </section>
 
@@ -975,8 +2565,11 @@
 
 //         <section className="container mx-auto px-5 pb-20 md:px-8 lg:pb-32">
 //           <div className="grid gap-5 lg:grid-cols-2">
+
+//             {/* Client */}
+
 //             <motion.article
-//               className="rounded-[2rem] border border-border bg-muted/30 p-7 sm:p-10 lg:p-12"
+//               className="rounded-[2rem] border border-border bg-card p-7 text-card-foreground sm:p-10 lg:p-12"
 //               initial={{
 //                 opacity: 0,
 //                 x: -25,
@@ -987,7 +2580,6 @@
 //               }}
 //               viewport={{
 //                 once: true,
-//                 amount: 0.25,
 //               }}
 //               transition={{
 //                 duration: 0.6,
@@ -997,17 +2589,21 @@
 //                 For clients
 //               </p>
 
-//               <h3 className="mt-5 max-w-xl text-3xl font-black uppercase leading-[0.96] tracking-[-0.04em] sm:text-4xl">
+//               <h3 className="mt-5 max-w-xl text-3xl font-black uppercase leading-[1] tracking-[-0.035em] sm:text-4xl">
 //                 Find the skill.
 //                 <br />
-//                 Keep control of the outcome.
+
+//                 Keep control of the
+//                 outcome.
 //               </h3>
 
 //               <p className="mt-5 max-w-lg text-sm leading-7 text-muted-foreground sm:text-base">
 //                 Create projects, invite
-//                 professionals, follow progress,
-//                 comment on the work and approve
-//                 completion when the job is done.
+//                 professionals, follow
+//                 progress, comment on the
+//                 work and approve
+//                 completion when the job
+//                 is done.
 //               </p>
 
 //               <Button
@@ -1024,8 +2620,14 @@
 //               </Button>
 //             </motion.article>
 
+//             {/* Allocat personality card */}
+
 //             <motion.article
-//               className="relative overflow-hidden rounded-[2rem] bg-primary p-7 text-primary-foreground sm:p-10 lg:p-12"
+//               className={[
+//                 "relative overflow-hidden rounded-[2rem] border p-7 sm:p-10 lg:p-12",
+//                 "border-primary/20 bg-primary/[0.07] text-foreground",
+//                 "dark:border-primary/15 dark:bg-primary/[0.05]",
+//               ].join(" ")}
 //               initial={{
 //                 opacity: 0,
 //                 x: 25,
@@ -1036,44 +2638,54 @@
 //               }}
 //               viewport={{
 //                 once: true,
-//                 amount: 0.25,
 //               }}
 //               transition={{
 //                 duration: 0.6,
 //               }}
 //             >
-//               <div className="pointer-events-none absolute -right-12 -top-12 h-44 w-44 rounded-full border border-primary-foreground/10" />
+//               <img
+//                 src={
+//                   assets.allocatrIcon
+//                 }
+//                 alt=""
+//                 className="pointer-events-none absolute -bottom-8 -right-6 w-40 rotate-[-8deg] opacity-[0.035] sm:w-52 dark:opacity-[0.05]"
+//               />
 
-//               <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-primary-foreground/65 sm:text-xs">
-//                 For Allocats
-//               </p>
+//               <div className="relative">
+//                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-primary sm:text-xs">
+//                   For Allocats
+//                 </p>
 
-//               <h3 className="mt-5 max-w-xl text-3xl font-black uppercase leading-[0.96] tracking-[-0.04em] sm:text-4xl">
-//                 Put your skills
-//                 <br />
-//                 on the prowl.
-//               </h3>
+//                 <h3 className="mt-5 max-w-xl text-3xl font-black uppercase leading-[1] tracking-[-0.035em] sm:text-4xl">
+//                   Put your skills
+//                   <br />
 
-//               <p className="mt-5 max-w-lg text-sm leading-7 text-primary-foreground/75 sm:text-base">
-//                 Build your profile, receive
-//                 project opportunities, manage
-//                 tasks and keep your work
-//                 organized from one place.
-//               </p>
+//                   on the prowl.
+//                 </h3>
 
-//               <Button
-//                 asChild
-//                 variant="secondary"
-//                 className="mt-8 h-11 rounded-xl px-6 shadow-none"
-//               >
-//                 <Link to="/become-an-allocat">
-//                   Become an Allocat
+//                 <p className="mt-5 max-w-lg text-sm leading-7 text-muted-foreground sm:text-base">
+//                   Build your profile,
+//                   receive project
+//                   opportunities, manage
+//                   tasks and keep your work
+//                   organized from one
+//                   place.
+//                 </p>
 
-//                   <ArrowRightIcon
-//                     size={15}
-//                   />
-//                 </Link>
-//               </Button>
+//                 <Button
+//                   asChild
+//                   variant="outline"
+//                   className="mt-8 h-11 rounded-xl border-primary/25 bg-background/40 px-6 shadow-none backdrop-blur-sm hover:bg-primary/10"
+//                 >
+//                   <Link to="/become-an-allocat">
+//                     Become an Allocat
+
+//                     <ArrowRightIcon
+//                       size={15}
+//                     />
+//                   </Link>
+//                 </Button>
+//               </div>
 //             </motion.article>
 //           </div>
 //         </section>
@@ -1100,11 +2712,11 @@
 //                 }}
 //               >
 //                 <ShieldCheckIcon
-//                   size={28}
+//                   size={26}
 //                   className="text-primary"
 //                 />
 
-//                 <h2 className="mt-6 text-4xl font-black uppercase leading-[0.94] tracking-[-0.045em] sm:text-5xl">
+//                 <h2 className="mt-6 text-4xl font-black uppercase leading-[1] tracking-[-0.035em] sm:text-5xl">
 //                   Confidence before
 
 //                   <span className="block text-primary">
@@ -1113,7 +2725,7 @@
 //                 </h2>
 //               </motion.div>
 
-//               <div className="divide-y divide-border">
+//               <div className="divide-y divide-border border-y border-border">
 //                 {trustPoints.map(
 //                   (
 //                     point,
@@ -1127,7 +2739,7 @@
 //                         key={
 //                           point.title
 //                         }
-//                         className="grid gap-4 py-6 sm:grid-cols-[48px_180px_1fr] sm:items-start sm:gap-6"
+//                         className="grid gap-4 py-7 sm:grid-cols-[52px_190px_1fr] sm:items-start sm:gap-6"
 //                         initial={{
 //                           opacity: 0,
 //                           x: 18,
@@ -1145,11 +2757,10 @@
 //                             0.08,
 //                         }}
 //                       >
-//                         <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-//                           <Icon
-//                             size={18}
-//                           />
-//                         </span>
+//                         <Icon
+//                           size={19}
+//                           className="text-primary"
+//                         />
 
 //                         <h3 className="text-sm font-bold">
 //                           {
@@ -1173,11 +2784,12 @@
 
 //         {/* =========================================================
 //             FINAL CTA
+//             Theme-native
 //         ========================================================= */}
 
-//         <section className="bg-background px-5 py-8 md:px-8 lg:py-12">
+//         <section className="px-5 py-10 md:px-8 lg:py-14">
 //           <motion.div
-//             className="container mx-auto overflow-hidden rounded-[2rem] bg-foreground text-background"
+//             className="container mx-auto overflow-hidden rounded-[2rem] border border-border bg-card px-7 py-14 text-card-foreground sm:px-10 sm:py-20 lg:px-16 lg:py-24"
 //             initial={{
 //               opacity: 0,
 //               y: 30,
@@ -1194,60 +2806,53 @@
 //               duration: 0.65,
 //             }}
 //           >
-//             <div className="relative px-6 py-14 sm:px-10 sm:py-20 lg:px-16 lg:py-24">
-//               <div className="absolute -right-32 -top-32 h-80 w-80 rounded-full border border-background/10" />
+//             <div className="grid gap-10 lg:grid-cols-[1fr_auto] lg:items-end">
+//               <div className="max-w-4xl">
+//                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-primary sm:text-xs">
+//                   Ready to move?
+//                 </p>
 
-//               <div className="absolute -right-12 top-10 h-44 w-44 rounded-full border border-background/10" />
+//                 <h2 className="mt-5 text-4xl font-black uppercase leading-[1] tracking-[-0.035em] sm:text-5xl lg:text-6xl xl:text-7xl">
+//                   Find the right person.
 
-//               <div className="relative grid gap-10 lg:grid-cols-[1fr_auto] lg:items-end">
-//                 <div className="max-w-4xl">
-//                   <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-background/55 sm:text-xs">
-//                     Ready to move?
-//                   </p>
+//                   <span className="block text-primary">
+//                     Get the work moving.
+//                   </span>
+//                 </h2>
 
-//                   <h2 className="mt-5 text-4xl font-black uppercase leading-[0.92] tracking-[-0.05em] sm:text-5xl lg:text-6xl xl:text-7xl">
-//                     Find the right person.
+//                 <p className="mt-6 max-w-2xl text-sm leading-7 text-muted-foreground sm:text-base sm:leading-8">
+//                   Whether you need a
+//                   professional or want to
+//                   put your own skills to
+//                   work, Allocatr gives you
+//                   one place to connect and
+//                   keep the project moving.
+//                 </p>
+//               </div>
 
-//                     <span className="block text-amber-300">
-//                       Get the work moving.
-//                     </span>
-//                   </h2>
+//               <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
+//                 <Button
+//                   asChild
+//                   className="h-12 rounded-xl px-7 shadow-none"
+//                 >
+//                   <Link to="/allocats">
+//                     Find Allocats
 
-//                   <p className="mt-6 max-w-2xl text-sm leading-7 text-background/70 sm:text-base sm:leading-8">
-//                     Whether you need a
-//                     professional or want to put
-//                     your own skills to work,
-//                     Allocatr gives you one place
-//                     to connect and keep the
-//                     project moving.
-//                   </p>
-//                 </div>
+//                     <ArrowRightIcon
+//                       size={16}
+//                     />
+//                   </Link>
+//                 </Button>
 
-//                 <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
-//                   <Button
-//                     asChild
-//                     variant="secondary"
-//                     className="h-12 rounded-xl px-7 shadow-none"
-//                   >
-//                     <Link to="/allocats">
-//                       Find Allocats
-
-//                       <ArrowRightIcon
-//                         size={16}
-//                       />
-//                     </Link>
-//                   </Button>
-
-//                   <Button
-//                     asChild
-//                     variant="outline"
-//                     className="h-12 rounded-xl border-background/20 bg-transparent px-7 text-background shadow-none hover:bg-background/10 hover:text-background"
-//                   >
-//                     <Link to="/become-an-allocat">
-//                       Become an Allocat
-//                     </Link>
-//                   </Button>
-//                 </div>
+//                 <Button
+//                   asChild
+//                   variant="outline"
+//                   className="h-12 rounded-xl px-7 shadow-none"
+//                 >
+//                   <Link to="/become-an-allocat">
+//                     Become an Allocat
+//                   </Link>
+//                 </Button>
 //               </div>
 //             </div>
 //           </motion.div>
@@ -1259,37 +2864,48 @@
 
 //         <footer className="bg-background px-5 py-8 md:px-8">
 //           <div className="container mx-auto flex flex-col gap-6 border-t border-border pt-8 text-sm md:flex-row md:items-center md:justify-between">
-//             <p className="text-muted-foreground">
-//               © {new Date().getFullYear()}{" "}
-//               Allocatr. Work, properly
-//               allocated.
-//             </p>
+//             <div className="flex items-center gap-3">
+//               <img
+//                 src={
+//                   assets.allocatrIcon
+//                 }
+//                 alt=""
+//                 className="h-5 w-5"
+//               />
+
+//               <p className="text-muted-foreground">
+//                 ©{" "}
+//                 {new Date().getFullYear()}{" "}
+//                 Allocatr. Work, properly
+//                 allocated.
+//               </p>
+//             </div>
 
 //             <nav className="flex flex-wrap gap-x-5 gap-y-3">
 //               <Link
 //                 to="/about"
-//                 className="hover:underline"
+//                 className="transition-colors hover:text-primary"
 //               >
 //                 About
 //               </Link>
 
 //               <Link
 //                 to="/how-it-works"
-//                 className="hover:underline"
+//                 className="transition-colors hover:text-primary"
 //               >
 //                 How it works
 //               </Link>
 
 //               <Link
 //                 to="/terms"
-//                 className="hover:underline"
+//                 className="transition-colors hover:text-primary"
 //               >
 //                 Terms
 //               </Link>
 
 //               <Link
 //                 to="/privacy"
-//                 className="hover:underline"
+//                 className="transition-colors hover:text-primary"
 //               >
 //                 Privacy
 //               </Link>
@@ -1309,12 +2925,12 @@
 //   value: string;
 // }) {
 //   return (
-//     <div className="rounded-xl bg-muted p-3">
-//       <p className="text-[0.6rem] text-muted-foreground">
+//     <div className="border-l border-border pl-3 first:border-l-0 first:pl-0">
+//       <p className="text-[0.58rem] font-medium uppercase tracking-[0.08em] text-muted-foreground">
 //         {label}
 //       </p>
 
-//       <p className="mt-1 text-xl font-black">
+//       <p className="mt-1 text-xl font-black tracking-[-0.02em]">
 //         {value}
 //       </p>
 //     </div>
@@ -1323,20 +2939,15 @@
 
 // export default LandingPage;
 
+import { useRef } from "react";
+import { Link } from "react-router-dom";
 
-import {
-  useEffect,
-  useRef,
-} from "react";
-import {
-  Link,
-  useNavigate,
-} from "react-router-dom";
 import {
   motion,
   useScroll,
   useSpring,
 } from "framer-motion";
+
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
@@ -1353,10 +2964,11 @@ import {
   WrenchIcon,
 } from "lucide-react";
 
-import SiteHeader from "@/components/SiteHeader";
 import assets from "@/assets/assets";
-import { Button } from "@/components/ui/button";
 import { useAuth } from "@/auth/useAuth";
+
+import SiteHeader from "@/components/SiteHeader";
+import { Button } from "@/components/ui/button";
 
 const services = [
   {
@@ -1439,10 +3051,25 @@ const trustPoints = [
   },
 ];
 
-const serviceImages: Record<
-  string,
-  string
-> = {
+const productHighlights = [
+  {
+    title: "Track tasks",
+    description:
+      "See what is pending, active and complete.",
+  },
+  {
+    title: "Follow progress",
+    description:
+      "Clients stay informed without controlling execution.",
+  },
+  {
+    title: "Keep context",
+    description:
+      "Comments and project information stay with the job.",
+  },
+];
+
+const serviceImages: Record<string, string> = {
   "Home repairs":
     "https://images.pexels.com/photos/5691622/pexels-photo-5691622.jpeg",
 
@@ -1468,76 +3095,56 @@ const HERO_IMAGE =
 const PEOPLE_IMAGE =
   "https://images.pexels.com/photos/6791496/pexels-photo-6791496.jpeg";
 
+/* =========================================================
+   LANDING PAGE
+========================================================= */
+
 function LandingPage() {
   const { user } = useAuth();
-  const navigate = useNavigate();
 
-  const sliderRef =
-    useRef<HTMLDivElement>(null);
+  const sliderRef = useRef<HTMLDivElement>(null);
 
-  const {
-    scrollYProgress,
-  } = useScroll();
+  const { scrollYProgress } = useScroll();
 
-  const scaleX =
-    useSpring(
-      scrollYProgress,
-      {
-        stiffness: 120,
-        damping: 30,
-        restDelta: 0.001,
-      },
-    );
+  const scaleX = useSpring(scrollYProgress, {
+    stiffness: 120,
+    damping: 30,
+    restDelta: 0.001,
+  });
 
-  useEffect(() => {
-    if (user) {
-      navigate(
-        "/projects",
-        {
-          replace: true,
-        },
-      );
-    }
-  }, [
-    user,
-    navigate,
-  ]);
+  const postTaskHref = user
+    ? "/projects/new"
+    : "/register";
 
-  function scrollServices(
-    direction:
-      | "left"
-      | "right",
-  ) {
+  const allocatCtaHref = user?.isAllocat
+    ? "/projects"
+    : "/become-an-allocat";
+
+  const allocatCtaLabel = user?.isAllocat
+    ? "View projects"
+    : "Become an Allocat";
+
+  function scrollServices(direction: "left" | "right") {
     sliderRef.current?.scrollBy({
-      left:
-        direction ===
-        "left"
-          ? -340
-          : 340,
+      left: direction === "left" ? -340 : 340,
       behavior: "smooth",
     });
-  }
-
-  if (user) {
-    return null;
   }
 
   return (
     <>
       <motion.div
         className="fixed inset-x-0 top-0 z-[100] h-[2px] origin-left bg-primary"
-        style={{
-          scaleX,
-        }}
+        style={{ scaleX }}
       />
 
       <SiteHeader />
 
       <main className="min-w-0 overflow-x-hidden bg-background text-foreground">
 
-        {/* =========================================================
+        {/* =====================================================
             HERO
-        ========================================================= */}
+        ===================================================== */}
 
         <section className="relative min-h-screen overflow-hidden pt-20 sm:pt-24">
           <div className="pointer-events-none absolute inset-0 overflow-hidden">
@@ -1609,18 +3216,13 @@ function LandingPage() {
               }}
             >
               <span className="h-2 w-2 rounded-full bg-primary" />
-
               <span className="h-1.5 w-1.5 rounded-full bg-primary/50" />
-
               <span className="h-1 w-1 rounded-full bg-primary/20" />
             </motion.div>
           </div>
 
           <div className="container relative mx-auto px-5 md:px-8">
             <div className="grid min-h-[calc(100vh-5rem)] items-center gap-12 py-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16 lg:py-16">
-
-              {/* Copy */}
-
               <motion.div
                 className="relative z-10 max-w-3xl"
                 initial={{
@@ -1637,7 +3239,7 @@ function LandingPage() {
                 }}
               >
                 <motion.div
-                  className="mb-6 inline-flex items-center gap-2.5 rounded-full border border-primary/15 bg-primary/[0.05] px-3.5 py-2"
+                  className="mb-6 inline-flex items-center gap-2.5 rounded-lg border border-primary/15 bg-primary/[0.05] px-3.5 py-2"
                   initial={{
                     opacity: 0,
                     scale: 0.96,
@@ -1652,9 +3254,7 @@ function LandingPage() {
                   }}
                 >
                   <img
-                    src={
-                      assets.allocatrIcon
-                    }
+                    src={assets.allocatrIcon}
                     alt=""
                     className="h-5 w-5 object-contain"
                   />
@@ -1664,10 +3264,9 @@ function LandingPage() {
                   </span>
                 </motion.div>
 
-                <h1 className="max-w-4xl text-5xl font-black leading-[1.01] tracking-[-0.03em] sm:text-6xl md:text-7xl lg:text-[5rem] xl:text-[5.8rem]">
-                  The right skill.
-
-                  <span className="mt-2 block text-primary">
+                <h1 className="max-w-[11ch] text-5xl font-black uppercase leading-[0.95] tracking-[-0.045em] sm:text-6xl md:text-7xl lg:text-[5rem] xl:text-[5.8rem]">
+                  The right skill.{" "}
+                  <span className="text-primary">
                     Right when you need it.
                   </span>
                 </h1>
@@ -1687,10 +3286,8 @@ function LandingPage() {
                     duration: 0.65,
                   }}
                 >
-                  Find skilled professionals,
-                  bring them into your project
-                  and keep the work moving from
-                  first task to final approval.
+                  Find skilled professionals, bring them into your project
+                  and keep the work moving from first task to final approval.
                 </motion.p>
 
                 <motion.div
@@ -1710,7 +3307,7 @@ function LandingPage() {
                 >
                   <Button
                     asChild
-                    className="group h-12 rounded-xl px-7 shadow-none"
+                    className="group h-12 rounded-lg px-7 shadow-none"
                   >
                     <Link to="/allocats">
                       Find an Allocat
@@ -1725,9 +3322,9 @@ function LandingPage() {
                   <Button
                     asChild
                     variant="outline"
-                    className="h-12 rounded-xl px-7 shadow-none"
+                    className="h-12 rounded-lg px-7 shadow-none"
                   >
-                    <Link to="/register">
+                    <Link to={postTaskHref}>
                       Post a task
                     </Link>
                   </Button>
@@ -1769,8 +3366,6 @@ function LandingPage() {
                 </motion.div>
               </motion.div>
 
-              {/* Visual */}
-
               <motion.div
                 className="relative min-h-[500px] sm:min-h-[570px] lg:min-h-[630px]"
                 initial={{
@@ -1789,11 +3384,9 @@ function LandingPage() {
                   ease: "easeOut",
                 }}
               >
-                <div className="absolute inset-x-5 bottom-0 top-5 overflow-hidden rounded-[2rem] bg-muted shadow-xl sm:inset-x-10 lg:left-16 lg:right-0">
+                <div className="absolute inset-x-5 bottom-0 top-5 overflow-hidden rounded-2xl bg-muted shadow-lg sm:inset-x-10 lg:left-16 lg:right-0">
                   <img
-                    src={
-                      HERO_IMAGE
-                    }
+                    src={HERO_IMAGE}
                     alt="Skilled professional working"
                     className="h-full w-full object-cover transition-transform duration-[1600ms] hover:scale-[1.02]"
                   />
@@ -1801,7 +3394,7 @@ function LandingPage() {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-black/[0.03] to-black/5" />
 
                   <motion.div
-                    className="absolute left-5 top-5 flex items-center gap-3 rounded-2xl border border-white/15 bg-black/25 px-3 py-2.5 text-white backdrop-blur-xl"
+                    className="absolute left-5 top-5 flex items-center gap-3 rounded-xl border border-white/15 bg-black/25 px-3 py-2.5 text-white backdrop-blur-xl"
                     initial={{
                       opacity: 0,
                       y: -10,
@@ -1814,11 +3407,9 @@ function LandingPage() {
                       delay: 0.7,
                     }}
                   >
-                    <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/10">
+                    <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10">
                       <img
-                        src={
-                          assets.allocatrIcon
-                        }
+                        src={assets.allocatrIcon}
                         alt=""
                         className="h-5 w-5"
                       />
@@ -1837,7 +3428,7 @@ function LandingPage() {
                 </div>
 
                 <motion.div
-                  className="absolute bottom-7 left-0 w-[88%] max-w-md rounded-[1.6rem] border border-border bg-card/95 p-5 text-card-foreground shadow-xl backdrop-blur-xl sm:bottom-10 sm:p-6"
+                  className="absolute bottom-7 left-0 w-[88%] max-w-md rounded-2xl border border-border bg-card/95 p-5 text-card-foreground shadow-lg backdrop-blur-xl sm:bottom-10 sm:p-6"
                   initial={{
                     opacity: 0,
                     y: 30,
@@ -1851,7 +3442,7 @@ function LandingPage() {
                     duration: 0.65,
                   }}
                   whileHover={{
-                    y: -5,
+                    y: -4,
                   }}
                 >
                   <div className="flex items-start justify-between gap-4">
@@ -1865,9 +3456,8 @@ function LandingPage() {
                       </p>
                     </div>
 
-                    <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/15 bg-emerald-400/10 px-3 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-300">
+                    <span className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/15 bg-emerald-400/10 px-3 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-300">
                       <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-
                       Active
                     </span>
                   </div>
@@ -1891,13 +3481,8 @@ function LandingPage() {
 
                   <div className="mt-5">
                     <div className="mb-2 flex justify-between text-[0.6rem] font-medium text-muted-foreground">
-                      <span>
-                        Project progress
-                      </span>
-
-                      <span>
-                        68%
-                      </span>
+                      <span>Project progress</span>
+                      <span>68%</span>
                     </div>
 
                     <div className="h-1.5 overflow-hidden rounded-full bg-muted">
@@ -1935,9 +3520,7 @@ function LandingPage() {
             >
               <div className="flex items-center gap-3 text-[0.62rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                 <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-
                 <span className="h-1.5 w-1.5 rounded-full bg-primary/55" />
-
                 <span className="h-1.5 w-1.5 rounded-full bg-primary/25" />
 
                 Follow the trail
@@ -1950,9 +3533,9 @@ function LandingPage() {
           </div>
         </section>
 
-        {/* =========================================================
+        {/* =====================================================
             WORKFLOW
-        ========================================================= */}
+        ===================================================== */}
 
         <section className="border-y border-border bg-muted/20">
           <div className="container mx-auto px-5 py-20 md:px-8 lg:py-28">
@@ -1971,6 +3554,9 @@ function LandingPage() {
                   once: true,
                   amount: 0.3,
                 }}
+                transition={{
+                  duration: 0.6,
+                }}
               >
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-primary sm:text-xs">
                   One platform
@@ -1985,78 +3571,59 @@ function LandingPage() {
                 </h2>
 
                 <p className="mt-6 max-w-lg text-sm leading-7 text-muted-foreground sm:text-base sm:leading-8">
-                  Find the person, agree on the
-                  work and keep delivery moving
-                  without jumping between
-                  disconnected tools.
+                  Find the person, agree on the work and keep delivery
+                  moving without jumping between disconnected tools.
                 </p>
               </motion.div>
 
               <div className="divide-y divide-border border-y border-border">
-                {workflow.map(
-                  (
-                    item,
-                    index,
-                  ) => (
-                    <motion.article
-                      key={
-                        item.number
-                      }
-                      className="group grid gap-4 py-7 sm:grid-cols-[60px_150px_1fr] sm:items-start sm:gap-6 sm:py-8"
-                      initial={{
-                        opacity: 0,
-                        x: 20,
-                      }}
-                      whileInView={{
-                        opacity: 1,
-                        x: 0,
-                      }}
-                      viewport={{
-                        once: true,
-                        amount: 0.4,
-                      }}
-                      transition={{
-                        delay:
-                          index *
-                          0.1,
-                        duration:
-                          0.5,
-                      }}
-                    >
-                      <span className="text-xs font-semibold text-muted-foreground transition-all group-hover:translate-x-1 group-hover:text-primary">
-                        {
-                          item.number
-                        }
-                      </span>
+                {workflow.map((item, index) => (
+                  <motion.article
+                    key={item.number}
+                    className="group grid gap-4 py-7 sm:grid-cols-[60px_150px_1fr] sm:items-start sm:gap-6 sm:py-8"
+                    initial={{
+                      opacity: 0,
+                      x: 20,
+                    }}
+                    whileInView={{
+                      opacity: 1,
+                      x: 0,
+                    }}
+                    viewport={{
+                      once: true,
+                      amount: 0.4,
+                    }}
+                    transition={{
+                      delay: index * 0.1,
+                      duration: 0.5,
+                    }}
+                  >
+                    <span className="text-xs font-semibold text-muted-foreground transition-all group-hover:translate-x-1 group-hover:text-primary">
+                      {item.number}
+                    </span>
 
-                      <h3 className="text-xl font-black uppercase">
-                        {
-                          item.title
-                        }
-                      </h3>
+                    <h3 className="text-xl font-black uppercase">
+                      {item.title}
+                    </h3>
 
-                      <p className="max-w-lg text-sm leading-7 text-muted-foreground">
-                        {
-                          item.description
-                        }
-                      </p>
-                    </motion.article>
-                  ),
-                )}
+                    <p className="max-w-lg text-sm leading-7 text-muted-foreground">
+                      {item.description}
+                    </p>
+                  </motion.article>
+                ))}
               </div>
             </div>
           </div>
         </section>
 
-        {/* =========================================================
+        {/* =====================================================
             MEET THE ALLOCATS
-            Strategic inversion
-        ========================================================= */}
+        ===================================================== */}
 
         <section className="container mx-auto px-5 py-20 md:px-8 lg:py-32">
           <motion.div
             className={[
-              "overflow-hidden rounded-[2rem] border",
+              "overflow-hidden rounded-2xl border",
               "border-foreground/10 bg-foreground text-background",
               "shadow-lg",
               "dark:border-border dark:bg-card dark:text-card-foreground",
@@ -2080,15 +3647,12 @@ function LandingPage() {
             <div className="grid lg:grid-cols-[0.9fr_1.1fr]">
               <div className="relative overflow-hidden p-7 sm:p-10 lg:p-16">
                 <img
-                  src={
-                    assets.allocatrIcon
-                  }
+                  src={assets.allocatrIcon}
                   alt=""
                   className={[
                     "pointer-events-none absolute -bottom-10 -left-8",
                     "w-44 rotate-[8deg] opacity-[0.035]",
-                    "sm:w-56",
-                    "dark:opacity-[0.045]",
+                    "sm:w-56 dark:opacity-[0.045]",
                   ].join(" ")}
                 />
 
@@ -2106,12 +3670,9 @@ function LandingPage() {
                   </h2>
 
                   <p className="mt-6 max-w-lg text-sm leading-7 text-background/65 sm:text-base sm:leading-8 dark:text-muted-foreground">
-                    They know their craft,
-                    know their tools and know
-                    how to get moving. From
-                    trades to technology,
-                    Allocats bring real
-                    experience to real work.
+                    They know their craft, know their tools and know how
+                    to get moving. From trades to technology, Allocats
+                    bring real experience to real work.
                   </p>
 
                   <p className="mt-5 text-xs italic text-background/45 dark:text-muted-foreground/60">
@@ -2122,17 +3683,14 @@ function LandingPage() {
                     asChild
                     variant="secondary"
                     className={[
-                      "mt-8 h-12 rounded-xl px-6 shadow-none",
+                      "mt-8 h-12 rounded-lg px-6 shadow-none",
                       "dark:bg-primary dark:text-primary-foreground",
                       "dark:hover:bg-primary/90",
                     ].join(" ")}
                   >
                     <Link to="/allocats">
                       Explore professionals
-
-                      <ArrowRightIcon
-                        size={16}
-                      />
+                      <ArrowRightIcon size={16} />
                     </Link>
                   </Button>
                 </div>
@@ -2140,9 +3698,7 @@ function LandingPage() {
 
               <div className="relative min-h-[420px] overflow-hidden lg:min-h-full">
                 <motion.img
-                  src={
-                    PEOPLE_IMAGE
-                  }
+                  src={PEOPLE_IMAGE}
                   alt="People collaborating in a workshop"
                   className="absolute inset-0 h-full w-full object-cover"
                   initial={{
@@ -2161,7 +3717,7 @@ function LandingPage() {
 
                 <div className="absolute inset-0 bg-gradient-to-r from-black/15 via-transparent to-transparent" />
 
-                <div className="absolute bottom-6 right-6 rounded-full border border-white/15 bg-black/25 px-4 py-2 text-xs font-medium text-white backdrop-blur-lg">
+                <div className="absolute bottom-6 right-6 rounded-lg border border-white/15 bg-black/25 px-4 py-2 text-xs font-medium text-white backdrop-blur-lg">
                   Skill in motion
                 </div>
               </div>
@@ -2169,9 +3725,9 @@ function LandingPage() {
           </motion.div>
         </section>
 
-        {/* =========================================================
+        {/* =====================================================
             PRODUCT
-        ========================================================= */}
+        ===================================================== */}
 
         <section className="bg-muted/20 py-20 lg:py-32">
           <div className="container mx-auto px-5 md:px-8">
@@ -2203,15 +3759,13 @@ function LandingPage() {
               </h2>
 
               <p className="mx-auto mt-6 max-w-2xl text-sm leading-7 text-muted-foreground sm:text-base sm:leading-8">
-                See tasks, deadlines,
-                progress, people and comments
-                in one shared project
-                workspace.
+                See tasks, deadlines, progress, people and comments
+                in one shared project workspace.
               </p>
             </motion.div>
 
             <motion.div
-              className="mt-12 overflow-hidden rounded-[2rem] border border-border bg-card p-3 text-card-foreground shadow-lg sm:p-5 lg:p-7"
+              className="mt-12 overflow-hidden rounded-2xl border border-border bg-card p-3 text-card-foreground shadow-lg sm:p-5 lg:p-7"
               initial={{
                 opacity: 0,
                 y: 35,
@@ -2230,11 +3784,9 @@ function LandingPage() {
                 duration: 0.75,
               }}
             >
-              <div className="rounded-[1.5rem] bg-muted/30 p-3 sm:p-5 lg:p-8">
+              <div className="rounded-xl bg-muted/30 p-3 sm:p-5 lg:p-8">
                 <img
-                  src={
-                    assets.computerPhone
-                  }
+                  src={assets.computerPhone}
                   alt="Allocatr project workspace"
                   className="mx-auto block h-auto w-full max-w-6xl object-contain"
                 />
@@ -2242,74 +3794,41 @@ function LandingPage() {
             </motion.div>
 
             <div className="mx-auto mt-10 grid max-w-5xl gap-7 sm:grid-cols-3">
-              {[
-                {
-                  title:
-                    "Track tasks",
-                  description:
-                    "See what is pending, active and complete.",
-                },
-                {
-                  title:
-                    "Follow progress",
-                  description:
-                    "Clients stay informed without controlling execution.",
-                },
-                {
-                  title:
-                    "Keep context",
-                  description:
-                    "Comments and project information stay with the job.",
-                },
-              ].map(
-                (
-                  item,
-                  index,
-                ) => (
-                  <motion.div
-                    key={
-                      item.title
-                    }
-                    className="border-l-2 border-primary pl-5"
-                    initial={{
-                      opacity: 0,
-                      y: 14,
-                    }}
-                    whileInView={{
-                      opacity: 1,
-                      y: 0,
-                    }}
-                    viewport={{
-                      once: true,
-                    }}
-                    transition={{
-                      delay:
-                        index *
-                        0.08,
-                    }}
-                  >
-                    <h3 className="text-sm font-bold">
-                      {
-                        item.title
-                      }
-                    </h3>
+              {productHighlights.map((item, index) => (
+                <motion.div
+                  key={item.title}
+                  className="border-l-2 border-primary pl-5"
+                  initial={{
+                    opacity: 0,
+                    y: 14,
+                  }}
+                  whileInView={{
+                    opacity: 1,
+                    y: 0,
+                  }}
+                  viewport={{
+                    once: true,
+                  }}
+                  transition={{
+                    delay: index * 0.08,
+                  }}
+                >
+                  <h3 className="text-sm font-bold">
+                    {item.title}
+                  </h3>
 
-                    <p className="mt-2 text-xs leading-6 text-muted-foreground">
-                      {
-                        item.description
-                      }
-                    </p>
-                  </motion.div>
-                ),
-              )}
+                  <p className="mt-2 text-xs leading-6 text-muted-foreground">
+                    {item.description}
+                  </p>
+                </motion.div>
+              ))}
             </div>
           </div>
         </section>
 
-        {/* =========================================================
-            SKILLS SLIDER
-            Contained
-        ========================================================= */}
+        {/* =====================================================
+            SKILLS
+        ===================================================== */}
 
         <section className="py-20 lg:py-28">
           <div className="container mx-auto px-5 md:px-8">
@@ -2332,74 +3851,56 @@ function LandingPage() {
                   Explore skills
                 </p>
 
-                <h2 className="mt-4 text-4xl font-black leading-[1.02] tracking-[-0.035em] sm:text-5xl lg:text-6xl">
+                <h2 className="mt-4 text-4xl font-black uppercase leading-[1.02] tracking-[-0.035em] sm:text-5xl lg:text-6xl">
                   Whatever needs{" "}
-
                   <span className="text-primary">
                     doing.
                   </span>
                 </h2>
 
                 <p className="mt-5 max-w-lg text-sm leading-7 text-muted-foreground sm:text-base">
-                  Browse a wide range of
-                  skills and find the right
-                  professional for your next
-                  project.
+                  Browse a wide range of skills and find the right
+                  professional for your next project.
                 </p>
               </motion.div>
 
               <div className="flex flex-wrap items-center gap-3">
                 <button
                   type="button"
-                  onClick={() =>
-                    scrollServices(
-                      "left",
-                    )
-                  }
+                  onClick={() => scrollServices("left")}
                   className={[
-                    "flex h-11 w-11 items-center justify-center rounded-full",
+                    "flex h-11 w-11 items-center justify-center rounded-lg",
                     "border border-border bg-card text-card-foreground",
                     "transition-all duration-200",
                     "hover:border-primary/40 hover:text-primary",
                   ].join(" ")}
                   aria-label="Previous skills"
                 >
-                  <ArrowLeftIcon
-                    size={18}
-                  />
+                  <ArrowLeftIcon size={18} />
                 </button>
 
                 <button
                   type="button"
-                  onClick={() =>
-                    scrollServices(
-                      "right",
-                    )
-                  }
+                  onClick={() => scrollServices("right")}
                   className={[
-                    "flex h-11 w-11 items-center justify-center rounded-full",
+                    "flex h-11 w-11 items-center justify-center rounded-lg",
                     "border border-border bg-card text-card-foreground",
                     "transition-all duration-200",
                     "hover:border-primary/40 hover:text-primary",
                   ].join(" ")}
                   aria-label="More skills"
                 >
-                  <ArrowRightIcon
-                    size={18}
-                  />
+                  <ArrowRightIcon size={18} />
                 </button>
 
                 <Button
                   asChild
                   variant="outline"
-                  className="ml-1 h-11 rounded-xl px-5 shadow-none"
+                  className="ml-1 h-11 rounded-lg px-5 shadow-none"
                 >
                   <Link to="/allocats">
                     View all skills
-
-                    <ArrowUpRightIcon
-                      size={15}
-                    />
+                    <ArrowUpRightIcon size={15} />
                   </Link>
                 </Button>
               </div>
@@ -2415,124 +3916,95 @@ function LandingPage() {
                   "[&::-webkit-scrollbar]:hidden",
                 ].join(" ")}
               >
-                {services.map(
-                  (
-                    service,
-                    index,
-                  ) => {
-                    const Icon =
-                      service.icon;
+                {services.map((service, index) => {
+                  const Icon = service.icon;
+                  const image = serviceImages[service.title];
 
-                    const image =
-                      serviceImages[
-                        service.title
-                      ];
+                  return (
+                    <motion.article
+                      key={service.title}
+                      className={[
+                        "group flex min-h-[460px] shrink-0 snap-start flex-col",
+                        "w-[84%] overflow-hidden rounded-2xl",
+                        "border border-border bg-card text-card-foreground",
+                        "transition-all duration-300",
+                        "hover:-translate-y-1 hover:border-primary/25",
+                        "hover:shadow-lg hover:shadow-black/5",
+                        "dark:hover:shadow-black/20",
+                        "sm:w-[47%]",
+                        "lg:w-[31.5%]",
+                      ].join(" ")}
+                      initial={{
+                        opacity: 0,
+                        x: 26,
+                      }}
+                      whileInView={{
+                        opacity: 1,
+                        x: 0,
+                      }}
+                      viewport={{
+                        once: true,
+                        amount: 0.15,
+                      }}
+                      transition={{
+                        delay: index * 0.055,
+                        duration: 0.5,
+                      }}
+                    >
+                      <div className="relative h-[220px] overflow-hidden bg-muted">
+                        <img
+                          src={image}
+                          alt={service.title}
+                          className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.035]"
+                        />
 
-                    return (
-                      <motion.article
-                        key={
-                          service.title
-                        }
-                        className={[
-                          "group flex min-h-[460px] shrink-0 snap-start flex-col",
-                          "w-[84%] overflow-hidden rounded-[1.75rem]",
-                          "border border-border bg-card text-card-foreground",
-                          "transition-all duration-300",
-                          "hover:-translate-y-1 hover:border-primary/25",
-                          "hover:shadow-lg hover:shadow-black/5",
-                          "dark:hover:shadow-black/20",
-                          "sm:w-[47%]",
-                          "lg:w-[31.5%]",
-                        ].join(" ")}
-                        initial={{
-                          opacity: 0,
-                          x: 26,
-                        }}
-                        whileInView={{
-                          opacity: 1,
-                          x: 0,
-                        }}
-                        viewport={{
-                          once: true,
-                          amount: 0.15,
-                        }}
-                        transition={{
-                          delay:
-                            index *
-                            0.055,
-                          duration:
-                            0.5,
-                        }}
-                      >
-                        <div className="relative h-[220px] overflow-hidden bg-muted">
-                          <img
-                            src={image}
-                            alt={
-                              service.title
-                            }
-                            className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.035]"
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent" />
+
+                        <span className="absolute left-4 top-4 rounded-lg border border-white/15 bg-black/30 px-2.5 py-1.5 text-[0.62rem] font-bold text-white backdrop-blur-md">
+                          {String(index + 1).padStart(2, "0")}
+                        </span>
+                      </div>
+
+                      <div className="flex flex-1 flex-col p-5 sm:p-6">
+                        <div className="flex items-center justify-between gap-4">
+                          <Icon
+                            size={21}
+                            className="text-primary"
                           />
 
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent" />
-
-                          <span className="absolute left-4 top-4 rounded-lg border border-white/15 bg-black/30 px-2.5 py-1.5 text-[0.62rem] font-bold text-white backdrop-blur-md">
-                            {String(
-                              index +
-                                1,
-                            ).padStart(
-                              2,
-                              "0",
-                            )}
+                          <span className="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                            Skill category
                           </span>
                         </div>
 
-                        <div className="flex flex-1 flex-col p-5 sm:p-6">
-                          <div className="flex items-center justify-between gap-4">
-                            <Icon
-                              size={21}
-                              className="text-primary"
+                        <h3 className="mt-5 text-xl font-black tracking-[-0.025em]">
+                          {service.title}
+                        </h3>
+
+                        <p className="mt-3 text-sm leading-7 text-muted-foreground">
+                          {service.description}
+                        </p>
+
+                        <div className="mt-auto pt-7">
+                          <div className="h-px bg-border" />
+
+                          <Link
+                            to="/allocats"
+                            className="mt-5 flex items-center justify-between text-sm font-semibold text-primary"
+                          >
+                            Explore
+
+                            <ArrowRightIcon
+                              size={16}
+                              className="transition-transform duration-200 group-hover:translate-x-1"
                             />
-
-                            <span className="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                              Skill category
-                            </span>
-                          </div>
-
-                          <h3 className="mt-5 text-xl font-black tracking-[-0.025em]">
-                            {
-                              service.title
-                            }
-                          </h3>
-
-                          <p className="mt-3 text-sm leading-7 text-muted-foreground">
-                            {
-                              service.description
-                            }
-                          </p>
-
-                          <div className="mt-auto pt-7">
-                            <div className="h-px bg-border" />
-
-                            <Link
-                              to="/allocats"
-                              className="mt-5 flex items-center justify-between text-sm font-semibold text-primary"
-                            >
-                              Explore
-
-                              <ArrowRightIcon
-                                size={16}
-                                className="transition-transform duration-200 group-hover:translate-x-1"
-                              />
-                            </Link>
-                          </div>
+                          </Link>
                         </div>
-                      </motion.article>
-                    );
-                  },
-                )}
+                      </div>
+                    </motion.article>
+                  );
+                })}
               </div>
-
-              {/* Small cue that more cards exist */}
 
               <div className="pointer-events-none absolute bottom-4 right-0 top-0 w-10 bg-gradient-to-l from-background to-transparent sm:w-16" />
             </div>
@@ -2541,158 +4013,131 @@ function LandingPage() {
               <div className="flex items-center gap-3">
                 <span className="flex gap-1.5">
                   <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-
                   <span className="h-1.5 w-1.5 rounded-full bg-primary/50" />
-
                   <span className="h-1.5 w-1.5 rounded-full bg-primary/20" />
                 </span>
 
-                New skills keep
-                joining the platform.
+                New skills keep joining the platform.
               </div>
 
               <span className="text-muted-foreground/65">
-                Follow the trail and
-                find your match.
+                Follow the trail and find your match.
               </span>
             </div>
           </div>
         </section>
 
-        {/* =========================================================
-            CLIENT / ALLOCAT
-        ========================================================= */}
+        {/* =====================================================
+            CLIENTS / ALLOCATS
+        ===================================================== */}
 
         <section className="container mx-auto px-5 pb-20 md:px-8 lg:pb-32">
-          <div className="grid gap-5 lg:grid-cols-2">
-
-            {/* Client */}
-
-            <motion.article
-              className="rounded-[2rem] border border-border bg-card p-7 text-card-foreground sm:p-10 lg:p-12"
-              initial={{
-                opacity: 0,
-                x: -25,
-              }}
-              whileInView={{
-                opacity: 1,
-                x: 0,
-              }}
-              viewport={{
-                once: true,
-              }}
-              transition={{
-                duration: 0.6,
-              }}
-            >
-              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-primary sm:text-xs">
-                For clients
-              </p>
-
-              <h3 className="mt-5 max-w-xl text-3xl font-black uppercase leading-[1] tracking-[-0.035em] sm:text-4xl">
-                Find the skill.
-                <br />
-
-                Keep control of the
-                outcome.
-              </h3>
-
-              <p className="mt-5 max-w-lg text-sm leading-7 text-muted-foreground sm:text-base">
-                Create projects, invite
-                professionals, follow
-                progress, comment on the
-                work and approve
-                completion when the job
-                is done.
-              </p>
-
-              <Button
-                asChild
-                className="mt-8 h-11 rounded-xl px-6 shadow-none"
+          <div className="border-y border-border py-12 sm:py-14 lg:py-16">
+            <div className="grid gap-12 lg:grid-cols-2 lg:gap-0">
+              <motion.article
+                className="lg:pr-16"
+                initial={{
+                  opacity: 0,
+                  x: -20,
+                }}
+                whileInView={{
+                  opacity: 1,
+                  x: 0,
+                }}
+                viewport={{
+                  once: true,
+                  amount: 0.25,
+                }}
+                transition={{
+                  duration: 0.6,
+                }}
               >
-                <Link to="/register">
-                  Post a task
+                <div className="flex items-center gap-3">
+                  <span className="h-1.5 w-1.5 rounded-full bg-primary" />
 
-                  <ArrowRightIcon
-                    size={15}
-                  />
-                </Link>
-              </Button>
-            </motion.article>
+                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-primary sm:text-xs">
+                    For clients
+                  </p>
+                </div>
 
-            {/* Allocat personality card */}
+                <h3 className="mt-6 max-w-xl text-3xl font-black uppercase leading-[1] tracking-[-0.035em] sm:text-4xl lg:text-5xl">
+                  Find the skill.
+                  <br />
+                  Keep control of the outcome.
+                </h3>
 
-            <motion.article
-              className={[
-                "relative overflow-hidden rounded-[2rem] border p-7 sm:p-10 lg:p-12",
-                "border-primary/20 bg-primary/[0.07] text-foreground",
-                "dark:border-primary/15 dark:bg-primary/[0.05]",
-              ].join(" ")}
-              initial={{
-                opacity: 0,
-                x: 25,
-              }}
-              whileInView={{
-                opacity: 1,
-                x: 0,
-              }}
-              viewport={{
-                once: true,
-              }}
-              transition={{
-                duration: 0.6,
-              }}
-            >
-              <img
-                src={
-                  assets.allocatrIcon
-                }
-                alt=""
-                className="pointer-events-none absolute -bottom-8 -right-6 w-40 rotate-[-8deg] opacity-[0.035] sm:w-52 dark:opacity-[0.05]"
-              />
-
-              <div className="relative">
-                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-primary sm:text-xs">
-                  For Allocats
+                <p className="mt-6 max-w-lg text-sm leading-7 text-muted-foreground sm:text-base sm:leading-8">
+                  Create projects, invite professionals, follow progress,
+                  comment on the work and approve completion when the
+                  job is done.
                 </p>
 
-                <h3 className="mt-5 max-w-xl text-3xl font-black uppercase leading-[1] tracking-[-0.035em] sm:text-4xl">
+                <Button
+                  asChild
+                  className="mt-8 h-11 rounded-lg px-6 shadow-none"
+                >
+                  <Link to={postTaskHref}>
+                    Post a task
+                    <ArrowRightIcon size={15} />
+                  </Link>
+                </Button>
+              </motion.article>
+
+              <motion.article
+                className="border-t border-border pt-12 lg:border-l lg:border-t-0 lg:pl-16 lg:pt-0"
+                initial={{
+                  opacity: 0,
+                  x: 20,
+                }}
+                whileInView={{
+                  opacity: 1,
+                  x: 0,
+                }}
+                viewport={{
+                  once: true,
+                  amount: 0.25,
+                }}
+                transition={{
+                  duration: 0.6,
+                }}
+              >
+                <div className="flex items-center gap-3">
+                  <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+
+                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-primary sm:text-xs">
+                    For Allocats
+                  </p>
+                </div>
+
+                <h3 className="mt-6 max-w-xl text-3xl font-black uppercase leading-[1] tracking-[-0.035em] sm:text-4xl lg:text-5xl">
                   Put your skills
                   <br />
-
                   on the prowl.
                 </h3>
 
-                <p className="mt-5 max-w-lg text-sm leading-7 text-muted-foreground sm:text-base">
-                  Build your profile,
-                  receive project
-                  opportunities, manage
-                  tasks and keep your work
-                  organized from one
-                  place.
+                <p className="mt-6 max-w-lg text-sm leading-7 text-muted-foreground sm:text-base sm:leading-8">
+                  Build your profile, receive project opportunities,
+                  manage tasks and keep your work organized from one place.
                 </p>
 
                 <Button
                   asChild
                   variant="outline"
-                  className="mt-8 h-11 rounded-xl border-primary/25 bg-background/40 px-6 shadow-none backdrop-blur-sm hover:bg-primary/10"
+                  className="mt-8 h-11 rounded-lg px-6 shadow-none"
                 >
-                  <Link to="/become-an-allocat">
-                    Become an Allocat
-
-                    <ArrowRightIcon
-                      size={15}
-                    />
+                  <Link to={allocatCtaHref}>
+                    {allocatCtaLabel}
+                    <ArrowRightIcon size={15} />
                   </Link>
                 </Button>
-              </div>
-            </motion.article>
+              </motion.article>
+            </div>
           </div>
         </section>
 
-        {/* =========================================================
+        {/* =====================================================
             TRUST
-        ========================================================= */}
+        ===================================================== */}
 
         <section className="border-y border-border bg-muted/20">
           <div className="container mx-auto px-5 py-20 md:px-8 lg:py-28">
@@ -2726,70 +4171,55 @@ function LandingPage() {
               </motion.div>
 
               <div className="divide-y divide-border border-y border-border">
-                {trustPoints.map(
-                  (
-                    point,
-                    index,
-                  ) => {
-                    const Icon =
-                      point.icon;
+                {trustPoints.map((point, index) => {
+                  const Icon = point.icon;
 
-                    return (
-                      <motion.article
-                        key={
-                          point.title
-                        }
-                        className="grid gap-4 py-7 sm:grid-cols-[52px_190px_1fr] sm:items-start sm:gap-6"
-                        initial={{
-                          opacity: 0,
-                          x: 18,
-                        }}
-                        whileInView={{
-                          opacity: 1,
-                          x: 0,
-                        }}
-                        viewport={{
-                          once: true,
-                        }}
-                        transition={{
-                          delay:
-                            index *
-                            0.08,
-                        }}
-                      >
-                        <Icon
-                          size={19}
-                          className="text-primary"
-                        />
+                  return (
+                    <motion.article
+                      key={point.title}
+                      className="grid gap-4 py-7 sm:grid-cols-[52px_190px_1fr] sm:items-start sm:gap-6"
+                      initial={{
+                        opacity: 0,
+                        x: 18,
+                      }}
+                      whileInView={{
+                        opacity: 1,
+                        x: 0,
+                      }}
+                      viewport={{
+                        once: true,
+                      }}
+                      transition={{
+                        delay: index * 0.08,
+                      }}
+                    >
+                      <Icon
+                        size={19}
+                        className="text-primary"
+                      />
 
-                        <h3 className="text-sm font-bold">
-                          {
-                            point.title
-                          }
-                        </h3>
+                      <h3 className="text-sm font-bold">
+                        {point.title}
+                      </h3>
 
-                        <p className="text-sm leading-7 text-muted-foreground">
-                          {
-                            point.description
-                          }
-                        </p>
-                      </motion.article>
-                    );
-                  },
-                )}
+                      <p className="text-sm leading-7 text-muted-foreground">
+                        {point.description}
+                      </p>
+                    </motion.article>
+                  );
+                })}
               </div>
             </div>
           </div>
         </section>
 
-        {/* =========================================================
+        {/* =====================================================
             FINAL CTA
-            Theme-native
-        ========================================================= */}
+        ===================================================== */}
 
         <section className="px-5 py-10 md:px-8 lg:py-14">
           <motion.div
-            className="container mx-auto overflow-hidden rounded-[2rem] border border-border bg-card px-7 py-14 text-card-foreground sm:px-10 sm:py-20 lg:px-16 lg:py-24"
+            className="container mx-auto overflow-hidden rounded-2xl border border-border bg-card px-7 py-14 text-card-foreground sm:px-10 sm:py-20 lg:px-16 lg:py-24"
             initial={{
               opacity: 0,
               y: 30,
@@ -2821,36 +4251,30 @@ function LandingPage() {
                 </h2>
 
                 <p className="mt-6 max-w-2xl text-sm leading-7 text-muted-foreground sm:text-base sm:leading-8">
-                  Whether you need a
-                  professional or want to
-                  put your own skills to
-                  work, Allocatr gives you
-                  one place to connect and
-                  keep the project moving.
+                  Whether you need a professional or want to put your own
+                  skills to work, Allocatr gives you one place to connect
+                  and keep the project moving.
                 </p>
               </div>
 
               <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
                 <Button
                   asChild
-                  className="h-12 rounded-xl px-7 shadow-none"
+                  className="h-12 rounded-lg px-7 shadow-none"
                 >
                   <Link to="/allocats">
                     Find Allocats
-
-                    <ArrowRightIcon
-                      size={16}
-                    />
+                    <ArrowRightIcon size={16} />
                   </Link>
                 </Button>
 
                 <Button
                   asChild
                   variant="outline"
-                  className="h-12 rounded-xl px-7 shadow-none"
+                  className="h-12 rounded-lg px-7 shadow-none"
                 >
-                  <Link to="/become-an-allocat">
-                    Become an Allocat
+                  <Link to={allocatCtaHref}>
+                    {allocatCtaLabel}
                   </Link>
                 </Button>
               </div>
@@ -2858,25 +4282,21 @@ function LandingPage() {
           </motion.div>
         </section>
 
-        {/* =========================================================
+        {/* =====================================================
             FOOTER
-        ========================================================= */}
+        ===================================================== */}
 
         <footer className="bg-background px-5 py-8 md:px-8">
           <div className="container mx-auto flex flex-col gap-6 border-t border-border pt-8 text-sm md:flex-row md:items-center md:justify-between">
             <div className="flex items-center gap-3">
               <img
-                src={
-                  assets.allocatrIcon
-                }
+                src={assets.allocatrIcon}
                 alt=""
                 className="h-5 w-5"
               />
 
               <p className="text-muted-foreground">
-                ©{" "}
-                {new Date().getFullYear()}{" "}
-                Allocatr. Work, properly
+                © {new Date().getFullYear()} Allocatr. Work, properly
                 allocated.
               </p>
             </div>
@@ -2916,6 +4336,10 @@ function LandingPage() {
     </>
   );
 }
+
+/* =========================================================
+   HERO METRIC
+========================================================= */
 
 function HeroMetric({
   label,

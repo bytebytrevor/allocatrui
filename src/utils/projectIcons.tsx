@@ -1,22 +1,180 @@
-import { Dock, Wrench, Hammer, Palette, FileBox, Armchair, Fence } from "lucide-react";
+import {
+  Armchair,
+  BriefcaseBusinessIcon,
+  Dock,
+  Fence,
+  FileBox,
+  Hammer,
+  Palette,
+  Wrench,
+  type LucideIcon,
+} from "lucide-react";
+
 import type { JSX } from "react";
 
-const size = 36; 
+/* =========================================================
+   TYPES
+========================================================= */
 
-// Map project type to a function that returns JSX with styling
-const projectTypeIcons: Record<string, () => JSX.Element> = {
-  "digital": () => <Dock size={size} className="rounded-sm p-2 text-blue-500" />,
-  "home service": () => <Wrench size={size} className="rounded-sm p-2 text-orange-500" />,
-  "Construction": () => <Hammer size={size} className="rounded-sm p-2 text-yellow-600" />,
-  "creative": () => <Palette size={size} className="rounded-sm p-2 text-pink-500" />,
-  "Beauty & Grooming": () => <Armchair size={size} className="rounded-sm p-2 text-green-500" />,
-  // "Carpentry & Joinery": () => <Fence size={size} className="bg-primary rounded-sm p-2 text-secondary" />,
-  "Carpentry & Joinery": () => <Fence size={size} className="rounded-sm p-2 text-green-500" />,
+type ProjectCategoryAppearance = {
+  label: string;
+  icon: LucideIcon;
+  iconClassName: string;
+  surfaceClassName: string;
 };
 
-// Optional: default icon if type not found
-export const getProjectIcon = (type: string): JSX.Element => {
-  return projectTypeIcons[type]?.() ?? <FileBox size={size} className="rounded-sm p-2 text-gray-400" />;
+/* =========================================================
+   CATEGORY APPEARANCE
+========================================================= */
+
+const projectTypeIcons: Record<string, ProjectCategoryAppearance> = {
+  digital: {
+    label: "Digital",
+    icon: Dock,
+    iconClassName: "text-sky-600 dark:text-sky-400",
+    surfaceClassName: "bg-sky-500/10",
+  },
+
+  "home service": {
+    label: "Home service",
+    icon: Wrench,
+    iconClassName: "text-teal-700 dark:text-teal-300",
+    surfaceClassName: "bg-teal-500/10",
+  },
+
+  construction: {
+    label: "Construction",
+    icon: Hammer,
+    iconClassName: "text-orange-700 dark:text-orange-300",
+    surfaceClassName: "bg-orange-500/10",
+  },
+
+  creative: {
+    label: "Creative",
+    icon: Palette,
+    iconClassName: "text-violet-700 dark:text-violet-300",
+    surfaceClassName: "bg-violet-500/10",
+  },
+
+  "beauty & grooming": {
+    label: "Beauty & Grooming",
+    icon: Armchair,
+    iconClassName: "text-rose-700 dark:text-rose-300",
+    surfaceClassName: "bg-rose-500/10",
+  },
+
+  "carpentry & joinery": {
+    label: "Carpentry & Joinery",
+    icon: Fence,
+    iconClassName: "text-emerald-700 dark:text-emerald-300",
+    surfaceClassName: "bg-emerald-500/10",
+  },
+
+  "client work": {
+    label: "Client project",
+    icon: BriefcaseBusinessIcon,
+    iconClassName: "text-indigo-700 dark:text-indigo-300",
+    surfaceClassName: "bg-indigo-500/10",
+  },
+
+  default: {
+    label: "General project",
+    icon: FileBox,
+    iconClassName: "text-slate-600 dark:text-slate-300",
+    surfaceClassName: "bg-slate-500/10",
+  },
 };
+
+/* =========================================================
+   ALIASES
+========================================================= */
+
+const categoryAliases: Record<string, string> = {
+  "home services": "home service",
+  "beauty and grooming": "beauty & grooming",
+  "carpentry and joinery": "carpentry & joinery",
+  "client project": "client work",
+};
+
+/* =========================================================
+   HELPERS
+========================================================= */
+
+function normalizeProjectCategory(category?: string) {
+  return String(category ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ");
+}
+
+function resolveProjectCategory(category?: string) {
+  const normalized = normalizeProjectCategory(category);
+
+  if (!normalized || normalized === "default") {
+    return "default";
+  }
+
+  return categoryAliases[normalized] ?? normalized;
+}
+
+/* =========================================================
+   GET ICON
+========================================================= */
+
+export function getProjectIcon(
+  category?: string,
+  size = 18,
+): JSX.Element {
+  const resolvedCategory = resolveProjectCategory(category);
+  const appearance =
+    projectTypeIcons[resolvedCategory] ?? projectTypeIcons.default;
+
+  const Icon = appearance.icon;
+
+  return (
+    <Icon
+      size={size}
+      strokeWidth={1.9}
+      className={appearance.iconClassName}
+    />
+  );
+}
+
+/* =========================================================
+   GET ICON SURFACE
+========================================================= */
+
+export function getProjectIconSurfaceClass(category?: string) {
+  const resolvedCategory = resolveProjectCategory(category);
+
+  return (
+    projectTypeIcons[resolvedCategory]?.surfaceClassName ??
+    projectTypeIcons.default.surfaceClassName
+  );
+}
+
+/* =========================================================
+   GET CATEGORY LABEL
+========================================================= */
+
+export function getProjectCategoryLabel(
+  category?: string,
+  fallback = "General project",
+) {
+  const normalized = normalizeProjectCategory(category);
+
+  if (!normalized || normalized === "default") {
+    return fallback;
+  }
+
+  const resolvedCategory = resolveProjectCategory(category);
+  const appearance = projectTypeIcons[resolvedCategory];
+
+  if (appearance) {
+    return appearance.label;
+  }
+
+  return category?.trim() || fallback;
+}
 
 export default projectTypeIcons;
