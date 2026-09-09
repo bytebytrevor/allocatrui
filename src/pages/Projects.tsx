@@ -9,6 +9,7 @@ import {
 } from "react";
 
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 
 import {
   ArrowDownNarrowWideIcon,
@@ -456,7 +457,7 @@ function Projects() {
        * Refresh My Work only.
        *
        * Accepting client work does not make the project an
-       * owned project, so /projects/mine is not refreshed.
+       * owned project
        */
       await fetchWorkProjects();
 
@@ -518,12 +519,6 @@ function Projects() {
 
   /* =======================================================
      PAGE STATE
-
-     There is one passive workspace loader.
-
-     For an Allocat, initial My Work data is included in that
-     load so the page does not reveal itself and then show a
-     second loader inside the body.
   ======================================================= */
 
   const workspaceLoading =
@@ -634,12 +629,10 @@ function Projects() {
 
               {user?.isAllocat && (
                 <div className="mt-9">
-                  <div className="inline-flex max-w-full items-center gap-1 rounded-xl border border-border/70 bg-muted/[0.16] p-1">
+                  <div className="inline-flex max-w-full items-center rounded-full bg-muted/60 p-1">
                     <WorkspaceTab
                       active={workspaceSection === "projects"}
-                      onClick={() =>
-                        setWorkspaceSection("projects")
-                      }
+                      onClick={() => setWorkspaceSection("projects")}
                       icon={BriefcaseBusinessIcon}
                       label="My projects"
                       count={projects.length}
@@ -647,18 +640,11 @@ function Projects() {
 
                     <WorkspaceTab
                       active={workspaceSection === "work"}
-                      onClick={() =>
-                        setWorkspaceSection("work")
-                      }
+                      onClick={() => setWorkspaceSection("work")}
                       icon={SparklesIcon}
                       label="My work"
-                      count={
-                        invitations.length +
-                        activeWork.length
-                      }
-                      attention={
-                        invitations.length > 0
-                      }
+                      count={invitations.length + activeWork.length}
+                      attention={invitations.length > 0}
                     />
                   </div>
                 </div>
@@ -967,6 +953,7 @@ function WorkspaceTab({
   label,
   count,
   attention = false,
+  loadingCount = false,
 }: {
   active: boolean;
   onClick: () => void;
@@ -977,53 +964,74 @@ function WorkspaceTab({
   label: string;
   count?: number;
   attention?: boolean;
+  loadingCount?: boolean;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
+      aria-pressed={active}
       className={[
-        "inline-flex h-10 shrink-0 items-center gap-2 rounded-lg px-4 text-sm font-semibold",
-        "transition-all duration-200",
+        "relative flex h-9 shrink-0 items-center gap-2 rounded-full px-4",
+        "text-xs font-semibold transition-colors duration-200",
         active
-          ? "bg-background text-foreground shadow-sm ring-1 ring-border/70"
-          : "text-muted-foreground hover:bg-background/60 hover:text-foreground",
+          ? "text-foreground"
+          : "text-muted-foreground hover:text-foreground",
       ].join(" ")}
     >
-      <span className="inline-flex shrink-0 items-center gap-1.5">
-        {attention && (
-          <span className="relative flex h-1.5 w-1.5 shrink-0">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-40" />
-            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-primary" />
-          </span>
-        )}
-
-        <Icon
-          size={15}
-          className={
-            active || attention
-              ? "text-primary"
-              : ""
-          }
+      {active && (
+        <motion.span
+          layoutId="workspace-active-tab"
+          className="absolute inset-0 rounded-full bg-background shadow-sm ring-1 ring-border/50"
+          transition={{
+            type: "spring",
+            stiffness: 500,
+            damping: 38,
+          }}
         />
-      </span>
-
-      {label}
-
-      {typeof count === "number" && count > 0 && (
-        <span
-          className={[
-            "inline-flex h-5 min-w-5 items-center justify-center rounded-md px-1.5 text-[0.6rem] font-bold",
-            attention
-              ? "bg-primary text-primary-foreground"
-              : active
-                ? "bg-primary/[0.08] text-primary"
-                : "bg-muted text-muted-foreground",
-          ].join(" ")}
-        >
-          {count}
-        </span>
       )}
+
+      <span className="relative z-10 flex items-center gap-2">
+        <span className="relative flex items-center">
+          {attention && !loadingCount && (
+            <span className="absolute -right-1.5 -top-1 flex h-1.5 w-1.5">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-40" />
+              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-primary" />
+            </span>
+          )}
+
+          <Icon
+            size={14}
+            className={
+              active || attention
+                ? "text-primary"
+                : ""
+            }
+          />
+        </span>
+
+        <span>
+          {label}
+        </span>
+
+        {loadingCount ? (
+          <LoaderCircleIcon
+            size={12}
+            className="animate-spin text-primary"
+          />
+        ) : typeof count === "number" && count > 0 ? (
+          <span
+            className={[
+              "text-[0.62rem] font-bold tabular-nums",
+              active || attention
+                ? "text-primary"
+                : "text-muted-foreground/70",
+            ].join(" ")}
+          >
+            {count}
+          </span>
+        ) : null}
+      </span>
     </button>
   );
 }
@@ -1646,8 +1654,6 @@ function EmptyWorkspace({
 
 /* =========================================================
    WORKSPACE LOADING
-
-   One clean passive loading state for the page.
 ========================================================= */
 
 function WorkspaceLoading() {

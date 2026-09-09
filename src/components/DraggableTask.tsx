@@ -1,54 +1,91 @@
+import type { CSSProperties } from "react";
+
 import { useDraggable } from "@dnd-kit/core";
+
 import type { Task } from "@/Types/task";
+
 import TaskCard from "./TaskCard";
 
-// export function DraggableTask({ task }: { task: Task }) {
-//   const { setNodeRef, attributes, listeners, transform, isDragging } = useDraggable({
-//     id: task.id
-//   });
+type TaskStatus =
+  | "pending"
+  | "active"
+  | "complete"
+  | "overdue";
 
-//   const style: React.CSSProperties = {
-//     transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
-//     opacity: isDragging ? 0 : 1
-//   };
+type DraggableTaskProps = {
+  task: Task;
+  disabled?: boolean;
 
-//   return (
-//     <div ref={setNodeRef} style={style} {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing">
-//       <TaskCard task={task} />
-//     </div>
-//   );
-// }
+  onMoveTask?: (
+    taskId: string,
+    status: TaskStatus,
+  ) => void | Promise<void>;
 
-export function DraggableTask({ task }: { task: Task }) {
+  onEditTask?: (task: Task) => void;
+  onDeleteTask?: (task: Task) => void;
+};
+
+export function DraggableTask({
+  task,
+  disabled = false,
+  onMoveTask,
+  onEditTask,
+  onDeleteTask,
+}: DraggableTaskProps) {
   const {
     attributes,
     listeners,
     setNodeRef,
     transform,
-    isDragging
+    isDragging,
   } = useDraggable({
     id: task.id,
+    disabled,
     data: {
-      task
-    }
+      task,
+    },
   });
 
-  const style: React.CSSProperties = {
-    transform: transform
-      ? `translate3d(${transform.x}px, ${transform.y}px, 0)`
-      : undefined,
-    opacity: isDragging ? 0 : 1
+  const style: CSSProperties = {
+    transform:
+      !disabled && transform
+        ? `translate3d(${transform.x}px, ${transform.y}px, 0)`
+        : undefined,
+    opacity: isDragging ? 0 : 1,
   };
 
   return (
     <div
       ref={setNodeRef}
       style={style}
-      {...listeners}
-      {...attributes}
-      className="cursor-grab touch-none active:cursor-grabbing"
+      {...(!disabled ? attributes : {})}
+      {...(!disabled ? listeners : {})}
+      className={[
+        "transition-opacity",
+        !disabled
+          ? "cursor-grab touch-none active:cursor-grabbing"
+          : "",
+      ].join(" ")}
     >
-      <TaskCard task={task} />
+      <TaskCard
+        task={task}
+        canManageTasks={!disabled}
+        onMoveTask={
+          disabled
+            ? undefined
+            : onMoveTask
+        }
+        onEditTask={
+          disabled
+            ? undefined
+            : onEditTask
+        }
+        onDeleteTask={
+          disabled
+            ? undefined
+            : onDeleteTask
+        }
+      />
     </div>
   );
 }
