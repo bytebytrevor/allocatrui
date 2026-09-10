@@ -26,7 +26,7 @@ import { AuthProvider } from "./auth/AuthContext";
 import { RequireAuth } from "./auth/RequireAuth";
 import CreateAllocatProfile from "./pages/CreateAllocatProfile";
 import AboutPage from "./pages/AboutPage";
-import { CheckCircle2Icon, AlertCircleIcon, InfoIcon, TriangleAlertIcon } from "lucide-react";
+import HowItWorksPage from "./pages/HowItWorksPage";
 
 function App() {
   const theme = localStorage.getItem("theme") || "light";
@@ -65,10 +65,13 @@ function App() {
       path: "/verify-email", Component: VerifyEmail,
     },
     {      
-      path: "/about",
-      Component: AboutPage,
+      path: "/about", Component: AboutPage,
       errorElement: <NotFoundErrorPage />
-    },    
+    },
+    {      
+      path: "/how-it-works", Component: HowItWorksPage,
+      errorElement: <NotFoundErrorPage />
+    },      
 
     // PROTECTED ROUTES
     {

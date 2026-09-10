@@ -21,6 +21,7 @@ import {
 import type { Task } from "@/Types/task";
 
 import TaskDialog from "@/components/TaskDialog";
+import DeleteTaskDialog from "./DeleteTaskDialog";
 
 import {
   DropdownMenu,
@@ -48,7 +49,7 @@ type Props = {
   ) => void | Promise<void>;
 
   onEditTask?: (task: Task) => void;
-  onDeleteTask?: (task: Task) => void;
+  onDeleteTask?: (task: Task) => void | Promise<void>;
 };
 
 type TaskStatusAppearance = {
@@ -134,6 +135,8 @@ function TaskCard({
   onDeleteTask,
 }: Props) {
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] =
+    useState(false);
 
   const currentStatus = getEffectiveTaskStatus(task);
   const statusAppearance =
@@ -253,7 +256,11 @@ function TaskCard({
               onOpenTask={openTask}
               onMoveTask={onMoveTask}
               onEditTask={onEditTask}
-              onDeleteTask={onDeleteTask}
+              onRequestDelete={
+                onDeleteTask
+                  ? () => setDeleteDialogOpen(true)
+                  : undefined
+              }
             />
           )}
         </div>
@@ -275,6 +282,15 @@ function TaskCard({
           onOpenChange={setDialogOpen}
         />
       )}
+
+      {!isOverlay && onDeleteTask && (
+        <DeleteTaskDialog
+          task={task}
+          open={deleteDialogOpen}
+          onOpenChange={setDeleteDialogOpen}
+          onConfirm={onDeleteTask}
+        />
+      )}
     </>
   );
 }
@@ -286,7 +302,7 @@ function TaskMenu({
   onOpenTask,
   onMoveTask,
   onEditTask,
-  onDeleteTask,
+  onRequestDelete,
 }: {
   task: Task;
   currentStatus: TaskStatus;
@@ -297,7 +313,7 @@ function TaskMenu({
     status: TaskStatus,
   ) => void | Promise<void>;
   onEditTask?: (task: Task) => void;
-  onDeleteTask?: (task: Task) => void;
+  onRequestDelete?: () => void;
 }) {
   const availableMoveStatuses =
     getAvailableMoveStatuses(currentStatus);
@@ -311,7 +327,7 @@ function TaskMenu({
     canManageTasks && Boolean(onEditTask);
 
   const canDelete =
-    canManageTasks && Boolean(onDeleteTask);
+    canManageTasks && Boolean(onRequestDelete);
 
   const hasManagementActions =
     canMove || canEdit || canDelete;
@@ -421,7 +437,9 @@ function TaskMenu({
               <DropdownMenuItem
                 className="rounded-lg text-destructive focus:bg-destructive/10 focus:text-destructive"
                 onSelect={() => {
-                  onDeleteTask?.(task);
+                  requestAnimationFrame(() => {
+                    onRequestDelete?.();
+                  });
                 }}
               >
                 <Trash2Icon size={14} />

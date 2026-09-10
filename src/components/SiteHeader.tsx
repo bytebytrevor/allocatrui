@@ -21,7 +21,9 @@ import {
   XIcon,
 } from "lucide-react";
 
-import assets from "@/assets/assets";
+import allocatrLogoLight from "@/assets/allocatr-neg-light.svg";
+import allocatrLogoDark from "@/assets/allocatr-dark-02.svg";
+import allocatrIcon from "@/assets/icon-variant-01.svg";
 import { useAuth } from "@/auth/useAuth";
 
 import {
@@ -115,10 +117,6 @@ function getInitials(name?: string) {
     .join("");
 }
 
-/* =========================================================
-   SITE HEADER
-========================================================= */
-
 function SiteHeader() {
   const { user, logout } = useAuth();
 
@@ -143,6 +141,11 @@ function SiteHeader() {
     : baseNavigation;
 
   const initials = getInitials(user?.fullName);
+
+  const headerLogo =
+    theme === "dark"
+      ? allocatrLogoLight
+      : allocatrLogoDark;
 
   useEffect(() => {
     const root = document.documentElement;
@@ -203,7 +206,9 @@ function SiteHeader() {
 
   function toggleTheme() {
     setTheme((currentTheme) =>
-      currentTheme === "dark" ? "light" : "dark",
+      currentTheme === "dark"
+        ? "light"
+        : "dark",
     );
   }
 
@@ -232,7 +237,10 @@ function SiteHeader() {
 
     try {
       await logout();
-      navigate("/login", { replace: true });
+
+      navigate("/login", {
+        replace: true,
+      });
     } catch (error) {
       console.error("Logout failed:", error);
     } finally {
@@ -247,7 +255,6 @@ function SiteHeader() {
           "fixed inset-x-0 top-0 z-50",
           "transition-[background-color,border-color,box-shadow,backdrop-filter]",
           "duration-300",
-
           isScrolled
             ? [
                 "border-b border-border/60",
@@ -268,29 +275,36 @@ function SiteHeader() {
             "mx-auto flex w-full max-w-7xl items-center justify-between",
             "h-14 px-5",
             "sm:h-[60px] sm:px-8",
-            "lg:px-10",
+            "lg:px-8 xl:px-10",
           ].join(" ")}
         >
           <Link
             to="/"
             onClick={closeMenu}
-            className="group flex shrink-0 items-center gap-2.5 outline-none"
+            className="group flex shrink-0 items-center outline-none"
             aria-label="Allocatr home"
           >
             <img
-              src={assets.allocatrIcon}
+              src={allocatrIcon}
               alt=""
               className={[
-                "h-7 w-7 object-contain",
+                "h-7 w-7 object-contain sm:hidden",
                 "transition-transform duration-300",
                 "group-hover:-rotate-6",
                 "group-hover:scale-105",
               ].join(" ")}
             />
 
-            <span className="text-base font-black tracking-[-0.035em] sm:text-lg">
-              Allocatr
-            </span>
+            <img
+              src={headerLogo}
+              alt="Allocatr"
+              className={[
+                "hidden h-7 w-auto object-contain sm:block",
+                "lg:h-[26px] xl:h-7",
+                "transition-opacity duration-200",
+                "group-hover:opacity-80",
+              ].join(" ")}
+            />
           </Link>
 
           <nav
@@ -303,10 +317,10 @@ function SiteHeader() {
                 to={item.href}
                 className={({ isActive }) =>
                   [
-                    "group relative flex h-full items-center px-4",
-                    "text-[0.82rem] font-medium",
+                    "group relative flex h-full items-center",
+                    "px-3 xl:px-4",
+                    "text-[0.8rem] font-medium xl:text-[0.82rem]",
                     "transition-colors duration-200",
-
                     isActive
                       ? "text-foreground"
                       : "text-muted-foreground hover:text-foreground",
@@ -321,8 +335,8 @@ function SiteHeader() {
                       className={[
                         "absolute bottom-[9px] left-1/2",
                         "h-1 w-1 -translate-x-1/2 rounded-full",
-                        "bg-primary transition-all duration-200",
-
+                        "bg-primary",
+                        "transition-all duration-200",
                         isActive
                           ? "scale-100 opacity-100"
                           : [
@@ -344,7 +358,11 @@ function SiteHeader() {
               variant="ghost"
               size="icon"
               onClick={toggleTheme}
-              className="h-9 w-9 rounded-lg text-muted-foreground shadow-none hover:text-foreground"
+              className={[
+                "h-9 w-9 rounded-lg shadow-none",
+                "text-muted-foreground",
+                "hover:text-foreground",
+              ].join(" ")}
               aria-label={
                 theme === "dark"
                   ? "Switch to light theme"
@@ -358,44 +376,67 @@ function SiteHeader() {
               )}
             </Button>
 
-            <div className="mx-2 h-4 w-px bg-border/80" />
+            <div className="mx-1.5 h-4 w-px bg-border/80 xl:mx-2" />
 
-            {user ? (
-              <AccountMenu
-                user={user}
-                initials={initials}
-                loggingOut={loggingOut}
-                onProjects={() => navigate("/projects")}
-                onProfile={() => navigate("/profile")}
-                onSettings={() => navigate("/settings")}
-                onLogout={handleLogout}
-              />
-            ) : (
+            {!user && (
               <Button
                 type="button"
                 variant="ghost"
                 onClick={handleLogin}
                 className={[
-                  "h-9 rounded-lg px-3.5",
+                  "h-9 w-9 rounded-lg p-0",
                   "text-xs font-semibold",
                   "text-muted-foreground",
                   "shadow-none",
                   "hover:text-foreground",
+                  "xl:w-auto xl:px-3.5",
                 ].join(" ")}
+                aria-label="Log in"
               >
                 <LogInIcon size={14} />
-                Log in
+
+                <span className="hidden xl:inline">
+                  Log in
+                </span>
               </Button>
             )}
 
             <Button
               type="button"
               onClick={handlePostTask}
-              className="ml-1 h-9 rounded-lg px-4 text-xs font-semibold shadow-none"
+              className={[
+                "ml-0.5 h-9 w-9 rounded-lg p-0",
+                "text-xs font-semibold shadow-none",
+                "xl:ml-1 xl:w-auto xl:px-4",
+              ].join(" ")}
+              aria-label="Post a task"
             >
-              Post a task
+              <span className="hidden xl:inline">
+                Post a task
+              </span>
+
               <ArrowUpRightIcon size={14} />
             </Button>
+
+            {user && (
+              <div className="ml-0.5 xl:ml-1">
+                <AccountMenu
+                  user={user}
+                  initials={initials}
+                  loggingOut={loggingOut}
+                  onProjects={() =>
+                    navigate("/projects")
+                  }
+                  onProfile={() =>
+                    navigate("/profile")
+                  }
+                  onSettings={() =>
+                    navigate("/settings")
+                  }
+                  onLogout={handleLogout}
+                />
+              </div>
+            )}
           </div>
 
           <div className="flex items-center gap-1 lg:hidden">
@@ -404,7 +445,11 @@ function SiteHeader() {
               variant="ghost"
               size="icon"
               onClick={toggleTheme}
-              className="h-9 w-9 rounded-lg text-muted-foreground shadow-none"
+              className={[
+                "h-9 w-9 rounded-lg shadow-none",
+                "text-muted-foreground",
+                "hover:text-foreground",
+              ].join(" ")}
               aria-label={
                 theme === "dark"
                   ? "Switch to light theme"
@@ -417,19 +462,6 @@ function SiteHeader() {
                 <MoonIcon size={16} />
               )}
             </Button>
-
-            {user && (
-              <AccountMenu
-                user={user}
-                initials={initials}
-                loggingOut={loggingOut}
-                compact
-                onProjects={() => navigate("/projects")}
-                onProfile={() => navigate("/profile")}
-                onSettings={() => navigate("/settings")}
-                onLogout={handleLogout}
-              />
-            )}
 
             <Button
               type="button"
@@ -453,6 +485,25 @@ function SiteHeader() {
                 <MenuIcon size={19} />
               )}
             </Button>
+
+            {user && (
+              <AccountMenu
+                user={user}
+                initials={initials}
+                loggingOut={loggingOut}
+                compact
+                onProjects={() =>
+                  navigate("/projects")
+                }
+                onProfile={() =>
+                  navigate("/profile")
+                }
+                onSettings={() =>
+                  navigate("/settings")
+                }
+                onLogout={handleLogout}
+              />
+            )}
           </div>
         </div>
       </header>
@@ -461,7 +512,6 @@ function SiteHeader() {
         className={[
           "fixed inset-0 z-40 lg:hidden",
           "transition-all duration-300",
-
           isMenuOpen
             ? "pointer-events-auto visible opacity-100"
             : "pointer-events-none invisible opacity-0",
@@ -489,7 +539,6 @@ function SiteHeader() {
             "shadow-xl shadow-black/10",
             "transition-all duration-300",
             "sm:top-[60px]",
-
             isMenuOpen
               ? "translate-y-0 opacity-100"
               : "-translate-y-3 opacity-0",
@@ -504,21 +553,24 @@ function SiteHeader() {
             ].join(" ")}
           >
             <div className="flex items-center justify-between border-b border-border/60 py-4">
-              <div className="flex items-center gap-2.5">
+              <Link
+                to="/"
+                onClick={closeMenu}
+                className="flex items-center"
+                aria-label="Allocatr home"
+              >
                 <img
-                  src={assets.allocatrIcon}
-                  alt=""
-                  className="h-5 w-5 object-contain"
+                  src={headerLogo}
+                  alt="Allocatr"
+                  className="h-6 w-auto object-contain"
                 />
-
-                <span className="text-xs font-semibold text-muted-foreground">
-                  Follow the right trail.
-                </span>
-              </div>
+              </Link>
 
               <div className="flex items-center gap-1.5">
                 <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+
                 <span className="h-1 w-1 rounded-full bg-primary/50" />
+
                 <span className="h-1 w-1 rounded-full bg-primary/20" />
               </div>
             </div>
@@ -536,7 +588,6 @@ function SiteHeader() {
                       "group flex min-h-14 items-center justify-between",
                       "border-b border-border/60",
                       "text-sm font-semibold transition-colors",
-
                       isActive
                         ? "text-primary"
                         : "text-foreground hover:text-primary",
@@ -547,7 +598,11 @@ function SiteHeader() {
 
                   <ArrowRightIcon
                     size={15}
-                    className="text-muted-foreground transition-transform duration-200 group-hover:translate-x-1"
+                    className={[
+                      "text-muted-foreground",
+                      "transition-transform duration-200",
+                      "group-hover:translate-x-1",
+                    ].join(" ")}
                   />
                 </NavLink>
               )}
@@ -562,7 +617,6 @@ function SiteHeader() {
                       "group flex min-h-14 items-center justify-between",
                       "border-b border-border/60",
                       "text-sm font-semibold transition-colors",
-
                       isActive
                         ? "text-primary"
                         : "text-foreground hover:text-primary",
@@ -584,7 +638,11 @@ function SiteHeader() {
 
                   <ArrowRightIcon
                     size={15}
-                    className="text-muted-foreground transition-transform duration-200 group-hover:translate-x-1"
+                    className={[
+                      "text-muted-foreground",
+                      "transition-transform duration-200",
+                      "group-hover:translate-x-1",
+                    ].join(" ")}
                   />
                 </NavLink>
               ))}
@@ -622,10 +680,6 @@ function SiteHeader() {
   );
 }
 
-/* =========================================================
-   ACCOUNT MENU
-========================================================= */
-
 type AccountMenuProps = {
   user: AccountUser;
   initials: string;
@@ -659,7 +713,9 @@ function AccountMenu({
             "focus-visible:outline-none",
             "focus-visible:ring-2",
             "focus-visible:ring-primary/30",
-            compact ? "w-9 justify-center" : "gap-2 px-1.5",
+            compact
+              ? "w-9 justify-center"
+              : "gap-2 px-1.5",
           ].join(" ")}
           aria-label="Open account menu"
         >
@@ -779,7 +835,9 @@ function AccountMenu({
         >
           <LogOutIcon size={15} />
 
-          {loggingOut ? "Logging out..." : "Log out"}
+          {loggingOut
+            ? "Logging out..."
+            : "Log out"}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

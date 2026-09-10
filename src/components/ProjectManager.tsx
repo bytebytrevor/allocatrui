@@ -349,14 +349,6 @@ function ProjectManager() {
       return;
     }
 
-    const confirmed = window.confirm(
-      `Delete "${task.title}"? This action cannot be undone.`,
-    );
-
-    if (!confirmed) {
-      return;
-    }
-
     const previousTasks = tasks;
 
     setTasks((currentTasks) =>
@@ -373,7 +365,11 @@ function ProjectManager() {
         },
       );
 
-      toast.success("Task deleted.");
+      toast.success("Task deleted.", {
+        id: `task-delete-${task.id}`,
+      });
+
+      await refreshProject();
     } catch (error) {
       setTasks(previousTasks);
 
@@ -382,17 +378,14 @@ function ProjectManager() {
         error,
       );
 
-      toast.error("Task could not be deleted.");
-      return;
-    }
-
-    try {
-      await refreshProject();
-    } catch (error) {
-      console.error(
-        "Could not refresh project after deleting task:",
-        error,
+      toast.error(
+        "Task could not be deleted.",
+        {
+          id: `task-delete-${task.id}`,
+        },
       );
+
+      throw error;
     }
   }
 
