@@ -1,16 +1,18 @@
-import type { Priority } from "./enums";
-
 export type CreateProjectRequest = {
   title: string;
-  description?: string;
+  description: string;
   category: string;
-  tags: string[];
-  startDate?: string; // ISO
-  dueDate?: string;   // ISO
-  priority: Priority;
+
+  skillIds: string[];
+
+  startDate: string;
+  dueDate: string;
+
+  priority: "standard" | "high" | "urgent";
+
   isPublic: boolean;
   allowBids: boolean;
+
   budget: number;
   currency: string;
-//   attachments: [];
 };

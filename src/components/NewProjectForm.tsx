@@ -1,4 +1,7 @@
 import React, {
+  useCallback,
+  useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -9,62 +12,31 @@ import {
   CheckIcon,
   CircleDollarSignIcon,
   LoaderCircleIcon,
-  PlusIcon,
   SearchIcon,
   SendIcon,
   SparklesIcon,
   XIcon,
 } from "lucide-react";
 
-import {
-  zodResolver,
-} from "@hookform/resolvers/zod";
-
-import {
-  Controller,
-  useForm,
-} from "react-hook-form";
-
-import {
-  useNavigate,
-} from "react-router-dom";
-
-import {
-  toast,
-  Toaster,
-} from "sonner";
-
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Controller, useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import * as z from "zod";
 
 import api from "@/api/axios";
 
-import {
-  projectCategories,
-} from "@/data/projectCategories";
+import { projectCategories } from "@/data/projectCategories";
 
-import type {
-  CreateProjectRequest,
-} from "@/Types/createProjectRequest";
+import type { CreateProjectRequest } from "@/Types/createProjectRequest";
+import type { Project } from "@/Types/project";
+import type { SkillOption } from "@/Types/skillOption";
 
-import type {
-  Project,
-} from "@/Types/project";
+import { toLocalDateOnly } from "@/utils/date";
+import { cn } from "@/lib/utils";
 
-import {
-  toLocalDateOnly,
-} from "@/utils/date";
-
-import {
-  cn,
-} from "@/lib/utils";
-
-import {
-  Button,
-} from "./ui/button";
-
-import {
-  Input,
-} from "./ui/input";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
 
 import {
   Field,
@@ -90,52 +62,28 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-import {
-  Calendar28,
-} from "./DatePicker";
-
+import { Calendar28 } from "./DatePicker";
 import MultiFileUpload from "./MultiFileUpload";
-
-/* =========================================================
-   SCHEMA
-========================================================= */
 
 const formSchema = z
   .object({
     title: z
       .string()
-      .min(
-        5,
-        "Use at least 5 characters.",
-      )
-      .max(
-        64,
-        "Keep the title below 64 characters.",
-      ),
+      .min(5, "Use at least 5 characters.")
+      .max(64, "Keep the title below 64 characters."),
 
     category: z
       .string()
-      .min(
-        1,
-        "Choose a category.",
-      ),
+      .min(1, "Choose a category."),
 
-    tags: z
-      .array(
-        z.string().min(2),
-      )
-      .min(
-        1,
-        "Add at least one relevant skill.",
-      ),
+    skillIds: z
+      .array(z.string().uuid())
+      .min(1, "Choose at least one relevant skill.")
+      .max(15, "Choose no more than 15 skills."),
 
-    startDate: z
-      .date()
-      .nullable(),
+    startDate: z.date().nullable(),
 
-    endDate: z
-      .date()
-      .nullable(),
+    endDate: z.date().nullable(),
 
     description: z
       .string()
@@ -154,55 +102,30 @@ const formSchema = z
       "urgent",
     ]),
 
-    budget: z
-      .string()
-      .optional(),
+    budget: z.string().optional(),
   })
   .refine(
     (values) => {
-      if (
-        !values.startDate ||
-        !values.endDate
-      ) {
+      if (!values.startDate || !values.endDate) {
         return true;
       }
 
-      return (
-        values.endDate >=
-        values.startDate
-      );
+      return values.endDate >= values.startDate;
     },
     {
       message:
         "The end date must be after the start date.",
-
-      path: [
-        "endDate",
-      ],
+      path: ["endDate"],
     },
   );
 
-/* =========================================================
-   TYPES
-========================================================= */
+type FormValues = z.infer<typeof formSchema>;
 
-type FormValues =
-  z.infer<
-    typeof formSchema
-  >;
-
-type Step =
-  | 1
-  | 2
-  | 3;
+type Step = 1 | 2 | 3;
 
 type SubmitIntent =
   | "post"
   | "find";
-
-/* =========================================================
-   STEPS
-========================================================= */
 
 const steps = [
   {
@@ -221,14 +144,12 @@ const steps = [
 
 const stepFields: Record<
   Step,
-  (
-    keyof FormValues
-  )[]
+  (keyof FormValues)[]
 > = {
   1: [
     "title",
     "category",
-    "tags",
+    "skillIds",
   ],
 
   2: [
@@ -243,83 +164,107 @@ const stepFields: Record<
   ],
 };
 
-/* =========================================================
-   FORM
-========================================================= */
-
 function NewProjectForm() {
-  const navigate =
-    useNavigate();
+  const navigate = useNavigate();
 
-  const [
-    step,
-    setStep,
-  ] =
+  const [step, setStep] =
     useState<Step>(1);
 
-  const [
-    submitIntent,
-    setSubmitIntent,
-  ] =
-    useState<SubmitIntent>(
-      "post",
-    );
+  const [submitIntent, setSubmitIntent] =
+    useState<SubmitIntent>("post");
 
   const submitIntentRef =
-    useRef<SubmitIntent>(
-      "post",
-    );
+    useRef<SubmitIntent>("post");
 
-  const today =
-    new Date();
+  const [skills, setSkills] =
+    useState<SkillOption[]>([]);
 
-  const tomorrow =
-    new Date(today);
+  const [loadingSkills, setLoadingSkills] =
+    useState(true);
 
-  tomorrow.setDate(
-    today.getDate() + 1,
+  const [skillsError, setSkillsError] =
+    useState<string | null>(null);
+
+  const today = useMemo(
+    () => new Date(),
+    [],
   );
 
-  const form =
-    useForm<FormValues>({
-      resolver:
-        zodResolver(
-          formSchema,
-        ),
+  const tomorrow = useMemo(() => {
+    const date = new Date(today);
 
-      defaultValues: {
-        title: "",
-        category: "",
-        tags: [],
-        description: "",
-        startDate:
-          today,
-        endDate:
-          tomorrow,
-        priority:
-          "standard",
-        budget: "",
-      },
-    });
+    date.setDate(
+      today.getDate() + 1,
+    );
 
-  const {
-    isSubmitting,
-  } =
+    return date;
+  }, [today]);
+
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+
+    defaultValues: {
+      title: "",
+      category: "",
+      skillIds: [],
+      description: "",
+      startDate: today,
+      endDate: tomorrow,
+      priority: "standard",
+      budget: "",
+    },
+  });
+
+  const { isSubmitting } =
     form.formState;
 
-  /* =======================================================
-     NAVIGATION
-  ======================================================= */
+  const selectedCategory =
+    form.watch("category");
+
+  const loadSkills =
+    useCallback(async () => {
+      try {
+        setLoadingSkills(true);
+        setSkillsError(null);
+
+        const response =
+          await api.get<SkillOption[]>(
+            "/skills",
+            {
+              withCredentials: true,
+            },
+          );
+
+        setSkills(
+          Array.isArray(response.data)
+            ? response.data
+            : [],
+        );
+      } catch (error) {
+        console.error(
+          "Could not load skills:",
+          error,
+        );
+
+        setSkills([]);
+        setSkillsError(
+          "The skills catalogue could not be loaded.",
+        );
+      } finally {
+        setLoadingSkills(false);
+      }
+    }, []);
+
+  useEffect(() => {
+    void loadSkills();
+  }, [loadSkills]);
 
   async function handleNext() {
     const isValid =
       await form.trigger(
-        stepFields[
-          step
-        ],
+        stepFields[step],
         {
-          shouldFocus:
-            true,
+          shouldFocus: true,
         },
       );
 
@@ -329,11 +274,8 @@ function NewProjectForm() {
 
     if (step < 3) {
       setStep(
-        (
-          current,
-        ) =>
-          (current +
-            1) as Step,
+        (current) =>
+          (current + 1) as Step,
       );
     }
   }
@@ -341,11 +283,8 @@ function NewProjectForm() {
   function handleBack() {
     if (step > 1) {
       setStep(
-        (
-          current,
-        ) =>
-          (current -
-            1) as Step,
+        (current) =>
+          (current - 1) as Step,
       );
     }
   }
@@ -356,14 +295,33 @@ function NewProjectForm() {
     submitIntentRef.current =
       intent;
 
-    setSubmitIntent(
-      intent,
-    );
+    setSubmitIntent(intent);
   }
 
-  /* =======================================================
-     SUBMIT
-  ======================================================= */
+  function handleCategoryChange(
+    category: string,
+    onChange: (
+      value: string,
+    ) => void,
+  ) {
+    const currentCategory =
+      form.getValues("category");
+
+    if (
+      currentCategory &&
+      currentCategory !== category
+    ) {
+      form.setValue(
+        "skillIds",
+        [],
+        {
+          shouldValidate: true,
+        },
+      );
+    }
+
+    onChange(category);
+  }
 
   async function onSubmit(
     values: FormValues,
@@ -371,50 +329,48 @@ function NewProjectForm() {
     const intent =
       submitIntentRef.current;
 
-    const payload: CreateProjectRequest =
-      {
-        title:
-          values.title.trim(),
+    const payload: CreateProjectRequest = {
+      title:
+        values.title.trim(),
 
-        description:
-          values.description.trim(),
+      description:
+        values.description.trim(),
 
-        category:
-          values.category,
+      category:
+        values.category,
 
-        tags:
-          values.tags,
+      skillIds:
+        values.skillIds,
 
-        startDate:
-          toLocalDateOnly(
-            values.startDate ??
-              new Date(),
-          ),
+      startDate:
+        toLocalDateOnly(
+          values.startDate ??
+            new Date(),
+        ),
 
-        dueDate:
-          toLocalDateOnly(
-            values.endDate ??
-              new Date(),
-          ),
+      dueDate:
+        toLocalDateOnly(
+          values.endDate ??
+            new Date(),
+        ),
 
-        priority:
-          values.priority,
+      priority:
+        values.priority,
 
-        isPublic:
-          false,
+      isPublic:
+        false,
 
-        allowBids:
-          false,
+      allowBids:
+        false,
 
-        budget:
-          Number(
-            values.budget ||
-              0,
-          ),
+      budget:
+        Number(
+          values.budget || 0,
+        ),
 
-        currency:
-          "USD",
-      };
+      currency:
+        "USD",
+    };
 
     try {
       const response =
@@ -422,8 +378,7 @@ function NewProjectForm() {
           "/projects",
           payload,
           {
-            withCredentials:
-              true,
+            withCredentials: true,
           },
         );
 
@@ -431,10 +386,7 @@ function NewProjectForm() {
         "Project created successfully.",
       );
 
-      if (
-        intent ===
-        "find"
-      ) {
+      if (intent === "find") {
         navigate(
           `/projects/${response.data.id}/allocats/find`,
         );
@@ -442,12 +394,8 @@ function NewProjectForm() {
         return;
       }
 
-      navigate(
-        "/projects",
-      );
-    } catch (
-      error
-    ) {
+      navigate("/projects");
+    } catch (error) {
       console.error(
         "Could not create project:",
         error,
@@ -461,15 +409,6 @@ function NewProjectForm() {
 
   return (
     <>
-      <Toaster
-        richColors
-        position="top-right"
-      />
-
-      {/* =====================================================
-          PROGRESS
-      ===================================================== */}
-
       <div className="mb-9">
         <div className="flex items-center justify-between gap-5">
           <div className="flex min-w-0 items-center">
@@ -557,9 +496,7 @@ function NewProjectForm() {
                       >
                         {isComplete ? (
                           <CheckIcon
-                            size={
-                              13
-                            }
+                            size={13}
                             strokeWidth={
                               2.6
                             }
@@ -578,9 +515,7 @@ function NewProjectForm() {
                             : "text-muted-foreground",
                         )}
                       >
-                        {
-                          item.label
-                        }
+                        {item.label}
                       </span>
                     </button>
 
@@ -608,16 +543,10 @@ function NewProjectForm() {
 
           <span className="shrink-0 text-[0.64rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
             {step} of{" "}
-            {
-              steps.length
-            }
+            {steps.length}
           </span>
         </div>
       </div>
-
-      {/* =====================================================
-          FORM
-      ===================================================== */}
 
       <form
         id="new-project"
@@ -629,10 +558,6 @@ function NewProjectForm() {
         className="min-w-0"
       >
         <FieldGroup className="gap-7">
-          {/* =================================================
-              STEP 1
-          ================================================= */}
-
           {step === 1 && (
             <>
               <StepHeading
@@ -717,8 +642,13 @@ function NewProjectForm() {
                       value={
                         field.value
                       }
-                      onValueChange={
-                        field.onChange
+                      onValueChange={(
+                        value,
+                      ) =>
+                        handleCategoryChange(
+                          value,
+                          field.onChange,
+                        )
                       }
                     >
                       <SelectTrigger
@@ -770,7 +700,7 @@ function NewProjectForm() {
               />
 
               <Controller
-                name="tags"
+                name="skillIds"
                 control={
                   form.control
                 }
@@ -787,25 +717,35 @@ function NewProjectForm() {
                       Skills needed
                     </FieldLabel>
 
-                    <SkillsInput
+                    <SkillsPicker
+                      skills={
+                        skills
+                      }
                       value={
                         field.value
                       }
-                      onChange={
-                        field.onChange
+                      category={
+                        selectedCategory
                       }
-                      disabled={
-                        !form.watch(
-                          "category",
-                        )
+                      loading={
+                        loadingSkills
+                      }
+                      error={
+                        skillsError
                       }
                       invalid={
                         fieldState.invalid
                       }
+                      disabled={
+                        !selectedCategory
+                      }
+                      onChange={
+                        field.onChange
+                      }
                     />
 
                     <FieldDescription className="text-[0.68rem]">
-                      Add only the
+                      Choose the
                       skills that
                       actually matter
                       for this job.
@@ -821,10 +761,6 @@ function NewProjectForm() {
               />
             </>
           )}
-
-          {/* =================================================
-              STEP 2
-          ================================================= */}
 
           {step === 2 && (
             <>
@@ -1014,9 +950,7 @@ function NewProjectForm() {
                                 >
                                   {isSelected && (
                                     <CheckIcon
-                                      size={
-                                        9
-                                      }
+                                      size={9}
                                       strokeWidth={
                                         3
                                       }
@@ -1066,9 +1000,7 @@ function NewProjectForm() {
                     >
                       <div className="flex h-full items-center gap-2 border-r border-border/80 px-4 text-muted-foreground">
                         <CircleDollarSignIcon
-                          size={
-                            15
-                          }
+                          size={15}
                         />
 
                         <span className="text-[0.68rem] font-bold uppercase tracking-[0.08em]">
@@ -1085,7 +1017,9 @@ function NewProjectForm() {
                           event,
                         ) => {
                           const value =
-                            event.target.value;
+                            event
+                              .target
+                              .value;
 
                           if (
                             value ===
@@ -1121,10 +1055,6 @@ function NewProjectForm() {
               />
             </>
           )}
-
-          {/* =================================================
-              STEP 3
-          ================================================= */}
 
           {step === 3 && (
             <>
@@ -1166,9 +1096,7 @@ function NewProjectForm() {
                     >
                       <InputGroupTextarea
                         {...field}
-                        rows={
-                          8
-                        }
+                        rows={8}
                         placeholder="What needs to be delivered? What matters most? Are there any requirements, references or constraints?"
                         className="min-h-[190px] resize-none bg-transparent px-4 py-4 text-sm leading-7"
                       />
@@ -1229,10 +1157,6 @@ function NewProjectForm() {
           )}
         </FieldGroup>
 
-        {/* =====================================================
-            ACTIONS
-        ===================================================== */}
-
         <div className="mt-10 border-t border-border/80 pt-6">
           {step < 3 ? (
             <div className="flex items-center justify-between gap-3">
@@ -1247,9 +1171,7 @@ function NewProjectForm() {
                     className="h-10 rounded-lg px-3 text-xs text-muted-foreground shadow-none"
                   >
                     <ArrowLeftIcon
-                      size={
-                        14
-                      }
+                      size={14}
                     />
 
                     Previous
@@ -1267,9 +1189,7 @@ function NewProjectForm() {
                 Continue
 
                 <ArrowRightIcon
-                  size={
-                    14
-                  }
+                  size={14}
                   className="transition-transform group-hover:translate-x-1"
                 />
               </Button>
@@ -1279,9 +1199,7 @@ function NewProjectForm() {
               <div className="mb-5 flex items-start gap-3">
                 <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/[0.08] text-primary">
                   <SparklesIcon
-                    size={
-                      14
-                    }
+                    size={14}
                   />
                 </span>
 
@@ -1315,9 +1233,7 @@ function NewProjectForm() {
                   className="h-10 rounded-lg px-3 text-xs text-muted-foreground shadow-none"
                 >
                   <ArrowLeftIcon
-                    size={
-                      14
-                    }
+                    size={14}
                   />
 
                   Previous
@@ -1342,9 +1258,7 @@ function NewProjectForm() {
                       "post" ? (
                       <>
                         <LoaderCircleIcon
-                          size={
-                            14
-                          }
+                          size={14}
                           className="animate-spin"
                         />
 
@@ -1353,9 +1267,7 @@ function NewProjectForm() {
                     ) : (
                       <>
                         <SendIcon
-                          size={
-                            14
-                          }
+                          size={14}
                         />
 
                         Create project
@@ -1380,9 +1292,7 @@ function NewProjectForm() {
                       "find" ? (
                       <>
                         <LoaderCircleIcon
-                          size={
-                            14
-                          }
+                          size={14}
                           className="animate-spin"
                         />
 
@@ -1391,17 +1301,13 @@ function NewProjectForm() {
                     ) : (
                       <>
                         <SearchIcon
-                          size={
-                            14
-                          }
+                          size={14}
                         />
 
                         Create & find Allocats
 
                         <ArrowRightIcon
-                          size={
-                            13
-                          }
+                          size={13}
                           className="transition-transform group-hover:translate-x-1"
                         />
                       </>
@@ -1416,10 +1322,6 @@ function NewProjectForm() {
     </>
   );
 }
-
-/* =========================================================
-   STEP HEADING
-========================================================= */
 
 function StepHeading({
   eyebrow,
@@ -1451,45 +1353,108 @@ function StepHeading({
   );
 }
 
-/* =========================================================
-   SKILLS INPUT
-========================================================= */
-
-type SkillsInputProps = {
+type SkillsPickerProps = {
+  skills: SkillOption[];
   value: string[];
-
+  category: string;
   onChange: (
     value: string[],
   ) => void;
-
+  loading?: boolean;
   disabled?: boolean;
   invalid?: boolean;
+  error?: string | null;
 };
 
-function SkillsInput({
+function SkillsPicker({
+  skills,
   value,
+  category,
   onChange,
-  disabled,
-  invalid,
-}: SkillsInputProps) {
-  const [
-    input,
-    setInput,
-  ] =
+  loading = false,
+  disabled = false,
+  invalid = false,
+  error,
+}: SkillsPickerProps) {
+  const [query, setQuery] =
     useState("");
 
-  function addSkill(
-    skill: string,
-  ) {
-    const cleanSkill =
-      skill
-        .trim()
-        .toLowerCase();
+  const selectedSkills =
+    useMemo(
+      () =>
+        value
+          .map((id) =>
+            skills.find(
+              (skill) =>
+                skill.id === id,
+            ),
+          )
+          .filter(
+            (
+              skill,
+            ): skill is SkillOption =>
+              Boolean(skill),
+          ),
+      [
+        skills,
+        value,
+      ],
+    );
 
+  const availableSkills =
+    useMemo(() => {
+      if (!category) {
+        return [];
+      }
+
+      const search =
+        query
+          .trim()
+          .toLowerCase();
+
+      return skills
+        .filter(
+          (skill) =>
+            skill.category ===
+            category,
+        )
+        .filter(
+          (skill) =>
+            !value.includes(
+              skill.id,
+            ),
+        )
+        .filter(
+          (skill) =>
+            !search ||
+            skill.name
+              .toLowerCase()
+              .includes(
+                search,
+              ),
+        )
+        .sort(
+          (
+            a,
+            b,
+          ) =>
+            a.name.localeCompare(
+              b.name,
+            ),
+        );
+    }, [
+      category,
+      query,
+      skills,
+      value,
+    ]);
+
+  function addSkill(
+    skillId: string,
+  ) {
     if (
-      !cleanSkill ||
       value.includes(
-        cleanSkill,
+        skillId,
       )
     ) {
       return;
@@ -1497,61 +1462,29 @@ function SkillsInput({
 
     onChange([
       ...value,
-      cleanSkill,
+      skillId,
     ]);
 
-    setInput("");
-  }
-
-  function handleAdd() {
-    addSkill(
-      input,
-    );
-  }
-
-  function handleKeyDown(
-    event: React.KeyboardEvent<HTMLInputElement>,
-  ) {
-    if (
-      event.key ===
-        "Enter" ||
-      event.key ===
-        ","
-    ) {
-      event.preventDefault();
-
-      handleAdd();
-    }
-
-    if (
-      event.key ===
-        "Backspace" &&
-      !input &&
-      value.length >
-        0
-    ) {
-      onChange(
-        value.slice(
-          0,
-          -1,
-        ),
-      );
-    }
+    setQuery("");
   }
 
   function removeSkill(
-    skill: string,
+    skillId: string,
   ) {
     onChange(
       value.filter(
-        (
-          item,
-        ) =>
-          item !==
-          skill,
+        (id) =>
+          id !== skillId,
       ),
     );
   }
+
+  const categorySkillCount =
+    skills.filter(
+      (skill) =>
+        skill.category ===
+        category,
+    ).length;
 
   return (
     <div
@@ -1569,34 +1502,37 @@ function SkillsInput({
           : "border-border/90",
 
         disabled &&
-          "pointer-events-none opacity-50",
+          "opacity-60",
       )}
     >
-      {/* INPUT ROW */}
+      <div className="relative flex min-h-12 items-center gap-2 px-3">
+        <SearchIcon
+          size={14}
+          className="shrink-0 text-muted-foreground"
+        />
 
-      <div className="flex min-h-12 items-center gap-2 px-3">
         <input
           value={
-            input
+            query
+          }
+          disabled={
+            disabled ||
+            loading
           }
           onChange={(
             event,
           ) =>
-            setInput(
+            setQuery(
               event.target
                 .value,
             )
           }
-          onKeyDown={
-            handleKeyDown
-          }
           placeholder={
-            disabled
+            !category
               ? "Choose a category first"
-              : "e.g. React, branding, plumbing"
-          }
-          disabled={
-            disabled
+              : loading
+                ? "Loading skills..."
+                : "Search available skills"
           }
           className={cn(
             "h-11 min-w-0 flex-1 bg-transparent",
@@ -1607,61 +1543,39 @@ function SkillsInput({
           )}
         />
 
-        <button
-          type="button"
-          onClick={
-            handleAdd
-          }
-          disabled={
-            disabled ||
-            !input.trim()
-          }
-          className={cn(
-            "flex h-8 shrink-0 items-center gap-1.5 rounded-lg px-3",
-
-            "text-[0.68rem] font-semibold",
-
-            "transition-colors",
-
-            input.trim()
-              ? [
-                  "bg-primary/[0.09]",
-                  "text-primary",
-                  "hover:bg-primary/[0.14]",
-                ].join(
-                  " ",
-                )
-              : [
-                  "bg-muted",
-                  "text-muted-foreground/50",
-                ].join(
-                  " ",
-                ),
-          )}
-        >
-          <PlusIcon
-            size={
-              12
-            }
+        {loading && (
+          <LoaderCircleIcon
+            size={14}
+            className="animate-spin text-muted-foreground"
           />
+        )}
 
-          Add
-        </button>
+        {!loading &&
+          category && (
+          <span className="shrink-0 text-[0.62rem] font-medium text-muted-foreground">
+            {
+              categorySkillCount
+            }{" "}
+            available
+          </span>
+        )}
       </div>
 
-      {/* SELECTED SKILLS */}
-
-      {value.length >
+      {selectedSkills.length >
         0 && (
         <div className="border-t border-border/70 px-3 py-3">
+          <p className="mb-2 text-[0.58rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+            Selected
+          </p>
+
           <div className="flex flex-wrap gap-2">
-            {value.map(
+            {selectedSkills.map(
               (
                 skill,
               ) => (
                 <span
                   key={
-                    skill
+                    skill.id
                   }
                   className={cn(
                     "group inline-flex items-center gap-2 rounded-lg",
@@ -1676,14 +1590,14 @@ function SkillsInput({
                   <span className="h-1.5 w-1.5 rounded-full bg-primary/70" />
 
                   {
-                    skill
+                    skill.name
                   }
 
                   <button
                     type="button"
                     onClick={() =>
                       removeSkill(
-                        skill,
+                        skill.id,
                       )
                     }
                     className={cn(
@@ -1695,18 +1609,85 @@ function SkillsInput({
 
                       "hover:bg-primary/10 hover:text-primary",
                     )}
-                    aria-label={`Remove ${skill}`}
+                    aria-label={`Remove ${skill.name}`}
                   >
                     <XIcon
-                      size={
-                        10
-                      }
+                      size={10}
                     />
                   </button>
                 </span>
               ),
             )}
           </div>
+        </div>
+      )}
+
+      {!disabled &&
+        !loading && (
+        <div className="border-t border-border/70 px-2 py-2">
+          {error ? (
+            <div className="px-2 py-3">
+              <p className="text-xs text-destructive">
+                {error}
+              </p>
+            </div>
+          ) : availableSkills.length >
+            0 ? (
+            <div className="max-h-56 overflow-y-auto">
+              {availableSkills.map(
+                (
+                  skill,
+                ) => (
+                  <button
+                    key={
+                      skill.id
+                    }
+                    type="button"
+                    onClick={() =>
+                      addSkill(
+                        skill.id,
+                      )
+                    }
+                    className={cn(
+                      "flex w-full items-center justify-between gap-4",
+
+                      "rounded-lg px-3 py-2.5 text-left",
+
+                      "transition-colors hover:bg-muted/60",
+                    )}
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate text-xs font-semibold">
+                        {
+                          skill.name
+                        }
+                      </p>
+
+                      <p className="mt-0.5 text-[0.58rem] text-muted-foreground">
+                        {
+                          skill.category
+                        }
+                      </p>
+                    </div>
+
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-primary/[0.07] text-primary">
+                      <CheckIcon
+                        size={11}
+                      />
+                    </span>
+                  </button>
+                ),
+              )}
+            </div>
+          ) : (
+            <div className="px-3 py-3">
+              <p className="text-xs text-muted-foreground">
+                {query.trim()
+                  ? "No matching skills found."
+                  : "No skills are available for this category yet."}
+              </p>
+            </div>
+          )}
         </div>
       )}
     </div>
