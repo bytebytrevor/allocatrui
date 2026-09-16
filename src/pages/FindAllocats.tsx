@@ -1,1058 +1,38 @@
-// import { useEffect, useMemo, useState } from "react";
-// import { useParams } from "react-router-dom";
-// import {
-//   BadgeCheckIcon,
-//   CheckIcon,
-//   ChevronDownIcon,
-//   MapPinIcon,
-//   SearchIcon,
-//   SlidersHorizontalIcon,
-//   StarIcon,
-//   UsersIcon,
-// } from "lucide-react";
-
-// import api from "@/api/axios";
-// import type { Project } from "@/Types/project";
-// import type { AllocatProfile } from "@/Types/allocatProfile";
-// import type { ProjectAllocat } from "@/Types/projectAllocat";
-// import type { ProjectAllocatStatus } from "@/Types/enums";
-
-// import { AllocatCardGrid } from "@/components/AllocatCard";
-// import MinimalNavMenu from "@/components/MinimalNavMenu";
-// import { Input } from "@/components/ui/input";
-// import { Label } from "@/components/ui/label";
-// import { Slider } from "@/components/ui/slider";
-// import { Button } from "@/components/ui/button";
-// import { Skeleton } from "@/components/ui/skeleton";
-
-// type SortOption =
-//   | "match"
-//   | "rating"
-//   | "rate-low"
-//   | "experience"
-//   | "recent";
-
-// type FilterableAllocat = AllocatProfile & {
-//   location?: string;
-//   city?: string;
-//   country?: string;
-
-//   isVerified?: boolean;
-//   verified?: boolean;
-
-//   rating?: number;
-//   averageRating?: number;
-//   matchScore?: number;
-
-//   createdAt?: string;
-//   updatedAt?: string;
-// };
-
-// const DEFAULT_LOCATION = "Zimbabwe, Harare";
-// const DEFAULT_MAX_RATE = 100;
-// const DEFAULT_MIN_EXPERIENCE = 1;
-
-// function FindAllocats() {
-//   const { projectId } = useParams();
-
-//   const [project, setProject] = useState<Project>();
-//   const [allocats, setAllocats] = useState<
-//     FilterableAllocat[]
-//   >([]);
-
-//   const [projectAllocats, setProjectAllocats] =
-//     useState<ProjectAllocat[]>([]);
-
-//   const [location, setLocation] =
-//     useState(DEFAULT_LOCATION);
-
-//   const [maxHourlyRate, setMaxHourlyRate] =
-//     useState(DEFAULT_MAX_RATE);
-
-//   const [minExperience, setMinExperience] =
-//     useState(DEFAULT_MIN_EXPERIENCE);
-
-//   const [verifiedOnly, setVerifiedOnly] =
-//     useState(false);
-
-//   const [sortBy, setSortBy] =
-//     useState<SortOption>("match");
-
-//   const [loading, setLoading] =
-//     useState(true);
-
-//   const [error, setError] =
-//     useState<string | null>(null);
-
-//   useEffect(() => {
-//     if (!projectId) {
-//       setError("No project was selected.");
-//       setLoading(false);
-//       return;
-//     }
-
-//     let cancelled = false;
-
-//     async function loadPage() {
-//       setLoading(true);
-//       setError(null);
-
-//       try {
-//         const [
-//           projectResponse,
-//           allocatsResponse,
-//           projectAllocatsResponse,
-//         ] = await Promise.all([
-//           api.get<Project>(
-//             `/projects/${projectId}`,
-//             {
-//               withCredentials: true,
-//             },
-//           ),
-
-//           api.get<FilterableAllocat[]>(
-//             "/allocats/profiles",
-//             {
-//               withCredentials: true,
-//             },
-//           ),
-
-//           api.get<ProjectAllocat[]>(
-//             `/projects/${projectId}/allocats`,
-//             {
-//               withCredentials: true,
-//             },
-//           ),
-//         ]);
-
-//         if (cancelled) {
-//           return;
-//         }
-
-//         setProject(projectResponse.data);
-//         setAllocats(allocatsResponse.data);
-//         setProjectAllocats(
-//           projectAllocatsResponse.data,
-//         );
-//       } catch (requestError) {
-//         if (cancelled) {
-//           return;
-//         }
-
-//         console.error(
-//           "Could not load matching Allocats:",
-//           requestError,
-//         );
-
-//         setError(
-//           "We could not load the professionals for this project. Please try again.",
-//         );
-//       } finally {
-//         if (!cancelled) {
-//           setLoading(false);
-//         }
-//       }
-//     }
-
-//     void loadPage();
-
-//     return () => {
-//       cancelled = true;
-//     };
-//   }, [projectId]);
-
-//   const filteredAllocats = useMemo(() => {
-//     const normalizedLocation = location
-//       .trim()
-//       .toLowerCase();
-
-//     const results = allocats.filter(
-//       (allocat) => {
-//         const hourlyRate =
-//           allocat.hourlyRate ?? 0;
-
-//         const yearsExperience =
-//           allocat.yearsExperience ?? 0;
-
-//         const allocatLocation =
-//           getAllocatLocation(allocat);
-
-//         const matchesLocation =
-//           !normalizedLocation ||
-//           !allocatLocation ||
-//           allocatLocation.includes(
-//             normalizedLocation,
-//           ) ||
-//           normalizedLocation.includes(
-//             allocatLocation,
-//           );
-
-//         const matchesRate =
-//           hourlyRate <= maxHourlyRate;
-
-//         const matchesExperience =
-//           yearsExperience >= minExperience;
-
-//         const matchesVerified =
-//           !verifiedOnly ||
-//           getIsVerified(allocat);
-
-//         return (
-//           matchesLocation &&
-//           matchesRate &&
-//           matchesExperience &&
-//           matchesVerified
-//         );
-//       },
-//     );
-
-//     return [...results].sort(
-//       (a, b) => {
-//         switch (sortBy) {
-//           case "rating":
-//             return (
-//               getRating(b) -
-//               getRating(a)
-//             );
-
-//           case "rate-low":
-//             return (
-//               (a.hourlyRate ??
-//                 Number.MAX_SAFE_INTEGER) -
-//               (b.hourlyRate ??
-//                 Number.MAX_SAFE_INTEGER)
-//             );
-
-//           case "experience":
-//             return (
-//               (b.yearsExperience ?? 0) -
-//               (a.yearsExperience ?? 0)
-//             );
-
-//           case "recent":
-//             return (
-//               getDateValue(
-//                 b.updatedAt ??
-//                   b.createdAt,
-//               ) -
-//               getDateValue(
-//                 a.updatedAt ??
-//                   a.createdAt,
-//               )
-//             );
-
-//           case "match":
-//           default:
-//             return (
-//               getMatchScore(b) -
-//               getMatchScore(a)
-//             );
-//         }
-//       },
-//     );
-//   }, [
-//     allocats,
-//     location,
-//     maxHourlyRate,
-//     minExperience,
-//     verifiedOnly,
-//     sortBy,
-//   ]);
-
-//   const relationshipStatusByAllocat =
-//     useMemo(() => {
-//       return new Map<
-//         string,
-//         ProjectAllocatStatus
-//       >(
-//         projectAllocats.map(
-//           (relationship) => [
-//             relationship.allocatProfileId,
-//             relationship.status,
-//           ],
-//         ),
-//       );
-//     }, [projectAllocats]);
-
-//   const activeFilterCount =
-//     useMemo(() => {
-//       let count = 0;
-
-//       if (location !== DEFAULT_LOCATION) {
-//         count += 1;
-//       }
-
-//       if (
-//         maxHourlyRate !==
-//         DEFAULT_MAX_RATE
-//       ) {
-//         count += 1;
-//       }
-
-//       if (
-//         minExperience !==
-//         DEFAULT_MIN_EXPERIENCE
-//       ) {
-//         count += 1;
-//       }
-
-//       if (verifiedOnly) {
-//         count += 1;
-//       }
-
-//       return count;
-//     }, [
-//       location,
-//       maxHourlyRate,
-//       minExperience,
-//       verifiedOnly,
-//     ]);
-
-//   function resetFilters() {
-//     setLocation(DEFAULT_LOCATION);
-//     setMaxHourlyRate(DEFAULT_MAX_RATE);
-//     setMinExperience(
-//       DEFAULT_MIN_EXPERIENCE,
-//     );
-//     setVerifiedOnly(false);
-//     setSortBy("match");
-//   }
-
-//   function handleStatusChange(
-//     allocatProfileId: string,
-//     status: ProjectAllocatStatus,
-//   ) {
-//     if (!project) {
-//       return;
-//     }
-
-//     setProjectAllocats((current) => {
-//       const existing =
-//         current.find(
-//           (relationship) =>
-//             relationship.allocatProfileId ===
-//             allocatProfileId,
-//         );
-
-//       if (existing) {
-//         return current.map(
-//           (relationship) =>
-//             relationship.allocatProfileId ===
-//             allocatProfileId
-//               ? {
-//                   ...relationship,
-//                   status,
-//                 }
-//               : relationship,
-//         );
-//       }
-
-//       return [
-//         ...current,
-//         {
-//           projectId: project.id,
-//           allocatProfileId,
-//           status,
-//           invitedAt:
-//             new Date().toISOString(),
-//           respondedAt: null,
-//           removedAt: null,
-//         },
-//       ];
-//     });
-//   }
-
-//   return (
-//     <div className="min-h-screen bg-muted/20">
-//       <header className="sticky top-0 z-40 border-b border-border/70 bg-background/90 backdrop-blur-xl">
-//         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-//           <MinimalNavMenu />
-//         </div>
-//       </header>
-
-//       <main className="container mx-auto px-4 py-8 sm:px-6 sm:py-10 lg:px-8 lg:py-12">
-//         <section className="border-b border-border pb-8">
-//           <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-//             <div className="min-w-0">
-//               <div className="mb-4 flex items-center gap-2 text-primary">
-//                 <UsersIcon size={17} />
-
-//                 <p className="text-xs font-semibold uppercase tracking-[0.18em]">
-//                   Recommended professionals
-//                 </p>
-//               </div>
-
-//               {loading ? (
-//                 <div className="space-y-3">
-//                   <Skeleton className="h-10 w-72 max-w-full" />
-//                   <Skeleton className="h-5 w-full max-w-2xl" />
-//                 </div>
-//               ) : (
-//                 <>
-//                   <h1 className="max-w-4xl break-words text-3xl font-black tracking-[-0.035em] sm:text-4xl lg:text-5xl">
-//                     Find Allocats for{" "}
-//                     <span className="text-primary">
-//                       {project?.title ||
-//                         "your project"}
-//                     </span>
-//                   </h1>
-
-//                   <p className="mt-4 max-w-3xl text-sm leading-7 text-muted-foreground sm:text-base">
-//                     These professionals have
-//                     been selected using your
-//                     project requirements. Adjust
-//                     the filters to refine the
-//                     recommendations.
-//                   </p>
-//                 </>
-//               )}
-//             </div>
-
-//             {!loading &&
-//               !error && (
-//                 <div className="flex shrink-0 items-center gap-2 rounded-full border border-border bg-background px-4 py-2 text-sm">
-//                   <UsersIcon
-//                     size={16}
-//                     className="text-muted-foreground"
-//                   />
-
-//                   <span className="font-semibold">
-//                     {
-//                       filteredAllocats.length
-//                     }
-//                   </span>
-
-//                   <span className="text-muted-foreground">
-//                     {filteredAllocats.length ===
-//                     1
-//                       ? "Allocat found"
-//                       : "Allocats found"}
-//                   </span>
-//                 </div>
-//               )}
-//           </div>
-//         </section>
-
-//         {error ? (
-//           <ErrorState message={error} />
-//         ) : (
-//           <div className="mt-8 grid items-start gap-8 lg:grid-cols-[280px_minmax(0,1fr)] xl:grid-cols-[310px_minmax(0,1fr)]">
-//             <aside className="rounded-[1.75rem] border border-border bg-background p-5 shadow-sm lg:sticky lg:top-24">
-//               <div className="flex items-start justify-between gap-4">
-//                 <div>
-//                   <div className="flex items-center gap-2">
-//                     <SlidersHorizontalIcon
-//                       size={17}
-//                       className="text-primary"
-//                     />
-
-//                     <h2 className="font-bold">
-//                       Refine matches
-//                     </h2>
-
-//                     {activeFilterCount >
-//                       0 && (
-//                       <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-primary-foreground">
-//                         {
-//                           activeFilterCount
-//                         }
-//                       </span>
-//                     )}
-//                   </div>
-
-//                   <p className="mt-1 text-xs leading-5 text-muted-foreground">
-//                     Adjust the recommended
-//                     results.
-//                   </p>
-//                 </div>
-
-//                 <Button
-//                   type="button"
-//                   variant="ghost"
-//                   size="sm"
-//                   onClick={resetFilters}
-//                   disabled={
-//                     activeFilterCount === 0
-//                   }
-//                   className="h-8 rounded-full px-3 text-xs"
-//                 >
-//                   Reset
-//                 </Button>
-//               </div>
-
-//               <div className="mt-7 space-y-7">
-//                 <div className="space-y-2">
-//                   <Label
-//                     htmlFor="location"
-//                     className="text-sm font-semibold"
-//                   >
-//                     Location
-//                   </Label>
-
-//                   <div className="relative">
-//                     <MapPinIcon
-//                       size={16}
-//                       className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground"
-//                     />
-
-//                     <Input
-//                       type="text"
-//                       name="location"
-//                       id="location"
-//                       value={location}
-//                       onChange={(event) =>
-//                         setLocation(
-//                           event.target
-//                             .value,
-//                         )
-//                       }
-//                       placeholder="City or area"
-//                       className="h-12 rounded-2xl bg-muted/30 pl-11 shadow-none"
-//                     />
-//                   </div>
-//                 </div>
-
-//                 <div className="space-y-4">
-//                   <div className="flex items-center justify-between gap-4">
-//                     <Label className="text-sm font-semibold">
-//                       Maximum hourly rate
-//                     </Label>
-
-//                     <span className="shrink-0 rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
-//                       US$
-//                       {maxHourlyRate}
-//                       /hr
-//                     </span>
-//                   </div>
-
-//                   <Slider
-//                     value={[
-//                       maxHourlyRate,
-//                     ]}
-//                     onValueChange={([
-//                       value,
-//                     ]) =>
-//                       setMaxHourlyRate(
-//                         value,
-//                       )
-//                     }
-//                     min={0}
-//                     max={100}
-//                     step={1}
-//                   />
-
-//                   <div className="flex justify-between text-xs text-muted-foreground">
-//                     <span>US$0</span>
-//                     <span>
-//                       US$100+
-//                     </span>
-//                   </div>
-//                 </div>
-
-//                 <div className="space-y-3">
-//                   <div>
-//                     <Label className="text-sm font-semibold">
-//                       Minimum experience
-//                     </Label>
-
-//                     <p className="mt-1 text-xs text-muted-foreground">
-//                       Choose the least
-//                       experience required.
-//                     </p>
-//                   </div>
-
-//                   <div className="grid grid-cols-2 gap-2">
-//                     {[
-//                       {
-//                         label: "Any",
-//                         value: 0,
-//                       },
-//                       {
-//                         label:
-//                           "1+ year",
-//                         value: 1,
-//                       },
-//                       {
-//                         label:
-//                           "3+ years",
-//                         value: 3,
-//                       },
-//                       {
-//                         label:
-//                           "5+ years",
-//                         value: 5,
-//                       },
-//                       {
-//                         label:
-//                           "10+ years",
-//                         value: 10,
-//                       },
-//                     ].map(
-//                       (option) => {
-//                         const selected =
-//                           minExperience ===
-//                           option.value;
-
-//                         return (
-//                           <button
-//                             key={
-//                               option.value
-//                             }
-//                             type="button"
-//                             onClick={() =>
-//                               setMinExperience(
-//                                 option.value,
-//                               )
-//                             }
-//                             aria-pressed={
-//                               selected
-//                             }
-//                             className={`rounded-xl border px-3 py-2.5 text-sm font-semibold transition-all ${
-//                               selected
-//                                 ? "border-primary bg-primary text-primary-foreground shadow-sm"
-//                                 : "border-border bg-muted/20 text-muted-foreground hover:border-primary/40 hover:bg-muted/50 hover:text-foreground"
-//                             }`}
-//                           >
-//                             {
-//                               option.label
-//                             }
-//                           </button>
-//                         );
-//                       },
-//                     )}
-//                   </div>
-//                 </div>
-
-//                 <div className="border-t border-border pt-6">
-//                   <FilterToggle
-//                     checked={
-//                       verifiedOnly
-//                     }
-//                     onChange={
-//                       setVerifiedOnly
-//                     }
-//                     icon={
-//                       <BadgeCheckIcon
-//                         size={17}
-//                       />
-//                     }
-//                     label="Verified only"
-//                     description="Show identity-verified professionals."
-//                   />
-//                 </div>
-//               </div>
-//             </aside>
-
-//             <section className="min-w-0">
-//               {!loading && (
-//                 <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-//                   <div>
-//                     <p className="text-sm font-semibold">
-//                       Recommended matches
-//                     </p>
-
-//                     <p className="mt-0.5 text-xs text-muted-foreground">
-//                       Sorted using your
-//                       project requirements.
-//                     </p>
-//                   </div>
-
-//                   <div className="relative w-full sm:w-52">
-//                     <StarIcon
-//                       size={15}
-//                       className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground"
-//                     />
-
-//                     <select
-//                       value={sortBy}
-//                       onChange={(
-//                         event,
-//                       ) =>
-//                         setSortBy(
-//                           event.target
-//                             .value as SortOption,
-//                         )
-//                       }
-//                       aria-label="Sort Allocats"
-//                       className="h-10 w-full appearance-none rounded-full border border-input bg-background pl-10 pr-9 text-sm font-medium outline-none transition-colors focus:border-ring focus:ring-2 focus:ring-ring/20"
-//                     >
-//                       <option value="match">
-//                         Best match
-//                       </option>
-
-//                       <option value="rating">
-//                         Highest rated
-//                       </option>
-
-//                       <option value="rate-low">
-//                         Lowest rate
-//                       </option>
-
-//                       <option value="experience">
-//                         Most experienced
-//                       </option>
-
-//                       <option value="recent">
-//                         Recently active
-//                       </option>
-//                     </select>
-
-//                     <ChevronDownIcon
-//                       size={14}
-//                       className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground"
-//                     />
-//                   </div>
-//                 </div>
-//               )}
-
-//               {loading ? (
-//                 <AllocatGridSkeleton />
-//               ) : filteredAllocats.length >
-//                 0 ? (
-//                 <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-//                   {filteredAllocats.map(
-//                     (allocat) => {
-//                       const relationshipStatus =
-//                         relationshipStatusByAllocat.get(
-//                           allocat.allocatrUserId,
-//                         ) ?? null;
-
-//                       return (
-//                         <div
-//                           key={
-//                             allocat.allocatrUserId
-//                           }
-//                           className="min-w-0"
-//                         >
-//                           <AllocatCardGrid
-//                             allocat={
-//                               allocat
-//                             }
-//                             project={
-//                               project
-//                             }
-//                             relationshipStatus={
-//                               relationshipStatus
-//                             }
-//                             onStatusChange={(
-//                               status,
-//                             ) =>
-//                               handleStatusChange(
-//                                 allocat.allocatrUserId,
-//                                 status,
-//                               )
-//                             }
-//                           />
-//                         </div>
-//                       );
-//                     },
-//                   )}
-//                 </div>
-//               ) : (
-//                 <EmptyState
-//                   onReset={resetFilters}
-//                 />
-//               )}
-//             </section>
-//           </div>
-//         )}
-//       </main>
-//     </div>
-//   );
-// }
-
-// type FilterToggleProps = {
-//   checked: boolean;
-//   onChange: (checked: boolean) => void;
-//   icon: React.ReactNode;
-//   label: string;
-//   description: string;
-// };
-
-// function FilterToggle({
-//   checked,
-//   onChange,
-//   icon,
-//   label,
-//   description,
-// }: FilterToggleProps) {
-//   return (
-//     <button
-//       type="button"
-//       role="switch"
-//       aria-checked={checked}
-//       onClick={() =>
-//         onChange(!checked)
-//       }
-//       className="flex w-full items-center gap-3 rounded-2xl border border-border bg-muted/20 p-3 text-left transition-colors hover:bg-muted/50"
-//     >
-//       <span
-//         className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-colors ${
-//           checked
-//             ? "bg-primary text-primary-foreground"
-//             : "bg-muted text-muted-foreground"
-//         }`}
-//       >
-//         {icon}
-//       </span>
-
-//       <span className="min-w-0 flex-1">
-//         <span className="block text-sm font-semibold">
-//           {label}
-//         </span>
-
-//         <span className="mt-0.5 block text-[11px] leading-4 text-muted-foreground">
-//           {description}
-//         </span>
-//       </span>
-
-//       <span
-//         className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${
-//           checked
-//             ? "bg-primary"
-//             : "bg-muted-foreground/25"
-//         }`}
-//       >
-//         <span
-//           className={`absolute top-1 h-4 w-4 rounded-full bg-background shadow-sm transition-transform ${
-//             checked
-//               ? "translate-x-6"
-//               : "translate-x-1"
-//           }`}
-//         />
-
-//         {checked && (
-//           <CheckIcon
-//             size={9}
-//             className="absolute left-1.5 top-1.5 text-primary-foreground"
-//           />
-//         )}
-//       </span>
-//     </button>
-//   );
-// }
-
-// function getAllocatLocation(
-//   allocat: FilterableAllocat,
-// ): string {
-//   return [
-//     allocat.location,
-//     allocat.city,
-//     allocat.country,
-//   ]
-//     .filter(Boolean)
-//     .join(", ")
-//     .toLowerCase();
-// }
-
-// function getIsVerified(
-//   allocat: FilterableAllocat,
-// ): boolean {
-//   return Boolean(
-//     allocat.isVerified ??
-//       allocat.verified ??
-//       false,
-//   );
-// }
-
-// function getRating(
-//   allocat: FilterableAllocat,
-// ): number {
-//   return (
-//     allocat.averageRating ??
-//     allocat.rating ??
-//     0
-//   );
-// }
-
-// function getMatchScore(
-//   allocat: FilterableAllocat,
-// ): number {
-//   return allocat.matchScore ?? 0;
-// }
-
-// function getDateValue(
-//   date?: string,
-// ): number {
-//   if (!date) {
-//     return 0;
-//   }
-
-//   const parsedDate =
-//     new Date(date).getTime();
-
-//   return Number.isNaN(parsedDate)
-//     ? 0
-//     : parsedDate;
-// }
-
-// function AllocatGridSkeleton() {
-//   return (
-//     <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-//       {Array.from({
-//         length: 8,
-//       }).map((_, index) => (
-//         <div
-//           key={index}
-//           className="overflow-hidden rounded-[1.75rem] border border-border bg-background p-5"
-//         >
-//           <div className="flex items-center gap-3">
-//             <Skeleton className="h-12 w-12 rounded-full" />
-
-//             <div className="flex-1 space-y-2">
-//               <Skeleton className="h-4 w-2/3" />
-//               <Skeleton className="h-3 w-1/2" />
-//             </div>
-//           </div>
-
-//           <Skeleton className="mt-6 h-4 w-full" />
-//           <Skeleton className="mt-2 h-4 w-4/5" />
-
-//           <div className="mt-6 flex gap-2">
-//             <Skeleton className="h-7 w-20 rounded-full" />
-//             <Skeleton className="h-7 w-24 rounded-full" />
-//           </div>
-
-//           <Skeleton className="mt-7 h-11 w-full rounded-full" />
-//         </div>
-//       ))}
-//     </div>
-//   );
-// }
-
-// function ErrorState({
-//   message,
-// }: {
-//   message: string;
-// }) {
-//   return (
-//     <div className="mt-8 flex min-h-[360px] flex-col items-center justify-center rounded-[2rem] border border-destructive/20 bg-destructive/5 px-6 text-center">
-//       <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-destructive/10 text-destructive">
-//         <UsersIcon size={24} />
-//       </div>
-
-//       <h2 className="mt-5 text-xl font-bold">
-//         We could not load the results
-//       </h2>
-
-//       <p className="mt-2 max-w-md text-sm leading-7 text-muted-foreground">
-//         {message}
-//       </p>
-
-//       <Button
-//         type="button"
-//         onClick={() =>
-//           window.location.reload()
-//         }
-//         className="mt-6 rounded-full px-6"
-//       >
-//         Try again
-//       </Button>
-//     </div>
-//   );
-// }
-
-// function EmptyState({
-//   onReset,
-// }: {
-//   onReset: () => void;
-// }) {
-//   return (
-//     <div className="flex min-h-[420px] flex-col items-center justify-center rounded-[2rem] border border-dashed border-border bg-background px-6 text-center">
-//       <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-//         <SearchIcon size={26} />
-//       </div>
-
-//       <h2 className="mt-6 text-2xl font-bold">
-//         No matching Allocats
-//       </h2>
-
-//       <p className="mt-3 max-w-md text-sm leading-7 text-muted-foreground">
-//         Try increasing the maximum
-//         hourly rate, reducing the
-//         experience requirement, or
-//         changing the location.
-//       </p>
-
-//       <Button
-//         type="button"
-//         variant="outline"
-//         onClick={onReset}
-//         className="mt-6 rounded-full px-6 shadow-none"
-//       >
-//         Reset filters
-//       </Button>
-//     </div>
-//   );
-// }
-
-// export default FindAllocats;
-
-
-import {
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
-
-import {
-  useParams,
-} from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { useParams } from "react-router-dom";
 
 import {
   BadgeCheckIcon,
+  CatIcon,
   CheckIcon,
   ChevronDownIcon,
+  CircleDollarSignIcon,
+  Clock3Icon,
+  Grid2X2Icon,
+  ListIcon,
   MapPinIcon,
+  PawPrintIcon,
   SearchIcon,
   SlidersHorizontalIcon,
+  SparklesIcon,
   StarIcon,
   UsersIcon,
+  XIcon,
 } from "lucide-react";
 
 import api from "@/api/axios";
 
-import type {
-  Project,
-} from "@/Types/project";
+import type { Project } from "@/Types/project";
+import type { AllocatProfile } from "@/Types/allocatProfile";
+import type { ProjectAllocat } from "@/Types/projectAllocat";
+import type { ProjectAllocatStatus } from "@/Types/enums";
 
-import type {
-  AllocatProfile,
-} from "@/Types/allocatProfile";
-
-import type {
-  ProjectAllocat,
-} from "@/Types/projectAllocat";
-
-import type {
-  ProjectAllocatStatus,
-} from "@/Types/enums";
-
-import {
-  AllocatCardGrid,
-} from "@/components/AllocatCard";
-
+import { AllocatCardGrid } from "@/components/AllocatCard";
 import MinimalNavMenu from "@/components/MinimalNavMenu";
 
-import {
-  Input,
-} from "@/components/ui/input";
-
-import {
-  Label,
-} from "@/components/ui/label";
-
-import {
-  Slider,
-} from "@/components/ui/slider";
-
-import {
-  Button,
-} from "@/components/ui/button";
-
-import {
-  Skeleton,
-} from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
+import { Slider } from "@/components/ui/slider";
+import { Button } from "@/components/ui/button";
 
 /* =========================================================
    TYPES
@@ -1065,118 +45,106 @@ type SortOption =
   | "experience"
   | "recent";
 
-type FilterableAllocat =
-  AllocatProfile & {
-    location?: string;
-    city?: string;
-    country?: string;
+type ViewMode = "grid" | "list";
 
-    isVerified?: boolean;
-    verified?: boolean;
+type OpenFilter =
+  | "location"
+  | "rate"
+  | "experience"
+  | null;
 
-    rating?: number;
-    averageRating?: number;
-    matchScore?: number;
+type SkillSummary = {
+  id: string;
+  name: string;
+  categoryId?: string;
+  category?: string;
+};
 
-    createdAt?: string;
-    updatedAt?: string;
-  };
+type FilterableAllocat = Omit<AllocatProfile, "skills"> & {
+  skills?: SkillSummary[];
+
+  location?: string;
+  city?: string;
+  country?: string;
+
+  isVerified?: boolean;
+  verified?: boolean;
+
+  rating?: number;
+  averageRating?: number;
+
+  joinedAt?: string;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+type MatchedAllocat = FilterableAllocat & {
+  matchScore: number;
+  matchedSkillCount: number;
+  requiredSkillCount: number;
+};
+
+type AllocatsResponse = {
+  items: FilterableAllocat[];
+  page: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
+};
 
 /* =========================================================
    DEFAULTS
 ========================================================= */
 
-const DEFAULT_LOCATION =
-  "Zimbabwe, Harare";
+const DEFAULT_LOCATION = "";
+const DEFAULT_MIN_EXPERIENCE = 0;
 
-const DEFAULT_MAX_RATE =
-  100;
-
-const DEFAULT_MIN_EXPERIENCE =
-  1;
+const experienceOptions = [
+  {
+    label: "Any level",
+    value: 0,
+  },
+  {
+    label: "1+ year",
+    value: 1,
+  },
+  {
+    label: "3+ years",
+    value: 3,
+  },
+  {
+    label: "5+ years",
+    value: 5,
+  },
+  {
+    label: "10+ years",
+    value: 10,
+  },
+];
 
 /* =========================================================
    PAGE
 ========================================================= */
 
 function FindAllocats() {
-  const {
-    projectId,
-  } = useParams();
+  const { projectId } = useParams();
 
-  const [
-    project,
-    setProject,
-  ] =
-    useState<Project>();
+  const [project, setProject] = useState<Project>();
+  const [allocats, setAllocats] = useState<FilterableAllocat[]>([]);
+  const [projectAllocats, setProjectAllocats] = useState<ProjectAllocat[]>([]);
 
-  const [
-    allocats,
-    setAllocats,
-  ] =
-    useState<
-      FilterableAllocat[]
-    >([]);
+  const [location, setLocation] = useState(DEFAULT_LOCATION);
+  const [maxHourlyRate, setMaxHourlyRate] = useState<number | null>(null);
+  const [minExperience, setMinExperience] = useState(DEFAULT_MIN_EXPERIENCE);
+  const [verifiedOnly, setVerifiedOnly] = useState(false);
 
-  const [
-    projectAllocats,
-    setProjectAllocats,
-  ] =
-    useState<
-      ProjectAllocat[]
-    >([]);
+  const [openFilter, setOpenFilter] = useState<OpenFilter>(null);
 
-  const [
-    location,
-    setLocation,
-  ] =
-    useState(
-      DEFAULT_LOCATION,
-    );
+  const [sortBy, setSortBy] = useState<SortOption>("match");
+  const [viewMode, setViewMode] = useState<ViewMode>("grid");
 
-  const [
-    maxHourlyRate,
-    setMaxHourlyRate,
-  ] =
-    useState(
-      DEFAULT_MAX_RATE,
-    );
-
-  const [
-    minExperience,
-    setMinExperience,
-  ] =
-    useState(
-      DEFAULT_MIN_EXPERIENCE,
-    );
-
-  const [
-    verifiedOnly,
-    setVerifiedOnly,
-  ] =
-    useState(false);
-
-  const [
-    sortBy,
-    setSortBy,
-  ] =
-    useState<SortOption>(
-      "match",
-    );
-
-  const [
-    loading,
-    setLoading,
-  ] =
-    useState(true);
-
-  const [
-    error,
-    setError,
-  ] =
-    useState<
-      string | null
-    >(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   /* =======================================================
      LOAD
@@ -1184,83 +152,98 @@ function FindAllocats() {
 
   useEffect(() => {
     if (!projectId) {
-      setError(
-        "No project was selected.",
-      );
-
-      setLoading(
-        false,
-      );
-
+      setError("No project was selected.");
+      setLoading(false);
       return;
     }
 
-    let cancelled =
-      false;
+    let cancelled = false;
+
+    async function loadAllAllocats() {
+      const firstResponse = await api.get<AllocatsResponse>(
+        "/allocats/profiles",
+        {
+          params: {
+            page: 1,
+            pageSize: 100,
+          },
+          withCredentials: true,
+        },
+      );
+
+      const firstPage = firstResponse.data;
+
+      if (firstPage.totalPages <= 1) {
+        return Array.isArray(firstPage.items)
+          ? firstPage.items
+          : [];
+      }
+
+      const remainingPages = await Promise.all(
+        Array.from(
+          { length: firstPage.totalPages - 1 },
+          (_, index) =>
+            api.get<AllocatsResponse>(
+              "/allocats/profiles",
+              {
+                params: {
+                  page: index + 2,
+                  pageSize: firstPage.pageSize,
+                },
+                withCredentials: true,
+              },
+            ),
+        ),
+      );
+
+      return [
+        ...(firstPage.items ?? []),
+        ...remainingPages.flatMap(
+          response => response.data.items ?? [],
+        ),
+      ];
+    }
 
     async function loadPage() {
-      setLoading(
-        true,
-      );
-
-      setError(
-        null,
-      );
+      setLoading(true);
+      setError(null);
 
       try {
         const [
           projectResponse,
-          allocatsResponse,
+          allAllocats,
           projectAllocatsResponse,
-        ] =
-          await Promise.all([
-            api.get<Project>(
-              `/projects/${projectId}`,
-              {
-                withCredentials:
-                  true,
-              },
-            ),
+        ] = await Promise.all([
+          api.get<Project>(
+            `/projects/${projectId}`,
+            {
+              withCredentials: true,
+            },
+          ),
 
-            api.get<
-              FilterableAllocat[]
-            >(
-              "/allocats/profiles",
-              {
-                withCredentials:
-                  true,
-              },
-            ),
+          loadAllAllocats(),
 
-            api.get<
-              ProjectAllocat[]
-            >(
-              `/projects/${projectId}/allocats`,
-              {
-                withCredentials:
-                  true,
-              },
-            ),
-          ]);
+          api.get<ProjectAllocat[]>(
+            `/projects/${projectId}/allocats`,
+            {
+              withCredentials: true,
+            },
+          ),
+        ]);
 
         if (cancelled) {
           return;
         }
 
-        setProject(
-          projectResponse.data,
-        );
-
-        setAllocats(
-          allocatsResponse.data,
-        );
+        setProject(projectResponse.data);
+        setAllocats(allAllocats);
 
         setProjectAllocats(
-          projectAllocatsResponse.data,
+          Array.isArray(projectAllocatsResponse.data)
+            ? projectAllocatsResponse.data
+            : [],
         );
-      } catch (
-        requestError
-      ) {
+      } catch (requestError) {
         if (cancelled) {
           return;
         }
@@ -1275,9 +258,7 @@ function FindAllocats() {
         );
       } finally {
         if (!cancelled) {
-          setLoading(
-            false,
-          );
+          setLoading(false);
         }
       }
     }
@@ -1290,136 +271,186 @@ function FindAllocats() {
   }, [projectId]);
 
   /* =======================================================
+     SKILL MATCHING
+  ======================================================= */
+
+  const projectSkillIds = useMemo(() => {
+    return new Set(
+      (project?.skills ?? []).map(
+        skill => skill.id,
+      ),
+    );
+  }, [project]);
+
+  const skillMatchedAllocats =
+    useMemo<MatchedAllocat[]>(() => {
+      if (projectSkillIds.size === 0) {
+        return [];
+      }
+
+      return allocats
+        .filter(
+          allocat =>
+            (allocat.skills?.length ?? 0) > 0,
+        )
+        .map(allocat => {
+          const matchedSkillCount = (
+            allocat.skills ?? []
+          ).filter(skill =>
+            projectSkillIds.has(skill.id),
+          ).length;
+
+          const matchScore = Math.round(
+            (matchedSkillCount /
+              projectSkillIds.size) *
+              100,
+          );
+
+          return {
+            ...allocat,
+            matchScore,
+            matchedSkillCount,
+            requiredSkillCount:
+              projectSkillIds.size,
+          };
+        })
+        .filter(
+          allocat =>
+            allocat.matchedSkillCount > 0,
+        );
+    }, [allocats, projectSkillIds]);
+
+  /* =======================================================
+     RATE RANGE
+  ======================================================= */
+
+  const rateCeiling = useMemo(() => {
+    const highestRate = Math.max(
+      ...skillMatchedAllocats.map(
+        allocat => allocat.hourlyRate ?? 0,
+      ),
+      100,
+    );
+
+    return Math.ceil(highestRate / 10) * 10;
+  }, [skillMatchedAllocats]);
+
+  /* =======================================================
      FILTERING
   ======================================================= */
 
-  const filteredAllocats =
-    useMemo(() => {
-      const normalizedLocation =
-        location
-          .trim()
-          .toLowerCase();
+  const filteredAllocats = useMemo(() => {
+    const normalizedLocation =
+      location.trim().toLowerCase();
 
-      const results =
-        allocats.filter(
+    const results =
+      skillMatchedAllocats.filter(allocat => {
+        const yearsExperience =
+          allocat.yearsExperience ?? 0;
+
+        const allocatLocation =
+          getAllocatLocation(allocat);
+
+        const matchesLocation =
+          !normalizedLocation ||
           (
-            allocat,
-          ) => {
-            const hourlyRate =
-              allocat.hourlyRate ??
-              0;
-
-            const yearsExperience =
-              allocat.yearsExperience ??
-              0;
-
-            const allocatLocation =
-              getAllocatLocation(
-                allocat,
-              );
-
-            const matchesLocation =
-              !normalizedLocation ||
-              !allocatLocation ||
+            Boolean(allocatLocation) &&
+            (
               allocatLocation.includes(
                 normalizedLocation,
               ) ||
               normalizedLocation.includes(
                 allocatLocation,
-              );
+              )
+            )
+          );
 
-            const matchesRate =
-              hourlyRate <=
-              maxHourlyRate;
+        const matchesRate =
+          maxHourlyRate === null ||
+          allocat.hourlyRate === null ||
+          allocat.hourlyRate === undefined ||
+          allocat.hourlyRate <= maxHourlyRate;
 
-            const matchesExperience =
-              yearsExperience >=
-              minExperience;
+        const matchesExperience =
+          yearsExperience >= minExperience;
 
-            const matchesVerified =
-              !verifiedOnly ||
-              getIsVerified(
-                allocat,
-              );
+        const matchesVerified =
+          !verifiedOnly ||
+          getIsVerified(allocat);
 
-            return (
-              matchesLocation &&
-              matchesRate &&
-              matchesExperience &&
-              matchesVerified
-            );
-          },
+        return (
+          matchesLocation &&
+          matchesRate &&
+          matchesExperience &&
+          matchesVerified
         );
+      });
 
-      return [
-        ...results,
-      ].sort(
-        (
-          a,
-          b,
-        ) => {
-          switch (
-            sortBy
+    return [...results].sort((a, b) => {
+      switch (sortBy) {
+        case "rating":
+          return getRating(b) - getRating(a);
+
+        case "rate-low":
+          return (
+            (a.hourlyRate ??
+              Number.MAX_SAFE_INTEGER) -
+            (b.hourlyRate ??
+              Number.MAX_SAFE_INTEGER)
+          );
+
+        case "experience":
+          return (
+            (b.yearsExperience ?? 0) -
+            (a.yearsExperience ?? 0)
+          );
+
+        case "recent":
+          return (
+            getDateValue(
+              b.updatedAt ??
+              b.createdAt ??
+              b.joinedAt,
+            ) -
+            getDateValue(
+              a.updatedAt ??
+              a.createdAt ??
+              a.joinedAt,
+            )
+          );
+
+        case "match":
+        default:
+          if (
+            b.matchScore !== a.matchScore
           ) {
-            case "rating":
-              return (
-                getRating(
-                  b,
-                ) -
-                getRating(
-                  a,
-                )
-              );
-
-            case "rate-low":
-              return (
-                (a.hourlyRate ??
-                  Number.MAX_SAFE_INTEGER) -
-                (b.hourlyRate ??
-                  Number.MAX_SAFE_INTEGER)
-              );
-
-            case "experience":
-              return (
-                (b.yearsExperience ??
-                  0) -
-                (a.yearsExperience ??
-                  0)
-              );
-
-            case "recent":
-              return (
-                getDateValue(
-                  b.updatedAt ??
-                    b.createdAt,
-                ) -
-                getDateValue(
-                  a.updatedAt ??
-                    a.createdAt,
-                )
-              );
-
-            case "match":
-            default:
-              return (
-                getMatchScore(
-                  b,
-                ) -
-                getMatchScore(
-                  a,
-                )
-              );
+            return (
+              b.matchScore -
+              a.matchScore
+            );
           }
-        },
-      );
-    }, [
-      allocats,
-      location,
-      maxHourlyRate,
-      minExperience,
-      verifiedOnly,
-      sortBy,
-    ]);
+
+          if (
+            b.matchedSkillCount !==
+            a.matchedSkillCount
+          ) {
+            return (
+              b.matchedSkillCount -
+              a.matchedSkillCount
+            );
+          }
+
+          return getRating(b) - getRating(a);
+      }
+    });
+  }, [
+    skillMatchedAllocats,
+    location,
+    maxHourlyRate,
+    minExperience,
+    verifiedOnly,
+    sortBy,
+  ]);
 
   /* =======================================================
      RELATIONSHIPS
@@ -1432,17 +463,13 @@ function FindAllocats() {
         ProjectAllocatStatus
       >(
         projectAllocats.map(
-          (
-            relationship,
-          ) => [
+          relationship => [
             relationship.allocatProfileId,
             relationship.status,
           ],
         ),
       );
-    }, [
-      projectAllocats,
-    ]);
+    }, [projectAllocats]);
 
   /* =======================================================
      FILTER COUNT
@@ -1450,38 +477,29 @@ function FindAllocats() {
 
   const activeFilterCount =
     useMemo(() => {
-      let count =
-        0;
+      let count = 0;
 
       if (
-        location !==
-        DEFAULT_LOCATION
+        location !== DEFAULT_LOCATION
       ) {
-        count +=
-          1;
+        count += 1;
       }
 
       if (
-        maxHourlyRate !==
-        DEFAULT_MAX_RATE
+        maxHourlyRate !== null
       ) {
-        count +=
-          1;
+        count += 1;
       }
 
       if (
         minExperience !==
         DEFAULT_MIN_EXPERIENCE
       ) {
-        count +=
-          1;
+        count += 1;
       }
 
-      if (
-        verifiedOnly
-      ) {
-        count +=
-          1;
+      if (verifiedOnly) {
+        count += 1;
       }
 
       return count;
@@ -1496,90 +514,69 @@ function FindAllocats() {
      ACTIONS
   ======================================================= */
 
-  function resetFilters() {
-    setLocation(
-      DEFAULT_LOCATION,
-    );
-
-    setMaxHourlyRate(
-      DEFAULT_MAX_RATE,
-    );
-
-    setMinExperience(
-      DEFAULT_MIN_EXPERIENCE,
-    );
-
-    setVerifiedOnly(
-      false,
-    );
-
-    setSortBy(
-      "match",
+  function toggleFilter(
+    filter: OpenFilter,
+  ) {
+    setOpenFilter(current =>
+      current === filter
+        ? null
+        : filter,
     );
   }
 
+  function resetFilters() {
+    setLocation(DEFAULT_LOCATION);
+    setMaxHourlyRate(null);
+    setMinExperience(
+      DEFAULT_MIN_EXPERIENCE,
+    );
+    setVerifiedOnly(false);
+    setSortBy("match");
+    setOpenFilter(null);
+  }
+
   function handleStatusChange(
-    allocatProfileId:
-      string,
-    status:
-      ProjectAllocatStatus,
+    allocatProfileId: string,
+    status: ProjectAllocatStatus,
   ) {
     if (!project) {
       return;
     }
 
-    setProjectAllocats(
-      (
-        current,
-      ) => {
-        const existing =
-          current.find(
-            (
-              relationship,
-            ) =>
-              relationship.allocatProfileId ===
-              allocatProfileId,
-          );
-
-        if (
-          existing
-        ) {
-          return current.map(
-            (
-              relationship,
-            ) =>
-              relationship.allocatProfileId ===
-              allocatProfileId
-                ? {
-                    ...relationship,
-                    status,
-                  }
-                : relationship,
-          );
-        }
-
-        return [
-          ...current,
-          {
-            projectId:
-              project.id,
-
+    setProjectAllocats(current => {
+      const existing =
+        current.find(
+          relationship =>
+            relationship.allocatProfileId ===
             allocatProfileId,
+        );
 
-            status,
+      if (existing) {
+        return current.map(
+          relationship =>
+            relationship.allocatProfileId ===
+            allocatProfileId
+              ? {
+                  ...relationship,
+                  status,
+                }
+              : relationship,
+        );
+      }
 
-            invitedAt:
-              new Date().toISOString(),
-
-            respondedAt:
-              null,
-
-            removedAt:
-              null,
-          },
-        ];
-      },
-    );
+      return [
+        ...current,
+        {
+          projectId: project.id,
+          allocatProfileId,
+          status,
+          invitedAt:
+            new Date().toISOString(),
+          respondedAt: null,
+          removedAt: null,
+        },
+      ];
+    });
   }
 
   /* =======================================================
@@ -1589,9 +586,7 @@ function FindAllocats() {
   return (
     <div className="min-h-screen bg-background text-foreground">
 
-      {/* ===================================================
-          HEADER
-      =================================================== */}
+      {/* HEADER */}
 
       <header className="sticky top-0 z-40 border-b border-border/60 bg-background/90 backdrop-blur-xl">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -1599,79 +594,88 @@ function FindAllocats() {
         </div>
       </header>
 
-      <main className="container mx-auto px-5 py-8 md:px-8 lg:py-12">
+      <main className="container mx-auto px-4 py-7 sm:px-5 md:px-8 lg:py-12">
 
         {/* =================================================
             INTRO
         ================================================= */}
 
-        <section className="pb-8 lg:pb-10">
+        <section className="pb-7">
           <div className="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-end">
+
             <div className="min-w-0 max-w-4xl">
+
               <div className="flex items-center gap-2.5">
-                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                  <UsersIcon
-                    size={15}
-                  />
+                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-primary text-dark-gray shadow-sm">
+                  <UsersIcon size={15} />
                 </span>
 
-                <p className="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-primary">
-                  Find the right skill
+                <p className="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                  Find Allocats
                 </p>
               </div>
 
               {loading ? (
-                <div className="mt-6 space-y-3">
-                  <Skeleton className="h-10 w-80 max-w-full" />
+                <>
+                  <h1 className="mt-5 text-3xl font-black leading-[1.02] tracking-[-0.035em] sm:text-4xl lg:text-5xl">
+                    Finding your best
+                    Allocats
+                  </h1>
 
-                  <Skeleton className="h-5 w-full max-w-2xl" />
-                </div>
+                  <p className="mt-4 max-w-2xl text-sm leading-7 text-muted-foreground sm:text-base">
+                    Our matching cat is
+                    pawing through
+                    professional
+                    profiles.
+                  </p>
+                </>
               ) : (
                 <>
                   <h1 className="mt-5 max-w-4xl text-3xl font-black leading-[1.02] tracking-[-0.035em] sm:text-4xl lg:text-5xl">
                     Find Allocats for{" "}
-
-                    <span className="text-primary">
+                    <span>
                       {project?.title ||
                         "your project"}
                     </span>
                   </h1>
 
                   <p className="mt-4 max-w-2xl text-sm leading-7 text-muted-foreground sm:text-base">
-                    Explore professionals who may
-                    fit the work, then refine the
-                    results using experience,
-                    location and rate.
+                    Discover suitable
+                    professionals and
+                    refine the results
+                    by rate,
+                    experience,
+                    location and
+                    verification.
                   </p>
                 </>
               )}
             </div>
 
-            {!loading &&
-              !error && (
-                <div className="flex items-center gap-3 border-l border-border pl-5">
-                  <span className="text-3xl font-black tracking-[-0.04em]">
+            {!loading && !error && (
+              <div className="hidden items-center gap-3 border-l border-border pl-5 sm:flex">
+                <span className="text-3xl font-black tracking-[-0.04em]">
+                  {
+                    filteredAllocats.length
+                  }
+                </span>
+
+                <div>
+                  <p className="text-xs font-semibold">
                     {
-                      filteredAllocats.length
+                      filteredAllocats.length ===
+                      1
+                        ? "Allocat"
+                        : "Allocats"
                     }
-                  </span>
+                  </p>
 
-                  <div>
-                    <p className="text-xs font-semibold">
-                      {
-                        filteredAllocats.length ===
-                        1
-                          ? "Allocat"
-                          : "Allocats"
-                      }
-                    </p>
-
-                    <p className="text-[0.68rem] text-muted-foreground">
-                      matching filters
-                    </p>
-                  </div>
+                  <p className="text-[0.68rem] text-muted-foreground">
+                    available
+                  </p>
                 </div>
-              )}
+              </div>
+            )}
           </div>
         </section>
 
@@ -1679,355 +683,750 @@ function FindAllocats() {
           <ErrorState
             message={error}
           />
+        ) : loading ? (
+          <AllocatLoadingState />
         ) : (
-          <div className="grid items-start gap-8 border-t border-border pt-8 lg:grid-cols-[260px_minmax(0,1fr)] xl:grid-cols-[280px_minmax(0,1fr)] lg:gap-10">
+          <div
+            className={[
+              "border-t border-border/70",
+              "lg:grid lg:grid-cols-[245px_minmax(0,1fr)]",
+              "lg:gap-8 xl:grid-cols-[265px_minmax(0,1fr)] xl:gap-10",
+            ].join(" ")}
+          >
 
             {/* =================================================
-                FILTERS
+                DESKTOP FILTER SIDEBAR
             ================================================= */}
 
-            <aside className="lg:sticky lg:top-24">
-              <div className="border-b border-border pb-5">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <div className="flex items-center gap-2">
+            <aside className="hidden lg:block">
+              <div className="sticky top-24 py-7">
+
+                <div className="flex items-center justify-between gap-3">
+
+                  <div className="flex items-center gap-2">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand-primary/15 text-foreground">
                       <SlidersHorizontalIcon
-                        size={16}
-                        className="text-primary"
+                        size={14}
+                      />
+                    </span>
+
+                    <h2 className="text-sm font-bold">
+                      Refine
+                    </h2>
+
+                    {activeFilterCount >
+                      0 && (
+                      <span className="flex h-5 min-w-5 items-center justify-center rounded-md bg-brand-primary px-1.5 text-[0.6rem] font-black text-dark-gray">
+                        {
+                          activeFilterCount
+                        }
+                      </span>
+                    )}
+                  </div>
+
+                  {activeFilterCount >
+                    0 && (
+                    <button
+                      type="button"
+                      onClick={
+                        resetFilters
+                      }
+                      className="text-[0.65rem] font-semibold text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      Reset
+                    </button>
+                  )}
+                </div>
+
+                <p className="mt-2 text-xs leading-5 text-muted-foreground">
+                  Narrow down the
+                  professionals shown
+                  for this project.
+                </p>
+
+                <div className="mt-6 divide-y divide-border">
+
+                  {/* LOCATION */}
+
+                  <DesktopFilterSection
+                    title="Location"
+                  >
+                    <div className="relative">
+                      <MapPinIcon
+                        size={14}
+                        className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
                       />
 
-                      <h2 className="text-sm font-bold">
-                        Refine
-                      </h2>
+                      <Input
+                        value={location}
+                        onChange={event =>
+                          setLocation(
+                            event.target
+                              .value,
+                          )
+                        }
+                        placeholder="City or area"
+                        className="h-10 rounded-lg bg-background pl-9 text-xs shadow-none focus-visible:border-brand-primary focus-visible:ring-brand-primary/20"
+                      />
+                    </div>
+                  </DesktopFilterSection>
 
-                      {activeFilterCount >
-                        0 && (
-                        <span className="flex h-5 min-w-5 items-center justify-center rounded-md bg-primary/10 px-1.5 text-[0.62rem] font-bold text-primary">
-                          {
-                            activeFilterCount
+                  {/* RATE */}
+
+                  <DesktopFilterSection
+                    title="Hourly rate"
+                  >
+                    <div className="mb-4 flex items-center justify-between">
+                      <span className="text-[0.68rem] text-muted-foreground">
+                        Maximum
+                      </span>
+
+                      <span className="text-xs font-bold">
+                        {maxHourlyRate ===
+                        null
+                          ? "Any"
+                          : `US$${maxHourlyRate}/hr`}
+                      </span>
+                    </div>
+
+                    <Slider
+                      value={[
+                        maxHourlyRate ??
+                          rateCeiling,
+                      ]}
+                      min={0}
+                      max={rateCeiling}
+                      step={1}
+                      onValueChange={([
+                        value,
+                      ]) =>
+                        setMaxHourlyRate(
+                          value,
+                        )
+                      }
+                    />
+
+                    <div className="mt-3 flex items-center justify-between">
+                      <span className="text-[0.62rem] text-muted-foreground">
+                        US$0
+                      </span>
+
+                      {maxHourlyRate !==
+                      null ? (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setMaxHourlyRate(
+                              null,
+                            )
                           }
+                          className="text-[0.62rem] font-semibold text-foreground underline decoration-brand-primary decoration-2 underline-offset-4"
+                        >
+                          Any rate
+                        </button>
+                      ) : (
+                        <span className="text-[0.62rem] text-muted-foreground">
+                          US$
+                          {
+                            rateCeiling
+                          }
+                          +
                         </span>
                       )}
                     </div>
+                  </DesktopFilterSection>
 
-                    <p className="mt-1.5 text-xs leading-5 text-muted-foreground">
-                      Narrow the results to the
-                      kind of professional you
-                      need.
-                    </p>
-                  </div>
+                  {/* EXPERIENCE */}
 
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={
-                      resetFilters
-                    }
-                    disabled={
-                      activeFilterCount ===
-                      0
-                    }
-                    className="h-8 rounded-lg px-2.5 text-xs shadow-none"
+                  <DesktopFilterSection
+                    title="Experience"
                   >
-                    Reset
-                  </Button>
-                </div>
-              </div>
+                    <div className="space-y-1">
+                      {experienceOptions.map(
+                        option => {
+                          const selected =
+                            minExperience ===
+                            option.value;
 
-              <div className="divide-y divide-border">
-
-                {/* Location */}
-
-                <FilterSection
-                  title="Location"
-                >
-                  <div className="relative">
-                    <MapPinIcon
-                      size={15}
-                      className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground"
-                    />
-
-                    <Input
-                      id="location"
-                      name="location"
-                      value={
-                        location
-                      }
-                      onChange={(
-                        event,
-                      ) =>
-                        setLocation(
-                          event.target
-                            .value,
-                        )
-                      }
-                      placeholder="City or area"
-                      className="h-11 rounded-lg border-border bg-background pl-10 shadow-none focus-visible:ring-1 focus-visible:ring-primary/50"
-                    />
-                  </div>
-                </FilterSection>
-
-                {/* Rate */}
-
-                <FilterSection
-                  title="Hourly rate"
-                >
-                  <div className="mb-5 flex items-center justify-between gap-4">
-                    <span className="text-xs text-muted-foreground">
-                      Maximum
-                    </span>
-
-                    <span className="text-xs font-bold text-foreground">
-                      US$
-                      {
-                        maxHourlyRate
-                      }
-                      /hr
-                    </span>
-                  </div>
-
-                  <Slider
-                    value={[
-                      maxHourlyRate,
-                    ]}
-                    onValueChange={([
-                      value,
-                    ]) =>
-                      setMaxHourlyRate(
-                        value,
-                      )
-                    }
-                    min={0}
-                    max={100}
-                    step={1}
-                  />
-
-                  <div className="mt-3 flex justify-between text-[0.65rem] text-muted-foreground">
-                    <span>
-                      US$0
-                    </span>
-
-                    <span>
-                      US$100+
-                    </span>
-                  </div>
-                </FilterSection>
-
-                {/* Experience */}
-
-                <FilterSection
-                  title="Experience"
-                  description="Minimum years required"
-                >
-                  <div className="overflow-hidden rounded-lg border border-border">
-                    {[
-                      {
-                        label:
-                          "Any level",
-                        value: 0,
-                      },
-                      {
-                        label:
-                          "1+ year",
-                        value: 1,
-                      },
-                      {
-                        label:
-                          "3+ years",
-                        value: 3,
-                      },
-                      {
-                        label:
-                          "5+ years",
-                        value: 5,
-                      },
-                      {
-                        label:
-                          "10+ years",
-                        value: 10,
-                      },
-                    ].map(
-                      (
-                        option,
-                        index,
-                      ) => {
-                        const selected =
-                          minExperience ===
-                          option.value;
-
-                        return (
-                          <button
-                            key={
-                              option.value
-                            }
-                            type="button"
-                            onClick={() =>
-                              setMinExperience(
-                                option.value,
-                              )
-                            }
-                            aria-pressed={
-                              selected
-                            }
-                            className={[
-                              "flex w-full items-center justify-between gap-3 px-3.5 py-3 text-left",
-                              "text-xs transition-colors",
-
-                              index >
-                              0
-                                ? "border-t border-border"
-                                : "",
-
-                              selected
-                                ? "bg-primary/[0.06] text-foreground"
-                                : "bg-background text-muted-foreground hover:bg-muted/30 hover:text-foreground",
-                            ].join(
-                              " ",
-                            )}
-                          >
-                            <span className="font-semibold">
-                              {
-                                option.label
+                          return (
+                            <button
+                              key={
+                                option.value
                               }
-                            </span>
-
-                            <span
+                              type="button"
+                              onClick={() =>
+                                setMinExperience(
+                                  option.value,
+                                )
+                              }
                               className={[
-                                "flex h-4 w-4 items-center justify-center rounded-full border",
-
+                                "flex w-full items-center justify-between rounded-lg px-3 py-2.5",
+                                "text-left text-xs font-semibold transition-colors",
                                 selected
-                                  ? "border-primary bg-primary text-primary-foreground"
-                                  : "border-border",
+                                  ? "bg-brand-primary/15 text-foreground"
+                                  : "text-muted-foreground hover:bg-muted/40 hover:text-foreground",
                               ].join(
                                 " ",
                               )}
                             >
-                              {selected && (
-                                <CheckIcon
-                                  size={
-                                    9
-                                  }
-                                  strokeWidth={
-                                    3
-                                  }
-                                />
-                              )}
-                            </span>
-                          </button>
-                        );
-                      },
-                    )}
-                  </div>
-                </FilterSection>
+                              {
+                                option.label
+                              }
 
-                {/* Verified */}
+                              <span
+                                className={[
+                                  "flex h-4 w-4 items-center justify-center rounded-full border",
+                                  selected
+                                    ? "border-brand-primary bg-brand-primary text-dark-gray"
+                                    : "border-border",
+                                ].join(
+                                  " ",
+                                )}
+                              >
+                                {selected && (
+                                  <CheckIcon
+                                    size={
+                                      9
+                                    }
+                                    strokeWidth={
+                                      3
+                                    }
+                                  />
+                                )}
+                              </span>
+                            </button>
+                          );
+                        },
+                      )}
+                    </div>
+                  </DesktopFilterSection>
 
-                <FilterSection
-                  title="Verification"
-                >
-                  <FilterToggle
-                    checked={
-                      verifiedOnly
-                    }
-                    onChange={
-                      setVerifiedOnly
-                    }
-                    icon={
-                      <BadgeCheckIcon
-                        size={16}
-                      />
-                    }
-                    label="Verified only"
-                    description="Only show professionals with verified profiles."
-                  />
-                </FilterSection>
+                  {/* VERIFIED */}
+
+                  <DesktopFilterSection
+                    title="Verification"
+                  >
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={
+                        verifiedOnly
+                      }
+                      onClick={() =>
+                        setVerifiedOnly(
+                          current =>
+                            !current,
+                        )
+                      }
+                      className={[
+                        "flex w-full items-center gap-3 rounded-lg border px-3 py-3",
+                        "text-left transition-colors",
+                        verifiedOnly
+                          ? "border-brand-primary/40 bg-brand-primary/10"
+                          : "border-border hover:bg-muted/30",
+                      ].join(" ")}
+                    >
+                      <span
+                        className={[
+                          "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
+                          verifiedOnly
+                            ? "bg-brand-primary text-dark-gray"
+                            : "bg-muted text-muted-foreground",
+                        ].join(
+                          " ",
+                        )}
+                      >
+                        <BadgeCheckIcon
+                          size={15}
+                        />
+                      </span>
+
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-xs font-bold">
+                          Verified only
+                        </span>
+
+                        <span className="mt-0.5 block text-[0.62rem] text-muted-foreground">
+                          Show verified
+                          profiles.
+                        </span>
+                      </span>
+
+                      <span
+                        className={[
+                          "relative h-5 w-9 shrink-0 rounded-full transition-colors",
+                          verifiedOnly
+                            ? "bg-brand-primary"
+                            : "bg-muted-foreground/25",
+                        ].join(
+                          " ",
+                        )}
+                      >
+                        <span
+                          className={[
+                            "absolute top-0.5 h-4 w-4 rounded-full shadow-sm",
+                            "transition-transform",
+                            verifiedOnly
+                              ? "translate-x-[18px] bg-dark-gray"
+                              : "translate-x-0.5 bg-background",
+                          ].join(
+                            " ",
+                          )}
+                        />
+                      </span>
+                    </button>
+                  </DesktopFilterSection>
+                </div>
               </div>
             </aside>
 
             {/* =================================================
-                RESULTS
+                CONTENT
             ================================================= */}
 
-            <section className="min-w-0">
+            <div className="min-w-0">
 
-              {!loading && (
-                <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-                  <div>
-                    <p className="text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                      Recommendations
-                    </p>
+              {/* =================================================
+                  TABLET / MOBILE FILTER BAR
+              ================================================= */}
 
-                    <h2 className="mt-1 text-lg font-bold tracking-[-0.02em]">
-                      Best matches
-                    </h2>
+              <section className="py-4 lg:hidden">
+                <div className="flex items-center gap-1.5 sm:gap-2">
+
+                  {/* REFINE */}
+
+                  <div className="mr-auto flex min-w-0 items-center gap-2">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-primary/15 text-foreground">
+                      <SlidersHorizontalIcon
+                        size={14}
+                      />
+                    </span>
+
+                    <span className="hidden text-xs font-semibold sm:inline">
+                      Refine
+                    </span>
+
+                    {activeFilterCount >
+                      0 && (
+                      <span className="flex h-5 min-w-5 items-center justify-center rounded-md bg-brand-primary px-1 text-[0.58rem] font-black text-dark-gray">
+                        {
+                          activeFilterCount
+                        }
+                      </span>
+                    )}
                   </div>
 
-                  <SortControl
-                    value={
-                      sortBy
+                  {/* LOCATION */}
+
+                  <ResponsiveFilterChip
+                    icon={
+                      <MapPinIcon
+                        size={13}
+                      />
                     }
+                    label={
+                      location ||
+                      "Location"
+                    }
+                    title="Location"
+                    active={Boolean(
+                      location,
+                    )}
+                    open={
+                      openFilter ===
+                      "location"
+                    }
+                    onClick={() =>
+                      toggleFilter(
+                        "location",
+                      )
+                    }
+                  />
+
+                  {/* RATE */}
+
+                  <ResponsiveFilterChip
+                    icon={
+                      <CircleDollarSignIcon
+                        size={13}
+                      />
+                    }
+                    label={
+                      maxHourlyRate ===
+                      null
+                        ? "Rate"
+                        : `US$${maxHourlyRate}`
+                    }
+                    title="Hourly rate"
+                    active={
+                      maxHourlyRate !==
+                      null
+                    }
+                    open={
+                      openFilter ===
+                      "rate"
+                    }
+                    onClick={() =>
+                      toggleFilter(
+                        "rate",
+                      )
+                    }
+                  />
+
+                  {/* EXPERIENCE */}
+
+                  <ResponsiveFilterChip
+                    icon={
+                      <Clock3Icon
+                        size={13}
+                      />
+                    }
+                    label={
+                      minExperience ===
+                      0
+                        ? "Experience"
+                        : `${minExperience}+ yrs`
+                    }
+                    title="Experience"
+                    active={
+                      minExperience > 0
+                    }
+                    open={
+                      openFilter ===
+                      "experience"
+                    }
+                    onClick={() =>
+                      toggleFilter(
+                        "experience",
+                      )
+                    }
+                  />
+
+                  {/* VERIFIED */}
+
+                  <button
+                    type="button"
+                    title="Verified only"
+                    aria-label="Verified only"
+                    onClick={() =>
+                      setVerifiedOnly(
+                        current =>
+                          !current,
+                      )
+                    }
+                    className={[
+                      "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border",
+                      "text-xs font-semibold transition-colors",
+                      "sm:w-auto sm:gap-2 sm:px-3",
+                      verifiedOnly
+                        ? "border-brand-primary/60 bg-brand-primary text-dark-gray"
+                        : "border-border bg-background text-muted-foreground hover:border-brand-primary/50 hover:text-foreground",
+                    ].join(" ")}
+                  >
+                    <BadgeCheckIcon
+                      size={13}
+                    />
+
+                    <span className="hidden sm:inline">
+                      Verified
+                    </span>
+
+                    {verifiedOnly && (
+                      <CheckIcon
+                        size={10}
+                        strokeWidth={
+                          3
+                        }
+                        className="hidden sm:block"
+                      />
+                    )}
+                  </button>
+
+                  {/* CLEAR */}
+
+                  {activeFilterCount >
+                    0 && (
+                    <button
+                      type="button"
+                      title="Clear filters"
+                      aria-label="Clear filters"
+                      onClick={
+                        resetFilters
+                      }
+                      className={[
+                        "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
+                        "text-muted-foreground transition-colors",
+                        "hover:bg-muted hover:text-foreground",
+                        "sm:w-auto sm:gap-1.5 sm:px-2.5 sm:text-xs",
+                      ].join(" ")}
+                    >
+                      <XIcon
+                        size={13}
+                      />
+
+                      <span className="hidden sm:inline">
+                        Clear
+                      </span>
+                    </button>
+                  )}
+                </div>
+
+                {/* LOCATION PANEL */}
+
+                {openFilter ===
+                  "location" && (
+                  <div className="mt-3 max-w-sm rounded-xl border border-brand-primary/25 bg-brand-primary/[0.06] p-3">
+                    <div className="relative">
+                      <MapPinIcon
+                        size={14}
+                        className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground"
+                      />
+
+                      <Input
+                        value={
+                          location
+                        }
+                        onChange={event =>
+                          setLocation(
+                            event.target
+                              .value,
+                          )
+                        }
+                        placeholder="City or area"
+                        className="h-10 rounded-lg bg-background pl-9 shadow-none focus-visible:border-brand-primary focus-visible:ring-brand-primary/20"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* RATE PANEL */}
+
+                {openFilter ===
+                  "rate" && (
+                  <div className="mt-3 max-w-md rounded-xl border border-brand-primary/25 bg-brand-primary/[0.06] p-4">
+                    <div className="mb-4 flex items-center justify-between gap-4">
+                      <div>
+                        <p className="text-xs font-bold">
+                          Maximum hourly
+                          rate
+                        </p>
+
+                        <p className="mt-1 text-[0.65rem] text-muted-foreground">
+                          {maxHourlyRate ===
+                          null
+                            ? "No rate limit"
+                            : `Up to US$${maxHourlyRate} per hour`}
+                        </p>
+                      </div>
+
+                      {maxHourlyRate !==
+                        null && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setMaxHourlyRate(
+                              null,
+                            )
+                          }
+                          className="text-[0.65rem] font-semibold text-foreground underline decoration-brand-primary decoration-2 underline-offset-4"
+                        >
+                          Any rate
+                        </button>
+                      )}
+                    </div>
+
+                    <Slider
+                      value={[
+                        maxHourlyRate ??
+                          rateCeiling,
+                      ]}
+                      min={0}
+                      max={rateCeiling}
+                      step={1}
+                      onValueChange={([
+                        value,
+                      ]) =>
+                        setMaxHourlyRate(
+                          value,
+                        )
+                      }
+                    />
+
+                    <div className="mt-3 flex justify-between text-[0.62rem] text-muted-foreground">
+                      <span>
+                        US$0
+                      </span>
+
+                      <span>
+                        US$
+                        {
+                          rateCeiling
+                        }
+                        +
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {/* EXPERIENCE PANEL */}
+
+                {openFilter ===
+                  "experience" && (
+                  <div className="mt-3 max-w-xl rounded-xl border border-brand-primary/25 bg-brand-primary/[0.06] p-3">
+                    <div className="flex flex-wrap gap-2">
+                      {experienceOptions.map(
+                        option => {
+                          const selected =
+                            minExperience ===
+                            option.value;
+
+                          return (
+                            <button
+                              key={
+                                option.value
+                              }
+                              type="button"
+                              onClick={() =>
+                                setMinExperience(
+                                  option.value,
+                                )
+                              }
+                              className={[
+                                "rounded-lg border px-3 py-2 text-xs font-semibold transition-colors",
+                                selected
+                                  ? "border-brand-primary/60 bg-brand-primary text-dark-gray"
+                                  : "border-border bg-background text-muted-foreground hover:border-brand-primary/40 hover:text-foreground",
+                              ].join(
+                                " ",
+                              )}
+                            >
+                              {
+                                option.label
+                              }
+                            </button>
+                          );
+                        },
+                      )}
+                    </div>
+                  </div>
+                )}
+              </section>
+
+              {/* =================================================
+                  RESULTS HEADER
+              ================================================= */}
+
+              <section className="relative flex items-center justify-between gap-3 border-t border-border/70 py-5 lg:border-t-0 lg:py-7">
+
+                <div className="min-w-0">
+                  <p className="hidden text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground sm:block">
+                    Recommendations
+                  </p>
+
+                  <div className="flex min-w-0 items-center gap-2 sm:mt-1">
+                    <h2 className="truncate text-sm font-bold tracking-[-0.02em] sm:text-lg">
+                      Best matches
+                    </h2>
+
+                    <span className="shrink-0 rounded-full bg-brand-primary px-2 py-0.5 text-[0.58rem] font-black text-dark-gray sm:hidden">
+                      {
+                        filteredAllocats.length
+                      }
+                    </span>
+                  </div>
+                </div>
+
+                {/* CONTROLS STAY RIGHT */}
+
+                <div className="flex shrink-0 items-center gap-2">
+                  <SortDropdown
+                    value={sortBy}
                     onChange={
                       setSortBy
                     }
                   />
-                </div>
-              )}
 
-              {loading ? (
-                <AllocatGridSkeleton />
-              ) : filteredAllocats.length >
+                  <ViewToggle
+                    value={
+                      viewMode
+                    }
+                    onChange={
+                      setViewMode
+                    }
+                  />
+                </div>
+              </section>
+
+              {/* =================================================
+                  RESULTS
+              ================================================= */}
+
+              <section>
+                {projectSkillIds.size ===
                 0 ? (
-                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                  {filteredAllocats.map(
-                    (
-                      allocat,
-                    ) => {
-                      const relationshipStatus =
-                        relationshipStatusByAllocat.get(
-                          allocat.allocatrUserId,
-                        ) ??
-                        null;
+                  <NoMatchesState />
+                ) : skillMatchedAllocats.length ===
+                  0 ? (
+                  <NoMatchesState />
+                ) : filteredAllocats.length >
+                  0 ? (
+                  <div
+                    className={
+                      viewMode ===
+                      "grid"
+                        ? "grid gap-5 sm:grid-cols-2 xl:grid-cols-3"
+                        : "grid grid-cols-1 gap-3 sm:gap-4"
+                    }
+                  >
+                    {filteredAllocats.map(
+                      allocat => {
+                        const relationshipStatus =
+                          relationshipStatusByAllocat.get(
+                            allocat.allocatrUserId,
+                          ) ??
+                          null;
 
-                      return (
-                        <div
-                          key={
-                            allocat.allocatrUserId
-                          }
-                          className="min-w-0"
-                        >
-                          <AllocatCardGrid
-                            allocat={
-                              allocat
+                        return (
+                          <div
+                            key={
+                              allocat.allocatrUserId
                             }
-                            project={
-                              project
-                            }
-                            relationshipStatus={
-                              relationshipStatus
-                            }
-                            onStatusChange={(
-                              status,
-                            ) =>
-                              handleStatusChange(
-                                allocat.allocatrUserId,
-                                status,
-                              )
-                            }
-                          />
-                        </div>
-                      );
-                    },
-                  )}
-                </div>
-              ) : (
-                <EmptyState
-                  onReset={
-                    resetFilters
-                  }
-                />
-              )}
-            </section>
+                            className="min-w-0"
+                          >
+                            <AllocatCardGrid
+                              allocat={
+                                allocat
+                              }
+                              project={
+                                project
+                              }
+                              viewMode={
+                                viewMode
+                              }
+                              relationshipStatus={
+                                relationshipStatus
+                              }
+                              onStatusChange={status =>
+                                handleStatusChange(
+                                  allocat.allocatrUserId,
+                                  status,
+                                )
+                              }
+                            />
+                          </div>
+                        );
+                      },
+                    )}
+                  </div>
+                ) : (
+                  <EmptyState
+                    onReset={
+                      resetFilters
+                    }
+                  />
+                )}
+              </section>
+            </div>
           </div>
         )}
       </main>
@@ -2036,31 +1435,105 @@ function FindAllocats() {
 }
 
 /* =========================================================
-   FILTER SECTION
+   LOADING
 ========================================================= */
 
-function FilterSection({
+function AllocatLoadingState() {
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      className={[
+        "relative flex min-h-[380px] overflow-hidden",
+        "flex-col items-center justify-center",
+        "rounded-2xl border border-border",
+        "bg-muted/[0.10] px-6 text-center",
+      ].join(" ")}
+    >
+      {/* SOFT BRAND GLOW */}
+
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute left-1/2 top-1/2 h-80 w-80 -translate-x-1/2 -translate-y-1/2 rounded-full bg-brand-primary/10 blur-3xl" />
+      </div>
+
+      <div className="relative">
+
+        {/* CAT */}
+
+        <div className="relative mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-primary text-dark-gray shadow-lg shadow-black/10">
+          <CatIcon
+            size={28}
+            strokeWidth={1.8}
+          />
+
+          <span className="absolute -right-2 -top-2 flex h-7 w-7 animate-bounce items-center justify-center rounded-full border-2 border-background bg-background text-foreground shadow-sm">
+            <SparklesIcon
+              size={12}
+            />
+          </span>
+        </div>
+
+        {/* PAWS */}
+
+        <div className="mt-5 flex justify-center gap-2 text-muted-foreground">
+          <PawPrintIcon
+            size={14}
+            className="animate-pulse"
+          />
+
+          <PawPrintIcon
+            size={14}
+            className="animate-pulse [animation-delay:150ms]"
+          />
+
+          <PawPrintIcon
+            size={14}
+            className="animate-pulse [animation-delay:300ms]"
+          />
+        </div>
+
+        <h2 className="mt-5 text-lg font-black tracking-[-0.025em] sm:text-xl">
+          Sniffing out the best
+          matches
+        </h2>
+
+        <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-muted-foreground">
+          Give the cat a moment.
+          It's checking skills,
+          experience and
+          professional profiles
+          without knocking anything
+          off the desk.
+        </p>
+
+        <div className="mx-auto mt-6 flex w-fit items-center gap-2 rounded-full border border-brand-primary/40 bg-brand-primary/10 px-3 py-1.5">
+          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-brand-primary" />
+
+          <span className="text-[0.65rem] font-semibold text-foreground">
+            Searching Allocats
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* =========================================================
+   DESKTOP FILTER SECTION
+========================================================= */
+
+function DesktopFilterSection({
   title,
-  description,
   children,
 }: {
   title: string;
-  description?: string;
   children: React.ReactNode;
 }) {
   return (
-    <section className="py-6">
-      <div className="mb-4">
-        <Label className="text-xs font-bold">
-          {title}
-        </Label>
-
-        {description && (
-          <p className="mt-1 text-[0.68rem] leading-5 text-muted-foreground">
-            {description}
-          </p>
-        )}
-      </div>
+    <section className="py-5">
+      <p className="mb-3 text-xs font-bold">
+        {title}
+      </p>
 
       {children}
     </section>
@@ -2068,10 +1541,104 @@ function FilterSection({
 }
 
 /* =========================================================
-   SORT
+   RESPONSIVE FILTER CHIP
 ========================================================= */
 
-function SortControl({
+function ResponsiveFilterChip({
+  icon,
+  label,
+  title,
+  active,
+  open,
+  onClick,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  title: string;
+  active: boolean;
+  open: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      title={title}
+      aria-label={title}
+      onClick={onClick}
+      className={[
+        "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border",
+        "text-xs font-semibold transition-all",
+        "sm:w-auto sm:gap-2 sm:px-3",
+        active || open
+          ? "border-brand-primary/60 bg-brand-primary/15 text-foreground"
+          : "border-border bg-background text-muted-foreground hover:border-brand-primary/50 hover:text-foreground",
+      ].join(" ")}
+    >
+      {icon}
+
+      <span className="hidden max-w-32 truncate sm:inline">
+        {label}
+      </span>
+
+      <ChevronDownIcon
+        size={10}
+        className={[
+          "hidden transition-transform sm:block",
+          open
+            ? "rotate-180"
+            : "",
+        ].join(" ")}
+      />
+    </button>
+  );
+}
+
+/* =========================================================
+   SORT OPTIONS
+========================================================= */
+
+const sortOptions: {
+  value: SortOption;
+  label: string;
+  description: string;
+}[] = [
+  {
+    value: "match",
+    label: "Best match",
+    description:
+      "Most relevant first",
+  },
+  {
+    value: "rating",
+    label: "Highest rated",
+    description:
+      "Top rated professionals",
+  },
+  {
+    value: "rate-low",
+    label: "Lowest rate",
+    description:
+      "Lowest hourly rate first",
+  },
+  {
+    value: "experience",
+    label: "Most experienced",
+    description:
+      "Most years first",
+  },
+  {
+    value: "recent",
+    label: "Recently active",
+    description:
+      "Newest activity first",
+  },
+];
+
+/* =========================================================
+   SORT DROPDOWN
+========================================================= */
+
+function SortDropdown({
   value,
   onChange,
 }: {
@@ -2080,151 +1647,225 @@ function SortControl({
     value: SortOption,
   ) => void;
 }) {
-  return (
-    <div className="relative w-full sm:w-52">
-      <StarIcon
-        size={14}
-        className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground"
-      />
+  const [open, setOpen] =
+    useState(false);
 
-      <select
-        value={value}
-        onChange={(
-          event,
-        ) =>
-          onChange(
-            event.target
-              .value as SortOption,
+  const selected =
+    sortOptions.find(
+      option =>
+        option.value === value,
+    ) ??
+    sortOptions[0];
+
+  function selectOption(
+    option: SortOption,
+  ) {
+    onChange(option);
+    setOpen(false);
+  }
+
+  return (
+    /*
+      Mobile:
+      static means the absolute menu
+      positions itself against the
+      relative results header.
+
+      sm+:
+      relative means normal dropdown
+      positioning against this control.
+    */
+    <div className="static sm:relative">
+
+      <button
+        type="button"
+        title={`Sort: ${selected.label}`}
+        aria-label={`Sort results: ${selected.label}`}
+        aria-expanded={open}
+        onClick={() =>
+          setOpen(
+            current =>
+              !current,
           )
         }
-        aria-label="Sort Allocats"
         className={[
-          "h-10 w-full appearance-none rounded-lg border border-input bg-background",
-          "pl-9 pr-9 text-xs font-semibold outline-none",
-          "transition-colors focus:border-primary/50 focus:ring-1 focus:ring-primary/30",
+          "flex h-10 w-10 items-center justify-center rounded-lg border",
+          "border-border bg-background transition-all",
+          "sm:w-auto sm:min-w-[170px] sm:justify-between sm:gap-3 sm:px-3",
+          "hover:border-brand-primary/60 hover:bg-brand-primary/[0.06]",
+          open
+            ? "border-brand-primary/70 ring-2 ring-brand-primary/20"
+            : "",
         ].join(" ")}
       >
-        <option value="match">
-          Best match
-        </option>
+        <span className="flex min-w-0 items-center gap-2.5">
+          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-brand-primary text-dark-gray">
+            <StarIcon
+              size={12}
+            />
+          </span>
 
-        <option value="rating">
-          Highest rated
-        </option>
+          <span className="hidden truncate text-xs font-semibold sm:block">
+            {selected.label}
+          </span>
+        </span>
 
-        <option value="rate-low">
-          Lowest rate
-        </option>
+        <ChevronDownIcon
+          size={12}
+          className={[
+            "hidden shrink-0 text-muted-foreground transition-transform sm:block",
+            open
+              ? "rotate-180"
+              : "",
+          ].join(" ")}
+        />
+      </button>
 
-        <option value="experience">
-          Most experienced
-        </option>
+      {open && (
+        <div
+          className={[
+            /*
+              On mobile this is pinned
+              to the right of the whole
+              header, not the 40px button.
+            */
+            "absolute right-0 top-full z-50 mt-2",
+            "w-[min(16rem,calc(100vw-2rem))]",
+            "overflow-hidden rounded-xl",
+            "border border-border bg-popover p-1.5 shadow-xl",
+          ].join(" ")}
+        >
+          {sortOptions.map(
+            option => {
+              const isSelected =
+                option.value ===
+                value;
 
-        <option value="recent">
-          Recently active
-        </option>
-      </select>
+              return (
+                <button
+                  key={
+                    option.value
+                  }
+                  type="button"
+                  onClick={() =>
+                    selectOption(
+                      option.value,
+                    )
+                  }
+                  className={[
+                    "flex w-full items-center gap-3 rounded-lg px-3 py-2.5",
+                    "text-left transition-colors",
+                    isSelected
+                      ? "bg-brand-primary/15"
+                      : "hover:bg-muted/50",
+                  ].join(
+                    " ",
+                  )}
+                >
+                  <span
+                    className={[
+                      "flex h-7 w-7 shrink-0 items-center justify-center rounded-md",
+                      isSelected
+                        ? "bg-brand-primary text-dark-gray"
+                        : "bg-muted text-muted-foreground",
+                    ].join(
+                      " ",
+                    )}
+                  >
+                    {isSelected ? (
+                      <CheckIcon
+                        size={
+                          12
+                        }
+                        strokeWidth={
+                          3
+                        }
+                      />
+                    ) : (
+                      <StarIcon
+                        size={
+                          12
+                        }
+                      />
+                    )}
+                  </span>
 
-      <ChevronDownIcon
-        size={14}
-        className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground"
-      />
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-xs font-semibold text-foreground">
+                      {
+                        option.label
+                      }
+                    </span>
+
+                    <span className="mt-0.5 block text-[0.62rem] text-muted-foreground">
+                      {
+                        option.description
+                      }
+                    </span>
+                  </span>
+                </button>
+              );
+            },
+          )}
+        </div>
+      )}
     </div>
   );
 }
 
 /* =========================================================
-   VERIFIED TOGGLE
+   VIEW TOGGLE
 ========================================================= */
 
-type FilterToggleProps = {
-  checked: boolean;
-
-  onChange: (
-    checked: boolean,
-  ) => void;
-
-  icon:
-    React.ReactNode;
-
-  label: string;
-
-  description: string;
-};
-
-function FilterToggle({
-  checked,
+function ViewToggle({
+  value,
   onChange,
-  icon,
-  label,
-  description,
-}: FilterToggleProps) {
+}: {
+  value: ViewMode;
+  onChange: (
+    value: ViewMode,
+  ) => void;
+}) {
   return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={
-        checked
-      }
-      onClick={() =>
-        onChange(
-          !checked,
-        )
-      }
-      className={[
-        "flex w-full items-center gap-3 rounded-lg border border-border px-3 py-3",
-        "text-left transition-colors",
-
-        checked
-          ? "bg-primary/[0.055]"
-          : "bg-background hover:bg-muted/30",
-      ].join(" ")}
-    >
-      <span
+    <div className="flex h-10 shrink-0 items-center rounded-lg border border-border bg-muted/30 p-1">
+      <button
+        type="button"
+        title="Grid view"
+        aria-label="Grid view"
+        onClick={() =>
+          onChange("grid")
+        }
         className={[
-          "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
-
-          checked
-            ? "bg-primary/10 text-primary"
-            : "bg-muted text-muted-foreground",
+          "flex h-8 w-8 items-center justify-center rounded-md transition-all",
+          value === "grid"
+            ? "bg-brand-primary text-dark-gray shadow-sm"
+            : "text-muted-foreground hover:bg-background hover:text-foreground",
         ].join(" ")}
       >
-        {icon}
-      </span>
-
-      <span className="min-w-0 flex-1">
-        <span className="block text-xs font-bold">
-          {label}
-        </span>
-
-        <span className="mt-0.5 block text-[0.65rem] leading-4 text-muted-foreground">
-          {
-            description
-          }
-        </span>
-      </span>
-
-      <span
-        className={[
-          "relative h-5 w-9 shrink-0 rounded-full transition-colors",
-
-          checked
-            ? "bg-primary"
-            : "bg-muted-foreground/25",
-        ].join(" ")}
-      >
-        <span
-          className={[
-            "absolute top-0.5 h-4 w-4 rounded-full bg-background shadow-sm",
-            "transition-transform duration-200",
-
-            checked
-              ? "translate-x-[18px]"
-              : "translate-x-0.5",
-          ].join(" ")}
+        <Grid2X2Icon
+          size={14}
         />
-      </span>
-    </button>
+      </button>
+
+      <button
+        type="button"
+        title="List view"
+        aria-label="List view"
+        onClick={() =>
+          onChange("list")
+        }
+        className={[
+          "flex h-8 w-8 items-center justify-center rounded-md transition-all",
+          value === "list"
+            ? "bg-brand-primary text-dark-gray shadow-sm"
+            : "text-muted-foreground hover:bg-background hover:text-foreground",
+        ].join(" ")}
+      >
+        <ListIcon
+          size={15}
+        />
+      </button>
+    </div>
   );
 }
 
@@ -2233,49 +1874,34 @@ function FilterToggle({
 ========================================================= */
 
 function getAllocatLocation(
-  allocat:
-    FilterableAllocat,
+  allocat: FilterableAllocat,
 ): string {
   return [
     allocat.location,
     allocat.city,
     allocat.country,
   ]
-    .filter(
-      Boolean,
-    )
+    .filter(Boolean)
     .join(", ")
     .toLowerCase();
 }
 
 function getIsVerified(
-  allocat:
-    FilterableAllocat,
+  allocat: FilterableAllocat,
 ): boolean {
   return Boolean(
     allocat.isVerified ??
-      allocat.verified ??
-      false,
+    allocat.verified ??
+    false,
   );
 }
 
 function getRating(
-  allocat:
-    FilterableAllocat,
+  allocat: FilterableAllocat,
 ): number {
   return (
     allocat.averageRating ??
     allocat.rating ??
-    0
-  );
-}
-
-function getMatchScore(
-  allocat:
-    FilterableAllocat,
-): number {
-  return (
-    allocat.matchScore ??
     0
   );
 }
@@ -2300,55 +1926,7 @@ function getDateValue(
 }
 
 /* =========================================================
-   SKELETON
-========================================================= */
-
-function AllocatGridSkeleton() {
-  return (
-    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-      {Array.from({
-        length: 6,
-      }).map(
-        (
-          _,
-          index,
-        ) => (
-          <div
-            key={
-              index
-            }
-            className="border-b border-border py-5 sm:rounded-xl sm:border sm:p-5"
-          >
-            <div className="flex items-center gap-3">
-              <Skeleton className="h-11 w-11 rounded-full" />
-
-              <div className="flex-1 space-y-2">
-                <Skeleton className="h-4 w-2/3" />
-
-                <Skeleton className="h-3 w-1/2" />
-              </div>
-            </div>
-
-            <Skeleton className="mt-6 h-3.5 w-full" />
-
-            <Skeleton className="mt-2 h-3.5 w-4/5" />
-
-            <div className="mt-6 flex gap-2">
-              <Skeleton className="h-6 w-20 rounded-md" />
-
-              <Skeleton className="h-6 w-24 rounded-md" />
-            </div>
-
-            <Skeleton className="mt-7 h-10 w-full rounded-lg" />
-          </div>
-        ),
-      )}
-    </div>
-  );
-}
-
-/* =========================================================
-   ERROR
+   STATES
 ========================================================= */
 
 function ErrorState({
@@ -2386,44 +1964,66 @@ function ErrorState({
   );
 }
 
-/* =========================================================
-   EMPTY
-========================================================= */
+function NoMatchesState() {
+  return (
+    <div className="flex min-h-[320px] flex-col items-center justify-center border-y border-border px-6 text-center">
+      <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-brand-primary text-dark-gray">
+        <UsersIcon
+          size={21}
+        />
+      </span>
+
+      <h2 className="mt-5 text-xl font-bold">
+        No suitable Allocats
+        found yet
+      </h2>
+
+      <p className="mt-2 max-w-md text-sm leading-7 text-muted-foreground">
+        We don't currently have
+        enough profile
+        information to
+        recommend suitable
+        professionals for this
+        project.
+      </p>
+    </div>
+  );
+}
 
 function EmptyState({
   onReset,
 }: {
-  onReset:
-    () => void;
+  onReset: () => void;
 }) {
   return (
-    <div className="flex min-h-[360px] flex-col items-center justify-center border-y border-border px-6 text-center">
-      <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
+    <div className="flex min-h-[320px] flex-col items-center justify-center border-y border-border px-6 text-center">
+      <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-brand-primary text-dark-gray">
         <SearchIcon
           size={21}
         />
       </span>
 
       <h2 className="mt-5 text-xl font-bold">
-        No matching
-        Allocats
+        No results with
+        these filters
       </h2>
 
       <p className="mt-2 max-w-md text-sm leading-7 text-muted-foreground">
-        Try widening the
-        location, increasing
-        the hourly rate or
-        reducing the experience
-        requirement.
+        Try widening your
+        location, rate or
+        experience
+        requirements.
       </p>
 
       <Button
         type="button"
         variant="outline"
-        onClick={
-          onReset
-        }
-        className="mt-6 h-10 rounded-lg px-5 shadow-none"
+        onClick={onReset}
+        className={[
+          "mt-6 h-10 rounded-lg px-5 shadow-none",
+          "border-brand-primary/60",
+          "hover:bg-brand-primary hover:text-dark-gray",
+        ].join(" ")}
       >
         Reset filters
       </Button>
