@@ -10,11 +10,13 @@ import {
 } from "react";
 
 import { isAxiosError } from "axios";
+
 import {
   BadgeCheckIcon,
+  BanknoteIcon,
   BriefcaseBusinessIcon,
   CameraIcon,
-  CheckCircle2Icon,
+  CircleDollarSignIcon,
   Clock3Icon,
   Edit3Icon,
   EyeIcon,
@@ -31,6 +33,7 @@ import {
   XIcon,
   type LucideIcon,
 } from "lucide-react";
+
 import { toast } from "sonner";
 
 import api from "@/api/axios";
@@ -53,12 +56,17 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@/components/ui/avatar";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
+
+/* =========================================================
+   TYPES
+========================================================= */
 
 type EditingSection =
   | "account"
@@ -85,6 +93,10 @@ type ProfessionalDraft = {
   skillIds: string[];
 };
 
+/* =========================================================
+   CONSTANTS
+========================================================= */
+
 const MAX_AVATAR_SIZE = 5 * 1024 * 1024;
 
 const ACCEPTED_AVATAR_TYPES = [
@@ -92,6 +104,10 @@ const ACCEPTED_AVATAR_TYPES = [
   "image/png",
   "image/webp",
 ];
+
+/* =========================================================
+   PAGE
+========================================================= */
 
 function AllocatProfilePage() {
   const { refreshUser } = useAuth();
@@ -106,6 +122,7 @@ function AllocatProfilePage() {
     useState<AllocatSkill[]>([]);
 
   const [loading, setLoading] = useState(true);
+
   const [loadingSkills, setLoadingSkills] =
     useState(false);
 
@@ -165,6 +182,10 @@ function AllocatProfilePage() {
   const [avatarError, setAvatarError] =
     useState<string | null>(null);
 
+  /* =======================================================
+     LOAD SKILLS
+  ======================================================= */
+
   const loadSkillOptions = useCallback(async () => {
     try {
       setLoadingSkills(true);
@@ -195,6 +216,10 @@ function AllocatProfilePage() {
     }
   }, []);
 
+  /* =======================================================
+     LOAD PROFILE
+  ======================================================= */
+
   const fetchPageData = useCallback(async () => {
     try {
       setLoading(true);
@@ -204,9 +229,12 @@ function AllocatProfilePage() {
         accountResponse,
         allocatResponse,
       ] = await Promise.all([
-        api.get<ProfileUser>("/profiles/me", {
-          withCredentials: true,
-        }),
+        api.get<ProfileUser>(
+          "/profiles/me",
+          {
+            withCredentials: true,
+          },
+        ),
 
         api.get<MyAllocatProfile>(
           "/allocats/profiles/me",
@@ -222,7 +250,10 @@ function AllocatProfilePage() {
       setAccountProfile(account);
       setAllocatProfile(profile);
 
-      setAccountDraft(toAccountDraft(account));
+      setAccountDraft(
+        toAccountDraft(account),
+      );
+
       setProfessionalDraft(
         toProfessionalDraft(profile),
       );
@@ -249,40 +280,59 @@ function AllocatProfilePage() {
     void fetchPageData();
   }, [fetchPageData]);
 
+  /* =======================================================
+     AVATAR CLEANUP
+  ======================================================= */
+
   useEffect(() => {
     return () => {
       if (avatarPreview) {
-        URL.revokeObjectURL(avatarPreview);
+        URL.revokeObjectURL(
+          avatarPreview,
+        );
       }
     };
   }, [avatarPreview]);
 
+  /* =======================================================
+     DERIVED VALUES
+  ======================================================= */
+
   const allSkillOptions = useMemo(() => {
-    const map = new Map<string, AllocatSkill>();
+    const map =
+      new Map<string, AllocatSkill>();
 
-    skillOptions.forEach((skill) => {
+    skillOptions.forEach(skill => {
       map.set(skill.id, skill);
     });
 
-    allocatProfile?.skills.forEach((skill) => {
+    allocatProfile?.skills.forEach(skill => {
       map.set(skill.id, skill);
     });
 
-    return Array.from(map.values()).sort(
-      (a, b) => a.name.localeCompare(b.name),
-    );
-  }, [allocatProfile?.skills, skillOptions]);
+    return Array
+      .from(map.values())
+      .sort((a, b) =>
+        a.name.localeCompare(b.name),
+      );
+  }, [
+    allocatProfile?.skills,
+    skillOptions,
+  ]);
 
   const selectedSkills = useMemo(
     () =>
       professionalDraft.skillIds
-        .map((skillId) =>
+        .map(skillId =>
           allSkillOptions.find(
-            (skill) => skill.id === skillId,
+            skill =>
+              skill.id === skillId,
           ),
         )
         .filter(
-          (skill): skill is AllocatSkill =>
+          (
+            skill,
+          ): skill is AllocatSkill =>
             Boolean(skill),
         ),
     [
@@ -295,7 +345,7 @@ function AllocatProfilePage() {
     () =>
       getInitials(
         accountProfile?.fullName ??
-          allocatProfile?.fullName,
+        allocatProfile?.fullName,
       ),
     [
       accountProfile?.fullName,
@@ -309,20 +359,27 @@ function AllocatProfilePage() {
     allocatProfile?.avatarUrl ??
     undefined;
 
+  /* =======================================================
+     EDIT HELPERS
+  ======================================================= */
+
   function updateProfessionalDraft<
     K extends keyof ProfessionalDraft,
   >(
     key: K,
     value: ProfessionalDraft[K],
   ) {
-    setProfessionalDraft((current) => ({
+    setProfessionalDraft(current => ({
       ...current,
       [key]: value,
     }));
   }
 
   function startEditing(
-    section: Exclude<EditingSection, null>,
+    section: Exclude<
+      EditingSection,
+      null
+    >,
   ) {
     if (savingSection) {
       return;
@@ -335,20 +392,29 @@ function AllocatProfilePage() {
   function cancelEditing() {
     if (accountProfile) {
       setAccountDraft(
-        toAccountDraft(accountProfile),
+        toAccountDraft(
+          accountProfile,
+        ),
       );
     }
 
     if (allocatProfile) {
       setProfessionalDraft(
-        toProfessionalDraft(allocatProfile),
+        toProfessionalDraft(
+          allocatProfile,
+        ),
       );
     }
 
     clearAvatarSelection();
+
     setSectionError(null);
     setEditingSection(null);
   }
+
+  /* =======================================================
+     SAVE ACCOUNT
+  ======================================================= */
 
   async function saveAccount(
     event: FormEvent<HTMLFormElement>,
@@ -359,6 +425,7 @@ function AllocatProfilePage() {
       setSectionError(
         "Enter your full name before saving.",
       );
+
       return;
     }
 
@@ -366,30 +433,43 @@ function AllocatProfilePage() {
       setSavingSection("account");
       setSectionError(null);
 
-      const response = await api.patch<ProfileUser>(
-        "/profiles/me",
-        {
-          fullName: accountDraft.fullName.trim(),
-          phoneNumber:
-            accountDraft.phoneNumber.trim() || null,
-          location:
-            accountDraft.location.trim() || null,
-        },
-        {
-          withCredentials: true,
-        },
+      const response =
+        await api.patch<ProfileUser>(
+          "/profiles/me",
+          {
+            fullName:
+              accountDraft.fullName.trim(),
+
+            phoneNumber:
+              accountDraft.phoneNumber.trim() ||
+              null,
+
+            location:
+              accountDraft.location.trim() ||
+              null,
+          },
+          {
+            withCredentials: true,
+          },
+        );
+
+      setAccountProfile(
+        response.data,
       );
 
-      setAccountProfile(response.data);
       setAccountDraft(
-        toAccountDraft(response.data),
+        toAccountDraft(
+          response.data,
+        ),
       );
 
       await refreshUser();
 
       setEditingSection(null);
 
-      toast.success("Account details updated");
+      toast.success(
+        "Account details updated",
+      );
     } catch (error) {
       console.error(
         "Could not update account:",
@@ -407,6 +487,10 @@ function AllocatProfilePage() {
     }
   }
 
+  /* =======================================================
+     SAVE PROFESSIONAL SECTION
+  ======================================================= */
+
   async function saveProfessionalSection(
     section: Exclude<
       EditingSection,
@@ -419,7 +503,10 @@ function AllocatProfilePage() {
       );
 
     if (validationError) {
-      setSectionError(validationError);
+      setSectionError(
+        validationError,
+      );
+
       return;
     }
 
@@ -441,17 +528,25 @@ function AllocatProfilePage() {
           },
         );
 
-      setAllocatProfile(response.data);
+      setAllocatProfile(
+        response.data,
+      );
+
       setProfessionalDraft(
-        toProfessionalDraft(response.data),
+        toProfessionalDraft(
+          response.data,
+        ),
       );
 
       setEditingSection(null);
 
-      toast.success("Allocat profile updated", {
-        description:
-          "Your professional information has been saved.",
-      });
+      toast.success(
+        "Allocat profile updated",
+        {
+          description:
+            "Your professional information has been saved.",
+        },
+      );
     } catch (error) {
       console.error(
         "Could not update Allocat profile:",
@@ -468,6 +563,10 @@ function AllocatProfilePage() {
       setSavingSection(null);
     }
   }
+
+  /* =======================================================
+     VISIBILITY
+  ======================================================= */
 
   async function toggleVisibility() {
     if (
@@ -486,18 +585,20 @@ function AllocatProfilePage() {
       await api.patch(
         "/allocats/profiles/me/visibility",
         {
-          isVisible: nextVisibility,
+          isVisible:
+            nextVisibility,
         },
         {
           withCredentials: true,
         },
       );
 
-      setAllocatProfile((current) =>
+      setAllocatProfile(current =>
         current
           ? {
               ...current,
-              isVisible: nextVisibility,
+              isVisible:
+                nextVisibility,
             }
           : current,
       );
@@ -519,11 +620,16 @@ function AllocatProfilePage() {
     }
   }
 
+  /* =======================================================
+     AVATAR
+  ======================================================= */
+
   function handleAvatarChange(
     event: ChangeEvent<HTMLInputElement>,
   ) {
     const file =
-      event.target.files?.[0] ?? null;
+      event.target.files?.[0] ??
+      null;
 
     setAvatarError(null);
 
@@ -531,7 +637,11 @@ function AllocatProfilePage() {
       return;
     }
 
-    if (!ACCEPTED_AVATAR_TYPES.includes(file.type)) {
+    if (
+      !ACCEPTED_AVATAR_TYPES.includes(
+        file.type,
+      )
+    ) {
       setAvatarError(
         "Choose a JPEG, PNG or WebP image.",
       );
@@ -540,7 +650,10 @@ function AllocatProfilePage() {
       return;
     }
 
-    if (file.size > MAX_AVATAR_SIZE) {
+    if (
+      file.size >
+      MAX_AVATAR_SIZE
+    ) {
       setAvatarError(
         "The image must be smaller than 5 MB.",
       );
@@ -550,17 +663,25 @@ function AllocatProfilePage() {
     }
 
     if (avatarPreview) {
-      URL.revokeObjectURL(avatarPreview);
+      URL.revokeObjectURL(
+        avatarPreview,
+      );
     }
 
     setAvatarFile(file);
-    setAvatarPreview(URL.createObjectURL(file));
+
+    setAvatarPreview(
+      URL.createObjectURL(file),
+    );
+
     setAvatarProgress(0);
   }
 
   function clearAvatarSelection() {
     if (avatarPreview) {
-      URL.revokeObjectURL(avatarPreview);
+      URL.revokeObjectURL(
+        avatarPreview,
+      );
     }
 
     setAvatarFile(null);
@@ -569,48 +690,61 @@ function AllocatProfilePage() {
     setAvatarError(null);
 
     if (avatarInputRef.current) {
-      avatarInputRef.current.value = "";
+      avatarInputRef.current.value =
+        "";
     }
   }
 
   async function uploadAvatar() {
-    if (!avatarFile || uploadingAvatar) {
+    if (
+      !avatarFile ||
+      uploadingAvatar
+    ) {
       return;
     }
 
-    const data = new FormData();
+    const data =
+      new FormData();
 
-    data.append("file", avatarFile);
+    data.append(
+      "file",
+      avatarFile,
+    );
 
     try {
       setUploadingAvatar(true);
       setAvatarError(null);
       setAvatarProgress(0);
 
-      const response = await api.post<{
-        avatarUrl: string;
-      }>(
-        "/profiles/profile-picture",
-        data,
-        {
-          withCredentials: true,
+      const response =
+        await api.post<{
+          avatarUrl: string;
+        }>(
+          "/profiles/profile-picture",
+          data,
+          {
+            withCredentials: true,
 
-          onUploadProgress: (event) => {
-            if (!event.total) {
-              return;
-            }
+            onUploadProgress:
+              event => {
+                if (!event.total) {
+                  return;
+                }
 
-            setAvatarProgress(
-              Math.round(
-                (event.loaded * 100) /
-                  event.total,
-              ),
-            );
+                setAvatarProgress(
+                  Math.round(
+                    (
+                      event.loaded *
+                      100
+                    ) /
+                      event.total,
+                  ),
+                );
+              },
           },
-        },
-      );
+        );
 
-      setAccountProfile((current) =>
+      setAccountProfile(current =>
         current
           ? {
               ...current,
@@ -620,7 +754,7 @@ function AllocatProfilePage() {
           : current,
       );
 
-      setAllocatProfile((current) =>
+      setAllocatProfile(current =>
         current
           ? {
               ...current,
@@ -654,8 +788,14 @@ function AllocatProfilePage() {
     }
   }
 
+  /* =======================================================
+     PAGE STATES
+  ======================================================= */
+
   if (loading) {
-    return <AllocatProfileSkeleton />;
+    return (
+      <AllocatProfileSkeleton />
+    );
   }
 
   if (
@@ -669,17 +809,30 @@ function AllocatProfilePage() {
           pageError ??
           "Your profile could not be loaded."
         }
-        onRetry={fetchPageData}
+        onRetry={
+          fetchPageData
+        }
       />
     );
   }
 
-  const rating = allocatProfile.rating;
+  const rating =
+    allocatProfile.rating;
+
   const completedProjects =
     allocatProfile.completedProjects;
 
+  /* =======================================================
+     RENDER
+  ======================================================= */
+
   return (
     <div className="min-h-screen bg-background text-foreground">
+
+      {/* ===================================================
+          NAV
+      =================================================== */}
+
       <header className="sticky top-0 z-40 border-b border-border/60 bg-background/90 backdrop-blur-xl">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <DashboardMainNav>
@@ -696,9 +849,21 @@ function AllocatProfilePage() {
         </div>
       </header>
 
+      {/* ===================================================
+          MAIN
+      =================================================== */}
+
       <main className="container mx-auto px-5 py-8 md:px-8 lg:py-12">
+
+        {/* =================================================
+            PROFILE HEADER
+        ================================================= */}
+
         <section className="pb-8">
           <div className="flex flex-col gap-8 xl:flex-row xl:items-end xl:justify-between">
+
+            {/* IDENTITY */}
+
             <div className="flex min-w-0 flex-col gap-5 sm:flex-row sm:items-center">
               <div className="relative w-fit shrink-0">
                 <Avatar className="h-24 w-24 border border-border bg-muted/30 sm:h-28 sm:w-28">
@@ -713,37 +878,52 @@ function AllocatProfilePage() {
                   </AvatarFallback>
                 </Avatar>
 
+                {/* VERIFIED ACCENT */}
+
                 {allocatProfile.verified && (
                   <span
                     className={[
                       "absolute -bottom-1 -right-1",
                       "flex h-8 w-8 items-center justify-center",
                       "rounded-lg border-[3px] border-background",
-                      "bg-primary text-primary-foreground",
+                      "bg-primary text-secondary",
+                      "shadow-sm",
                     ].join(" ")}
                     title="Verified Allocat"
                   >
-                    <BadgeCheckIcon size={14} />
+                    <BadgeCheckIcon
+                      size={14}
+                    />
                   </span>
                 )}
 
-                {editingSection === "account" && (
+                {/* PROFILE PHOTO EDIT ACCENT */}
+
+                {editingSection ===
+                  "account" && (
                   <button
                     type="button"
-                    disabled={uploadingAvatar}
+                    disabled={
+                      uploadingAvatar
+                    }
                     onClick={() =>
                       avatarInputRef.current?.click()
                     }
                     className={[
                       "absolute -left-1 -top-1",
                       "flex h-8 w-8 items-center justify-center",
-                      "rounded-lg border border-border bg-background",
-                      "text-muted-foreground shadow-sm",
-                      "transition-colors hover:text-primary",
+                      "rounded-lg border-[3px] border-background",
+                      "bg-primary text-secondary",
+                      "shadow-sm",
+                      "transition-all duration-200",
+                      "hover:-translate-y-0.5 hover:bg-primary/90",
+                      "disabled:pointer-events-none disabled:opacity-60",
                     ].join(" ")}
                     aria-label="Change profile picture"
                   >
-                    <CameraIcon size={14} />
+                    <CameraIcon
+                      size={14}
+                    />
                   </button>
                 )}
               </div>
@@ -755,13 +935,41 @@ function AllocatProfilePage() {
                   </p>
 
                   <span className="rounded-md bg-primary/[0.07] px-2 py-1 text-[0.6rem] font-semibold text-primary">
-                    Level {allocatProfile.level}
+                    Level{" "}
+                    {allocatProfile.level}
                   </span>
                 </div>
 
-                <h1 className="mt-2 break-words text-3xl font-black leading-[1.02] tracking-[-0.04em] sm:text-4xl lg:text-[2.75rem]">
-                  {accountProfile.fullName}
-                </h1>
+                {/* NAME + ACCOUNT EDIT */}
+
+                <div className="mt-2 flex min-w-0 items-start gap-2">
+                  <h1 className="min-w-0 break-words text-3xl font-black leading-[1.02] tracking-[-0.04em] sm:text-4xl lg:text-[2.75rem]">
+                    {accountProfile.fullName}
+                  </h1>
+
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() =>
+                      startEditing(
+                        "account",
+                      )
+                    }
+                    className={[
+                      "mt-0.5 h-8 w-8 shrink-0 rounded-lg",
+                      "text-muted-foreground shadow-none",
+                      "hover:bg-muted/40 hover:text-foreground",
+                      "sm:mt-1",
+                    ].join(" ")}
+                    aria-label="Edit account details"
+                    title="Edit account details"
+                  >
+                    <Edit3Icon
+                      size={14}
+                    />
+                  </Button>
+                </div>
 
                 <p className="mt-2 text-sm font-semibold text-foreground/80 sm:text-base">
                   {allocatProfile.title ||
@@ -770,13 +978,17 @@ function AllocatProfilePage() {
 
                 {allocatProfile.headline && (
                   <p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">
-                    {allocatProfile.headline}
+                    {
+                      allocatProfile.headline
+                    }
                   </p>
                 )}
 
                 <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-muted-foreground">
                   <span className="inline-flex items-center gap-1.5">
-                    <MapPinIcon size={13} />
+                    <MapPinIcon
+                      size={13}
+                    />
 
                     {accountProfile.location ||
                       allocatProfile.location ||
@@ -787,6 +999,7 @@ function AllocatProfilePage() {
                     <span
                       className={[
                         "h-1.5 w-1.5 rounded-full",
+
                         allocatProfile.availability
                           ? "bg-emerald-500"
                           : "bg-muted-foreground/40",
@@ -799,7 +1012,9 @@ function AllocatProfilePage() {
                   </span>
 
                   <span className="inline-flex items-center gap-1.5">
-                    <Clock3Icon size={13} />
+                    <Clock3Icon
+                      size={13}
+                    />
 
                     {formatResponseTime(
                       allocatProfile.responseTime,
@@ -809,14 +1024,18 @@ function AllocatProfilePage() {
               </div>
             </div>
 
-            <div className="flex shrink-0 items-center gap-2">
+            {/* VISIBILITY */}
+
+            <div className="flex shrink-0 items-center">
               <Button
                 type="button"
                 variant="outline"
                 onClick={() =>
                   void toggleVisibility()
                 }
-                disabled={updatingVisibility}
+                disabled={
+                  updatingVisibility
+                }
                 className="h-10 rounded-lg bg-transparent px-4 text-xs font-semibold shadow-none"
               >
                 {updatingVisibility ? (
@@ -825,34 +1044,32 @@ function AllocatProfilePage() {
                     className="animate-spin"
                   />
                 ) : allocatProfile.isVisible ? (
-                  <EyeIcon size={14} />
+                  <EyeIcon
+                    size={14}
+                  />
                 ) : (
-                  <EyeOffIcon size={14} />
+                  <EyeOffIcon
+                    size={14}
+                  />
                 )}
 
                 {allocatProfile.isVisible
                   ? "Visible"
                   : "Hidden"}
               </Button>
-
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={() =>
-                  startEditing("account")
-                }
-                className="h-10 w-10 rounded-lg text-muted-foreground shadow-none hover:text-primary"
-                aria-label="Edit account details"
-              >
-                <Edit3Icon size={15} />
-              </Button>
             </div>
           </div>
 
-          {editingSection === "account" && (
+          {/* =================================================
+              ACCOUNT EDIT
+          ================================================= */}
+
+          {editingSection ===
+            "account" && (
             <form
-              onSubmit={saveAccount}
+              onSubmit={
+                saveAccount
+              }
               className="mt-7 rounded-xl border border-border bg-muted/[0.08] p-5"
             >
               <div className="flex items-start justify-between gap-5">
@@ -862,8 +1079,7 @@ function AllocatProfilePage() {
                   </p>
 
                   <p className="mt-1 text-[0.66rem] leading-5 text-muted-foreground">
-                    These details belong to your main
-                    Allocatr account.
+                    These details belong to your main Allocatr account.
                   </p>
                 </div>
 
@@ -871,14 +1087,20 @@ function AllocatProfilePage() {
                   type="button"
                   variant="ghost"
                   size="icon"
-                  onClick={cancelEditing}
-                  className="h-8 w-8 rounded-lg"
+                  onClick={
+                    cancelEditing
+                  }
+                  className="h-8 w-8 rounded-lg text-muted-foreground shadow-none hover:bg-muted/40 hover:text-foreground"
+                  aria-label="Close account editor"
                 >
-                  <XIcon size={14} />
+                  <XIcon
+                    size={14}
+                  />
                 </Button>
               </div>
 
               <div className="mt-5 grid gap-5 sm:grid-cols-2">
+
                 <ProfileField label="Full name">
                   <div className="relative">
                     <UserRoundIcon
@@ -887,10 +1109,12 @@ function AllocatProfilePage() {
                     />
 
                     <Input
-                      value={accountDraft.fullName}
-                      onChange={(event) =>
+                      value={
+                        accountDraft.fullName
+                      }
+                      onChange={event =>
                         setAccountDraft(
-                          (current) => ({
+                          current => ({
                             ...current,
                             fullName:
                               event.target.value,
@@ -905,11 +1129,13 @@ function AllocatProfilePage() {
                 <ProfileField label="Phone number">
                   <Input
                     type="tel"
-                    value={accountDraft.phoneNumber}
+                    value={
+                      accountDraft.phoneNumber
+                    }
                     placeholder="+263..."
-                    onChange={(event) =>
+                    onChange={event =>
                       setAccountDraft(
-                        (current) => ({
+                        current => ({
                           ...current,
                           phoneNumber:
                             event.target.value,
@@ -922,11 +1148,13 @@ function AllocatProfilePage() {
 
                 <ProfileField label="Location">
                   <Input
-                    value={accountDraft.location}
+                    value={
+                      accountDraft.location
+                    }
                     placeholder="City, country"
-                    onChange={(event) =>
+                    onChange={event =>
                       setAccountDraft(
-                        (current) => ({
+                        current => ({
                           ...current,
                           location:
                             event.target.value,
@@ -946,7 +1174,8 @@ function AllocatProfilePage() {
 
                     <Input
                       value={
-                        accountProfile.email ?? ""
+                        accountProfile.email ??
+                        ""
                       }
                       disabled
                       className="h-11 rounded-lg !bg-muted/[0.2] pl-10 pr-10 text-muted-foreground shadow-none disabled:opacity-100"
@@ -961,11 +1190,15 @@ function AllocatProfilePage() {
               </div>
 
               <input
-                ref={avatarInputRef}
+                ref={
+                  avatarInputRef
+                }
                 type="file"
                 accept="image/jpeg,image/png,image/webp"
                 className="hidden"
-                onChange={handleAvatarChange}
+                onChange={
+                  handleAvatarChange
+                }
               />
 
               {avatarFile && (
@@ -978,7 +1211,9 @@ function AllocatProfilePage() {
 
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-xs font-semibold">
-                        {avatarFile.name}
+                        {
+                          avatarFile.name
+                        }
                       </p>
                     </div>
 
@@ -987,10 +1222,14 @@ function AllocatProfilePage() {
                         type="button"
                         variant="ghost"
                         size="icon"
-                        onClick={clearAvatarSelection}
+                        onClick={
+                          clearAvatarSelection
+                        }
                         className="h-8 w-8 rounded-lg"
                       >
-                        <Trash2Icon size={13} />
+                        <Trash2Icon
+                          size={13}
+                        />
                       </Button>
                     )}
 
@@ -999,7 +1238,9 @@ function AllocatProfilePage() {
                       onClick={() =>
                         void uploadAvatar()
                       }
-                      disabled={uploadingAvatar}
+                      disabled={
+                        uploadingAvatar
+                      }
                       className="h-8 rounded-lg px-3 text-xs shadow-none"
                     >
                       {uploadingAvatar
@@ -1008,9 +1249,20 @@ function AllocatProfilePage() {
                     </Button>
                   </div>
 
+                  {uploadingAvatar && (
+                    <Progress
+                      value={
+                        avatarProgress
+                      }
+                      className="mt-3 h-1.5"
+                    />
+                  )}
+
                   {avatarError && (
                     <InlineError
-                      message={avatarError}
+                      message={
+                        avatarError
+                      }
                     />
                   )}
                 </div>
@@ -1018,26 +1270,36 @@ function AllocatProfilePage() {
 
               {sectionError && (
                 <InlineError
-                  message={sectionError}
+                  message={
+                    sectionError
+                  }
                 />
               )}
 
               <SectionActions
                 saving={
-                  savingSection === "account"
+                  savingSection ===
+                  "account"
                 }
-                onCancel={cancelEditing}
+                onCancel={
+                  cancelEditing
+                }
                 submit
               />
             </form>
           )}
+
+          {/* =================================================
+              TOP STATS
+          ================================================= */}
 
           <div className="mt-8 border-y border-border bg-border">
             <div className="grid gap-px sm:grid-cols-2 xl:grid-cols-4">
               <ProfileStat
                 label="Hourly rate"
                 value={
-                  allocatProfile.hourlyRate !== null
+                  allocatProfile.hourlyRate !==
+                  null
                     ? formatMoney(
                         allocatProfile.hourlyRate,
                         allocatProfile.currency,
@@ -1054,7 +1316,8 @@ function AllocatProfilePage() {
                   "—"
                 }
                 suffix={
-                  allocatProfile.yearsExperience === 1
+                  allocatProfile.yearsExperience ===
+                  1
                     ? "year"
                     : "years"
                 }
@@ -1068,7 +1331,8 @@ function AllocatProfilePage() {
                     : "New"
                 }
                 suffix={
-                  allocatProfile.ratingCount > 0
+                  allocatProfile.ratingCount >
+                  0
                     ? `${allocatProfile.ratingCount} reviews`
                     : undefined
                 }
@@ -1076,9 +1340,12 @@ function AllocatProfilePage() {
 
               <ProfileStat
                 label="Completed"
-                value={completedProjects}
+                value={
+                  completedProjects
+                }
                 suffix={
-                  completedProjects === 1
+                  completedProjects ===
+                  1
                     ? "project"
                     : "projects"
                 }
@@ -1087,20 +1354,35 @@ function AllocatProfilePage() {
           </div>
         </section>
 
+        {/* =================================================
+            CONTENT
+        ================================================= */}
+
         <div className="grid items-start gap-10 pt-8 xl:grid-cols-[minmax(0,1fr)_300px] xl:gap-14">
           <div className="min-w-0">
+
+            {/* =================================================
+                ABOUT
+            ================================================= */}
+
             <ProfileSection
               eyebrow="Overview"
               title={`About ${getFirstName(
                 accountProfile.fullName,
               )}`}
-              editing={editingSection === "about"}
+              editing={
+                editingSection ===
+                "about"
+              }
               onEdit={() =>
                 startEditing("about")
               }
-              onCancel={cancelEditing}
+              onCancel={
+                cancelEditing
+              }
             >
-              {editingSection === "about" ? (
+              {editingSection ===
+              "about" ? (
                 <div className="max-w-3xl">
                   <div className="grid gap-5 sm:grid-cols-2">
                     <ProfileField label="Professional title">
@@ -1108,8 +1390,10 @@ function AllocatProfilePage() {
                         value={
                           professionalDraft.title
                         }
-                        maxLength={120}
-                        onChange={(event) =>
+                        maxLength={
+                          120
+                        }
+                        onChange={event =>
                           updateProfessionalDraft(
                             "title",
                             event.target.value,
@@ -1124,8 +1408,10 @@ function AllocatProfilePage() {
                         value={
                           professionalDraft.headline
                         }
-                        maxLength={180}
-                        onChange={(event) =>
+                        maxLength={
+                          180
+                        }
+                        onChange={event =>
                           updateProfessionalDraft(
                             "headline",
                             event.target.value,
@@ -1142,8 +1428,10 @@ function AllocatProfilePage() {
                         value={
                           professionalDraft.bio
                         }
-                        maxLength={500}
-                        onChange={(event) =>
+                        maxLength={
+                          500
+                        }
+                        onChange={event =>
                           updateProfessionalDraft(
                             "bio",
                             event.target.value,
@@ -1161,8 +1449,10 @@ function AllocatProfilePage() {
                           value={
                             professionalDraft.idNumber
                           }
-                          maxLength={50}
-                          onChange={(event) =>
+                          maxLength={
+                            50
+                          }
+                          onChange={event =>
                             updateProfessionalDraft(
                               "idNumber",
                               event.target.value,
@@ -1180,33 +1470,42 @@ function AllocatProfilePage() {
 
                   {sectionError && (
                     <InlineError
-                      message={sectionError}
+                      message={
+                        sectionError
+                      }
                     />
                   )}
 
                   <SectionActions
                     saving={
-                      savingSection === "about"
+                      savingSection ===
+                      "about"
                     }
                     onSave={() =>
                       void saveProfessionalSection(
                         "about",
                       )
                     }
-                    onCancel={cancelEditing}
+                    onCancel={
+                      cancelEditing
+                    }
                   />
                 </div>
               ) : (
                 <div className="max-w-3xl">
                   {allocatProfile.title && (
                     <p className="text-sm font-bold">
-                      {allocatProfile.title}
+                      {
+                        allocatProfile.title
+                      }
                     </p>
                   )}
 
                   {allocatProfile.headline && (
                     <p className="mt-2 text-sm font-medium leading-7 text-foreground/75">
-                      {allocatProfile.headline}
+                      {
+                        allocatProfile.headline
+                      }
                     </p>
                   )}
 
@@ -1218,28 +1517,47 @@ function AllocatProfilePage() {
               )}
             </ProfileSection>
 
+            {/* =================================================
+                SKILLS
+            ================================================= */}
+
             <ProfileSection
               eyebrow="Expertise"
               title="Skills"
               divided
-              editing={editingSection === "skills"}
+              editing={
+                editingSection ===
+                "skills"
+              }
               onEdit={() =>
                 startEditing("skills")
               }
-              onCancel={cancelEditing}
+              onCancel={
+                cancelEditing
+              }
             >
-              {editingSection === "skills" ? (
+              {editingSection ===
+              "skills" ? (
                 <div className="max-w-3xl">
                   <SkillPicker
-                    options={allSkillOptions}
-                    selected={selectedSkills}
-                    loading={loadingSkills}
-                    error={skillCatalogError}
-                    onChange={(skills) =>
+                    options={
+                      allSkillOptions
+                    }
+                    selected={
+                      selectedSkills
+                    }
+                    loading={
+                      loadingSkills
+                    }
+                    error={
+                      skillCatalogError
+                    }
+                    onChange={skills =>
                       updateProfessionalDraft(
                         "skillIds",
                         skills.map(
-                          (skill) => skill.id,
+                          skill =>
+                            skill.id,
                         ),
                       )
                     }
@@ -1247,31 +1565,40 @@ function AllocatProfilePage() {
 
                   {sectionError && (
                     <InlineError
-                      message={sectionError}
+                      message={
+                        sectionError
+                      }
                     />
                   )}
 
                   <SectionActions
                     saving={
-                      savingSection === "skills"
+                      savingSection ===
+                      "skills"
                     }
                     onSave={() =>
                       void saveProfessionalSection(
                         "skills",
                       )
                     }
-                    onCancel={cancelEditing}
+                    onCancel={
+                      cancelEditing
+                    }
                   />
                 </div>
               ) : (
                 <div className="flex max-w-3xl flex-wrap gap-2">
                   {allocatProfile.skills.map(
-                    (skill) => (
+                    skill => (
                       <span
-                        key={skill.id}
+                        key={
+                          skill.id
+                        }
                         className="rounded-lg bg-primary/[0.07] px-3 py-1.5 text-xs font-semibold text-primary"
                       >
-                        {skill.name}
+                        {
+                          skill.name
+                        }
                       </span>
                     ),
                   )}
@@ -1279,17 +1606,27 @@ function AllocatProfilePage() {
               )}
             </ProfileSection>
 
+            {/* =================================================
+                WORKING DETAILS
+            ================================================= */}
+
             <ProfileSection
               eyebrow="Professional"
               title="Working details"
               divided
-              editing={editingSection === "work"}
+              editing={
+                editingSection ===
+                "work"
+              }
               onEdit={() =>
                 startEditing("work")
               }
-              onCancel={cancelEditing}
+              onCancel={
+                cancelEditing
+              }
             >
-              {editingSection === "work" ? (
+              {editingSection ===
+              "work" ? (
                 <div className="max-w-3xl">
                   <div className="grid gap-5 sm:grid-cols-2">
                     <ProfileField label="Availability">
@@ -1297,7 +1634,7 @@ function AllocatProfilePage() {
                         value={
                           professionalDraft.availability
                         }
-                        onChange={(event) =>
+                        onChange={event =>
                           updateProfessionalDraft(
                             "availability",
                             event.target
@@ -1309,9 +1646,11 @@ function AllocatProfilePage() {
                         <option value="available">
                           Available
                         </option>
+
                         <option value="busy">
                           Busy
                         </option>
+
                         <option value="unavailable">
                           Unavailable
                         </option>
@@ -1326,7 +1665,7 @@ function AllocatProfilePage() {
                         value={
                           professionalDraft.yearsExperience
                         }
-                        onChange={(event) =>
+                        onChange={event =>
                           updateProfessionalDraft(
                             "yearsExperience",
                             event.target.value,
@@ -1344,7 +1683,7 @@ function AllocatProfilePage() {
                         value={
                           professionalDraft.hourlyRate
                         }
-                        onChange={(event) =>
+                        onChange={event =>
                           updateProfessionalDraft(
                             "hourlyRate",
                             event.target.value,
@@ -1359,8 +1698,10 @@ function AllocatProfilePage() {
                         value={
                           professionalDraft.currency
                         }
-                        maxLength={3}
-                        onChange={(event) =>
+                        maxLength={
+                          3
+                        }
+                        onChange={event =>
                           updateProfessionalDraft(
                             "currency",
                             event.target.value.toUpperCase(),
@@ -1373,26 +1714,34 @@ function AllocatProfilePage() {
 
                   {sectionError && (
                     <InlineError
-                      message={sectionError}
+                      message={
+                        sectionError
+                      }
                     />
                   )}
 
                   <SectionActions
                     saving={
-                      savingSection === "work"
+                      savingSection ===
+                      "work"
                     }
                     onSave={() =>
                       void saveProfessionalSection(
                         "work",
                       )
                     }
-                    onCancel={cancelEditing}
+                    onCancel={
+                      cancelEditing
+                    }
                   />
                 </div>
               ) : (
                 <div className="grid max-w-3xl gap-3 sm:grid-cols-2">
+
                   <DetailItem
-                    icon={BriefcaseBusinessIcon}
+                    icon={
+                      BriefcaseBusinessIcon
+                    }
                     label="Experience"
                     value={
                       allocatProfile.yearsExperience !==
@@ -1408,7 +1757,9 @@ function AllocatProfilePage() {
                   />
 
                   <DetailItem
-                    icon={MapPinIcon}
+                    icon={
+                      MapPinIcon
+                    }
                     label="Location"
                     value={
                       accountProfile.location ||
@@ -1417,7 +1768,9 @@ function AllocatProfilePage() {
                   />
 
                   <DetailItem
-                    icon={Clock3Icon}
+                    icon={
+                      Clock3Icon
+                    }
                     label="Availability"
                     value={formatAvailability(
                       allocatProfile.availabilityStatus,
@@ -1425,29 +1778,53 @@ function AllocatProfilePage() {
                   />
 
                   <DetailItem
-                    icon={FolderCheckIcon}
-                    label="Completed work"
-                    value={`${completedProjects} ${
-                      completedProjects === 1
-                        ? "project"
-                        : "projects"
-                    }`}
+                    icon={
+                      CircleDollarSignIcon
+                    }
+                    label="Hourly rate"
+                    value={
+                      allocatProfile.hourlyRate !==
+                      null
+                        ? `${formatMoney(
+                            allocatProfile.hourlyRate,
+                            allocatProfile.currency,
+                          )}/hr`
+                        : "Not set"
+                    }
+                  />
+
+                  <DetailItem
+                    icon={
+                      BanknoteIcon
+                    }
+                    label="Currency"
+                    value={
+                      allocatProfile.currency ||
+                      "Not set"
+                    }
                   />
                 </div>
               )}
             </ProfileSection>
+
+            {/* =================================================
+                COMPLETED PROJECTS
+            ================================================= */}
 
             <ProfileSection
               eyebrow="Work history"
               title="Completed projects"
               divided
             >
-              {allocatProfile.projects.length > 0 ? (
+              {allocatProfile.projects.length >
+              0 ? (
                 <div className="max-w-3xl divide-y divide-border border-y border-border">
                   {allocatProfile.projects.map(
-                    (project) => (
+                    project => (
                       <div
-                        key={project.id}
+                        key={
+                          project.id
+                        }
                         className="flex items-center gap-4 py-4"
                       >
                         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/[0.07] text-primary">
@@ -1458,17 +1835,26 @@ function AllocatProfilePage() {
 
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-sm font-semibold">
-                            {project.title}
+                            {
+                              project.title
+                            }
                           </p>
 
                           <p className="mt-1 text-[0.62rem] text-muted-foreground">
-                            {project.category} ·{" "}
-                            {project.projectCode}
+                            {
+                              project.category
+                            }{" "}
+                            ·{" "}
+                            {
+                              project.projectCode
+                            }
                           </p>
                         </div>
 
                         <span className="text-[0.6rem] font-semibold capitalize text-muted-foreground">
-                          {project.status}
+                          {
+                            project.status
+                          }
                         </span>
                       </div>
                     ),
@@ -1479,6 +1865,10 @@ function AllocatProfilePage() {
               )}
             </ProfileSection>
 
+            {/* =================================================
+                VERIFICATION
+            ================================================= */}
+
             <ProfileSection
               eyebrow="Trust"
               title="Verification"
@@ -1487,7 +1877,9 @@ function AllocatProfilePage() {
             >
               <div className="grid gap-3 md:grid-cols-3">
                 <VerificationItem
-                  icon={ShieldCheckIcon}
+                  icon={
+                    ShieldCheckIcon
+                  }
                   title="Identity"
                   description="Professional identity"
                   status={
@@ -1501,7 +1893,9 @@ function AllocatProfilePage() {
                 />
 
                 <VerificationItem
-                  icon={MailIcon}
+                  icon={
+                    MailIcon
+                  }
                   title="Email"
                   description={
                     accountProfile.email ||
@@ -1518,7 +1912,9 @@ function AllocatProfilePage() {
                 />
 
                 <VerificationItem
-                  icon={EyeIcon}
+                  icon={
+                    EyeIcon
+                  }
                   title="Visibility"
                   description="Client discovery"
                   status={
@@ -1534,7 +1930,14 @@ function AllocatProfilePage() {
             </ProfileSection>
           </div>
 
+          {/* =================================================
+              SIDEBAR
+          ================================================= */}
+
           <aside className="min-w-0 xl:sticky xl:top-24">
+
+            {/* PROFESSIONAL SCORE */}
+
             <section className="rounded-2xl border border-border bg-card p-5">
               <div className="flex items-start justify-between gap-4">
                 <div>
@@ -1549,8 +1952,20 @@ function AllocatProfilePage() {
                   </h2>
                 </div>
 
-                <span className="text-2xl font-black tracking-[-0.04em] text-primary">
-                  {allocatProfile.professionalScore}%
+                {/* STRATEGIC BRAND ACCENT */}
+
+                <span
+                  className={[
+                    "flex h-11 min-w-16 items-center justify-center",
+                    "rounded-lg bg-primary px-3",
+                    "text-lg font-black tracking-[-0.04em]",
+                    "text-secondary shadow-sm",
+                  ].join(" ")}
+                >
+                  {
+                    allocatProfile.professionalScore
+                  }
+                  %
                 </span>
               </div>
 
@@ -1562,11 +1977,13 @@ function AllocatProfilePage() {
               />
 
               <p className="mt-4 text-xs leading-6 text-muted-foreground">
-                Complete your professional information,
-                skills and verified details, then build
-                your reputation through completed work.
+                Complete your professional information, skills and
+                verified details, then build your reputation through
+                completed work.
               </p>
             </section>
+
+            {/* WORK PREFERENCES */}
 
             <section className="mt-5 rounded-2xl border border-border/80 p-5">
               <div className="flex items-center gap-2">
@@ -1605,7 +2022,8 @@ function AllocatProfilePage() {
                 <SidebarDetail
                   label="Rate"
                   value={
-                    allocatProfile.hourlyRate !== null
+                    allocatProfile.hourlyRate !==
+                    null
                       ? `${formatMoney(
                           allocatProfile.hourlyRate,
                           allocatProfile.currency,
@@ -1613,6 +2031,14 @@ function AllocatProfilePage() {
                       : "Not set"
                   }
                   strong
+                />
+
+                <SidebarDetail
+                  label="Currency"
+                  value={
+                    allocatProfile.currency ||
+                    "Not set"
+                  }
                 />
 
                 <SidebarDetail
@@ -1624,6 +2050,8 @@ function AllocatProfilePage() {
               </div>
             </section>
 
+            {/* PUBLIC PROFILE */}
+
             <section className="mt-5 rounded-2xl border border-border/80 p-5">
               <div className="flex items-start justify-between gap-4">
                 <div>
@@ -1632,8 +2060,7 @@ function AllocatProfilePage() {
                   </p>
 
                   <p className="mt-1 text-[0.64rem] leading-5 text-muted-foreground">
-                    Control whether clients can discover
-                    your profile.
+                    Control whether clients can discover your profile.
                   </p>
                 </div>
 
@@ -1656,7 +2083,9 @@ function AllocatProfilePage() {
                 onClick={() =>
                   void toggleVisibility()
                 }
-                disabled={updatingVisibility}
+                disabled={
+                  updatingVisibility
+                }
                 className="mt-4 h-9 w-full rounded-lg bg-transparent text-xs shadow-none"
               >
                 {updatingVisibility && (
@@ -1677,6 +2106,10 @@ function AllocatProfilePage() {
     </div>
   );
 }
+
+/* =========================================================
+   PROFILE SECTION
+========================================================= */
 
 function ProfileSection({
   eyebrow,
@@ -1703,7 +2136,10 @@ function ProfileSection({
         divided
           ? "border-t border-border/50 pt-9"
           : "",
-        !last ? "pb-10" : "",
+
+        !last
+          ? "pb-10"
+          : "",
       ].join(" ")}
     >
       <div className="mb-6 flex items-start justify-between gap-5">
@@ -1723,30 +2159,42 @@ function ProfileSection({
             variant="ghost"
             size="icon"
             onClick={onEdit}
-            className="h-9 w-9 rounded-lg text-muted-foreground shadow-none hover:text-primary"
+            className="h-9 w-9 rounded-lg text-muted-foreground shadow-none hover:bg-muted/40 hover:text-foreground"
             aria-label={`Edit ${title}`}
           >
-            <Edit3Icon size={14} />
+            <Edit3Icon
+              size={14}
+            />
           </Button>
         )}
 
-        {editing && onCancel && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            onClick={onCancel}
-            className="h-9 w-9 rounded-lg text-muted-foreground shadow-none"
-          >
-            <XIcon size={14} />
-          </Button>
-        )}
+        {editing &&
+          onCancel && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={
+                onCancel
+              }
+              className="h-9 w-9 rounded-lg text-muted-foreground shadow-none hover:bg-muted/40 hover:text-foreground"
+              aria-label={`Close ${title} editor`}
+            >
+              <XIcon
+                size={14}
+              />
+            </Button>
+          )}
       </div>
 
       {children}
     </section>
   );
 }
+
+/* =========================================================
+   SECTION ACTIONS
+========================================================= */
 
 function SectionActions({
   saving,
@@ -1766,13 +2214,17 @@ function SectionActions({
         variant="ghost"
         onClick={onCancel}
         disabled={saving}
-        className="h-9 rounded-lg px-4 text-xs shadow-none"
+        className="h-9 rounded-lg px-4 text-xs text-muted-foreground shadow-none"
       >
         Cancel
       </Button>
 
       <Button
-        type={submit ? "submit" : "button"}
+        type={
+          submit
+            ? "submit"
+            : "button"
+        }
         onClick={
           submit
             ? undefined
@@ -1791,7 +2243,9 @@ function SectionActions({
           </>
         ) : (
           <>
-            <SaveIcon size={13} />
+            <SaveIcon
+              size={13}
+            />
             Save
           </>
         )}
@@ -1799,6 +2253,10 @@ function SectionActions({
     </div>
   );
 }
+
+/* =========================================================
+   PROFILE FIELD
+========================================================= */
 
 function ProfileField({
   label,
@@ -1819,6 +2277,10 @@ function ProfileField({
     </div>
   );
 }
+
+/* =========================================================
+   PROFILE STAT
+========================================================= */
 
 function ProfileStat({
   label,
@@ -1850,6 +2312,10 @@ function ProfileStat({
   );
 }
 
+/* =========================================================
+   DETAIL ITEM
+========================================================= */
+
 function DetailItem({
   icon: Icon,
   label,
@@ -1862,7 +2328,9 @@ function DetailItem({
   return (
     <div className="flex items-center gap-3 rounded-xl border border-border/75 px-4 py-4">
       <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/[0.07] text-primary">
-        <Icon size={14} />
+        <Icon
+          size={14}
+        />
       </span>
 
       <div className="min-w-0">
@@ -1877,6 +2345,10 @@ function DetailItem({
     </div>
   );
 }
+
+/* =========================================================
+   VERIFICATION ITEM
+========================================================= */
 
 function VerificationItem({
   icon: Icon,
@@ -1897,17 +2369,21 @@ function VerificationItem({
         <span
           className={[
             "flex h-8 w-8 items-center justify-center rounded-lg",
+
             verified
               ? "bg-primary/[0.07] text-primary"
               : "bg-muted text-muted-foreground",
           ].join(" ")}
         >
-          <Icon size={14} />
+          <Icon
+            size={14}
+          />
         </span>
 
         <span
           className={[
             "text-[0.58rem] font-semibold",
+
             verified
               ? "text-primary"
               : "text-muted-foreground",
@@ -1928,6 +2404,10 @@ function VerificationItem({
   );
 }
 
+/* =========================================================
+   SIDEBAR DETAIL
+========================================================= */
+
 function SidebarDetail({
   label,
   value,
@@ -1946,6 +2426,7 @@ function SidebarDetail({
       <p
         className={[
           "break-words text-right text-xs",
+
           strong
             ? "font-black text-primary"
             : "font-semibold",
@@ -1957,12 +2438,18 @@ function SidebarDetail({
   );
 }
 
+/* =========================================================
+   EMPTY HISTORY
+========================================================= */
+
 function EmptyHistory() {
   return (
     <div className="max-w-3xl rounded-xl border border-dashed border-border px-5 py-6">
       <div className="flex items-start gap-3">
         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-          <FolderCheckIcon size={15} />
+          <FolderCheckIcon
+            size={15}
+          />
         </span>
 
         <div>
@@ -1971,14 +2458,18 @@ function EmptyHistory() {
           </p>
 
           <p className="mt-1 max-w-lg text-xs leading-6 text-muted-foreground">
-            Completed work and client feedback will
-            build your professional history here.
+            Completed work and client feedback will build your professional
+            history here.
           </p>
         </div>
       </div>
     </div>
   );
 }
+
+/* =========================================================
+   INLINE ERROR
+========================================================= */
 
 function InlineError({
   message,
@@ -1995,6 +2486,10 @@ function InlineError({
   );
 }
 
+/* =========================================================
+   ERROR PAGE
+========================================================= */
+
 function AllocatProfileError({
   message,
   onRetry,
@@ -2004,7 +2499,7 @@ function AllocatProfileError({
 }) {
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <header className="border-b border-border/60">
+      <header className="sticky top-0 z-40 border-b border-border/60 bg-background/90 backdrop-blur-xl">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <DashboardMainNav />
         </div>
@@ -2027,7 +2522,9 @@ function AllocatProfileError({
 
           <Button
             type="button"
-            onClick={() => void onRetry()}
+            onClick={() =>
+              void onRetry()
+            }
             className="mt-6 h-10 rounded-lg px-5 text-xs shadow-none"
           >
             Try again
@@ -2038,10 +2535,14 @@ function AllocatProfileError({
   );
 }
 
+/* =========================================================
+   SKELETON
+========================================================= */
+
 function AllocatProfileSkeleton() {
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <header className="border-b border-border/60">
+      <header className="sticky top-0 z-40 border-b border-border/60 bg-background/90 backdrop-blur-xl">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <DashboardMainNav />
         </div>
@@ -2089,13 +2590,25 @@ function AllocatProfileSkeleton() {
   );
 }
 
+/* =========================================================
+   DRAFT HELPERS
+========================================================= */
+
 function toAccountDraft(
   account: ProfileUser,
 ): AccountDraft {
   return {
-    fullName: account.fullName ?? "",
-    phoneNumber: account.phoneNumber ?? "",
-    location: account.location ?? "",
+    fullName:
+      account.fullName ??
+      "",
+
+    phoneNumber:
+      account.phoneNumber ??
+      "",
+
+    location:
+      account.location ??
+      "",
   };
 }
 
@@ -2103,43 +2616,97 @@ function toProfessionalDraft(
   profile: MyAllocatProfile,
 ): ProfessionalDraft {
   return {
-    idNumber: profile.idNumber ?? "",
-    title: profile.title ?? "",
-    headline: profile.headline ?? "",
-    bio: profile.bio ?? "",
-    availability: profile.availabilityStatus,
+    idNumber:
+      profile.idNumber ??
+      "",
+
+    title:
+      profile.title ??
+      "",
+
+    headline:
+      profile.headline ??
+      "",
+
+    bio:
+      profile.bio ??
+      "",
+
+    availability:
+      profile.availabilityStatus,
+
     hourlyRate:
-      profile.hourlyRate?.toString() ?? "",
-    currency: profile.currency || "USD",
+      profile.hourlyRate?.toString() ??
+      "",
+
+    currency:
+      profile.currency ||
+      "USD",
+
     yearsExperience:
-      profile.yearsExperience?.toString() ?? "",
-    skillIds: profile.skills.map(
-      (skill) => skill.id,
-    ),
+      profile.yearsExperience?.toString() ??
+      "",
+
+    skillIds:
+      profile.skills.map(
+        skill =>
+          skill.id,
+      ),
   };
 }
+
+/* =========================================================
+   BUILD PAYLOAD
+========================================================= */
 
 function buildProfessionalPayload(
   draft: ProfessionalDraft,
 ): UpdateAllocatProfilePayload {
   return {
-    idNumber: draft.idNumber.trim(),
-    title: cleanOptional(draft.title),
-    headline: cleanOptional(draft.headline),
-    bio: cleanOptional(draft.bio),
-    hourlyRate: parseNullableNumber(
-      draft.hourlyRate,
-    ),
-    currency: draft.currency
-      .trim()
-      .toUpperCase(),
-    availability: draft.availability,
-    yearsExperience: parseNullableNumber(
-      draft.yearsExperience,
-    ),
-    skillIds: draft.skillIds,
+    idNumber:
+      draft.idNumber.trim(),
+
+    title:
+      cleanOptional(
+        draft.title,
+      ),
+
+    headline:
+      cleanOptional(
+        draft.headline,
+      ),
+
+    bio:
+      cleanOptional(
+        draft.bio,
+      ),
+
+    hourlyRate:
+      parseNullableNumber(
+        draft.hourlyRate,
+      ),
+
+    currency:
+      draft.currency
+        .trim()
+        .toUpperCase(),
+
+    availability:
+      draft.availability,
+
+    yearsExperience:
+      parseNullableNumber(
+        draft.yearsExperience,
+      ),
+
+    skillIds:
+      draft.skillIds,
   };
 }
+
+/* =========================================================
+   VALIDATION
+========================================================= */
 
 function validateProfessionalDraft(
   draft: ProfessionalDraft,
@@ -2148,7 +2715,10 @@ function validateProfessionalDraft(
     return "ID number is required.";
   }
 
-  if (draft.skillIds.length === 0) {
+  if (
+    draft.skillIds.length ===
+    0
+  ) {
     return "Select at least one skill.";
   }
 
@@ -2160,22 +2730,29 @@ function validateProfessionalDraft(
     return "Currency must use a three-letter code such as USD.";
   }
 
-  const hourlyRate = parseNullableNumber(
-    draft.hourlyRate,
-  );
+  const hourlyRate =
+    parseNullableNumber(
+      draft.hourlyRate,
+    );
 
-  if (hourlyRate !== null && hourlyRate < 0) {
+  if (
+    hourlyRate !== null &&
+    hourlyRate < 0
+  ) {
     return "Hourly rate cannot be negative.";
   }
 
-  const yearsExperience = parseNullableNumber(
-    draft.yearsExperience,
-  );
+  const yearsExperience =
+    parseNullableNumber(
+      draft.yearsExperience,
+    );
 
   if (
     yearsExperience !== null &&
-    (yearsExperience < 0 ||
-      yearsExperience > 80)
+    (
+      yearsExperience < 0 ||
+      yearsExperience > 80
+    )
   ) {
     return "Years of experience must be between 0 and 80.";
   }
@@ -2183,21 +2760,39 @@ function validateProfessionalDraft(
   return null;
 }
 
-function cleanOptional(value: string) {
-  return value.trim() || null;
+/* =========================================================
+   VALUE HELPERS
+========================================================= */
+
+function cleanOptional(
+  value: string,
+) {
+  return (
+    value.trim() ||
+    null
+  );
 }
 
-function parseNullableNumber(value: string) {
+function parseNullableNumber(
+  value: string,
+) {
   if (!value.trim()) {
     return null;
   }
 
-  const number = Number(value);
+  const number =
+    Number(value);
 
-  return Number.isFinite(number)
+  return Number.isFinite(
+    number,
+  )
     ? number
     : null;
 }
+
+/* =========================================================
+   NAME HELPERS
+========================================================= */
 
 function getInitials(
   name?: string | null,
@@ -2210,8 +2805,10 @@ function getInitials(
     .trim()
     .split(/\s+/)
     .slice(0, 2)
-    .map((part) =>
-      part.charAt(0).toUpperCase(),
+    .map(part =>
+      part
+        .charAt(0)
+        .toUpperCase(),
     )
     .join("");
 }
@@ -2220,12 +2817,20 @@ function getFirstName(
   name?: string | null,
 ) {
   return (
-    name?.trim().split(/\s+/)[0] ||
+    name
+      ?.trim()
+      .split(/\s+/)[0] ||
     "this Allocat"
   );
 }
 
-function getScoreLabel(score: number) {
+/* =========================================================
+   SCORE
+========================================================= */
+
+function getScoreLabel(
+  score: number,
+) {
   if (score >= 90) {
     return "Outstanding profile";
   }
@@ -2241,12 +2846,24 @@ function getScoreLabel(score: number) {
   return "Build your profile";
 }
 
+/* =========================================================
+   AVAILABILITY
+========================================================= */
+
 function formatAvailability(
   availability: AllocatAvailability,
 ) {
-  return availability.charAt(0).toUpperCase() +
-    availability.slice(1);
+  return (
+    availability
+      .charAt(0)
+      .toUpperCase() +
+    availability.slice(1)
+  );
 }
+
+/* =========================================================
+   RESPONSE TIME
+========================================================= */
 
 function formatResponseTime(
   minutes: number | null,
@@ -2259,40 +2876,70 @@ function formatResponseTime(
     return `${minutes} min response`;
   }
 
-  const hours = Math.round(minutes / 60);
+  const hours =
+    Math.round(
+      minutes / 60,
+    );
 
   return `${hours} ${
-    hours === 1 ? "hour" : "hours"
+    hours === 1
+      ? "hour"
+      : "hours"
   } response`;
 }
+
+/* =========================================================
+   MONEY
+========================================================= */
 
 function formatMoney(
   value: number,
   currency: string,
 ) {
   try {
-    return new Intl.NumberFormat("en", {
-      style: "currency",
-      currency,
-      maximumFractionDigits: 2,
-    }).format(value);
+    return new Intl.NumberFormat(
+      "en",
+      {
+        style: "currency",
+        currency,
+        maximumFractionDigits: 2,
+      },
+    ).format(value);
   } catch {
     return `${currency} ${value}`;
   }
 }
 
-function formatShortDate(value: string) {
-  const date = new Date(value);
+/* =========================================================
+   DATE
+========================================================= */
 
-  if (Number.isNaN(date.getTime())) {
+function formatShortDate(
+  value: string,
+) {
+  const date =
+    new Date(value);
+
+  if (
+    Number.isNaN(
+      date.getTime(),
+    )
+  ) {
     return "Date unavailable";
   }
 
-  return new Intl.DateTimeFormat("en", {
-    month: "short",
-    year: "numeric",
-  }).format(date);
+  return new Intl.DateTimeFormat(
+    "en",
+    {
+      month: "short",
+      year: "numeric",
+    },
+  ).format(date);
 }
+
+/* =========================================================
+   API ERROR
+========================================================= */
 
 function getApiErrorMessage(
   error: unknown,
@@ -2302,26 +2949,33 @@ function getApiErrorMessage(
     return fallback;
   }
 
-  const data = error.response?.data;
+  const data =
+    error.response?.data;
 
-  if (data && typeof data === "object") {
+  if (
+    data &&
+    typeof data === "object"
+  ) {
     if (
       "detail" in data &&
-      typeof data.detail === "string"
+      typeof data.detail ===
+        "string"
     ) {
       return data.detail;
     }
 
     if (
       "message" in data &&
-      typeof data.message === "string"
+      typeof data.message ===
+        "string"
     ) {
       return data.message;
     }
 
     if (
       "title" in data &&
-      typeof data.title === "string"
+      typeof data.title ===
+        "string"
     ) {
       return data.title;
     }

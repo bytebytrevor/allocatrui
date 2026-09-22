@@ -90,7 +90,7 @@ function getInitials(name?: string | null) {
     .trim()
     .split(/\s+/)
     .slice(0, 2)
-    .map((part) => part.charAt(0).toUpperCase())
+    .map(part => part.charAt(0).toUpperCase())
     .join("");
 }
 
@@ -315,11 +315,7 @@ export default function Profile() {
       return;
     }
 
-    if (
-      !ACCEPTED_IMAGE_TYPES.includes(
-        selectedFile.type,
-      )
-    ) {
+    if (!ACCEPTED_IMAGE_TYPES.includes(selectedFile.type)) {
       setPictureError(
         "Choose a JPEG, PNG or WebP image.",
       );
@@ -371,7 +367,6 @@ export default function Profile() {
     setPictureError(null);
 
     const formData = new FormData();
-
     formData.append("file", file);
 
     try {
@@ -383,7 +378,7 @@ export default function Profile() {
         {
           withCredentials: true,
 
-          onUploadProgress: (event) => {
+          onUploadProgress: event => {
             if (!event.total) {
               return;
             }
@@ -397,7 +392,7 @@ export default function Profile() {
         },
       );
 
-      setProfileUser((current) => {
+      setProfileUser(current => {
         if (!current) {
           return current;
         }
@@ -442,7 +437,7 @@ export default function Profile() {
   ) {
     const { name, value } = event.target;
 
-    setProfileForm((current) => ({
+    setProfileForm(current => ({
       ...current,
       [name]: value,
     }));
@@ -583,6 +578,7 @@ export default function Profile() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
+
       {/* ===================================================
           NAV
       =================================================== */}
@@ -608,18 +604,25 @@ export default function Profile() {
       =================================================== */}
 
       <main className="container mx-auto px-5 py-8 md:px-8 lg:py-12">
+
         {/* =================================================
             HEADER
         ================================================= */}
 
         <section className="pb-8">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
-            <div className="min-w-0">
-              <p className="text-[0.62rem] font-semibold uppercase tracking-[0.17em] text-primary">
-                Your account
-              </p>
+            <div className="min-w-0 max-w-2xl">
+              <div className="flex items-center gap-2.5">
+                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-secondary shadow-sm shadow-primary/10">
+                  <UserRoundIcon size={15} />
+                </span>
 
-              <h1 className="mt-2 text-3xl font-black leading-tight tracking-[-0.04em] sm:text-4xl lg:text-[2.75rem]">
+                <p className="text-[0.62rem] font-semibold uppercase tracking-[0.17em] text-muted-foreground">
+                  Your account
+                </p>
+              </div>
+
+              <h1 className="mt-5 text-3xl font-black leading-tight tracking-[-0.04em] sm:text-4xl lg:text-[2.75rem]">
                 Profile
               </h1>
 
@@ -631,7 +634,12 @@ export default function Profile() {
 
             <Badge
               variant="outline"
-              className="h-8 w-fit rounded-lg border-border bg-transparent px-3 text-[0.68rem] font-semibold shadow-none"
+              className={[
+                "h-8 w-fit rounded-lg px-3",
+                "border-border bg-muted/25",
+                "text-[0.68rem] font-semibold",
+                "text-foreground shadow-none",
+              ].join(" ")}
             >
               <UserRoundIcon size={12} />
 
@@ -691,19 +699,21 @@ export default function Profile() {
         ================================================= */}
 
         <div className="grid min-w-0 items-start gap-10 pt-8 lg:grid-cols-[300px_minmax(0,1fr)] xl:grid-cols-[320px_minmax(0,1fr)] xl:gap-14">
+
           {/* =================================================
               LEFT
           ================================================= */}
 
           <aside className="min-w-0">
+
             {/* =============================================
                 PROFILE PICTURE
             ============================================= */}
 
-            <section className="rounded-2xl border border-border bg-transparent p-6">
+            <section className="rounded-2xl border border-border bg-background p-6">
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <p className="text-[0.62rem] font-semibold uppercase tracking-[0.15em] text-primary">
+                  <p className="text-[0.62rem] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
                     Identity
                   </p>
 
@@ -727,9 +737,7 @@ export default function Profile() {
                     />
 
                     <AvatarFallback className="bg-primary/[0.08] text-2xl font-black text-primary">
-                      {getInitials(
-                        profileUser.fullName,
-                      )}
+                      {getInitials(profileUser.fullName)}
                     </AvatarFallback>
                   </Avatar>
 
@@ -743,9 +751,11 @@ export default function Profile() {
                       "absolute -bottom-1 -right-1",
                       "flex h-9 w-9 items-center justify-center",
                       "rounded-lg border-4 border-background",
-                      "bg-primary text-primary-foreground",
+                      "bg-primary text-secondary",
+                      "shadow-sm shadow-primary/10",
                       "transition-all duration-200",
                       "hover:-translate-y-0.5 hover:scale-[1.03]",
+                      "hover:bg-primary/90",
                       "disabled:pointer-events-none",
                       "disabled:opacity-60",
                     ].join(" ")}
@@ -781,7 +791,7 @@ export default function Profile() {
                 </div>
               </div>
 
-              {/* File input */}
+              {/* FILE INPUT */}
 
               <input
                 ref={fileInputRef}
@@ -794,7 +804,7 @@ export default function Profile() {
                 disabled={uploading}
               />
 
-              {/* Selected image */}
+              {/* SELECTED IMAGE */}
 
               {file && (
                 <div className="mt-6 border-t border-border/70 pt-5">
@@ -829,7 +839,7 @@ export default function Profile() {
                 </div>
               )}
 
-              {/* Upload progress */}
+              {/* UPLOAD PROGRESS */}
 
               {uploading && (
                 <div className="mt-5">
@@ -851,12 +861,10 @@ export default function Profile() {
               )}
 
               {pictureError && (
-                <InlineError
-                  message={pictureError}
-                />
+                <InlineError message={pictureError} />
               )}
 
-              {/* Picture actions */}
+              {/* PICTURE ACTIONS */}
 
               <div className="mt-6 grid gap-2">
                 <Button
@@ -892,7 +900,6 @@ export default function Profile() {
                           size={14}
                           className="animate-spin"
                         />
-
                         Uploading
                       </>
                     ) : (
@@ -909,7 +916,7 @@ export default function Profile() {
                 JPEG, PNG or WebP.
               </p>
 
-              {/* Completion */}
+              {/* COMPLETION */}
 
               <div className="mt-7 border-t border-border/70 pt-5">
                 <div className="flex items-end justify-between gap-3">
@@ -923,7 +930,7 @@ export default function Profile() {
                     </p>
                   </div>
 
-                  <span className="text-lg font-black tracking-[-0.035em] text-primary">
+                  <span className="text-lg font-black tracking-[-0.035em]">
                     {profileCompletion}%
                   </span>
                 </div>
@@ -939,7 +946,7 @@ export default function Profile() {
                 TRUST
             ============================================= */}
 
-            <section className="mt-5 flex items-start gap-3 rounded-xl bg-muted/[0.12] px-4 py-4">
+            <section className="mt-5 flex items-start gap-3 rounded-xl bg-muted/[0.15] px-4 py-4">
               <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-400/[0.08] text-emerald-700 dark:text-emerald-300">
                 <ShieldCheckIcon size={16} />
               </span>
@@ -969,6 +976,7 @@ export default function Profile() {
                 description="The basic information shown throughout your workspace."
               >
                 <div className="grid gap-6">
+
                   {/* =========================================
                       FULL NAME
                   ========================================= */}
@@ -1021,9 +1029,7 @@ export default function Profile() {
                         <Input
                           id="email"
                           type="email"
-                          value={
-                            profileUser.email ?? ""
-                          }
+                          value={profileUser.email ?? ""}
                           disabled
                           className={[
                             "h-11 rounded-lg",
@@ -1133,9 +1139,7 @@ export default function Profile() {
                 </div>
 
                 {profileError && (
-                  <InlineError
-                    message={profileError}
-                  />
+                  <InlineError message={profileError} />
                 )}
 
                 {/* =========================================
@@ -1147,7 +1151,7 @@ export default function Profile() {
                     className={[
                       "text-[0.68rem]",
                       profileHasChanges
-                        ? "font-medium text-primary"
+                        ? "font-medium text-foreground"
                         : "text-muted-foreground",
                     ].join(" ")}
                   >
@@ -1277,8 +1281,8 @@ function EmailVerificationWarning({
             className={[
               "mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center",
               "rounded-lg",
-              "bg-primary/[0.07]",
-              "text-primary",
+              "bg-primary text-secondary",
+              "shadow-sm shadow-primary/10",
             ].join(" ")}
           >
             <MailCheckIcon size={15} />
@@ -1356,14 +1360,14 @@ function VerificationButton({
       }
       className={[
         "shrink-0 rounded-lg",
-        "border-primary/20",
+        "border-border",
         "bg-transparent",
-        "text-xs font-semibold text-primary",
+        "text-xs font-semibold text-foreground",
         "shadow-none",
         "transition-colors",
-        "hover:border-primary/30",
-        "hover:bg-primary/[0.05]",
-        "hover:text-primary",
+        "hover:border-foreground/15",
+        "hover:bg-muted/40",
+        "hover:text-foreground",
         "disabled:border-border",
         "disabled:bg-transparent",
         "disabled:text-muted-foreground",
@@ -1410,7 +1414,7 @@ function SummaryStat({
     <div
       className={[
         "min-w-0 px-5 py-4",
-        "transition-colors hover:bg-muted/[0.1]",
+        "transition-colors hover:bg-muted/[0.08]",
         divided
           ? "border-t border-border sm:border-l sm:border-t-0"
           : "",
@@ -1466,7 +1470,7 @@ function ProfileSection({
       ].join(" ")}
     >
       <div className="mb-7 max-w-2xl">
-        <p className="text-[0.6rem] font-semibold uppercase tracking-[0.15em] text-primary">
+        <p className="text-[0.6rem] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
           {eyebrow}
         </p>
 
@@ -1535,7 +1539,7 @@ function AccountItem({
   status?: "success" | "pending";
 }) {
   return (
-    <div className="group flex items-center gap-3 rounded-xl border border-border/75 bg-transparent px-4 py-4 transition-colors hover:bg-muted/[0.1]">
+    <div className="group flex items-center gap-3 rounded-xl border border-border/75 bg-transparent px-4 py-4 transition-colors hover:bg-muted/[0.08]">
       <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted/40 text-muted-foreground transition-colors group-hover:bg-primary/[0.07] group-hover:text-primary">
         <Icon size={14} />
       </span>
@@ -1555,9 +1559,10 @@ function AccountItem({
           className={[
             "shrink-0 rounded-md px-2 py-1",
             "text-[0.58rem] font-semibold",
+
             status === "success"
               ? "bg-emerald-400/[0.08] text-emerald-700 dark:text-emerald-300"
-              : "bg-primary/[0.07] text-primary",
+              : "bg-muted text-muted-foreground",
           ].join(" ")}
         >
           {status === "success"
@@ -1602,7 +1607,7 @@ function InlineError({
 function ProfileLoading() {
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <header className="border-b border-border/60">
+      <header className="sticky top-0 z-40 border-b border-border/60 bg-background/90 backdrop-blur-xl">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <DashboardMainNav />
         </div>
@@ -1610,8 +1615,8 @@ function ProfileLoading() {
 
       <main className="container mx-auto px-5 py-10 md:px-8 lg:py-12">
         <div className="max-w-xl">
-          <Skeleton className="h-3 w-24" />
-          <Skeleton className="mt-4 h-10 w-48" />
+          <Skeleton className="h-8 w-8 rounded-lg" />
+          <Skeleton className="mt-5 h-10 w-48" />
           <Skeleton className="mt-4 h-4 w-full" />
           <Skeleton className="mt-2 h-4 w-4/5" />
         </div>
@@ -1625,6 +1630,7 @@ function ProfileLoading() {
                 key={index}
                 className={[
                   "px-5 py-4",
+
                   index > 0
                     ? "border-t border-border sm:border-l sm:border-t-0"
                     : "",
@@ -1678,7 +1684,7 @@ function ProfileErrorPage({
 }) {
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <header className="border-b border-border/60">
+      <header className="sticky top-0 z-40 border-b border-border/60 bg-background/90 backdrop-blur-xl">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <DashboardMainNav />
         </div>
@@ -1686,10 +1692,9 @@ function ProfileErrorPage({
 
       <main className="container mx-auto px-5 py-20 md:px-8">
         <div className="max-w-md">
-          <AlertCircleIcon
-            size={22}
-            className="text-destructive"
-          />
+          <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-destructive/10 text-destructive">
+            <AlertCircleIcon size={20} />
+          </span>
 
           <h1 className="mt-5 text-2xl font-black tracking-[-0.03em]">
             Could not load your profile

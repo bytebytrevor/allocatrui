@@ -1,111 +1,181 @@
-"use client"
+import { CalendarIcon, XIcon } from "lucide-react";
+import { format } from "date-fns";
 
-import * as React from "react"
-import { CalendarIcon } from "lucide-react"
+import { cn } from "@/lib/utils";
 
-import { Button } from "@/components/ui/button"
-import { Calendar } from "@/components/ui/calendar"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"
-import { cn } from "@/lib/utils"
+} from "@/components/ui/popover";
 
-type Props = {
-    id: string;
-    label?: string;
-    value: Date | null
-    onChange?: (date: Date | undefined) => void
-    className?: string;
-}
+type Calendar28Props = {
+  id: string;
+  label: string;
+  value: Date | null;
+  onChange: (date: Date | null) => void;
+  className?: string;
+  disabled?: boolean;
+};
 
-function formatDate(date: Date | undefined) {
-  if (!date) {
-    return ""
-  }
-
-  return date.toLocaleDateString("en-US", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-  })
-}
-
-function isValidDate(date: Date | undefined) {
-  if (!date) {
-    return false
-  }
-  return !isNaN(date.getTime())
-}
-
-export function Calendar28({id, label, value, onChange, className}: Props) {
-  const [open, setOpen] = React.useState(false)
-  const [month, setMonth] = React.useState<Date | undefined>(value ?? undefined)
-
-  const handleSelect = (date: Date | undefined) => {
-      if (onChange) onChange(date)
-        setMonth(date)
-        setOpen(false)
-  }
-
-  const currentDate = new Date();
-
+export function Calendar28({
+  id,
+  label,
+  value,
+  onChange,
+  className,
+  disabled = false,
+}: Calendar28Props) {
   return (
-    <div className="flex flex-col gap-3">
-      <Label htmlFor={id} className="px-1 font-semibold">
+    <div className="min-w-0">
+      <label
+        htmlFor={id}
+        className="mb-2 block text-sm font-semibold"
+      >
         {label}
-      </Label>
-      <div className="relative flex gap-2">
-        <Input
-          id={id}
-          value={formatDate(value ?? undefined)}
-          placeholder={currentDate.toLocaleDateString("en-US", {day: "2-digit", month: "long", year: "numeric"})}
-          className={cn ("border-none pr-10", className)}
-          onChange={(e) => {
-            const date = new Date(e.target.value)
-            if (!isNaN(date.getTime()) && onChange) {
-              onChange(date)
-              setMonth(date)
-            }
-          }}
-          onKeyDown={(e) => {
-            if (e.key === "ArrowDown") {
-              e.preventDefault()
-              setOpen(true)
-            }
-          }}
-        />
-        <Popover open={open} onOpenChange={setOpen}>
-          <PopoverTrigger asChild>
-            <Button
-              id="date-picker"
-              variant="ghost"
-              className="absolute top-1/2 right-2 size-6 -translate-y-1/2"
-            >
-              <CalendarIcon className="size-3.5" />
-              <span className="sr-only">Select date</span>
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent
-            className="w-auto overflow-hidden p-0"
-            align="end"
-            alignOffset={-8}
-            sideOffset={10}
+      </label>
+
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button
+            id={id}
+            type="button"
+            variant="outline"
+            disabled={disabled}
+            className={cn(
+              "h-12 w-full justify-start rounded-xl",
+              "border-border/90 bg-muted/[0.18]",
+              "px-4 text-left font-normal shadow-none",
+              "transition-colors",
+              "hover:bg-muted/[0.28]",
+              "hover:text-foreground",
+              "focus-visible:border-ring",
+              "focus-visible:ring-1",
+              "focus-visible:ring-ring/40",
+              !value && "text-muted-foreground",
+              className,
+            )}
           >
-            <Calendar
-              mode="single"
-              selected={value ?? undefined}
-              captionLayout="dropdown"
-              month={month}
-              onMonthChange={setMonth}
-              onSelect={handleSelect}
+            <CalendarIcon
+              size={15}
+              className="mr-2 shrink-0 text-muted-foreground"
             />
-          </PopoverContent>
-        </Popover>
-      </div>
+
+            <span className="min-w-0 flex-1 truncate">
+              {value
+                ? format(value, "EEE, dd MMM yyyy")
+                : "Choose a date"}
+            </span>
+
+            {value && !disabled && (
+              <span
+                role="button"
+                tabIndex={0}
+                aria-label={`Clear ${label}`}
+                onClick={event => {
+                  event.preventDefault();
+                  event.stopPropagation();
+
+                  onChange(null);
+                }}
+                onKeyDown={event => {
+                  if (
+                    event.key === "Enter" ||
+                    event.key === " "
+                  ) {
+                    event.preventDefault();
+                    event.stopPropagation();
+
+                    onChange(null);
+                  }
+                }}
+                className={cn(
+                  "ml-2 flex h-6 w-6 shrink-0 items-center justify-center",
+                  "rounded-md text-muted-foreground",
+                  "transition-colors",
+                  "hover:bg-muted hover:text-foreground",
+                  "focus-visible:outline-none",
+                  "focus-visible:ring-1 focus-visible:ring-ring/40",
+                )}
+              >
+                <XIcon size={12} />
+              </span>
+            )}
+          </Button>
+        </PopoverTrigger>
+
+        <PopoverContent
+          align="start"
+          sideOffset={6}
+          className={cn(
+            "w-auto max-w-[calc(100vw-2rem)]",
+            "overflow-hidden rounded-xl",
+            "border border-border",
+            "bg-popover p-0 text-popover-foreground",
+            "shadow-xl",
+          )}
+        >
+          <Calendar
+            mode="single"
+            selected={value ?? undefined}
+            onSelect={date =>
+              onChange(date ?? null)
+            }
+            initialFocus
+            className={cn(
+              "p-3",
+
+              /*
+               * General day hover:
+               * neutral surface.
+               */
+              "[&_button:hover]:bg-muted",
+              "[&_button:hover]:text-foreground",
+
+              /*
+               * Today:
+               * subtle neutral indication only.
+               */
+              "[&_[data-today=true]]:bg-muted",
+              "[&_[data-today=true]]:font-semibold",
+              "[&_[data-today=true]]:text-foreground",
+
+              /*
+               * Selected date:
+               * primary surface + secondary foreground.
+               *
+               * Light:
+               * charcoal + lime.
+               *
+               * Dark:
+               * lime + charcoal.
+               */
+              "[&_[data-selected-single=true]]:bg-primary",
+              "[&_[data-selected-single=true]]:text-secondary",
+              "[&_[data-selected-single=true]]:font-bold",
+
+              /*
+               * Selected date hover must retain
+               * the selected theme treatment.
+               */
+              "[&_[data-selected-single=true]:hover]:bg-primary",
+              "[&_[data-selected-single=true]:hover]:text-secondary",
+              "[&_[data-selected-single=true]]:hover:bg-primary",
+              "[&_[data-selected-single=true]]:hover:text-secondary",
+
+              /*
+               * Dates outside the current month
+               * and disabled dates remain subdued.
+               */
+              "[&_[data-disabled=true]]:text-muted-foreground/40",
+              "[&_[data-outside=true]]:text-muted-foreground/50",
+            )}
+          />
+        </PopoverContent>
+      </Popover>
     </div>
-  )
+  );
 }

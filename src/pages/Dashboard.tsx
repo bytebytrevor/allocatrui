@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, Outlet, useParams } from "react-router-dom";
+import type { ProjectWorkspaceContext } from "@/Types/projectWorkspaceContext";
 
 import {
   ArrowLeftIcon,
@@ -164,7 +165,7 @@ function Dashboard() {
     }
 
     return projects.find(
-      (project) => String(project.id) === String(projectId),
+      project => String(project.id) === String(projectId),
     );
   }, [projects, projectId]);
 
@@ -180,6 +181,7 @@ function Dashboard() {
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground transition-colors">
+
       {/* ===================================================
           GLOBAL HEADER
       =================================================== */}
@@ -197,7 +199,7 @@ function Dashboard() {
       <div className="border-b border-border/70 bg-background lg:hidden">
         <div className="container mx-auto flex min-h-16 items-center justify-between gap-4 px-5 py-3 md:px-8">
           <div className="flex min-w-0 items-center gap-3">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/[0.075] text-primary">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary text-secondary shadow-sm shadow-primary/10">
               <LayoutDashboardIcon size={17} />
             </span>
 
@@ -216,8 +218,13 @@ function Dashboard() {
             type="button"
             variant="ghost"
             size="icon"
-            className="h-9 w-9 shrink-0 rounded-lg shadow-none"
-            onClick={() => setMobileMenuOpen((current) => !current)}
+            className={[
+              "h-9 w-9 shrink-0 rounded-lg shadow-none",
+              mobileMenuOpen
+                ? "bg-primary text-secondary hover:bg-primary/90 hover:text-secondary"
+                : "text-muted-foreground hover:bg-muted/50 hover:text-foreground",
+            ].join(" ")}
+            onClick={() => setMobileMenuOpen(current => !current)}
             aria-label={
               mobileMenuOpen
                 ? "Close project navigation"
@@ -282,12 +289,14 @@ function Dashboard() {
             "xl:grid-cols-[250px_minmax(0,1fr)]",
           ].join(" ")}
         >
+
           {/* =================================================
               DESKTOP SIDEBAR
           ================================================= */}
 
           <aside className="hidden min-h-0 border-r border-border/70 lg:block">
             <div className="sticky top-[5.75rem] flex max-h-[calc(100vh-6rem)] flex-col py-7 pr-6 xl:pr-7">
+
               {/* =============================================
                   CURRENT PROJECT
               ============================================= */}
@@ -310,7 +319,7 @@ function Dashboard() {
                 </Link>
 
                 <div className="mt-7 flex items-start gap-3">
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/[0.075] text-primary">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-secondary shadow-sm shadow-primary/10">
                     <LayoutDashboardIcon size={18} />
                   </span>
 
@@ -334,9 +343,6 @@ function Dashboard() {
 
               {/* =============================================
                   PROJECT NAVIGATION
-
-                  The sidebar stays quiet while the workspace
-                  is loading. We do not need a second loader.
               ============================================= */}
 
               <div className="flex-1 overflow-y-auto border-t border-border py-5">
@@ -355,9 +361,6 @@ function Dashboard() {
 
               {/* =============================================
                   PROJECT SWITCHER
-
-                  Also stays quiet during the initial workspace
-                  load. There is only one visible loader.
               ============================================= */}
 
               <div className="border-t border-border pt-4">
@@ -378,9 +381,6 @@ function Dashboard() {
 
           {/* =================================================
               PAGE CONTENT
-
-              This is the only loading presentation controlled
-              by the dashboard shell.
           ================================================= */}
 
           <section className="min-w-0 py-6 lg:py-8 lg:pl-8 xl:pl-10">
@@ -392,8 +392,15 @@ function Dashboard() {
                 />
               ) : projectsError ? (
                 <ProjectWorkspaceError onRetry={fetchProjects} />
-              ) : currentProject ? (
-                <Outlet />
+              ) : currentProject && projectId ? (
+                <Outlet
+                  context={{
+                    projects,
+                    currentProject,
+                    projectId,
+                    isAllocat: Boolean(user?.isAllocat),
+                  } satisfies ProjectWorkspaceContext}
+                />
               ) : (
                 <ProjectUnavailable />
               )}
@@ -423,7 +430,7 @@ function ProjectNavigation({
       className="space-y-0.5"
       aria-label="Project workspace"
     >
-      {managerLinks.map((link) => {
+      {managerLinks.map(link => {
         const href = link.path
           ? `${basePath}/${link.path}`
           : basePath;
@@ -511,10 +518,18 @@ function ProjectSwitcher({
             "group flex w-full items-center justify-between gap-3",
             "rounded-lg px-2 py-2.5 text-left",
             "transition-colors hover:bg-muted/40",
+            "data-[state=open]:bg-muted/40",
           ].join(" ")}
         >
           <div className="flex min-w-0 items-center gap-3">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground transition-colors group-hover:bg-primary/[0.08] group-hover:text-primary">
+            <span
+              className={[
+                "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
+                "bg-muted text-muted-foreground transition-colors",
+                "group-hover:bg-primary group-hover:text-secondary",
+                "group-data-[state=open]:bg-primary group-data-[state=open]:text-secondary",
+              ].join(" ")}
+            >
               <ArrowRightLeftIcon size={14} />
             </span>
 
@@ -556,7 +571,7 @@ function ProjectSwitcher({
 
         <div className="max-h-64 overflow-y-auto py-1">
           {projects.length > 0 ? (
-            projects.map((project) => {
+            projects.map(project => {
               const isCurrent =
                 String(project.id) === String(projectId);
 
@@ -564,7 +579,12 @@ function ProjectSwitcher({
                 <DropdownMenuItem
                   key={project.id}
                   asChild
-                  className="rounded-lg"
+                  className={[
+                    "rounded-lg",
+                    isCurrent
+                      ? "bg-muted/50"
+                      : "",
+                  ].join(" ")}
                 >
                   <Link
                     to={`/projects/${project.id}`}
@@ -583,10 +603,12 @@ function ProjectSwitcher({
                     </div>
 
                     {isCurrent && (
-                      <CheckIcon
-                        size={14}
-                        className="shrink-0 text-primary"
-                      />
+                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-primary text-secondary">
+                        <CheckIcon
+                          size={11}
+                          strokeWidth={3}
+                        />
+                      </span>
                     )}
                   </Link>
                 </DropdownMenuItem>
@@ -701,7 +723,7 @@ function ProjectUnavailable() {
   return (
     <div className="flex min-h-[420px] items-center justify-center">
       <div className="max-w-sm text-center">
-        <span className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+        <span className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-secondary shadow-sm shadow-primary/10">
           <BlocksIcon size={17} />
         </span>
 
