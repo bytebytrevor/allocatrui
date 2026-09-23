@@ -288,6 +288,42 @@ function Projects() {
   );
 
   /* =======================================================
+     PROJECT UPDATE HANDLERS
+  ======================================================= */
+
+  const handleOwnedProjectUpdated = useCallback(
+    (updatedProject: Project) => {
+      setProjects(current =>
+        current.map(project =>
+          project.id === updatedProject.id
+            ? {
+                ...project,
+                ...updatedProject,
+              }
+            : project,
+        ),
+      );
+    },
+    [],
+  );
+
+  const handleWorkProjectUpdated = useCallback(
+    (updatedProject: Project) => {
+      setWorkProjects(current =>
+        current.map(project =>
+          project.id === updatedProject.id
+            ? {
+                ...project,
+                ...updatedProject,
+              }
+            : project,
+        ),
+      );
+    },
+    [],
+  );
+
+  /* =======================================================
      INITIAL OWN PROJECT LOAD
   ======================================================= */
 
@@ -395,6 +431,7 @@ function Projects() {
 
       if (
         status === "active" ||
+        status === "completionrequested" ||
         hasAcceptedAllocat
       ) {
         groups.active.push(project);
@@ -410,6 +447,16 @@ function Projects() {
   const activeProjects = ownedProjectGroups.active;
   const pendingProjects = ownedProjectGroups.pending;
   const closedProjects = ownedProjectGroups.closed;
+
+  const completionRequests = useMemo(
+    () =>
+      projects.filter(
+        project =>
+          normalizeProjectStatus(project.status) ===
+          "completionrequested",
+      ),
+    [projects],
+  );
 
   /* =======================================================
      OWN PROJECT FILTERING + SORTING
@@ -611,15 +658,11 @@ function Projects() {
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
-      {/* NAV */}
-
       <header className="sticky top-0 z-40 border-b border-border/70 bg-background/90 backdrop-blur-xl">
         <div className="container mx-auto px-4 sm:px-5 md:px-8">
           <DashboardMainNav />
         </div>
       </header>
-
-      {/* CONTENT */}
 
       <main
         className={[
@@ -639,11 +682,7 @@ function Projects() {
               "xl:gap-12",
             ].join(" ")}
           >
-            {/* MAIN COLUMN */}
-
             <section className="min-w-0">
-              {/* PAGE HEADER */}
-
               <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
                 <div className="min-w-0 max-w-2xl">
                   <div className="flex items-center gap-2.5">
@@ -691,8 +730,6 @@ function Projects() {
                 </Button>
               </div>
 
-              {/* WORKSPACE SWITCH */}
-
               {user?.isAllocat && (
                 <div className="mt-9">
                   <div
@@ -722,8 +759,6 @@ function Projects() {
                 </div>
               )}
 
-              {/* MY PROJECTS */}
-
               {workspaceSection === "projects" && (
                 <>
                   <WorkspaceSummary
@@ -741,7 +776,7 @@ function Projects() {
                         emphasis: "warning",
                       },
                       {
-                        label: "Closed",
+                        label: "Completed",
                         value: closedProjects.length,
                         icon: CheckCircle2Icon,
                         emphasis: "success",
@@ -756,6 +791,7 @@ function Projects() {
                         onClick={() => setFilter("active")}
                         label="Active"
                         count={activeProjects.length}
+                        attention={completionRequests.length > 0}
                       />
 
                       <StatusFilter
@@ -769,7 +805,7 @@ function Projects() {
                       <StatusFilter
                         active={filter === "closed"}
                         onClick={() => setFilter("closed")}
-                        label="Closed"
+                        label="Completed"
                         count={closedProjects.length}
                       />
                     </StatusFilters>
@@ -785,12 +821,15 @@ function Projects() {
                   <ProjectResults
                     projects={visibleProjects}
                     view={view}
-                    emptyLabel={filter}
+                    emptyLabel={
+                      filter === "closed"
+                        ? "completed"
+                        : filter
+                    }
+                    onProjectUpdated={handleOwnedProjectUpdated}
                   />
                 </>
               )}
-
-              {/* MY WORK */}
 
               {workspaceSection === "work" && user?.isAllocat && (
                 <>
@@ -890,6 +929,7 @@ function Projects() {
                     <ProjectGrid
                       projects={visibleWork}
                       view={view}
+                      onProjectUpdated={handleWorkProjectUpdated}
                     />
                   ) : (
                     <WorkEmptyState
@@ -1326,11 +1366,7 @@ function ViewControls({
     <div className="flex shrink-0 items-center gap-1">
       <Button
         type="button"
-        variant={
-          view === "grid"
-            ? "default"
-            : "ghost"
-        }
+        variant={view === "grid" ? "default" : "ghost"}
         size="icon"
         className={[
           "h-9 w-9 rounded-lg shadow-none",
@@ -1346,11 +1382,7 @@ function ViewControls({
 
       <Button
         type="button"
-        variant={
-          view === "list"
-            ? "default"
-            : "ghost"
-        }
+        variant={view === "list" ? "default" : "ghost"}
         size="icon"
         className={[
           "h-9 w-9 rounded-lg shadow-none",
@@ -1375,10 +1407,12 @@ function ProjectResults({
   projects,
   view,
   emptyLabel,
+  onProjectUpdated,
 }: {
   projects: Project[];
   view: ProjectView;
   emptyLabel: string;
+  onProjectUpdated: (project: Project) => void;
 }) {
   if (projects.length === 0) {
     return (
@@ -1404,6 +1438,7 @@ function ProjectResults({
     <ProjectGrid
       projects={projects}
       view={view}
+      onProjectUpdated={onProjectUpdated}
     />
   );
 }
@@ -1415,9 +1450,11 @@ function ProjectResults({
 function ProjectGrid<T extends Project>({
   projects,
   view,
+  onProjectUpdated,
 }: {
   projects: T[];
   view: ProjectView;
+  onProjectUpdated?: (project: Project) => void;
 }) {
   return (
     <div
@@ -1437,11 +1474,13 @@ function ProjectGrid<T extends Project>({
           <GridView
             key={project.id}
             project={project}
+            onProjectUpdated={onProjectUpdated}
           />
         ) : (
           <ListView
             key={project.id}
             project={project}
+            onProjectUpdated={onProjectUpdated}
           />
         ),
       )}

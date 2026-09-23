@@ -3,11 +3,13 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 
 import {
+  AlertTriangleIcon,
   ArrowRightIcon,
   BanIcon,
   CalendarDaysIcon,
   CheckIcon,
   CircleCheckBigIcon,
+  Clock3Icon,
   Edit3Icon,
   EllipsisVerticalIcon,
   EyeIcon,
@@ -15,6 +17,7 @@ import {
   LoaderCircleIcon,
   LockKeyholeIcon,
   SearchIcon,
+  StarIcon,
   UserPlusIcon,
   UsersIcon,
   XIcon,
@@ -78,6 +81,7 @@ const MotionLink = motion.create(Link);
 
 type ViewProps = {
   project: Project;
+  onProjectUpdated?: (project: Project) => void;
 };
 
 type ProjectDialogProps = {
@@ -128,6 +132,20 @@ type ProjectWithSkillContext = Project & {
   skills?: ProjectSkillLike[] | null;
 };
 
+type TaskPreview = {
+  id: string;
+  title: string;
+  description?: string | null;
+  status: string;
+  priority?: string | null;
+  dueDate?: string | null;
+};
+
+type RatingDraft = {
+  rating: number;
+  comment: string;
+};
+
 /* =========================================================
    STATUS APPEARANCE
 ========================================================= */
@@ -142,6 +160,11 @@ const statusAppearance: Record<string, ProjectStatusAppearance> = {
     label: "Active",
     dot: "bg-primary",
     text: "text-foreground",
+  },
+  completionrequested: {
+    label: "Awaiting confirmation",
+    dot: "bg-amber-500",
+    text: "text-amber-700 dark:text-amber-300",
   },
   onhold: {
     label: "On hold",
@@ -291,9 +314,11 @@ function isClientWorkProject(project: Project) {
 function isAcceptedClientWorkProject(project: Project) {
   const workProject = project as ProjectWithWorkContext;
 
-  return String(workProject.projectAllocatStatus ?? "")
-    .trim()
-    .toLowerCase() === "accepted";
+  return (
+    String(workProject.projectAllocatStatus ?? "")
+      .trim()
+      .toLowerCase() === "accepted"
+  );
 }
 
 function isTerminalProject(project: Project) {
@@ -308,12 +333,31 @@ function isTerminalProject(project: Project) {
   ].includes(status);
 }
 
+function isCompletionRequested(project: Project) {
+  return normalizeStatus(project.status) === "completionrequested";
+}
+
+function canModifyOwnedProject(project: Project) {
+  if (isClientWorkProject(project)) return false;
+
+  const status = normalizeStatus(project.status);
+
+  return status === "pending" || status === "active";
+}
+
 function canCancelProject(project: Project) {
-  return !isClientWorkProject(project) && !isTerminalProject(project);
+  return canModifyOwnedProject(project) && !isTerminalProject(project);
 }
 
 function canMarkProjectComplete(project: Project) {
-  return isAcceptedClientWorkProject(project) && !isTerminalProject(project);
+  return (
+    isAcceptedClientWorkProject(project) &&
+    normalizeStatus(project.status) === "active"
+  );
+}
+
+function canReviewCompletion(project: Project) {
+  return !isClientWorkProject(project) && isCompletionRequested(project);
 }
 
 function getProjectCategoryContext(project: Project) {
@@ -416,9 +460,17 @@ function useSyncedProject(project: Project) {
    GRID VIEW
 ========================================================= */
 
-export function GridView({ project }: ViewProps) {
+export function GridView({
+  project,
+  onProjectUpdated,
+}: ViewProps) {
   const [currentProject, setCurrentProject] = useSyncedProject(project);
   const progress = clampProgress(currentProject.progress);
+
+  function handleProjectUpdated(updatedProject: Project) {
+    setCurrentProject(updatedProject);
+    onProjectUpdated?.(updatedProject);
+  }
 
   return (
     <motion.article
@@ -452,8 +504,6 @@ export function GridView({ project }: ViewProps) {
         },
       }}
     >
-      {/* HEADER */}
-
       <div className="flex min-w-0 items-start justify-between gap-3">
         <ProjectIdentity project={currentProject} />
 
@@ -468,12 +518,10 @@ export function GridView({ project }: ViewProps) {
         >
           <ProjectMenu
             project={currentProject}
-            onProjectUpdated={setCurrentProject}
+            onProjectUpdated={handleProjectUpdated}
           />
         </div>
       </div>
-
-      {/* PROJECT COPY */}
 
       <div className="mt-4 min-w-0">
         <MotionLink
@@ -501,7 +549,7 @@ export function GridView({ project }: ViewProps) {
         )}
       </div>
 
-      {/* STATUS + PROGRESS */}
+      <ProjectCompletionNotice project={currentProject} />
 
       <div className="mt-5">
         <div className="flex items-center justify-between gap-4">
@@ -514,8 +562,6 @@ export function GridView({ project }: ViewProps) {
 
         <Progress value={progress} className="mt-2.5 h-[3px]" />
       </div>
-
-      {/* FOOTER */}
 
       <div className="mt-auto flex items-center justify-between gap-3 pt-4">
         <span className="flex min-w-0 items-center gap-1.5 text-[0.62rem] text-muted-foreground">
@@ -551,9 +597,17 @@ export function GridView({ project }: ViewProps) {
    LIST VIEW
 ========================================================= */
 
-export function ListView({ project }: ViewProps) {
+export function ListView({
+  project,
+  onProjectUpdated,
+}: ViewProps) {
   const [currentProject, setCurrentProject] = useSyncedProject(project);
   const progress = clampProgress(currentProject.progress);
+
+  function handleProjectUpdated(updatedProject: Project) {
+    setCurrentProject(updatedProject);
+    onProjectUpdated?.(updatedProject);
+  }
 
   return (
     <motion.article
@@ -586,8 +640,6 @@ export function ListView({ project }: ViewProps) {
         },
       }}
     >
-      {/* PROJECT */}
-
       <div className="min-w-0">
         <ProjectIdentity project={currentProject} compact />
 
@@ -611,9 +663,12 @@ export function ListView({ project }: ViewProps) {
           <CalendarDaysIcon size={13} />
           {formatDate(currentProject.createdAt)}
         </p>
-      </div>
 
-      {/* PROGRESS */}
+        <ProjectCompletionNotice
+          project={currentProject}
+          compact
+        />
+      </div>
 
       <div className="min-w-0">
         <div className="mb-2 flex items-center justify-between gap-3">
@@ -629,16 +684,12 @@ export function ListView({ project }: ViewProps) {
         <Progress value={progress} className="h-1" />
       </div>
 
-      {/* STATUS */}
-
       <StatusIndicator status={currentProject.status} />
-
-      {/* MENU */}
 
       <div className="absolute right-0 top-4 md:static">
         <ProjectMenu
           project={currentProject}
-          onProjectUpdated={setCurrentProject}
+          onProjectUpdated={handleProjectUpdated}
         />
       </div>
     </motion.article>
@@ -712,6 +763,49 @@ function StatusIndicator({ status }: { status?: string }) {
 }
 
 /* =========================================================
+   COMPLETION NOTICE
+========================================================= */
+
+function ProjectCompletionNotice({
+  project,
+  compact = false,
+}: {
+  project: Project;
+  compact?: boolean;
+}) {
+  if (!isCompletionRequested(project)) {
+    return null;
+  }
+
+  const isClientWork = isClientWorkProject(project);
+
+  return (
+    <div
+      className={[
+        compact ? "mt-3" : "mt-4",
+        "flex items-center gap-2 rounded-lg",
+        "border border-amber-500/20 bg-amber-500/[0.045]",
+        "px-3 py-2",
+      ].join(" ")}
+    >
+      <span className="relative flex h-2 w-2 shrink-0">
+        {!isClientWork && (
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-500 opacity-30" />
+        )}
+
+        <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-500" />
+      </span>
+
+      <p className="min-w-0 text-[0.67rem] font-semibold text-amber-800 dark:text-amber-200">
+        {isClientWork
+          ? "Awaiting client confirmation"
+          : "Action required · Completion requested"}
+      </p>
+    </div>
+  );
+}
+
+/* =========================================================
    PROJECT MENU
 ========================================================= */
 
@@ -721,10 +815,14 @@ function ProjectMenu({
 }: ProjectMenuProps) {
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
+  const [completeOpen, setCompleteOpen] = useState(false);
+  const [reviewCompletionOpen, setReviewCompletionOpen] = useState(false);
 
   const isClientWork = isClientWorkProject(project);
+  const canModifyOwned = canModifyOwnedProject(project);
   const showCancel = canCancelProject(project);
   const showMarkComplete = canMarkProjectComplete(project);
+  const showReviewCompletion = canReviewCompletion(project);
 
   return (
     <>
@@ -760,7 +858,21 @@ function ProjectMenu({
             View details
           </DropdownMenuItem>
 
-          {!isClientWork && (
+          {showReviewCompletion && (
+            <>
+              <DropdownMenuSeparator />
+
+              <DropdownMenuItem
+                className="rounded-lg text-amber-700 focus:text-amber-700 dark:text-amber-300 dark:focus:text-amber-300"
+                onSelect={() => setReviewCompletionOpen(true)}
+              >
+                <Clock3Icon size={14} />
+                Review completion
+              </DropdownMenuItem>
+            </>
+          )}
+
+          {canModifyOwned && (
             <>
               <DropdownMenuSeparator />
 
@@ -796,7 +908,10 @@ function ProjectMenu({
             <>
               <DropdownMenuSeparator />
 
-              <DropdownMenuItem className="rounded-lg text-emerald-700 focus:text-emerald-700 dark:text-emerald-300 dark:focus:text-emerald-300">
+              <DropdownMenuItem
+                className="rounded-lg text-emerald-700 focus:text-emerald-700 dark:text-emerald-300 dark:focus:text-emerald-300"
+                onSelect={() => setCompleteOpen(true)}
+              >
                 <CircleCheckBigIcon size={14} />
                 Mark complete
               </DropdownMenuItem>
@@ -811,7 +926,7 @@ function ProjectMenu({
         onOpenChange={setDetailsOpen}
       />
 
-      {!isClientWork && (
+      {canModifyOwned && (
         <EditProjectDialog
           project={project}
           open={editOpen}
@@ -819,7 +934,752 @@ function ProjectMenu({
           onProjectUpdated={onProjectUpdated}
         />
       )}
+
+      {isClientWork && (
+        <RequestCompletionDialog
+          project={project}
+          open={completeOpen}
+          onOpenChange={setCompleteOpen}
+          onProjectUpdated={onProjectUpdated}
+        />
+      )}
+
+      {!isClientWork && (
+        <ReviewCompletionDialog
+          project={project}
+          open={reviewCompletionOpen}
+          onOpenChange={setReviewCompletionOpen}
+          onProjectUpdated={onProjectUpdated}
+        />
+      )}
     </>
+  );
+}
+
+/* =========================================================
+   REQUEST COMPLETION DIALOG
+========================================================= */
+
+function RequestCompletionDialog({
+  project,
+  open,
+  onOpenChange,
+  onProjectUpdated,
+}: EditProjectDialogProps) {
+  const [tasks, setTasks] = useState<TaskPreview[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
+
+  useEffect(() => {
+    if (!open) return;
+
+    let cancelled = false;
+
+    async function loadTasks() {
+      try {
+        setLoading(true);
+        setLoadError(false);
+
+        const response = await api.get<TaskPreview[]>(
+          `/projects/tasks/${project.id}`,
+          {
+            withCredentials: true,
+          },
+        );
+
+        if (cancelled) return;
+
+        setTasks(
+          Array.isArray(response.data)
+            ? response.data
+            : [],
+        );
+      } catch (error) {
+        if (cancelled) return;
+
+        console.error("Could not load project tasks:", error);
+        setLoadError(true);
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }
+
+    void loadTasks();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [open, project.id, reloadKey]);
+
+  const incompleteTasks = useMemo(
+    () =>
+      tasks.filter(
+        task =>
+          task.status?.trim().toLowerCase() !== "complete",
+      ),
+    [tasks],
+  );
+
+  async function requestCompletion() {
+    if (submitting || loading || loadError) return;
+
+    try {
+      setSubmitting(true);
+
+      const response = await api.patch<Project>(
+        `/projects/${project.id}/completion/request`,
+        {},
+        {
+          withCredentials: true,
+        },
+      );
+
+      const updatedProject = {
+        ...project,
+        ...response.data,
+      };
+
+      onProjectUpdated(updatedProject);
+
+      toast.success(
+        "Completion request sent to the client.",
+      );
+
+      onOpenChange(false);
+    } catch (error) {
+      console.error(
+        "Could not request project completion:",
+        error,
+      );
+
+      toast.error(
+        "The completion request could not be sent.",
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={nextOpen => {
+        if (submitting) return;
+        onOpenChange(nextOpen);
+      }}
+    >
+      <DialogContent className="rounded-[1.5rem] border-border bg-background p-0 sm:max-w-lg">
+        <DialogHeader className="border-b border-border px-6 pb-6 pt-7 text-left">
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/[0.08] text-emerald-700 dark:text-emerald-300">
+            <CircleCheckBigIcon size={18} />
+          </span>
+
+          <DialogTitle className="mt-4 text-2xl font-black tracking-[-0.03em]">
+            Mark project complete?
+          </DialogTitle>
+
+          <DialogDescription className="mt-2 leading-7">
+            This will send the project to the client for final completion
+            confirmation.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="px-6 py-6">
+          {loading ? (
+            <div className="flex min-h-24 items-center gap-3 text-sm text-muted-foreground">
+              <LoaderCircleIcon
+                size={16}
+                className="animate-spin text-primary"
+              />
+              Checking project tasks
+            </div>
+          ) : loadError ? (
+            <div className="rounded-xl border border-destructive/15 bg-destructive/[0.035] p-4">
+              <p className="text-sm font-semibold">
+                We couldn't check the project tasks.
+              </p>
+
+              <p className="mt-1 text-xs leading-6 text-muted-foreground">
+                Try again before sending the completion request.
+              </p>
+
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="mt-4 rounded-lg bg-transparent shadow-none"
+                onClick={() => setReloadKey(value => value + 1)}
+              >
+                Try again
+              </Button>
+            </div>
+          ) : incompleteTasks.length > 0 ? (
+            <div className="rounded-xl border border-amber-500/20 bg-amber-500/[0.045] p-4">
+              <div className="flex gap-3">
+                <AlertTriangleIcon
+                  size={17}
+                  className="mt-0.5 shrink-0 text-amber-600"
+                />
+
+                <div>
+                  <p className="text-sm font-bold">
+                    {incompleteTasks.length}{" "}
+                    {incompleteTasks.length === 1
+                      ? "task is"
+                      : "tasks are"}{" "}
+                    still incomplete.
+                  </p>
+
+                  <p className="mt-1 text-xs leading-6 text-muted-foreground">
+                    Continuing will automatically mark{" "}
+                    {incompleteTasks.length === 1
+                      ? "this task"
+                      : "these tasks"}{" "}
+                    as complete before the project is sent to the client.
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-4 max-h-32 space-y-2 overflow-y-auto border-t border-amber-500/15 pt-3">
+                {incompleteTasks.map(task => (
+                  <div
+                    key={task.id}
+                    className="flex items-center gap-2 text-xs"
+                  >
+                    <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500" />
+                    <span className="truncate">{task.title}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : tasks.length > 0 ? (
+            <div className="rounded-xl bg-muted/35 p-4">
+              <p className="text-sm font-semibold">
+                All project tasks are complete.
+              </p>
+
+              <p className="mt-1 text-xs leading-6 text-muted-foreground">
+                The project is ready to be sent to the client for confirmation.
+              </p>
+            </div>
+          ) : (
+            <div className="rounded-xl bg-muted/35 p-4">
+              <p className="text-sm font-semibold">
+                No tasks were created for this project.
+              </p>
+
+              <p className="mt-1 text-xs leading-6 text-muted-foreground">
+                That's okay. The task manager is optional, and you can still
+                send the project to the client for completion confirmation.
+              </p>
+            </div>
+          )}
+        </div>
+
+        <DialogFooter className="border-t border-border px-6 py-5">
+          <Button
+            type="button"
+            variant="ghost"
+            disabled={submitting}
+            onClick={() => onOpenChange(false)}
+            className="rounded-lg px-5 text-muted-foreground shadow-none"
+          >
+            Cancel
+          </Button>
+
+          <Button
+            type="button"
+            disabled={submitting || loading || loadError}
+            onClick={() => void requestCompletion()}
+            className="rounded-lg px-6 shadow-none"
+          >
+            {submitting ? (
+              <LoaderCircleIcon
+                size={14}
+                className="animate-spin"
+              />
+            ) : (
+              <CircleCheckBigIcon size={14} />
+            )}
+
+            {submitting
+              ? "Sending"
+              : "Send for confirmation"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+/* =========================================================
+   REVIEW COMPLETION DIALOG
+========================================================= */
+
+function ReviewCompletionDialog({
+  project,
+  open,
+  onOpenChange,
+  onProjectUpdated,
+}: EditProjectDialogProps) {
+  const [members, setMembers] = useState<ProjectAllocatMember[]>([]);
+  const [ratings, setRatings] = useState<Record<string, RatingDraft>>({});
+  const [loading, setLoading] = useState(false);
+  const [acting, setActing] = useState<"confirm" | "reject" | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+
+    let cancelled = false;
+
+    async function loadMembers() {
+      try {
+        setLoading(true);
+
+        const response = await api.get<ProjectAllocatMember[]>(
+          `/projects/${project.id}/allocats/members`,
+          {
+            withCredentials: true,
+          },
+        );
+
+        if (cancelled) return;
+
+        const acceptedMembers = (
+          Array.isArray(response.data)
+            ? response.data
+            : []
+        ).filter(
+          member =>
+            String(member.status)
+              .trim()
+              .toLowerCase() === "accepted",
+        );
+
+        setMembers(acceptedMembers);
+
+        const nextRatings: Record<string, RatingDraft> = {};
+
+        for (const member of acceptedMembers) {
+          nextRatings[member.allocatProfileId] = {
+            rating: 0,
+            comment: "",
+          };
+        }
+
+        setRatings(nextRatings);
+      } catch (error) {
+        if (cancelled) return;
+
+        console.error(
+          "Could not load project Allocats:",
+          error,
+        );
+
+        toast.error(
+          "The project team could not be loaded.",
+        );
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }
+
+    void loadMembers();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [open, project.id]);
+
+  function setMemberRating(
+    allocatId: string,
+    rating: number,
+  ) {
+    setRatings(current => ({
+      ...current,
+      [allocatId]: {
+        rating,
+        comment: current[allocatId]?.comment ?? "",
+      },
+    }));
+  }
+
+  function clearMemberRating(allocatId: string) {
+    setRatings(current => ({
+      ...current,
+      [allocatId]: {
+        rating: 0,
+        comment: "",
+      },
+    }));
+  }
+
+  function setMemberComment(
+    allocatId: string,
+    comment: string,
+  ) {
+    setRatings(current => ({
+      ...current,
+      [allocatId]: {
+        rating: current[allocatId]?.rating ?? 0,
+        comment,
+      },
+    }));
+  }
+
+  async function needsMoreWork() {
+    if (acting) return;
+
+    try {
+      setActing("reject");
+
+      const response = await api.patch<Project>(
+        `/projects/${project.id}/completion/reject`,
+        {},
+        {
+          withCredentials: true,
+        },
+      );
+
+      onProjectUpdated({
+        ...project,
+        ...response.data,
+      });
+
+      toast.success(
+        "The project has been returned for more work.",
+      );
+
+      onOpenChange(false);
+    } catch (error) {
+      console.error(
+        "Could not return project for more work:",
+        error,
+      );
+
+      toast.error(
+        "The project could not be returned for more work.",
+      );
+    } finally {
+      setActing(null);
+    }
+  }
+
+  async function confirmCompletion() {
+    if (acting) return;
+
+    try {
+      setActing("confirm");
+
+      const response = await api.patch<Project>(
+        `/projects/${project.id}/completion/confirm`,
+        {},
+        {
+          withCredentials: true,
+        },
+      );
+
+      const submittedRatings = members.flatMap(member => {
+        const draft = ratings[member.allocatProfileId];
+
+        if (!draft || draft.rating < 1) {
+          return [];
+        }
+
+        return [
+          {
+            allocatId: member.allocatProfileId,
+            rating: draft.rating,
+            comment: draft.comment.trim() || null,
+          },
+        ];
+      });
+
+      let ratingsSaved = true;
+
+      if (submittedRatings.length > 0) {
+        try {
+          await api.put(
+            `/projects/${project.id}/ratings`,
+            {
+              ratings: submittedRatings,
+            },
+            {
+              withCredentials: true,
+            },
+          );
+        } catch (error) {
+          ratingsSaved = false;
+
+          console.error(
+            "Project completed but ratings could not be saved:",
+            error,
+          );
+        }
+      }
+
+      onProjectUpdated({
+        ...project,
+        ...response.data,
+      });
+
+      if (!ratingsSaved) {
+        toast.warning(
+          "Project completed, but the ratings could not be saved.",
+        );
+      } else if (submittedRatings.length > 0) {
+        toast.success(
+          "Project completed and ratings submitted.",
+        );
+      } else {
+        toast.success(
+          "Project completion confirmed.",
+        );
+      }
+
+      onOpenChange(false);
+    } catch (error) {
+      console.error(
+        "Could not confirm project completion:",
+        error,
+      );
+
+      toast.error(
+        "Project completion could not be confirmed.",
+      );
+    } finally {
+      setActing(null);
+    }
+  }
+
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={nextOpen => {
+        if (acting) return;
+        onOpenChange(nextOpen);
+      }}
+    >
+      <DialogContent className="flex max-h-[90vh] flex-col overflow-hidden rounded-[1.5rem] border-border bg-background p-0 sm:max-w-2xl">
+        <DialogHeader className="shrink-0 border-b border-border px-6 pb-6 pt-7 text-left sm:px-8">
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/[0.08] text-amber-700 dark:text-amber-300">
+            <Clock3Icon size={18} />
+          </span>
+
+          <DialogTitle className="mt-4 text-2xl font-black tracking-[-0.03em]">
+            Confirm project completion
+          </DialogTitle>
+
+          <DialogDescription className="mt-2 max-w-xl leading-7">
+            The project team has marked this job as complete. Confirm the
+            work or send it back if more work is needed.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="min-h-0 flex-1 overflow-y-auto px-6 py-6 sm:px-8">
+          <div className="rounded-xl bg-muted/35 p-4">
+            <p className="text-sm font-bold">
+              {project.title}
+            </p>
+
+            <p className="mt-1 text-xs leading-6 text-muted-foreground">
+              Confirming completion will close the project and make the
+              project work read-only.
+            </p>
+          </div>
+
+          <section className="mt-7">
+            <p className="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+              Rate your Allocats
+            </p>
+
+            <h3 className="mt-1 text-lg font-black tracking-[-0.02em]">
+              How was the experience?
+            </h3>
+
+            <p className="mt-2 text-xs leading-6 text-muted-foreground">
+              Ratings are optional. You can rate one, several or all of the
+              Allocats who worked on this project.
+            </p>
+
+            {loading ? (
+              <div className="mt-6 flex items-center gap-2 text-sm text-muted-foreground">
+                <LoaderCircleIcon
+                  size={15}
+                  className="animate-spin text-primary"
+                />
+                Loading project team
+              </div>
+            ) : members.length === 0 ? (
+              <div className="mt-5 rounded-xl bg-muted/35 p-4">
+                <p className="text-sm font-semibold">
+                  No accepted Allocats were found.
+                </p>
+
+                <p className="mt-1 text-xs leading-6 text-muted-foreground">
+                  You can still confirm project completion.
+                </p>
+              </div>
+            ) : (
+              <div className="mt-5 divide-y divide-border border-y border-border">
+                {members.map(member => {
+                  const draft =
+                    ratings[member.allocatProfileId] ?? {
+                      rating: 0,
+                      comment: "",
+                    };
+
+                  return (
+                    <div
+                      key={member.allocatProfileId}
+                      className="py-5"
+                    >
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-10 w-10 border border-border">
+                          <AvatarImage
+                            src={member.avatarUrl}
+                            alt={member.fullName}
+                            className="object-cover"
+                          />
+
+                          <AvatarFallback className="bg-primary/10 text-xs font-bold text-primary">
+                            {getInitials(member.fullName)}
+                          </AvatarFallback>
+                        </Avatar>
+
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold">
+                            {member.fullName}
+                          </p>
+
+                          <p className="text-xs text-muted-foreground">
+                            {member.title || "Allocat professional"}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="mt-4 flex flex-wrap items-center gap-1">
+                        {[1, 2, 3, 4, 5].map(value => {
+                          const selected = value <= draft.rating;
+
+                          return (
+                            <button
+                              key={value}
+                              type="button"
+                              disabled={acting !== null}
+                              onClick={() =>
+                                setMemberRating(
+                                  member.allocatProfileId,
+                                  value,
+                                )
+                              }
+                              className="rounded-md p-1 transition-transform hover:scale-110 disabled:pointer-events-none"
+                              aria-label={`Rate ${member.fullName} ${value} out of 5`}
+                            >
+                              <StarIcon
+                                size={21}
+                                className={
+                                  selected
+                                    ? "fill-amber-400 text-amber-400"
+                                    : "text-muted-foreground/35"
+                                }
+                              />
+                            </button>
+                          );
+                        })}
+
+                        {draft.rating > 0 && (
+                          <>
+                            <span className="ml-2 text-xs font-semibold text-muted-foreground">
+                              {draft.rating}/5
+                            </span>
+
+                            <button
+                              type="button"
+                              disabled={acting !== null}
+                              onClick={() =>
+                                clearMemberRating(
+                                  member.allocatProfileId,
+                                )
+                              }
+                              className="ml-2 text-[0.65rem] font-semibold text-muted-foreground transition-colors hover:text-foreground"
+                            >
+                              Clear
+                            </button>
+                          </>
+                        )}
+                      </div>
+
+                      {draft.rating > 0 && (
+                        <Textarea
+                          value={draft.comment}
+                          disabled={acting !== null}
+                          maxLength={1000}
+                          rows={3}
+                          onChange={event =>
+                            setMemberComment(
+                              member.allocatProfileId,
+                              event.target.value,
+                            )
+                          }
+                          placeholder="Add a comment (optional)"
+                          className="mt-3 min-h-20 resize-none rounded-lg border-border bg-background text-sm shadow-none"
+                        />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </section>
+        </div>
+
+        <DialogFooter className="shrink-0 border-t border-border bg-background px-6 py-5 sm:px-8">
+          <Button
+            type="button"
+            variant="ghost"
+            disabled={acting !== null}
+            onClick={() => void needsMoreWork()}
+            className="rounded-lg px-5 text-muted-foreground shadow-none"
+          >
+            {acting === "reject" && (
+              <LoaderCircleIcon
+                size={14}
+                className="animate-spin"
+              />
+            )}
+
+            Needs more work
+          </Button>
+
+          <Button
+            type="button"
+            disabled={acting !== null || loading}
+            onClick={() => void confirmCompletion()}
+            className="rounded-lg px-6 shadow-none"
+          >
+            {acting === "confirm" ? (
+              <LoaderCircleIcon
+                size={14}
+                className="animate-spin"
+              />
+            ) : (
+              <CircleCheckBigIcon size={14} />
+            )}
+
+            {acting === "confirm"
+              ? "Confirming"
+              : "Confirm completion"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -856,10 +1716,6 @@ function ProjectDetailsDialog({
     () => resolveProjectSkills(project, skillCatalogue),
     [project, skillCatalogue],
   );
-
-  /* =======================================================
-     LOAD MEMBERS
-  ======================================================= */
 
   useEffect(() => {
     if (!open) return;
@@ -903,10 +1759,6 @@ function ProjectDetailsDialog({
       cancelled = true;
     };
   }, [open, project.id]);
-
-  /* =======================================================
-     LOAD SKILLS
-  ======================================================= */
 
   useEffect(() => {
     if (!open) return;
@@ -1004,15 +1856,11 @@ function ProjectDetailsDialog({
         </DialogHeader>
 
         <div className="min-h-0 flex-1 space-y-8 overflow-y-auto px-6 py-7 sm:px-8">
-          {/* DATES */}
-
           <div className="grid gap-6 border-b border-border pb-7 sm:grid-cols-3">
             <DateDetail label="Created" value={project.createdAt} />
             <DateDetail label="Start date" value={project.startDate} />
             <DateDetail label="Due date" value={project.dueDate} />
           </div>
-
-          {/* PROGRESS */}
 
           <section>
             <div className="flex items-end justify-between gap-5">
@@ -1035,8 +1883,6 @@ function ProjectDetailsDialog({
             <Progress value={progress} className="mt-5 h-1.5" />
           </section>
 
-          {/* INFORMATION */}
-
           <div className="grid gap-6 border-y border-border py-7 sm:grid-cols-2">
             <DetailRow label="Category" value={categoryLabel} />
 
@@ -1045,8 +1891,6 @@ function ProjectDetailsDialog({
               value={project.projectCode || "Not assigned"}
             />
           </div>
-
-          {/* SKILLS */}
 
           <section>
             <div className="flex items-end justify-between gap-4">
@@ -1094,8 +1938,6 @@ function ProjectDetailsDialog({
               </p>
             )}
           </section>
-
-          {/* TEAM */}
 
           <section className="border-t border-border pt-7">
             <div className="flex items-end justify-between gap-4">
@@ -1403,10 +2245,6 @@ function EditProjectDialog({
     "General project",
   );
 
-  /* =======================================================
-     RESET FORM
-  ======================================================= */
-
   useEffect(() => {
     if (!open) return;
 
@@ -1420,10 +2258,6 @@ function EditProjectDialog({
     setSkillsChanged(false);
     setSkillsError(null);
   }, [open, project]);
-
-  /* =======================================================
-     LOAD SKILLS
-  ======================================================= */
 
   useEffect(() => {
     if (!open) return;
@@ -1477,10 +2311,6 @@ function EditProjectDialog({
     setSkillsChanged(true);
   }
 
-  /* =======================================================
-     SAVE
-  ======================================================= */
-
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -1522,81 +2352,31 @@ function EditProjectDialog({
       ...(skillsChanged ? { skillIds } : {}),
     };
 
-  //   try {
-  //     setSaving(true);
+    try {
+      setSaving(true);
 
-  //     const response = await api.patch<Project | null>(
-  //       `/projects/${project.id}`,
-  //       payload,
-  //       {
-  //         withCredentials: true,
-  //       },
-  //     );
+      const response = await api.patch<Project>(
+        `/projects/${project.id}`,
+        payload,
+        {
+          withCredentials: true,
+        },
+      );
 
-  //     let updatedProject: Project;
+      onProjectUpdated(response.data);
 
-  //     if (response.data && typeof response.data === "object") {
-  //       updatedProject = {
-  //         ...project,
-  //         ...response.data,
-  //       };
+      toast.success("Project updated.");
+      onOpenChange(false);
+    } catch (error) {
+      console.error("Could not update project:", error);
 
-  //       if (skillsChanged) {
-  //         updatedProject = {
-  //           ...updatedProject,
-  //           skillIds: [...skillIds],
-  //         } as Project;
-  //       }
-  //     } else {
-  //       updatedProject = {
-  //         ...project,
-  //         ...payload,
-  //       } as Project;
-
-  //       if (skillsChanged) {
-  //         updatedProject = {
-  //           ...updatedProject,
-  //           skillIds: [...skillIds],
-  //         } as Project;
-  //       }
-  //     }
-
-  //     onProjectUpdated(updatedProject);
-  //     toast.success("Project updated.");
-  //     onOpenChange(false);
-  //   } catch (error) {
-  //     console.error("Could not update project:", error);
-  //     toast.error("The project could not be updated.");
-  //   } finally {
-  //     setSaving(false);
-  //   }
-  // }
-
-  try {
-    setSaving(true);
-
-    const response = await api.patch<Project>(
-      `/projects/${project.id}`,
-      payload,
-      {
-        withCredentials: true,
-      },
-    );
-
-    onProjectUpdated(response.data);
-
-    toast.success("Project updated.");
-    onOpenChange(false);
-  } catch (error) {
-    console.error("Could not update project:", error);
-
-    toast.error(
-      "The project could not be updated.",
-    );
-  } finally {
-    setSaving(false);
+      toast.error(
+        "The project could not be updated.",
+      );
+    } finally {
+      setSaving(false);
+    }
   }
-}
 
   return (
     <Dialog
