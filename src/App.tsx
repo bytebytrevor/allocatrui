@@ -1,5 +1,5 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import AllocatsSearch from "./pages/AllocatsSearch";
+import Discover from "./pages/DiscoverAllocats";
 import AllocatProfilePage from "./pages/AllocatProfile";
 import Dashboard from "./pages/Dashboard";
 import Calendar from "./components/Calendar";
@@ -56,7 +56,7 @@ function App() {
       path: "/login", Component: Login,
     },        
     {
-      path: "/allocats", Component: AllocatsSearch,
+      path: "/discover", Component: Discover,
     },        
     {
       path: "/allocats/:profileId", Component: AllocatProfilePage,

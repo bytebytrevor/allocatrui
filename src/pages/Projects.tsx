@@ -23,7 +23,6 @@ import {
   Grid2X2Icon,
   InboxIcon,
   LayoutListIcon,
-  LightbulbIcon,
   LoaderCircleIcon,
   PlusIcon,
   RefreshCwIcon,
@@ -71,21 +70,16 @@ type ProjectView = "grid" | "list";
 type ProjectFilter = "active" | "pending" | "closed";
 type WorkspaceSection = "projects" | "work";
 type WorkFilter = "invitations" | "active" | "completed";
-
-type ProjectSort =
-  | "newest"
-  | "oldest"
-  | "title-asc"
-  | "title-desc";
+type ProjectSort = "newest" | "oldest" | "title-asc" | "title-desc";
 
 type SummaryItem = {
   label: string;
   value: number;
-  icon: ComponentType<{
-    size?: number;
-    className?: string;
-  }>;
+  icon: ComponentType<{ size?: number; className?: string }>;
   emphasis?: "primary" | "warning" | "success";
+  active?: boolean;
+  attention?: boolean;
+  onClick?: () => void;
 };
 
 type OwnedProjectGroups = {
@@ -106,7 +100,7 @@ export type WorkProject = Project & {
 };
 
 /* =========================================================
-   STATUS CONSTANTS
+   CONSTANTS
 ========================================================= */
 
 const CLOSED_PROJECT_STATUSES = new Set([
@@ -117,32 +111,13 @@ const CLOSED_PROJECT_STATUSES = new Set([
   "canceled",
 ]);
 
-const PAUSED_PROJECT_STATUSES = new Set([
-  "paused",
-  "onhold",
-]);
-
-/* =========================================================
-   SORT OPTIONS
-========================================================= */
+const PAUSED_PROJECT_STATUSES = new Set(["paused", "onhold"]);
 
 const SORT_OPTIONS: SortOption[] = [
-  {
-    value: "newest",
-    label: "Newest first",
-  },
-  {
-    value: "oldest",
-    label: "Oldest first",
-  },
-  {
-    value: "title-asc",
-    label: "Title A–Z",
-  },
-  {
-    value: "title-desc",
-    label: "Title Z–A",
-  },
+  { value: "newest", label: "Newest first" },
+  { value: "oldest", label: "Oldest first" },
+  { value: "title-asc", label: "Title A–Z" },
+  { value: "title-desc", label: "Title Z–A" },
 ];
 
 /* =========================================================
@@ -152,25 +127,15 @@ const SORT_OPTIONS: SortOption[] = [
 function Projects() {
   const { user } = useAuth();
 
-  const [workspaceSection, setWorkspaceSection] =
-    useState<WorkspaceSection>("projects");
-
+  const [workspaceSection, setWorkspaceSection] = useState<WorkspaceSection>("projects");
   const [view, setView] = useState<ProjectView>("grid");
   const [filter, setFilter] = useState<ProjectFilter>("active");
   const [workFilter, setWorkFilter] = useState<WorkFilter>("active");
   const [sort, setSort] = useState<ProjectSort>("newest");
 
-  /* =======================================================
-     OWN PROJECTS
-  ======================================================= */
-
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
-
-  /* =======================================================
-     ALLOCAT WORK
-  ======================================================= */
 
   const [workProjects, setWorkProjects] = useState<WorkProject[]>([]);
   const [workLoading, setWorkLoading] = useState(false);
@@ -192,11 +157,7 @@ function Projects() {
         withCredentials: true,
       });
 
-      setProjects(
-        Array.isArray(response.data)
-          ? response.data
-          : [],
-      );
+      setProjects(Array.isArray(response.data) ? response.data : []);
     } catch (err: unknown) {
       console.error("Could not load owned projects:", err);
 
@@ -215,163 +176,95 @@ function Projects() {
   ======================================================= */
 
   const fetchWorkProjects = useCallback(
-    async ({
-      notifyOnError = false,
-    }: {
-      notifyOnError?: boolean;
-    } = {}) => {
+    async ({ notifyOnError = false }: { notifyOnError?: boolean } = {}) => {
       if (!user?.isAllocat) return;
 
-      const requestUserKey =
-        user.userId ??
-        user.email ??
-        null;
-
+      const requestUserKey = user.userId ?? user.email ?? null;
       if (!requestUserKey) return;
 
       setWorkLoading(true);
       setWorkError(null);
 
       try {
-        const response = await api.get<WorkProject[]>(
-          "/allocats/me/projects",
-          {
-            withCredentials: true,
-          },
-        );
+        const response = await api.get<WorkProject[]>("/allocats/me/projects", {
+          withCredentials: true,
+        });
 
-        if (
-          workPrefetchedForUserRef.current !==
-          requestUserKey
-        ) {
-          return;
-        }
+        if (workPrefetchedForUserRef.current !== requestUserKey) return;
 
-        setWorkProjects(
-          Array.isArray(response.data)
-            ? response.data
-            : [],
-        );
-
+        setWorkProjects(Array.isArray(response.data) ? response.data : []);
         setWorkLoaded(true);
       } catch (err) {
-        if (
-          workPrefetchedForUserRef.current !==
-          requestUserKey
-        ) {
-          return;
-        }
+        if (workPrefetchedForUserRef.current !== requestUserKey) return;
 
         console.error("Could not load Allocat work:", err);
-
-        setWorkError(
-          "Your client work could not be loaded.",
-        );
+        setWorkError("Your client work could not be loaded.");
 
         if (notifyOnError) {
           toast.error("We could not load your work.");
         }
       } finally {
-        if (
-          workPrefetchedForUserRef.current ===
-          requestUserKey
-        ) {
+        if (workPrefetchedForUserRef.current === requestUserKey) {
           setWorkLoading(false);
         }
       }
     },
-    [
-      user?.isAllocat,
-      user?.userId,
-      user?.email,
-    ],
+    [user?.isAllocat, user?.userId, user?.email],
   );
 
   /* =======================================================
-     PROJECT UPDATE HANDLERS
+     UPDATE HANDLERS
   ======================================================= */
 
-  const handleOwnedProjectUpdated = useCallback(
-    (updatedProject: Project) => {
-      setProjects(current =>
-        current.map(project =>
-          project.id === updatedProject.id
-            ? {
-                ...project,
-                ...updatedProject,
-              }
-            : project,
-        ),
-      );
-    },
-    [],
-  );
+  const handleOwnedProjectUpdated = useCallback((updatedProject: Project) => {
+    setProjects(current =>
+      current.map(project =>
+        project.id === updatedProject.id
+          ? { ...project, ...updatedProject }
+          : project,
+      ),
+    );
+  }, []);
 
-  const handleWorkProjectUpdated = useCallback(
-    (updatedProject: Project) => {
-      setWorkProjects(current =>
-        current.map(project =>
-          project.id === updatedProject.id
-            ? {
-                ...project,
-                ...updatedProject,
-              }
-            : project,
-        ),
-      );
-    },
-    [],
-  );
+  const handleWorkProjectUpdated = useCallback((updatedProject: Project) => {
+    setWorkProjects(current =>
+      current.map(project =>
+        project.id === updatedProject.id
+          ? { ...project, ...updatedProject }
+          : project,
+      ),
+    );
+  }, []);
 
   /* =======================================================
-     INITIAL OWN PROJECT LOAD
+     INITIAL LOAD
   ======================================================= */
 
   useEffect(() => {
     if (!user?.userId) return;
-
     void fetchProjects();
-  }, [
-    user?.userId,
-    fetchProjects,
-  ]);
-
-  /* =======================================================
-     PREFETCH ALLOCAT WORK
-  ======================================================= */
+  }, [user?.userId, fetchProjects]);
 
   useEffect(() => {
     if (!user?.isAllocat) {
       workPrefetchedForUserRef.current = null;
-
       setWorkProjects([]);
       setWorkLoaded(false);
       setWorkLoading(false);
       setWorkError(null);
-
       return;
     }
 
-    const userKey =
-      user.userId ??
-      user.email ??
-      null;
-
+    const userKey = user.userId ?? user.email ?? null;
     if (!userKey) return;
 
-    if (
-      workPrefetchedForUserRef.current ===
-      userKey
-    ) {
-      return;
-    }
+    if (workPrefetchedForUserRef.current === userKey) return;
 
     setWorkProjects([]);
     setWorkLoaded(false);
     setWorkError(null);
 
     workPrefetchedForUserRef.current = userKey;
-
     void fetchWorkProjects();
   }, [
     user?.isAllocat,
@@ -380,27 +273,13 @@ function Projects() {
     fetchWorkProjects,
   ]);
 
-  /* =======================================================
-     ROLE SAFETY
-  ======================================================= */
-
   useEffect(() => {
-    if (
-      !user?.isAllocat &&
-      workspaceSection === "work"
-    ) {
+    if (!user?.isAllocat && workspaceSection === "work") {
       setWorkspaceSection("projects");
     }
-  }, [
-    user?.isAllocat,
-    workspaceSection,
-  ]);
+  }, [user?.isAllocat, workspaceSection]);
 
-  const firstName =
-    user?.fullName
-      ?.trim()
-      .split(/\s+/)[0] ||
-    "there";
+  const firstName = user?.fullName?.trim().split(/\s+/)[0] || "there";
 
   /* =======================================================
      OWN PROJECT CLASSIFICATION
@@ -426,13 +305,10 @@ function Projects() {
         continue;
       }
 
-      const hasAcceptedAllocat =
-        project.hasAcceptedAllocat === true;
-
       if (
         status === "active" ||
         status === "completionrequested" ||
-        hasAcceptedAllocat
+        project.hasAcceptedAllocat === true
       ) {
         groups.active.push(project);
         continue;
@@ -452,14 +328,13 @@ function Projects() {
     () =>
       projects.filter(
         project =>
-          normalizeProjectStatus(project.status) ===
-          "completionrequested",
+          normalizeProjectStatus(project.status) === "completionrequested",
       ),
     [projects],
   );
 
   /* =======================================================
-     OWN PROJECT FILTERING + SORTING
+     OWN PROJECT FILTERING
   ======================================================= */
 
   const visibleProjects = useMemo(() => {
@@ -473,10 +348,7 @@ function Projects() {
       filteredProjects = activeProjects;
     }
 
-    return sortProjectItems(
-      filteredProjects,
-      sort,
-    );
+    return sortProjectItems(filteredProjects, sort);
   }, [
     filter,
     activeProjects,
@@ -486,45 +358,31 @@ function Projects() {
   ]);
 
   /* =======================================================
-     ALLOCAT WORK FILTERING
+     ALLOCAT WORK
   ======================================================= */
 
-  const invitations = useMemo(() => {
-    return workProjects.filter(
-      project =>
-        project.projectAllocatStatus ===
-        "Invited",
-    );
-  }, [workProjects]);
+  const invitations = useMemo(
+    () =>
+      workProjects.filter(
+        project => project.projectAllocatStatus === "Invited",
+      ),
+    [workProjects],
+  );
 
   const activeWork = useMemo(() => {
     return workProjects.filter(project => {
-      if (
-        project.projectAllocatStatus !==
-        "Accepted"
-      ) {
-        return false;
-      }
+      if (project.projectAllocatStatus !== "Accepted") return false;
 
-      const status =
-        normalizeProjectStatus(project.status);
-
+      const status = normalizeProjectStatus(project.status);
       return !CLOSED_PROJECT_STATUSES.has(status);
     });
   }, [workProjects]);
 
   const completedWork = useMemo(() => {
     return workProjects.filter(project => {
-      if (
-        project.projectAllocatStatus !==
-        "Accepted"
-      ) {
-        return false;
-      }
+      if (project.projectAllocatStatus !== "Accepted") return false;
 
-      const status =
-        normalizeProjectStatus(project.status);
-
+      const status = normalizeProjectStatus(project.status);
       return CLOSED_PROJECT_STATUSES.has(status);
     });
   }, [workProjects]);
@@ -540,10 +398,7 @@ function Projects() {
       filteredWork = activeWork;
     }
 
-    return sortProjectItems(
-      filteredWork,
-      sort,
-    );
+    return sortProjectItems(filteredWork, sort);
   }, [
     workFilter,
     invitations,
@@ -553,7 +408,7 @@ function Projects() {
   ]);
 
   /* =======================================================
-     INVITATION ACTIONS
+     INVITATIONS
   ======================================================= */
 
   async function acceptInvitation(projectId: string) {
@@ -561,26 +416,14 @@ function Projects() {
       await api.patch(
         `/projects/${projectId}/allocats/invite/accept`,
         {},
-        {
-          withCredentials: true,
-        },
+        { withCredentials: true },
       );
 
       await fetchWorkProjects();
-
-      toast.success(
-        "Project invitation accepted.",
-      );
+      toast.success("Project invitation accepted.");
     } catch (error) {
-      console.error(
-        "Could not accept invitation:",
-        error,
-      );
-
-      toast.error(
-        "The invitation could not be accepted.",
-      );
-
+      console.error("Could not accept invitation:", error);
+      toast.error("The invitation could not be accepted.");
       throw error;
     }
   }
@@ -590,9 +433,7 @@ function Projects() {
       await api.patch(
         `/projects/${projectId}/allocats/invite/decline`,
         {},
-        {
-          withCredentials: true,
-        },
+        { withCredentials: true },
       );
 
       setWorkProjects(current =>
@@ -607,19 +448,10 @@ function Projects() {
         ),
       );
 
-      toast.success(
-        "Project invitation declined.",
-      );
+      toast.success("Project invitation declined.");
     } catch (error) {
-      console.error(
-        "Could not decline invitation:",
-        error,
-      );
-
-      toast.error(
-        "The invitation could not be declined.",
-      );
-
+      console.error("Could not decline invitation:", error);
+      toast.error("The invitation could not be declined.");
       throw error;
     }
   }
@@ -630,27 +462,110 @@ function Projects() {
 
   const workspaceLoading =
     loading ||
-    Boolean(
-      user?.isAllocat &&
-        workLoading &&
-        !workLoaded,
-    );
+    Boolean(user?.isAllocat && workLoading && !workLoaded);
 
   if (workspaceLoading) {
     return <WorkspaceLoading />;
   }
 
   if (error) {
-    return (
-      <WorkspaceError
-        onRetry={fetchProjects}
-      />
-    );
+    return <WorkspaceError onRetry={fetchProjects} />;
   }
 
-  const showEmptyWorkspace =
-    projects.length === 0 &&
-    !user?.isAllocat;
+  const showNewClientState = projects.length === 0 && !user?.isAllocat;
+
+  /* =======================================================
+     SUMMARY
+  ======================================================= */
+
+  const summaryItems: SummaryItem[] =
+    workspaceSection === "projects"
+      ? [
+          {
+            label: "Active",
+            value: activeProjects.length,
+            icon: CircleDotIcon,
+            emphasis: "primary",
+            active: filter === "active",
+            attention: completionRequests.length > 0,
+            onClick: () => setFilter("active"),
+          },
+          {
+            label: "Pending",
+            value: pendingProjects.length,
+            icon: Clock3Icon,
+            emphasis: "warning",
+            active: filter === "pending",
+            attention: pendingProjects.length > 0,
+            onClick: () => setFilter("pending"),
+          },
+          {
+            label: "Completed",
+            value: closedProjects.length,
+            icon: CheckCircle2Icon,
+            emphasis: "success",
+            active: filter === "closed",
+            onClick: () => setFilter("closed"),
+          },
+        ]
+      : [
+          {
+            label: "Invitations",
+            value: invitations.length,
+            icon: InboxIcon,
+            emphasis: "warning",
+            active: workFilter === "invitations",
+            attention: invitations.length > 0,
+            onClick: () => setWorkFilter("invitations"),
+          },
+          {
+            label: "Active",
+            value: activeWork.length,
+            icon: BriefcaseBusinessIcon,
+            emphasis: "primary",
+            active: workFilter === "active",
+            onClick: () => setWorkFilter("active"),
+          },
+          {
+            label: "Completed",
+            value: completedWork.length,
+            icon: CheckCircle2Icon,
+            emphasis: "success",
+            active: workFilter === "completed",
+            onClick: () => setWorkFilter("completed"),
+          },
+        ];
+
+  const workCount =
+    invitations.length +
+    activeWork.length +
+    completedWork.length;
+
+  const sectionTitle =
+    workspaceSection === "projects"
+      ? filter === "pending"
+        ? "Pending projects"
+        : filter === "closed"
+          ? "Completed projects"
+          : "Active projects"
+      : workFilter === "invitations"
+        ? "Invitations"
+        : workFilter === "completed"
+          ? "Completed work"
+          : "Active work";
+
+  const sectionDescription =
+    workspaceSection === "projects"
+      ? filter === "pending"
+        ? "Projects waiting for an Allocat or the next step."
+        : filter === "closed"
+          ? "Projects that have already crossed the finish line."
+          : "The projects currently moving through your workspace."
+      : workFilter === "invitations"
+        ? "Projects clients have invited you to join."
+        : workFilter === "completed"
+          ? "Client projects you have completed."
+          : "The client work currently on your plate.";
 
   /* =======================================================
      RENDER
@@ -658,378 +573,501 @@ function Projects() {
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
-      <header className="sticky top-0 z-40 border-b border-border/70 bg-background/90 backdrop-blur-xl">
-        <div className="container mx-auto px-4 sm:px-5 md:px-8">
-          <DashboardMainNav />
+      {/* =====================================================
+          APP SHELL
+      ===================================================== */}
+
+      {showNewClientState ? (
+        <header className="sticky top-0 z-50 border-b border-border/60 bg-background/95 backdrop-blur-xl">
+          <div className="container mx-auto px-4 sm:px-5 md:px-8">
+            <DashboardMainNav />
+          </div>
+        </header>
+      ) : (
+        <div className="sticky top-0 z-50">
+          <header className="border-b border-border/60 bg-background/95 backdrop-blur-xl">
+            <div className="container mx-auto px-4 sm:px-5 md:px-8">
+              <DashboardMainNav />
+            </div>
+          </header>
+
+          <WorkspaceMasthead
+            firstName={firstName}
+            isAllocat={Boolean(user?.isAllocat)}
+            workspaceSection={workspaceSection}
+            onSectionChange={setWorkspaceSection}
+            projectCount={projects.length}
+            workCount={workCount}
+            invitationCount={invitations.length}
+            items={summaryItems}
+          />
         </div>
-      </header>
+      )}
 
-      <main
-        className={[
-          "container mx-auto flex-1 px-5 md:px-8",
-          showEmptyWorkspace
-            ? "flex"
-            : "py-8 sm:py-10 lg:py-12",
-        ].join(" ")}
-      >
-        {showEmptyWorkspace ? (
-          <EmptyWorkspace firstName={firstName} />
-        ) : (
-          <div
-            className={[
-              "grid min-w-0 flex-1 gap-10",
-              "xl:grid-cols-[minmax(0,1fr)_260px]",
-              "xl:gap-12",
-            ].join(" ")}
+      {/* =====================================================
+          NEW CLIENT
+      ===================================================== */}
+
+      {showNewClientState ? (
+        <main className="container mx-auto flex flex-1 items-center justify-center px-4 py-10 sm:px-5 sm:py-14 md:px-8">
+          <NewClientWelcome firstName={firstName} />
+        </main>
+      ) : (
+        /* ===================================================
+           WORKSPACE
+        =================================================== */
+
+        <main className="container mx-auto flex-1 px-4 py-5 sm:px-5 sm:py-7 md:px-8 lg:py-8">
+          <motion.section
+            initial={{ opacity: 0, y: 7 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+              delay: 0.04,
+              duration: 0.3,
+              ease: "easeOut",
+            }}
           >
-            <section className="min-w-0">
-              <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
-                <div className="min-w-0 max-w-2xl">
-                  <div className="flex items-center gap-2.5">
-                    <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-secondary shadow-sm shadow-primary/10">
-                      <BriefcaseBusinessIcon size={15} />
-                    </span>
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-[0.58rem] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
+                  {workspaceSection === "projects"
+                    ? "Your workspace"
+                    : "Client work"}
+                </p>
 
-                    <p className="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                      Workspace
-                    </p>
-                  </div>
+                <h2 className="mt-1.5 text-xl font-black tracking-[-0.025em] sm:text-2xl">
+                  {sectionTitle}
+                </h2>
 
-                  <h1
-                    className={[
-                      "mt-5 break-words",
-                      "text-3xl font-black leading-[1.06]",
-                      "tracking-[-0.035em]",
-                      "sm:text-4xl lg:text-5xl",
-                    ].join(" ")}
-                  >
-                    Welcome back, {firstName}.
-                  </h1>
-
-                  <p className="mt-4 max-w-xl text-sm leading-7 text-muted-foreground sm:text-base">
-                    {workspaceSection === "projects"
-                      ? "Your projects, people and progress in one place."
-                      : "Projects you've joined and invitations waiting for you."}
-                  </p>
-                </div>
-
-                <Button
-                  asChild
-                  className="group h-11 w-full shrink-0 rounded-lg px-6 shadow-none sm:w-auto"
-                >
-                  <Link to="/projects/new">
-                    <PlusIcon size={16} />
-
-                    New project
-
-                    <ArrowRightIcon
-                      size={15}
-                      className="transition-transform duration-200 group-hover:translate-x-0.5"
-                    />
-                  </Link>
-                </Button>
+                <p className="mt-1 hidden text-xs leading-6 text-muted-foreground sm:block sm:text-sm">
+                  {sectionDescription}
+                </p>
               </div>
 
-              {user?.isAllocat && (
-                <div className="mt-9">
-                  <div
-                    className={[
-                      "inline-flex max-w-full items-center",
-                      "rounded-full border border-border/70",
-                      "bg-muted/30 p-1",
-                    ].join(" ")}
-                  >
-                    <WorkspaceTab
-                      active={workspaceSection === "projects"}
-                      onClick={() => setWorkspaceSection("projects")}
-                      icon={BriefcaseBusinessIcon}
-                      label="My projects"
-                      count={projects.length}
-                    />
-
-                    <WorkspaceTab
-                      active={workspaceSection === "work"}
-                      onClick={() => setWorkspaceSection("work")}
-                      icon={SparklesIcon}
-                      label="My work"
-                      count={invitations.length + activeWork.length}
-                      attention={invitations.length > 0}
-                    />
-                  </div>
-                </div>
+              {!(
+                workspaceSection === "work" &&
+                workFilter === "invitations"
+              ) && (
+                <ProjectControls
+                  sort={sort}
+                  setSort={setSort}
+                  view={view}
+                  setView={setView}
+                />
               )}
+            </div>
 
-              {workspaceSection === "projects" && (
-                <>
-                  <WorkspaceSummary
-                    items={[
-                      {
-                        label: "Active projects",
-                        value: activeProjects.length,
-                        icon: CircleDotIcon,
-                        emphasis: "primary",
-                      },
-                      {
-                        label: "Pending",
-                        value: pendingProjects.length,
-                        icon: Clock3Icon,
-                        emphasis: "warning",
-                      },
-                      {
-                        label: "Completed",
-                        value: closedProjects.length,
-                        icon: CheckCircle2Icon,
-                        emphasis: "success",
-                      },
-                    ]}
-                  />
+            {workspaceSection === "projects" && (
+              <ProjectResults
+                projects={visibleProjects}
+                view={view}
+                emptyLabel={filter === "closed" ? "completed" : filter}
+                onProjectUpdated={handleOwnedProjectUpdated}
+              />
+            )}
 
-                  <div className="mt-8 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-                    <StatusFilters>
-                      <StatusFilter
-                        active={filter === "active"}
-                        onClick={() => setFilter("active")}
-                        label="Active"
-                        count={activeProjects.length}
-                        attention={completionRequests.length > 0}
-                      />
-
-                      <StatusFilter
-                        active={filter === "pending"}
-                        onClick={() => setFilter("pending")}
-                        label="Pending"
-                        count={pendingProjects.length}
-                        attention={pendingProjects.length > 0}
-                      />
-
-                      <StatusFilter
-                        active={filter === "closed"}
-                        onClick={() => setFilter("closed")}
-                        label="Completed"
-                        count={closedProjects.length}
-                      />
-                    </StatusFilters>
-
-                    <ProjectControls
-                      sort={sort}
-                      setSort={setSort}
-                      view={view}
-                      setView={setView}
-                    />
-                  </div>
-
-                  <ProjectResults
-                    projects={visibleProjects}
-                    view={view}
-                    emptyLabel={
-                      filter === "closed"
-                        ? "completed"
-                        : filter
+            {workspaceSection === "work" && user?.isAllocat && (
+              <>
+                {workError && !workLoaded ? (
+                  <WorkLoadError
+                    onRetry={() =>
+                      void fetchWorkProjects({
+                        notifyOnError: true,
+                      })
                     }
-                    onProjectUpdated={handleOwnedProjectUpdated}
                   />
-                </>
-              )}
-
-              {workspaceSection === "work" && user?.isAllocat && (
-                <>
-                  <WorkspaceSummary
-                    items={[
-                      {
-                        label: "Invitations",
-                        value: invitations.length,
-                        icon: InboxIcon,
-                        emphasis: "warning",
-                      },
-                      {
-                        label: "Active jobs",
-                        value: activeWork.length,
-                        icon: BriefcaseBusinessIcon,
-                        emphasis: "primary",
-                      },
-                      {
-                        label: "Completed",
-                        value: completedWork.length,
-                        icon: CheckCircle2Icon,
-                        emphasis: "success",
-                      },
-                    ]}
-                  />
-
-                  <div className="mt-8 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-                    <StatusFilters>
-                      <StatusFilter
-                        active={workFilter === "invitations"}
-                        onClick={() => setWorkFilter("invitations")}
-                        label="Invitations"
-                        count={invitations.length}
-                        attention={invitations.length > 0}
-                      />
-
-                      <StatusFilter
-                        active={workFilter === "active"}
-                        onClick={() => setWorkFilter("active")}
-                        label="Active"
-                        count={activeWork.length}
-                      />
-
-                      <StatusFilter
-                        active={workFilter === "completed"}
-                        onClick={() => setWorkFilter("completed")}
-                        label="Completed"
-                        count={completedWork.length}
-                      />
-                    </StatusFilters>
-
-                    {workFilter !== "invitations" && (
-                      <ProjectControls
-                        sort={sort}
-                        setSort={setSort}
-                        view={view}
-                        setView={setView}
-                      />
-                    )}
-                  </div>
-
-                  {workError && !workLoaded ? (
-                    <WorkLoadError
-                      onRetry={() =>
-                        void fetchWorkProjects({
-                          notifyOnError: true,
-                        })
-                      }
-                    />
-                  ) : workFilter === "invitations" ? (
-                    invitations.length > 0 ? (
-                      <div className="mt-7 divide-y divide-border border-y border-border">
-                        {sortProjectItems(
-                          invitations,
-                          sort,
-                        ).map(project => (
-                          <InvitationCard
-                            key={project.id}
-                            project={project}
-                            onAccept={() =>
-                              acceptInvitation(project.id)
-                            }
-                            onDecline={() =>
-                              declineInvitation(project.id)
-                            }
-                          />
-                        ))}
-                      </div>
-                    ) : (
-                      <WorkEmptyState
-                        title="No invitations"
-                        description="New project invitations will appear here when a client invites you to join their work."
-                        icon={InboxIcon}
-                      />
-                    )
-                  ) : visibleWork.length > 0 ? (
-                    <ProjectGrid
-                      projects={visibleWork}
-                      view={view}
-                      onProjectUpdated={handleWorkProjectUpdated}
-                    />
+                ) : workFilter === "invitations" ? (
+                  invitations.length > 0 ? (
+                    <div className="mt-5 grid gap-3 sm:mt-6">
+                      {sortProjectItems(invitations, sort).map(project => (
+                        <InvitationCard
+                          key={project.id}
+                          project={project}
+                          onAccept={() => acceptInvitation(project.id)}
+                          onDecline={() => declineInvitation(project.id)}
+                        />
+                      ))}
+                    </div>
                   ) : (
                     <WorkEmptyState
-                      title={
-                        workFilter === "completed"
-                          ? "No completed work"
-                          : "No active work"
-                      }
-                      description={
-                        workFilter === "completed"
-                          ? "Projects you complete for clients will appear here."
-                          : "Projects you accept from clients will appear here."
-                      }
-                      icon={BriefcaseBusinessIcon}
+                      title="No invitations"
+                      description="New project invitations will appear here when a client invites you to join their work."
+                      icon={InboxIcon}
                     />
-                  )}
-                </>
-              )}
-            </section>
-
-            <DashboardSidebar />
-          </div>
-        )}
-      </main>
+                  )
+                ) : visibleWork.length > 0 ? (
+                  <ProjectGrid
+                    projects={visibleWork}
+                    view={view}
+                    onProjectUpdated={handleWorkProjectUpdated}
+                  />
+                ) : (
+                  <WorkEmptyState
+                    title={
+                      workFilter === "completed"
+                        ? "No completed work"
+                        : "No active work"
+                    }
+                    description={
+                      workFilter === "completed"
+                        ? "Projects you complete for clients will appear here."
+                        : "Projects you accept from clients will appear here."
+                    }
+                    icon={BriefcaseBusinessIcon}
+                  />
+                )}
+              </>
+            )}
+          </motion.section>
+        </main>
+      )}
     </div>
   );
 }
 
 /* =========================================================
-   SUMMARY
+   NEW CLIENT WELCOME
 ========================================================= */
 
-function WorkspaceSummary({
+function NewClientWelcome({ firstName }: { firstName: string }) {
+  return (
+    <motion.section
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, ease: "easeOut" }}
+      className="w-full max-w-xl text-center"
+    >
+      <span
+        className={[
+          "mx-auto flex h-9 w-9 items-center justify-center rounded-lg",
+          "bg-[#242424] text-[#DEDA00]",
+          "dark:bg-[#DEDA00] dark:text-[#303030]",
+        ].join(" ")}
+      >
+        <SparklesIcon size={15} />
+      </span>
+
+      <p className="mt-5 text-[0.6rem] font-semibold uppercase tracking-[0.17em] text-muted-foreground">
+        Welcome to Allocatr
+      </p>
+
+      <h1 className="mt-2 text-2xl font-black leading-[1.12] tracking-[-0.035em] sm:text-3xl">
+        What would you like to do first, {firstName}?
+      </h1>
+
+      <p className="mx-auto mt-3 max-w-md text-sm leading-7 text-muted-foreground">
+        Create a project if you already know what needs to be done, or discover
+        Allocats and find the right person first.
+      </p>
+
+      <div className="mt-7 flex flex-col justify-center gap-2.5 sm:flex-row sm:items-center">
+        <Button
+          asChild
+          className={[
+            "group h-10 rounded-lg px-5 text-xs font-bold shadow-none",
+            "bg-[#242424] text-white",
+            "hover:bg-[#303030] hover:text-white",
+            "dark:bg-[#DEDA00] dark:text-[#303030]",
+            "dark:hover:bg-[#d4d000] dark:hover:text-[#303030]",
+          ].join(" ")}
+        >
+          <Link to="/projects/new">
+            <PlusIcon size={14} />
+            Create a project
+
+            <ArrowRightIcon
+              size={12}
+              className="transition-transform duration-200 group-hover:translate-x-0.5"
+            />
+          </Link>
+        </Button>
+
+        <Button
+          asChild
+          variant="outline"
+          className={[
+            "h-10 rounded-lg px-5 text-xs font-semibold shadow-none",
+            "border-border bg-background text-foreground",
+            "hover:border-foreground/20 hover:bg-muted/30 hover:text-foreground",
+          ].join(" ")}
+        >
+          <Link to="/discover">
+            <SearchIcon size={14} />
+            Discover Allocats
+          </Link>
+        </Button>
+      </div>
+
+      <p className="mt-5 text-[0.68rem] text-muted-foreground/70">
+        You can do either at any time.
+      </p>
+    </motion.section>
+  );
+}
+
+/* =========================================================
+   WORKSPACE MASTHEAD
+========================================================= */
+
+function WorkspaceMasthead({
+  firstName,
+  isAllocat,
+  workspaceSection,
+  onSectionChange,
+  projectCount,
+  workCount,
+  invitationCount,
   items,
 }: {
+  firstName: string;
+  isAllocat: boolean;
+  workspaceSection: WorkspaceSection;
+  onSectionChange: (section: WorkspaceSection) => void;
+  projectCount: number;
+  workCount: number;
+  invitationCount: number;
   items: SummaryItem[];
 }) {
   return (
-    <section className="mt-7">
-      <div className="grid gap-3 sm:grid-cols-3">
-        {items.map(item => {
-          const Icon = item.icon;
-
-          const iconStyle =
-            item.emphasis === "success"
-              ? "bg-emerald-500/[0.06] text-emerald-700 dark:text-emerald-300"
-              : item.emphasis === "warning"
-                ? "bg-amber-500/[0.06] text-amber-700 dark:text-amber-300"
-                : "bg-primary/[0.05] text-primary";
-
-          const accentStyle =
-            item.emphasis === "success"
-              ? "bg-emerald-500/20"
-              : item.emphasis === "warning"
-                ? "bg-amber-500/20"
-                : "bg-primary/15";
-
-          return (
-            <article
-              key={item.label}
-              className={[
-                "relative overflow-hidden rounded-xl",
-                "border border-border/50",
-                "bg-muted/[0.06]",
-                "px-4 py-4 sm:px-5",
-              ].join(" ")}
-            >
+    <motion.section
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.28, ease: "easeOut" }}
+      className={[
+        "border-b border-border/70",
+        "bg-[#f6f6f2]",
+        "text-foreground",
+        "dark:border-white/[0.055]",
+        "dark:bg-[#191919]",
+        "dark:text-white",
+      ].join(" ")}
+    >
+      <div className="container mx-auto px-4 sm:px-5 md:px-8">
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 py-3 sm:gap-5 sm:py-4 lg:py-5">
+          <div className="min-w-0">
+            <div className="hidden items-center gap-2.5 sm:flex">
               <span
                 className={[
-                  "absolute bottom-4 left-0 top-4",
-                  "w-px rounded-full",
-                  accentStyle,
+                  "flex h-7 w-7 items-center justify-center rounded-lg",
+                  "bg-[#242424] text-[#DEDA00]",
+                  "dark:bg-[#DEDA00] dark:text-[#303030]",
                 ].join(" ")}
-              />
+              >
+                <BriefcaseBusinessIcon size={13} />
+              </span>
 
-              <div className="flex items-center justify-between gap-5">
-                <div className="min-w-0">
-                  <p className="text-[0.59rem] font-semibold uppercase tracking-[0.13em] text-muted-foreground">
-                    {item.label}
-                  </p>
+              <p className="text-[0.58rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground dark:text-white/40">
+                Workspace
+              </p>
+            </div>
 
-                  <p className="mt-2 text-[1.75rem] font-black leading-none tracking-[-0.045em] tabular-nums">
-                    {item.value}
-                  </p>
-                </div>
+            <div className="flex items-center gap-2 sm:hidden">
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-[#242424] text-[#DEDA00] dark:bg-[#DEDA00] dark:text-[#303030]">
+                <BriefcaseBusinessIcon size={11} />
+              </span>
 
-                <span
+              <p className="truncate text-[0.58rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground dark:text-white/40">
+                Workspace
+              </p>
+            </div>
+
+            <h1 className="mt-1.5 truncate text-lg font-black leading-tight tracking-[-0.03em] text-foreground sm:mt-2.5 sm:text-2xl lg:text-[1.85rem] dark:text-white">
+              Welcome back,{" "}
+              <span className="text-foreground dark:text-[#DEDA00]">
+                {firstName}
+              </span>
+              .
+            </h1>
+
+            <p className="mt-1.5 hidden max-w-xl text-xs leading-6 text-muted-foreground md:block dark:text-white/48">
+              {workspaceSection === "projects"
+                ? "Keep the work moving. Everything you own, everything waiting, and everything finished lives here."
+                : "Your client work, active jobs and invitations — without the noise."}
+            </p>
+          </div>
+
+          <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+            <Button
+              asChild
+              size="icon"
+              className={[
+                "group h-8 w-8 rounded-lg shadow-none sm:h-9 sm:w-auto sm:px-4",
+                "bg-[#242424] text-white",
+                "hover:bg-[#303030] hover:text-white",
+                "dark:bg-[#DEDA00] dark:text-[#303030]",
+                "dark:hover:bg-[#d4d000] dark:hover:text-[#303030]",
+              ].join(" ")}
+            >
+              <Link to="/projects/new" aria-label="New project">
+                <PlusIcon size={13} />
+
+                <span className="hidden text-xs font-bold sm:inline">
+                  New project
+                </span>
+
+                <ArrowRightIcon
+                  size={12}
+                  className="hidden transition-transform duration-200 group-hover:translate-x-0.5 sm:block"
+                />
+              </Link>
+            </Button>
+
+            <Button
+              asChild
+              variant="outline"
+              size="icon"
+              className={[
+                "h-8 w-8 rounded-lg shadow-none sm:h-9 sm:w-auto sm:px-4",
+                "border-black/[0.10] bg-white/55 text-foreground",
+                "hover:border-black/[0.16] hover:bg-white hover:text-foreground",
+                "dark:border-white/[0.13] dark:bg-white/[0.045] dark:text-white",
+                "dark:hover:border-white/20 dark:hover:bg-white/[0.075] dark:hover:text-white",
+              ].join(" ")}
+            >
+              <Link to="/discover" aria-label="Discover Allocats">
+                <SearchIcon size={13} />
+
+                <span className="hidden text-xs font-semibold sm:inline">
+                  Discover Allocats
+                </span>
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <div
+        className={[
+          "border-t border-border/70",
+          "bg-black/[0.018]",
+          "dark:border-white/[0.055]",
+          "dark:bg-black/[0.14]",
+        ].join(" ")}
+      >
+        <div className="container mx-auto px-4 sm:px-5 md:px-8">
+          <div className="flex min-w-0 items-center justify-between gap-3 overflow-x-auto py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:py-2.5">
+            <div className="shrink-0">
+              {isAllocat ? (
+                <div
                   className={[
-                    "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
-                    iconStyle,
+                    "inline-flex items-center rounded-lg border p-0.5 sm:p-1",
+                    "border-border/80 bg-white/60",
+                    "dark:border-white/[0.07] dark:bg-black/20",
                   ].join(" ")}
                 >
-                  <Icon size={15} />
-                </span>
-              </div>
-            </article>
-          );
-        })}
+                  <WorkspaceTab
+                    active={workspaceSection === "projects"}
+                    onClick={() => onSectionChange("projects")}
+                    icon={BriefcaseBusinessIcon}
+                    label="My projects"
+                    count={projectCount}
+                  />
+
+                  <WorkspaceTab
+                    active={workspaceSection === "work"}
+                    onClick={() => onSectionChange("work")}
+                    icon={SparklesIcon}
+                    label="My work"
+                    count={workCount}
+                    attention={invitationCount > 0}
+                  />
+                </div>
+              ) : (
+                <p className="hidden whitespace-nowrap text-[0.58rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground sm:block dark:text-white/35">
+                  Project overview
+                </p>
+              )}
+            </div>
+
+            <div className="flex shrink-0 items-center gap-0.5 sm:gap-1">
+              {items.map(item => (
+                <WorkspaceMetric
+                  key={item.label}
+                  item={item}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
-    </section>
+    </motion.section>
+  );
+}
+
+/* =========================================================
+   WORKSPACE METRIC
+========================================================= */
+
+function WorkspaceMetric({ item }: { item: SummaryItem }) {
+  const Icon = item.icon;
+
+  const iconStyle =
+    item.emphasis === "success"
+      ? "text-chart-2"
+      : item.emphasis === "warning"
+        ? "text-chart-3"
+        : "text-foreground/75 dark:text-[#DEDA00]";
+
+  const valueStyle =
+    item.emphasis === "success"
+      ? "text-chart-2"
+      : item.emphasis === "warning"
+        ? "text-chart-3"
+        : "text-foreground dark:text-[#DEDA00]";
+
+  return (
+    <button
+      type="button"
+      onClick={item.onClick}
+      aria-pressed={item.active}
+      title={item.label}
+      className={[
+        "relative flex h-7 items-center gap-1.5 rounded-md px-2 text-left",
+        "transition-colors duration-200 ease-out sm:h-8 sm:gap-2 sm:px-2.5",
+        item.active
+          ? "bg-black/[0.045] dark:bg-white/[0.08]"
+          : "hover:bg-black/[0.03] dark:hover:bg-white/[0.045]",
+      ].join(" ")}
+    >
+      {item.active && (
+        <motion.span
+          layoutId="workspace-active-metric"
+          className="absolute bottom-0 left-2 right-2 h-[2px] rounded-full bg-[#303030] sm:left-2.5 sm:right-2.5 dark:bg-[#DEDA00]"
+          transition={{
+            type: "spring",
+            stiffness: 500,
+            damping: 38,
+          }}
+        />
+      )}
+
+      <span className="relative flex shrink-0 items-center">
+        {item.attention && (
+          <span className="absolute -right-1 -top-1 flex h-1.5 w-1.5">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-chart-3 opacity-25" />
+            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-chart-3" />
+          </span>
+        )}
+
+        <Icon
+          size={11}
+          className={iconStyle}
+        />
+      </span>
+
+      <span
+        className={[
+          "text-[0.68rem] font-black tabular-nums sm:text-xs",
+          valueStyle,
+        ].join(" ")}
+      >
+        {item.value}
+      </span>
+
+      <span className="hidden text-[0.62rem] font-medium text-muted-foreground sm:inline dark:text-white/42">
+        {item.label}
+      </span>
+    </button>
   );
 }
 
@@ -1044,18 +1082,13 @@ function WorkspaceTab({
   label,
   count,
   attention = false,
-  loadingCount = false,
 }: {
   active: boolean;
   onClick: () => void;
-  icon: ComponentType<{
-    size?: number;
-    className?: string;
-  }>;
+  icon: ComponentType<{ size?: number; className?: string }>;
   label: string;
   count?: number;
   attention?: boolean;
-  loadingCount?: boolean;
 }) {
   return (
     <button
@@ -1063,23 +1096,17 @@ function WorkspaceTab({
       onClick={onClick}
       aria-pressed={active}
       className={[
-        "relative flex h-9 shrink-0 items-center gap-2 rounded-full px-4",
-        "text-xs font-semibold transition-colors duration-200",
+        "relative flex h-7 shrink-0 items-center gap-1.5 rounded-md px-2.5",
+        "text-[0.64rem] font-semibold transition-colors duration-200 sm:px-3 sm:text-[0.67rem]",
         active
-          ? "text-foreground"
-          : "text-muted-foreground hover:text-foreground",
+          ? "text-white dark:text-[#303030]"
+          : "text-muted-foreground hover:text-foreground dark:text-white/45 dark:hover:text-white",
       ].join(" ")}
     >
       {active && (
         <motion.span
           layoutId="workspace-active-tab"
-          className={[
-            "absolute inset-0 rounded-full",
-            "bg-background",
-            "shadow-sm shadow-black/[0.035]",
-            "ring-1 ring-inset ring-border/60",
-            "dark:shadow-black/20",
-          ].join(" ")}
+          className="absolute inset-0 rounded-md bg-[#242424] dark:bg-[#DEDA00]"
           transition={{
             type: "spring",
             stiffness: 500,
@@ -1088,111 +1115,34 @@ function WorkspaceTab({
         />
       )}
 
-      <span className="relative z-10 flex items-center gap-2">
-        <span className="relative flex items-center">
-          {attention && !loadingCount && (
+      <span className="relative z-10 flex items-center gap-1.5">
+        <span className="relative">
+          {attention && !active && (
             <span className="absolute -right-1.5 -top-1 flex h-1.5 w-1.5">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-25" />
-              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-primary" />
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-chart-3 opacity-30" />
+              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-chart-3" />
             </span>
           )}
 
-          <Icon
-            size={14}
-            className={
-              active || attention
-                ? "text-primary"
-                : ""
-            }
-          />
+          <Icon size={11} />
         </span>
 
-        <span>{label}</span>
+        {label}
 
-        {loadingCount ? (
-          <LoaderCircleIcon
-            size={12}
-            className="animate-spin text-primary"
-          />
-        ) : typeof count === "number" && count > 0 ? (
+        {typeof count === "number" && count > 0 && (
           <span
             className={[
-              "text-[0.62rem] font-bold tabular-nums",
+              "text-[0.54rem] font-black tabular-nums sm:text-[0.56rem]",
               active
-                ? "text-foreground/60"
+                ? "text-white/55 dark:text-[#303030]/55"
                 : attention
-                  ? "text-primary"
-                  : "text-muted-foreground/70",
+                  ? "text-chart-3"
+                  : "text-muted-foreground/70 dark:text-white/35",
             ].join(" ")}
           >
             {count}
           </span>
-        ) : null}
-      </span>
-    </button>
-  );
-}
-
-/* =========================================================
-   STATUS FILTERS
-========================================================= */
-
-function StatusFilters({
-  children,
-}: {
-  children: ReactNode;
-}) {
-  return (
-    <div className="flex max-w-full gap-6 overflow-x-auto border-b border-border/70">
-      {children}
-    </div>
-  );
-}
-
-function StatusFilter({
-  active,
-  label,
-  count,
-  onClick,
-  attention = false,
-}: {
-  active: boolean;
-  label: string;
-  count: number;
-  onClick: () => void;
-  attention?: boolean;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={[
-        "relative flex h-10 shrink-0 items-center gap-2",
-        "border-b-2 text-xs font-semibold",
-        "transition-colors duration-200",
-        active
-          ? "border-primary text-foreground"
-          : "border-transparent text-muted-foreground hover:text-foreground",
-      ].join(" ")}
-    >
-      {attention && (
-        <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-      )}
-
-      {label}
-
-      <span
-        className={
-          active
-            ? [
-                "rounded-md bg-primary/[0.08]",
-                "px-1.5 py-0.5",
-                "text-[0.6rem] font-bold text-foreground",
-              ].join(" ")
-            : "text-[0.65rem] text-muted-foreground/65"
-        }
-      >
-        {count}
+        )}
       </span>
     </button>
   );
@@ -1253,12 +1203,10 @@ function SortControl({
           variant="ghost"
           size="sm"
           className={[
-            "h-9 rounded-lg px-2.5",
-            "text-xs font-medium text-muted-foreground",
-            "shadow-none transition-colors duration-200",
+            "h-8 rounded-lg px-2.5 text-xs font-medium text-muted-foreground shadow-none sm:h-9",
+            "transition-colors",
             "hover:bg-muted/40 hover:text-foreground",
-            "data-[state=open]:bg-muted/40",
-            "data-[state=open]:text-foreground",
+            "data-[state=open]:bg-muted/40 data-[state=open]:text-foreground",
           ].join(" ")}
         >
           <ArrowDownNarrowWideIcon
@@ -1270,28 +1218,17 @@ function SortControl({
             Sort by
           </span>
 
-          <span className="relative hidden min-w-[76px] overflow-hidden text-left sm:block">
+          <span className="relative hidden min-w-[76px] overflow-hidden text-left md:block">
             <AnimatePresence
               mode="wait"
               initial={false}
             >
               <motion.span
                 key={value}
-                initial={{
-                  opacity: 0,
-                  y: 4,
-                }}
-                animate={{
-                  opacity: 1,
-                  y: 0,
-                }}
-                exit={{
-                  opacity: 0,
-                  y: -4,
-                }}
-                transition={{
-                  duration: 0.14,
-                }}
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
+                transition={{ duration: 0.14 }}
                 className="block font-semibold text-foreground"
               >
                 {currentOption.label}
@@ -1315,19 +1252,15 @@ function SortControl({
         className="w-52 rounded-xl border-border/80 p-1.5 shadow-lg"
       >
         {SORT_OPTIONS.map(option => {
-          const active =
-            option.value === value;
+          const active = option.value === value;
 
           return (
             <DropdownMenuItem
               key={option.value}
               onSelect={() => onChange(option.value)}
               className={[
-                "rounded-lg px-3 py-2.5",
-                "text-xs transition-colors",
-                active
-                  ? "bg-muted/60 font-semibold"
-                  : "",
+                "rounded-lg px-3 py-2.5 text-xs transition-colors",
+                active ? "bg-muted/60 font-semibold" : "",
               ].join(" ")}
             >
               <ArrowDownNarrowWideIcon
@@ -1369,7 +1302,7 @@ function ViewControls({
         variant={view === "grid" ? "default" : "ghost"}
         size="icon"
         className={[
-          "h-9 w-9 rounded-lg shadow-none",
+          "h-8 w-8 rounded-lg shadow-none sm:h-9 sm:w-9",
           view !== "grid"
             ? "text-muted-foreground hover:bg-muted/40 hover:text-foreground"
             : "",
@@ -1385,7 +1318,7 @@ function ViewControls({
         variant={view === "list" ? "default" : "ghost"}
         size="icon"
         className={[
-          "h-9 w-9 rounded-lg shadow-none",
+          "h-8 w-8 rounded-lg shadow-none sm:h-9 sm:w-9",
           view !== "list"
             ? "text-muted-foreground hover:bg-muted/40 hover:text-foreground"
             : "",
@@ -1416,21 +1349,11 @@ function ProjectResults({
 }) {
   if (projects.length === 0) {
     return (
-      <div className="mt-7 border-y border-border py-14">
-        <div className="max-w-md">
-          <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-            <FolderOpenIcon size={19} />
-          </span>
-
-          <h2 className="mt-5 text-xl font-black tracking-[-0.025em]">
-            No {emptyLabel} projects.
-          </h2>
-
-          <p className="mt-2 text-sm leading-7 text-muted-foreground">
-            Projects matching this status will appear here.
-          </p>
-        </div>
-      </div>
+      <EmptyCollection
+        title={`No ${emptyLabel} projects`}
+        description="Projects matching this status will appear here."
+        icon={FolderOpenIcon}
+      />
     );
   }
 
@@ -1461,12 +1384,12 @@ function ProjectGrid<T extends Project>({
       className={
         view === "grid"
           ? [
-              "mt-7 grid min-w-0 gap-4",
+              "mt-5 grid min-w-0 gap-4 sm:mt-6",
               "sm:grid-cols-2",
               "lg:grid-cols-3",
               "2xl:grid-cols-4",
             ].join(" ")
-          : "mt-7 flex min-w-0 flex-col gap-3"
+          : "mt-4 flex min-w-0 flex-col gap-0 sm:mt-6"
       }
     >
       {projects.map(project =>
@@ -1502,9 +1425,10 @@ function InvitationCard({
   onDecline: () => Promise<void>;
 }) {
   const [detailsOpen, setDetailsOpen] = useState(false);
-
   const [responding, setResponding] = useState<
-    "accept" | "decline" | null
+    "accept" |
+    "decline" |
+    null
   >(null);
 
   async function handleAccept() {
@@ -1535,12 +1459,22 @@ function InvitationCard({
 
   return (
     <>
-      <article className="group py-6 sm:py-7">
-        <div className="grid gap-5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+      <article
+        className={[
+          "group relative overflow-hidden rounded-2xl border border-border/70 bg-background p-4 sm:p-6",
+          "transition-[border-color,box-shadow] duration-300 ease-out",
+          "hover:border-chart-3/25",
+          "hover:shadow-[0_8px_22px_-18px_rgba(0,0,0,0.18)]",
+          "dark:hover:shadow-[0_10px_24px_-18px_rgba(0,0,0,0.55)]",
+        ].join(" ")}
+      >
+        <span className="absolute bottom-4 left-0 top-4 w-[2px] rounded-full bg-chart-3/65 sm:bottom-5 sm:top-5" />
+
+        <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:gap-5">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-3">
-              <span className="inline-flex items-center gap-2 text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-foreground">
-                <span className="flex h-6 w-6 items-center justify-center rounded-md bg-primary/[0.08] text-primary">
+              <span className="inline-flex items-center gap-2 text-[0.61rem] font-semibold uppercase tracking-[0.16em] text-chart-3">
+                <span className="flex h-6 w-6 items-center justify-center rounded-md bg-chart-3/[0.10]">
                   <SendIcon size={11} />
                 </span>
 
@@ -1548,24 +1482,24 @@ function InvitationCard({
               </span>
 
               {project.invitedAt && (
-                <span className="text-xs text-muted-foreground">
+                <span className="text-[0.68rem] text-muted-foreground">
                   {formatShortDate(project.invitedAt)}
                 </span>
               )}
             </div>
 
-            <h2 className="mt-3 text-xl font-black leading-tight tracking-[-0.025em]">
+            <h2 className="mt-3 text-base font-black leading-tight tracking-[-0.025em] sm:text-xl">
               {project.title}
             </h2>
 
-            <p className="mt-2 line-clamp-2 max-w-2xl text-sm leading-7 text-muted-foreground">
+            <p className="mt-2 line-clamp-2 max-w-2xl text-xs leading-6 text-muted-foreground sm:text-sm sm:leading-7">
               {project.description}
             </p>
 
             <button
               type="button"
               onClick={() => setDetailsOpen(true)}
-              className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-foreground transition-colors hover:text-muted-foreground"
+              className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-foreground transition-colors hover:text-muted-foreground sm:mt-4"
             >
               Review project
               <ArrowRightIcon size={13} />
@@ -1578,7 +1512,7 @@ function InvitationCard({
               variant="ghost"
               disabled={responding !== null}
               onClick={() => void handleDecline()}
-              className="h-10 rounded-lg px-4 text-xs text-muted-foreground shadow-none hover:bg-muted/40 hover:text-foreground"
+              className="h-9 rounded-lg px-3 text-xs text-muted-foreground shadow-none hover:bg-muted/40 hover:text-foreground sm:h-10 sm:px-4"
             >
               {responding === "decline" ? (
                 <LoaderCircleIcon
@@ -1596,7 +1530,7 @@ function InvitationCard({
               type="button"
               disabled={responding !== null}
               onClick={() => void handleAccept()}
-              className="h-10 rounded-lg px-5 text-xs shadow-none"
+              className="h-9 rounded-lg px-4 text-xs shadow-none sm:h-10 sm:px-5"
             >
               {responding === "accept" ? (
                 <LoaderCircleIcon
@@ -1650,25 +1584,24 @@ function ProjectInvitationDialog({
       onOpenChange={onOpenChange}
     >
       <DialogContent className="max-h-[90vh] overflow-y-auto rounded-[1.5rem] border-border bg-background p-0 sm:max-w-2xl">
-        <DialogHeader className="border-b border-border px-6 pb-6 pt-7 text-left sm:px-8">
+        <DialogHeader className="border-b border-border px-5 pb-5 pt-6 text-left sm:px-8 sm:pb-6 sm:pt-7">
           <Badge
             variant="outline"
-            className="mb-3 w-fit rounded-md border-primary/15 bg-primary/[0.06] text-primary"
+            className="mb-3 w-fit rounded-md border-chart-3/25 bg-chart-3/[0.08] text-chart-3"
           >
             Project invitation
           </Badge>
 
-          <DialogTitle className="text-2xl font-black leading-tight tracking-[-0.03em]">
+          <DialogTitle className="text-xl font-black leading-tight tracking-[-0.03em] sm:text-2xl">
             {project.title}
           </DialogTitle>
 
           <DialogDescription className="mt-2 max-w-xl leading-7">
-            Review the project before deciding whether you want to join
-            the work.
+            Review the project before deciding whether you want to join the work.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-7 px-6 py-7 sm:px-8">
+        <div className="space-y-6 px-5 py-6 sm:space-y-7 sm:px-8 sm:py-7">
           <section>
             <p className="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
               Project description
@@ -1701,8 +1634,8 @@ function ProjectInvitationDialog({
             )}
           </div>
 
-          <div className="rounded-r-lg border-l-2 border-primary/50 bg-primary/[0.035] py-2 pl-4 pr-3">
-            <p className="text-xs leading-6 text-muted-foreground">
+          <div className="rounded-r-lg border-l-2 border-chart-3/50 bg-chart-3/[0.06] py-2 pl-4 pr-3">
+            <p className="text-xs leading-6 text-foreground/75">
               Accepting gives you access to the project workspace and its
               tasks. Until then, you can only review these project details.
             </p>
@@ -1714,7 +1647,7 @@ function ProjectInvitationDialog({
               variant="ghost"
               disabled={responding !== null}
               onClick={() => void onDecline()}
-              className="h-11 rounded-lg px-5 text-muted-foreground shadow-none hover:bg-muted/40 hover:text-foreground"
+              className="h-10 rounded-lg px-5 text-muted-foreground shadow-none hover:bg-muted/40 hover:text-foreground sm:h-11"
             >
               {responding === "decline" ? (
                 <LoaderCircleIcon className="h-4 w-4 animate-spin" />
@@ -1729,7 +1662,7 @@ function ProjectInvitationDialog({
               type="button"
               disabled={responding !== null}
               onClick={() => void onAccept()}
-              className="h-11 rounded-lg px-6 shadow-none"
+              className="h-10 rounded-lg px-6 shadow-none sm:h-11"
             >
               {responding === "accept" ? (
                 <LoaderCircleIcon className="h-4 w-4 animate-spin" />
@@ -1780,7 +1713,7 @@ function WorkLoadError({
   onRetry: () => void;
 }) {
   return (
-    <section className="mt-7 border-y border-border py-12">
+    <section className="mt-5 rounded-2xl border border-border/70 bg-muted/[0.10] px-5 py-10 sm:mt-6 sm:px-6 sm:py-12">
       <div className="max-w-md">
         <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-muted-foreground">
           <RefreshCwIcon size={18} />
@@ -1809,29 +1742,26 @@ function WorkLoadError({
 }
 
 /* =========================================================
-   EMPTY WORK STATE
+   EMPTY COLLECTION
 ========================================================= */
 
-function WorkEmptyState({
+function EmptyCollection({
   title,
   description,
   icon: Icon,
 }: {
   title: string;
   description: string;
-  icon: ComponentType<{
-    size?: number;
-    className?: string;
-  }>;
+  icon: ComponentType<{ size?: number; className?: string }>;
 }) {
   return (
-    <section className="mt-7 border-y border-border py-14">
+    <section className="mt-5 rounded-2xl border border-border/70 bg-muted/[0.08] px-5 py-10 sm:mt-6 sm:px-8 sm:py-14">
       <div className="max-w-md">
         <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-muted-foreground">
           <Icon size={18} />
         </span>
 
-        <h2 className="mt-5 text-xl font-black tracking-[-0.025em]">
+        <h2 className="mt-4 text-lg font-black tracking-[-0.025em] sm:mt-5 sm:text-xl">
           {title}.
         </h2>
 
@@ -1844,74 +1774,35 @@ function WorkEmptyState({
 }
 
 /* =========================================================
-   EMPTY CLIENT WORKSPACE
+   EMPTY WORK STATE
 ========================================================= */
 
-function EmptyWorkspace({
-  firstName,
+function WorkEmptyState({
+  title,
+  description,
+  icon,
 }: {
-  firstName: string;
+  title: string;
+  description: string;
+  icon: ComponentType<{ size?: number; className?: string }>;
 }) {
   return (
-    <section className="flex min-h-[calc(100vh-5rem)] w-full items-center justify-center py-12">
-      <div className="w-full max-w-xl text-center">
-        <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-secondary shadow-sm shadow-primary/10">
-          <FolderOpenIcon size={20} />
-        </span>
-
-        <p className="mt-6 text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-          Welcome, {firstName}
-        </p>
-
-        <h1 className="mt-3 text-3xl font-black leading-[1.06] tracking-[-0.035em] sm:text-4xl">
-          Create your first project.
-        </h1>
-
-        <p className="mx-auto mt-4 max-w-lg text-sm leading-7 text-muted-foreground sm:text-base">
-          Define what you need done, bring in the right Allocats and keep
-          the work organised from one workspace.
-        </p>
-
-        <div className="mt-8 flex flex-col items-center justify-center gap-2 sm:flex-row">
-          <Button
-            asChild
-            className="group h-11 w-full rounded-lg px-6 shadow-none sm:w-auto"
-          >
-            <Link to="/projects/new">
-              <PlusIcon size={16} />
-
-              Create project
-
-              <ArrowRightIcon
-                size={15}
-                className="transition-transform duration-200 group-hover:translate-x-0.5"
-              />
-            </Link>
-          </Button>
-
-          <Button
-            asChild
-            variant="ghost"
-            className="h-11 w-full rounded-lg px-5 text-muted-foreground shadow-none hover:bg-muted/40 hover:text-foreground sm:w-auto"
-          >
-            <Link to="/how-it-works">
-              See how it works
-            </Link>
-          </Button>
-        </div>
-      </div>
-    </section>
+    <EmptyCollection
+      title={title}
+      description={description}
+      icon={icon}
+    />
   );
 }
 
 /* =========================================================
-   WORKSPACE LOADING
+   LOADING
 ========================================================= */
 
 function WorkspaceLoading() {
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
-      <header className="sticky top-0 z-40 border-b border-border/70 bg-background/90 backdrop-blur-xl">
+      <header className="sticky top-0 z-50 border-b border-border/60 bg-background/95 backdrop-blur-xl">
         <div className="container mx-auto px-4 sm:px-5 md:px-8">
           <DashboardMainNav />
         </div>
@@ -1928,7 +1819,7 @@ function WorkspaceLoading() {
 }
 
 /* =========================================================
-   ERROR PAGE
+   ERROR
 ========================================================= */
 
 function WorkspaceError({
@@ -1938,7 +1829,7 @@ function WorkspaceError({
 }) {
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
-      <header className="sticky top-0 z-40 border-b border-border/70 bg-background/90 backdrop-blur-xl">
+      <header className="sticky top-0 z-50 border-b border-border/60 bg-background/95 backdrop-blur-xl">
         <div className="container mx-auto px-4 sm:px-5 md:px-8">
           <DashboardMainNav />
         </div>
@@ -1974,87 +1865,6 @@ function WorkspaceError({
 }
 
 /* =========================================================
-   SIDEBAR
-========================================================= */
-
-function DashboardSidebar() {
-  return (
-    <aside className="hidden min-w-0 xl:block">
-      <div className="sticky top-28">
-        <section>
-          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/[0.07] text-primary">
-            <SearchIcon size={17} />
-          </span>
-
-          <p className="mt-5 text-[0.62rem] font-semibold uppercase tracking-[0.17em] text-muted-foreground">
-            Need another skill?
-          </p>
-
-          <h2 className="mt-2 text-xl font-black leading-tight tracking-[-0.025em]">
-            Put another Allocat on the trail.
-          </h2>
-
-          <p className="mt-3 text-sm leading-7 text-muted-foreground">
-            Browse professionals whose experience matches your next piece
-            of work.
-          </p>
-
-          <Link
-            to="/allocats"
-            className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-foreground transition-colors hover:text-muted-foreground"
-          >
-            Explore Allocats
-            <ArrowRightIcon size={14} />
-          </Link>
-        </section>
-
-        <div className="my-8 h-px bg-border/70" />
-
-        <section>
-          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/[0.07] text-primary">
-            <LightbulbIcon size={17} />
-          </span>
-
-          <p className="mt-5 text-[0.62rem] font-semibold uppercase tracking-[0.17em] text-muted-foreground">
-            Workspace tip
-          </p>
-
-          <h2 className="mt-2 font-bold">
-            Start with the outcome.
-          </h2>
-
-          <p className="mt-2 text-sm leading-7 text-muted-foreground">
-            A clear result makes it easier for Allocats to understand the
-            work and break it into useful tasks.
-          </p>
-
-          <Link
-            to="/how-it-works"
-            className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-foreground transition-colors hover:text-muted-foreground"
-          >
-            Learn more
-            <ArrowRightIcon size={14} />
-          </Link>
-        </section>
-
-        <div className="my-8 h-px bg-border/70" />
-
-        <section>
-          <p className="text-[0.62rem] font-semibold uppercase tracking-[0.17em] text-muted-foreground">
-            Allocatr
-          </p>
-
-          <p className="mt-3 text-sm leading-7 text-muted-foreground">
-            Keep the work visible. Let the skilled paws handle the
-            execution.
-          </p>
-        </section>
-      </div>
-    </aside>
-  );
-}
-
-/* =========================================================
    HELPERS
 ========================================================= */
 
@@ -2065,13 +1875,17 @@ function normalizeProjectStatus(status?: string) {
 }
 
 function getProjectDateValue(project: Project) {
-  if (!project.createdAt) return 0;
+  if (!project.createdAt) {
+    return 0;
+  }
 
   const date = new Date(project.createdAt);
 
-  return Number.isNaN(date.getTime())
-    ? 0
-    : date.getTime();
+  if (Number.isNaN(date.getTime())) {
+    return 0;
+  }
+
+  return date.getTime();
 }
 
 function sortProjectItems<T extends Project>(
@@ -2082,36 +1896,22 @@ function sortProjectItems<T extends Project>(
 
   copy.sort((first, second) => {
     if (sort === "oldest") {
-      return (
-        getProjectDateValue(first) -
-        getProjectDateValue(second)
-      );
+      return getProjectDateValue(first) - getProjectDateValue(second);
     }
 
     if (sort === "title-asc") {
-      return first.title.localeCompare(
-        second.title,
-        undefined,
-        {
-          sensitivity: "base",
-        },
-      );
+      return first.title.localeCompare(second.title, undefined, {
+        sensitivity: "base",
+      });
     }
 
     if (sort === "title-desc") {
-      return second.title.localeCompare(
-        first.title,
-        undefined,
-        {
-          sensitivity: "base",
-        },
-      );
+      return second.title.localeCompare(first.title, undefined, {
+        sensitivity: "base",
+      });
     }
 
-    return (
-      getProjectDateValue(second) -
-      getProjectDateValue(first)
-    );
+    return getProjectDateValue(second) - getProjectDateValue(first);
   });
 
   return copy;

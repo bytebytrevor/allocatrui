@@ -32,22 +32,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-type TaskStatus =
-  | "pending"
-  | "active"
-  | "complete"
-  | "overdue";
+type TaskStatus = "pending" | "active" | "complete" | "overdue";
 
 type Props = {
   task: Task;
   isOverlay?: boolean;
   canManageTasks?: boolean;
-
-  onMoveTask?: (
-    taskId: string,
-    status: TaskStatus,
-  ) => void | Promise<void>;
-
+  onMoveTask?: (taskId: string, status: TaskStatus) => void | Promise<void>;
   onEditTask?: (task: Task) => void;
   onDeleteTask?: (task: Task) => void | Promise<void>;
 };
@@ -71,16 +62,12 @@ type TaskStatusOption = {
   }>;
 };
 
-const taskStatusAppearance: Record<
-  TaskStatus,
-  TaskStatusAppearance
-> = {
+const taskStatusAppearance: Record<TaskStatus, TaskStatusAppearance> = {
   pending: {
     label: "Pending",
     icon: CircleDashedIcon,
-    iconClass: "text-amber-600 dark:text-amber-300",
-    badgeClass:
-      "bg-amber-400/[0.08] text-amber-700 dark:text-amber-300",
+    iconClass: "text-chart-3",
+    badgeClass: "bg-chart-3/[0.09] text-chart-3",
   },
 
   active: {
@@ -93,18 +80,15 @@ const taskStatusAppearance: Record<
   complete: {
     label: "Complete",
     icon: CircleCheckBigIcon,
-    iconClass:
-      "text-emerald-600 dark:text-emerald-300",
-    badgeClass:
-      "bg-emerald-400/[0.08] text-emerald-700 dark:text-emerald-300",
+    iconClass: "text-chart-2",
+    badgeClass: "bg-chart-2/[0.09] text-chart-2",
   },
 
   overdue: {
     label: "Overdue",
     icon: TriangleAlertIcon,
     iconClass: "text-destructive",
-    badgeClass:
-      "bg-destructive/[0.07] text-destructive",
+    badgeClass: "bg-destructive/[0.08] text-destructive",
   },
 };
 
@@ -135,12 +119,10 @@ function TaskCard({
   onDeleteTask,
 }: Props) {
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] =
-    useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const currentStatus = getEffectiveTaskStatus(task);
-  const statusAppearance =
-    taskStatusAppearance[currentStatus];
+  const statusAppearance = taskStatusAppearance[currentStatus];
 
   const displayTask: Task = {
     ...task,
@@ -148,45 +130,25 @@ function TaskCard({
   };
 
   function openTask() {
-    if (!isOverlay) {
-      setDialogOpen(true);
-    }
+    if (!isOverlay) setDialogOpen(true);
   }
 
-  function handleCardClick(
-    event: MouseEvent<HTMLElement>,
-  ) {
-    if (isOverlay) {
-      return;
-    }
+  function handleCardClick(event: MouseEvent<HTMLElement>) {
+    if (isOverlay) return;
 
     const target = event.target as HTMLElement;
 
-    if (
-      target.closest(
-        "button, a, input, textarea, select, [role='menuitem']",
-      )
-    ) {
+    if (target.closest("button, a, input, textarea, select, [role='menuitem']")) {
       return;
     }
 
     openTask();
   }
 
-  function handleCardKeyDown(
-    event: KeyboardEvent<HTMLElement>,
-  ) {
-    if (
-      isOverlay ||
-      event.target !== event.currentTarget
-    ) {
-      return;
-    }
+  function handleCardKeyDown(event: KeyboardEvent<HTMLElement>) {
+    if (isOverlay || event.target !== event.currentTarget) return;
 
-    if (
-      event.key === "Enter" ||
-      event.key === " "
-    ) {
+    if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
       openTask();
     }
@@ -199,11 +161,7 @@ function TaskCard({
         tabIndex={isOverlay ? -1 : 0}
         onClick={handleCardClick}
         onKeyDown={handleCardKeyDown}
-        aria-label={
-          isOverlay
-            ? undefined
-            : `Open task ${task.title}`
-        }
+        aria-label={isOverlay ? undefined : `Open task ${task.title}`}
         className={[
           "group relative overflow-hidden",
           "rounded-xl border border-border/80",
@@ -256,11 +214,7 @@ function TaskCard({
               onOpenTask={openTask}
               onMoveTask={onMoveTask}
               onEditTask={onEditTask}
-              onRequestDelete={
-                onDeleteTask
-                  ? () => setDeleteDialogOpen(true)
-                  : undefined
-              }
+              onRequestDelete={onDeleteTask ? () => setDeleteDialogOpen(true) : undefined}
             />
           )}
         </div>
@@ -308,39 +262,26 @@ function TaskMenu({
   currentStatus: TaskStatus;
   canManageTasks: boolean;
   onOpenTask: () => void;
-  onMoveTask?: (
-    taskId: string,
-    status: TaskStatus,
-  ) => void | Promise<void>;
+  onMoveTask?: (taskId: string, status: TaskStatus) => void | Promise<void>;
   onEditTask?: (task: Task) => void;
   onRequestDelete?: () => void;
 }) {
-  const availableMoveStatuses =
-    getAvailableMoveStatuses(currentStatus);
+  const availableMoveStatuses = getAvailableMoveStatuses(currentStatus);
 
   const canMove =
     canManageTasks &&
     Boolean(onMoveTask) &&
     availableMoveStatuses.length > 0;
 
-  const canEdit =
-    canManageTasks && Boolean(onEditTask);
+  const canEdit = canManageTasks && Boolean(onEditTask);
+  const canDelete = canManageTasks && Boolean(onRequestDelete);
+  const hasManagementActions = canMove || canEdit || canDelete;
 
-  const canDelete =
-    canManageTasks && Boolean(onRequestDelete);
-
-  const hasManagementActions =
-    canMove || canEdit || canDelete;
-
-  function stopPointer(
-    event: PointerEvent<HTMLElement>,
-  ) {
+  function stopPointer(event: PointerEvent<HTMLElement>) {
     event.stopPropagation();
   }
 
-  function stopClick(
-    event: MouseEvent<HTMLElement>,
-  ) {
+  function stopClick(event: MouseEvent<HTMLElement>) {
     event.stopPropagation();
   }
 
@@ -378,24 +319,18 @@ function TaskMenu({
         >
           <DropdownMenuItem
             className="rounded-lg"
-            onSelect={() => {
-              requestAnimationFrame(onOpenTask);
-            }}
+            onSelect={() => requestAnimationFrame(onOpenTask)}
           >
             <EyeIcon size={14} />
             View task
           </DropdownMenuItem>
 
-          {hasManagementActions && (
-            <DropdownMenuSeparator />
-          )}
+          {hasManagementActions && <DropdownMenuSeparator />}
 
           {canEdit && (
             <DropdownMenuItem
               className="rounded-lg"
-              onSelect={() => {
-                onEditTask?.(task);
-              }}
+              onSelect={() => onEditTask?.(task)}
             >
               <PencilIcon size={14} />
               Edit task
@@ -408,19 +343,14 @@ function TaskMenu({
                 Move task
               </DropdownMenuLabel>
 
-              {availableMoveStatuses.map((option) => {
+              {availableMoveStatuses.map(option => {
                 const Icon = option.icon;
 
                 return (
                   <DropdownMenuItem
                     key={option.value}
                     className="rounded-lg"
-                    onSelect={() => {
-                      void onMoveTask?.(
-                        task.id,
-                        option.value,
-                      );
-                    }}
+                    onSelect={() => void onMoveTask?.(task.id, option.value)}
                   >
                     <Icon size={14} />
                     {option.label}
@@ -437,9 +367,7 @@ function TaskMenu({
               <DropdownMenuItem
                 className="rounded-lg text-destructive focus:bg-destructive/10 focus:text-destructive"
                 onSelect={() => {
-                  requestAnimationFrame(() => {
-                    onRequestDelete?.();
-                  });
+                  requestAnimationFrame(() => onRequestDelete?.());
                 }}
               >
                 <Trash2Icon size={14} />
@@ -465,20 +393,13 @@ function DueDate({
       className={[
         "flex min-w-0 items-center gap-1.5",
         "text-[0.66rem] font-medium",
-        isOverdue
-          ? "text-destructive"
-          : "text-muted-foreground",
+        isOverdue ? "text-destructive" : "text-muted-foreground",
       ].join(" ")}
     >
-      <CalendarDaysIcon
-        size={12}
-        className="shrink-0"
-      />
+      <CalendarDaysIcon size={12} className="shrink-0" />
 
       <span className="truncate">
-        {dueDate
-          ? formatTaskDate(dueDate)
-          : "No due date"}
+        {dueDate ? formatTaskDate(dueDate) : "No due date"}
       </span>
     </span>
   );
@@ -500,57 +421,36 @@ function TaskStatus({
         appearance.badgeClass,
       ].join(" ")}
     >
-      <Icon
-        size={11}
-        className={appearance.iconClass}
-      />
-
+      <Icon size={11} className={appearance.iconClass} />
       {appearance.label}
     </span>
   );
 }
 
-function getAvailableMoveStatuses(
-  currentStatus: TaskStatus,
-) {
+function getAvailableMoveStatuses(currentStatus: TaskStatus) {
   if (currentStatus === "overdue") {
-    return taskStatusOptions.filter(
-      (option) => option.value === "complete",
-    );
+    return taskStatusOptions.filter(option => option.value === "complete");
   }
 
-  return taskStatusOptions.filter(
-    (option) => option.value !== currentStatus,
-  );
+  return taskStatusOptions.filter(option => option.value !== currentStatus);
 }
 
-function getEffectiveTaskStatus(
-  task: Task,
-): TaskStatus {
+function getEffectiveTaskStatus(task: Task): TaskStatus {
   const status = normalizeTaskStatus(task.status);
 
-  if (status === "complete") {
-    return "complete";
-  }
-
-  if (isTaskPastDue(task)) {
-    return "overdue";
-  }
+  if (status === "complete") return "complete";
+  if (isTaskPastDue(task)) return "overdue";
 
   return status;
 }
 
-function normalizeTaskStatus(
-  status?: string,
-): TaskStatus {
+function normalizeTaskStatus(status?: string): TaskStatus {
   const normalized = String(status ?? "")
     .trim()
     .toLowerCase()
     .replace(/[\s_-]/g, "");
 
-  if (normalized === "active") {
-    return "active";
-  }
+  if (normalized === "active") return "active";
 
   if (
     normalized === "complete" ||
@@ -559,23 +459,17 @@ function normalizeTaskStatus(
     return "complete";
   }
 
-  if (normalized === "overdue") {
-    return "overdue";
-  }
+  if (normalized === "overdue") return "overdue";
 
   return "pending";
 }
 
 function isTaskPastDue(task: Task) {
-  if (!task.dueDate) {
-    return false;
-  }
+  if (!task.dueDate) return false;
 
   const dueDate = new Date(task.dueDate);
 
-  if (Number.isNaN(dueDate.getTime())) {
-    return false;
-  }
+  if (Number.isNaN(dueDate.getTime())) return false;
 
   return dueDate.getTime() < Date.now();
 }
@@ -583,9 +477,7 @@ function isTaskPastDue(task: Task) {
 function formatTaskDate(value: string | Date) {
   const date = new Date(value);
 
-  if (Number.isNaN(date.getTime())) {
-    return "No due date";
-  }
+  if (Number.isNaN(date.getTime())) return "No due date";
 
   return new Intl.DateTimeFormat("en", {
     day: "numeric",

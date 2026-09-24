@@ -15,6 +15,7 @@ import {
   SearchIcon,
   SendIcon,
   SparklesIcon,
+  UserPlusIcon,
   XIcon,
 } from "lucide-react";
 
@@ -78,7 +79,13 @@ type Step = 1 | 2 | 3;
 
 type SubmitIntent =
   | "post"
-  | "find";
+  | "find"
+  | "invite";
+
+type Props = {
+  selectedAllocatId?: string | null;
+  selectedAllocatName?: string | null;
+};
 
 /* =========================================================
    VALIDATION
@@ -172,7 +179,10 @@ const stepFields: Record<Step, (keyof FormValues)[]> = {
    FORM
 ========================================================= */
 
-function NewProjectForm() {
+function NewProjectForm({
+  selectedAllocatId = null,
+  selectedAllocatName = null,
+}: Props) {
   const navigate = useNavigate();
 
   const [step, setStep] =
@@ -183,6 +193,9 @@ function NewProjectForm() {
 
   const submitIntentRef =
     useRef<SubmitIntent>("post");
+
+  const hasSelectedAllocat =
+    Boolean(selectedAllocatId);
 
   /* =======================================================
      DATABASE CATEGORIES
@@ -452,13 +465,62 @@ function NewProjectForm() {
         },
       );
 
+      const project = response.data;
+
+      /* ===================================================
+         DISCOVER → CREATE + INVITE
+      =================================================== */
+
+      if (selectedAllocatId) {
+        try {
+          await api.put(
+            `/projects/${project.id}/allocats/${selectedAllocatId}/invite`,
+            {},
+            {
+              withCredentials: true,
+            },
+          );
+
+          toast.success(
+            selectedAllocatName
+              ? `${selectedAllocatName} has been invited to ${project.title}.`
+              : "Project created and invitation sent.",
+          );
+
+          navigate(
+            `/projects/${project.id}`,
+          );
+
+          return;
+        } catch (inviteError) {
+          console.error(
+            "Project was created but the invitation could not be sent:",
+            inviteError,
+          );
+
+          toast.warning(
+            "Your project was created, but the invitation could not be sent. You can try again from Find Allocats.",
+          );
+
+          navigate(
+            `/projects/${project.id}/allocats/find`,
+          );
+
+          return;
+        }
+      }
+
+      /* ===================================================
+         NORMAL CREATE FLOW
+      =================================================== */
+
       toast.success(
         "Project created successfully.",
       );
 
       if (intent === "find") {
         navigate(
-          `/projects/${response.data.id}/allocats/find`,
+          `/projects/${project.id}/allocats/find`,
         );
 
         return;
@@ -476,6 +538,17 @@ function NewProjectForm() {
       );
     }
   }
+
+  /* =======================================================
+     CTA NAME
+  ======================================================= */
+
+  const selectedAllocatFirstName =
+    getFirstName(selectedAllocatName);
+
+  /* =======================================================
+     RENDER
+  ======================================================= */
 
   return (
     <>
@@ -1016,7 +1089,11 @@ function NewProjectForm() {
               <StepHeading
                 eyebrow="One last thing"
                 title="Tell them what success looks like."
-                description="Give the Allocat enough context to understand the job without writing a novel."
+                description={
+                  hasSelectedAllocat
+                    ? `Give ${selectedAllocatFirstName || "the Allocat"} enough context to understand the job without writing a novel.`
+                    : "Give the Allocat enough context to understand the job without writing a novel."
+                }
               />
 
               {/* BRIEF */}
@@ -1113,10 +1190,7 @@ function NewProjectForm() {
                     onClick={handleBack}
                     className="h-10 rounded-lg px-3 text-xs text-muted-foreground shadow-none"
                   >
-                    <ArrowLeftIcon
-                      size={14}
-                    />
-
+                    <ArrowLeftIcon size={14} />
                     Previous
                   </Button>
                 )}
@@ -1135,23 +1209,27 @@ function NewProjectForm() {
                 />
               </Button>
             </div>
-          ) : (
+          ) : hasSelectedAllocat ? (
+
+            /* =================================================
+                CREATE + INVITE
+            ================================================= */
+
             <div>
               <div className="mb-5 flex items-start gap-3">
                 <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/[0.08] text-primary">
-                  <SparklesIcon
-                    size={14}
-                  />
+                  <UserPlusIcon size={14} />
                 </span>
 
                 <div>
                   <p className="text-sm font-bold">
-                    Ready to create it.
+                    Ready to start working together.
                   </p>
 
                   <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                    Save the project now, or immediately continue to matching
-                    Allocats.
+                    The project will be created first, then{" "}
+                    {selectedAllocatName || "the selected Allocat"}{" "}
+                    will receive an invitation.
                   </p>
                 </div>
               </div>
@@ -1164,10 +1242,75 @@ function NewProjectForm() {
                   disabled={isSubmitting}
                   className="h-10 rounded-lg px-3 text-xs text-muted-foreground shadow-none"
                 >
-                  <ArrowLeftIcon
-                    size={14}
-                  />
+                  <ArrowLeftIcon size={14} />
+                  Previous
+                </Button>
 
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  onClick={() => setIntent("invite")}
+                  className="group h-11 rounded-lg px-5 text-xs shadow-none"
+                >
+                  {isSubmitting &&
+                  submitIntent === "invite" ? (
+                    <>
+                      <LoaderCircleIcon
+                        size={14}
+                        className="animate-spin"
+                      />
+
+                      Creating & inviting...
+                    </>
+                  ) : (
+                    <>
+                      <UserPlusIcon size={14} />
+
+                      {selectedAllocatFirstName
+                        ? `Create project & invite ${selectedAllocatFirstName}`
+                        : "Create project & invite"}
+
+                      <ArrowRightIcon
+                        size={13}
+                        className="transition-transform group-hover:translate-x-1"
+                      />
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          ) : (
+
+            /* =================================================
+                NORMAL CREATE
+            ================================================= */
+
+            <div>
+              <div className="mb-5 flex items-start gap-3">
+                <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/[0.08] text-primary">
+                  <SparklesIcon size={14} />
+                </span>
+
+                <div>
+                  <p className="text-sm font-bold">
+                    Ready to create it.
+                  </p>
+
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                    Save the project now, or immediately continue to matching Allocats.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={handleBack}
+                  disabled={isSubmitting}
+                  className="h-10 rounded-lg px-3 text-xs text-muted-foreground shadow-none"
+                >
+                  <ArrowLeftIcon size={14} />
                   Previous
                 </Button>
 
@@ -1176,9 +1319,7 @@ function NewProjectForm() {
                     type="submit"
                     variant="outline"
                     disabled={isSubmitting}
-                    onClick={() =>
-                      setIntent("post")
-                    }
+                    onClick={() => setIntent("post")}
                     className="h-11 rounded-lg px-5 text-xs shadow-none"
                   >
                     {isSubmitting &&
@@ -1193,10 +1334,7 @@ function NewProjectForm() {
                       </>
                     ) : (
                       <>
-                        <SendIcon
-                          size={14}
-                        />
-
+                        <SendIcon size={14} />
                         Create project
                       </>
                     )}
@@ -1205,9 +1343,7 @@ function NewProjectForm() {
                   <Button
                     type="submit"
                     disabled={isSubmitting}
-                    onClick={() =>
-                      setIntent("find")
-                    }
+                    onClick={() => setIntent("find")}
                     className="group h-11 rounded-lg px-5 text-xs shadow-none"
                   >
                     {isSubmitting &&
@@ -1222,9 +1358,7 @@ function NewProjectForm() {
                       </>
                     ) : (
                       <>
-                        <SearchIcon
-                          size={14}
-                        />
+                        <SearchIcon size={14} />
 
                         Create & find Allocats
 
@@ -1287,15 +1421,10 @@ type SkillsPickerProps = {
   skills: SkillOption[];
   value: string[];
   category: string;
-
-  onChange: (
-    value: string[],
-  ) => void;
-
+  onChange: (value: string[]) => void;
   loading?: boolean;
   disabled?: boolean;
   invalid?: boolean;
-
   error?: string | null;
 };
 
@@ -1511,9 +1640,7 @@ function SkillsPicker({
                   )}
                   aria-label={`Remove ${skill.name}`}
                 >
-                  <XIcon
-                    size={10}
-                  />
+                  <XIcon size={10} />
                 </button>
               </span>
             ))}
@@ -1557,9 +1684,7 @@ function SkillsPicker({
                   </div>
 
                   <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-primary/[0.07] text-primary">
-                    <CheckIcon
-                      size={11}
-                    />
+                    <CheckIcon size={11} />
                   </span>
                 </button>
               ))}
@@ -1576,6 +1701,21 @@ function SkillsPicker({
         </div>
       )}
     </div>
+  );
+}
+
+/* =========================================================
+   NAME
+========================================================= */
+
+function getFirstName(name?: string | null): string {
+  if (!name?.trim()) return "";
+
+  return (
+    name
+      .trim()
+      .split(/\s+/)[0] ??
+    ""
   );
 }
 

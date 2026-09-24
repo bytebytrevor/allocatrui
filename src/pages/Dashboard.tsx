@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, Outlet, useParams } from "react-router-dom";
-import type { ProjectWorkspaceContext } from "@/Types/projectWorkspaceContext";
 
 import {
   ArrowLeftIcon,
@@ -39,6 +38,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import type { Project } from "@/Types/project";
+import type { ProjectWorkspaceContext } from "@/Types/projectWorkspaceContext";
 
 /* =========================================================
    NAVIGATION
@@ -78,6 +78,69 @@ const managerLinks = [
 ];
 
 /* =========================================================
+   PROJECT STATUS
+========================================================= */
+
+type ProjectStatusAppearance = {
+  label: string;
+  dot: string;
+  text: string;
+};
+
+const projectStatusAppearance: Record<string, ProjectStatusAppearance> = {
+  pending: {
+    label: "Pending",
+    dot: "bg-chart-3",
+    text: "text-chart-3",
+  },
+  active: {
+    label: "Active",
+    dot: "bg-primary",
+    text: "text-foreground",
+  },
+  completionrequested: {
+    label: "Awaiting confirmation",
+    dot: "bg-chart-3",
+    text: "text-chart-3",
+  },
+  paused: {
+    label: "Paused",
+    dot: "bg-muted-foreground",
+    text: "text-muted-foreground",
+  },
+  onhold: {
+    label: "On hold",
+    dot: "bg-muted-foreground",
+    text: "text-muted-foreground",
+  },
+  complete: {
+    label: "Completed",
+    dot: "bg-chart-2",
+    text: "text-chart-2",
+  },
+  completed: {
+    label: "Completed",
+    dot: "bg-chart-2",
+    text: "text-chart-2",
+  },
+  closed: {
+    label: "Completed",
+    dot: "bg-chart-2",
+    text: "text-chart-2",
+  },
+  cancelled: {
+    label: "Cancelled",
+    dot: "bg-destructive",
+    text: "text-destructive",
+  },
+  canceled: {
+    label: "Cancelled",
+    dot: "bg-destructive",
+    text: "text-destructive",
+  },
+};
+
+/* =========================================================
    DASHBOARD
 ========================================================= */
 
@@ -90,29 +153,10 @@ function Dashboard() {
   const [projectsError, setProjectsError] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  /* =======================================================
-     PERMISSIONS
-
-     Allocats retain normal account capabilities, including
-     creating and owning their own projects.
-  ======================================================= */
-
   const canCreateProject = Boolean(user);
 
   /* =======================================================
      LOAD ACCESSIBLE PROJECTS
-
-     GET /projects returns every project workspace the current
-     user is allowed to enter.
-
-     Normal user:
-     - projects they own
-
-     Allocat:
-     - projects they own
-     - accepted client projects
-
-     Invitations are not accessible workspaces until accepted.
   ======================================================= */
 
   const fetchProjects = useCallback(async () => {
@@ -124,7 +168,7 @@ function Dashboard() {
         withCredentials: true,
       });
 
-      setProjects(response.data);
+      setProjects(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error("Could not load accessible projects:", error);
 
@@ -151,18 +195,10 @@ function Dashboard() {
 
   /* =======================================================
      CURRENT PROJECT
-
-     The current project is resolved from the secured list
-     returned by GET /projects.
-
-     An inaccessible project ID therefore cannot mount the
-     project workspace.
   ======================================================= */
 
   const currentProject = useMemo(() => {
-    if (!projectId) {
-      return undefined;
-    }
+    if (!projectId) return undefined;
 
     return projects.find(
       project => String(project.id) === String(projectId),
@@ -181,107 +217,141 @@ function Dashboard() {
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground transition-colors">
-
       {/* ===================================================
-          GLOBAL HEADER
+          STICKY APPLICATION SHELL
       =================================================== */}
 
-      <header className="sticky top-0 z-50 border-b border-border/70 bg-background/90 backdrop-blur-xl">
-        <div className="container mx-auto px-4 sm:px-5 md:px-8">
-          <DashboardMainNav />
-        </div>
-      </header>
+      <div className="sticky top-0 z-50">
+        {/* GLOBAL HEADER */}
 
-      {/* ===================================================
-          MOBILE PROJECT BAR
-      =================================================== */}
-
-      <div className="border-b border-border/70 bg-background lg:hidden">
-        <div className="container mx-auto flex min-h-16 items-center justify-between gap-4 px-5 py-3 md:px-8">
-          <div className="flex min-w-0 items-center gap-3">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary text-secondary shadow-sm shadow-primary/10">
-              <LayoutDashboardIcon size={17} />
-            </span>
-
-            <div className="min-w-0">
-              <p className="text-[0.58rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                Project workspace
-              </p>
-
-              <h1 className="mt-0.5 truncate text-sm font-bold tracking-[-0.015em]">
-                {currentProject?.title || "Project workspace"}
-              </h1>
-            </div>
+        <header className="border-b border-border/70 bg-background/95 backdrop-blur-xl">
+          <div className="container mx-auto px-4 sm:px-5 md:px-8">
+            <DashboardMainNav />
           </div>
-
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className={[
-              "h-9 w-9 shrink-0 rounded-lg shadow-none",
-              mobileMenuOpen
-                ? "bg-primary text-secondary hover:bg-primary/90 hover:text-secondary"
-                : "text-muted-foreground hover:bg-muted/50 hover:text-foreground",
-            ].join(" ")}
-            onClick={() => setMobileMenuOpen(current => !current)}
-            aria-label={
-              mobileMenuOpen
-                ? "Close project navigation"
-                : "Open project navigation"
-            }
-          >
-            {mobileMenuOpen ? (
-              <XIcon size={18} />
-            ) : (
-              <MenuIcon size={18} />
-            )}
-          </Button>
-        </div>
+        </header>
 
         {/* =================================================
-            MOBILE MENU
+            MOBILE PROJECT BAR
         ================================================= */}
 
-        {mobileMenuOpen && (
-          <div className="container mx-auto border-t border-border/70 px-5 py-4 md:px-8">
-            <div className="space-y-5">
-              {!loadingProjects && hasProjectAccess && (
-                <ProjectNavigation
-                  basePath={projectBasePath}
-                  onNavigate={() => setMobileMenuOpen(false)}
-                />
-              )}
+        <div className="border-b border-border/70 bg-background/95 backdrop-blur-xl lg:hidden">
+          <div className="container mx-auto flex min-h-[3.75rem] items-center justify-between gap-4 px-4 py-2.5 sm:px-5 md:px-8">
+            <div className="flex min-w-0 items-center gap-3">
+              <span
+                className={[
+                  "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
+                  "bg-primary text-secondary",
+                  "transition-colors",
+                ].join(" ")}
+              >
+                <LayoutDashboardIcon size={15} />
+              </span>
 
-              {!loadingProjects && (
-                <div
-                  className={
-                    hasProjectAccess
-                      ? "border-t border-border pt-4"
-                      : ""
-                  }
-                >
-                  <ProjectSwitcher
-                    projects={projects}
-                    projectId={projectId}
-                    error={projectsError}
-                    currentProject={currentProject}
-                    onRetry={fetchProjects}
-                    canCreateProject={canCreateProject}
-                    isAllocat={Boolean(user?.isAllocat)}
-                  />
+              <div className="min-w-0">
+                <p className="text-[0.55rem] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
+                  Project workspace
+                </p>
+
+                <div className="mt-0.5 flex min-w-0 items-center gap-2">
+                  <h1 className="truncate text-sm font-bold tracking-[-0.015em]">
+                    {currentProject?.title || "Project workspace"}
+                  </h1>
+
+                  {currentProject && (
+                    <ProjectStatus
+                      status={currentProject.status}
+                      className="hidden shrink-0 sm:inline-flex"
+                    />
+                  )}
                 </div>
-              )}
+
+                {currentProject && (
+                  <ProjectStatus
+                    status={currentProject.status}
+                    className="mt-0.5 sm:hidden"
+                  />
+                )}
+              </div>
             </div>
+
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className={[
+                "h-8 w-8 shrink-0 rounded-lg shadow-none",
+                "transition-colors",
+                mobileMenuOpen
+                  ? "bg-primary text-secondary hover:bg-primary/90 hover:text-secondary"
+                  : "text-muted-foreground hover:bg-muted/50 hover:text-foreground",
+              ].join(" ")}
+              onClick={() => setMobileMenuOpen(current => !current)}
+              aria-label={
+                mobileMenuOpen
+                  ? "Close project navigation"
+                  : "Open project navigation"
+              }
+              aria-expanded={mobileMenuOpen}
+              aria-controls="mobile-project-navigation"
+            >
+              {mobileMenuOpen ? (
+                <XIcon size={17} />
+              ) : (
+                <MenuIcon size={17} />
+              )}
+            </Button>
           </div>
-        )}
+
+          {/* =================================================
+              MOBILE MENU
+          ================================================= */}
+
+          {mobileMenuOpen && (
+            <div
+              id="mobile-project-navigation"
+              className="border-t border-border/70"
+            >
+              <div className="container mx-auto max-h-[calc(100vh-8rem)] overflow-y-auto px-4 py-4 sm:px-5 md:px-8">
+                <div className="space-y-5">
+                  {!loadingProjects && hasProjectAccess && (
+                    <ProjectNavigation
+                      basePath={projectBasePath}
+                      onNavigate={() => setMobileMenuOpen(false)}
+                    />
+                  )}
+
+                  {!loadingProjects && (
+                    <div
+                      className={
+                        hasProjectAccess
+                          ? "border-t border-border pt-4"
+                          : ""
+                      }
+                    >
+                      <ProjectSwitcher
+                        projects={projects}
+                        projectId={projectId}
+                        error={projectsError}
+                        currentProject={currentProject}
+                        onRetry={fetchProjects}
+                        canCreateProject={canCreateProject}
+                        isAllocat={Boolean(user?.isAllocat)}
+                        side="bottom"
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* ===================================================
           WORKSPACE
       =================================================== */}
 
-      <main className="container mx-auto flex min-h-0 flex-1 px-5 md:px-8">
+      <main className="container mx-auto flex min-h-0 flex-1 px-4 sm:px-5 md:px-8">
         <div
           className={[
             "grid min-h-0 w-full",
@@ -289,14 +359,12 @@ function Dashboard() {
             "xl:grid-cols-[250px_minmax(0,1fr)]",
           ].join(" ")}
         >
-
           {/* =================================================
               DESKTOP SIDEBAR
           ================================================= */}
 
           <aside className="hidden min-h-0 border-r border-border/70 lg:block">
             <div className="sticky top-[5.75rem] flex max-h-[calc(100vh-6rem)] flex-col py-7 pr-6 xl:pr-7">
-
               {/* =============================================
                   CURRENT PROJECT
               ============================================= */}
@@ -312,14 +380,19 @@ function Dashboard() {
                 >
                   <ArrowLeftIcon
                     size={13}
-                    className="transition-transform group-hover:-translate-x-0.5"
+                    className="transition-transform duration-200 group-hover:-translate-x-0.5"
                   />
 
                   All projects
                 </Link>
 
                 <div className="mt-7 flex items-start gap-3">
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-secondary shadow-sm shadow-primary/10">
+                  <span
+                    className={[
+                      "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl",
+                      "bg-primary text-secondary",
+                    ].join(" ")}
+                  >
                     <LayoutDashboardIcon size={18} />
                   </span>
 
@@ -336,6 +409,13 @@ function Dashboard() {
                       <p className="mt-1.5 truncate text-[0.65rem] text-muted-foreground/70">
                         {currentProject.projectCode}
                       </p>
+                    )}
+
+                    {currentProject && (
+                      <ProjectStatus
+                        status={currentProject.status}
+                        className="mt-2"
+                      />
                     )}
                   </div>
                 </div>
@@ -373,6 +453,7 @@ function Dashboard() {
                     onRetry={fetchProjects}
                     canCreateProject={canCreateProject}
                     isAllocat={Boolean(user?.isAllocat)}
+                    side="top"
                   />
                 )}
               </div>
@@ -383,7 +464,7 @@ function Dashboard() {
               PAGE CONTENT
           ================================================= */}
 
-          <section className="min-w-0 py-6 lg:py-8 lg:pl-8 xl:pl-10">
+          <section className="min-w-0 py-5 sm:py-6 lg:py-8 lg:pl-8 xl:pl-10">
             <div className="min-h-full min-w-0">
               {loadingProjects ? (
                 <LoadingState
@@ -413,6 +494,60 @@ function Dashboard() {
 }
 
 /* =========================================================
+   PROJECT STATUS
+========================================================= */
+
+function ProjectStatus({
+  status,
+  className = "",
+}: {
+  status?: string;
+  className?: string;
+}) {
+  const normalized = normalizeProjectStatus(status);
+
+  const appearance =
+    projectStatusAppearance[normalized] ?? {
+      label: formatProjectStatus(status),
+      dot: "bg-muted-foreground",
+      text: "text-muted-foreground",
+    };
+
+  const needsAttention = normalized === "completionrequested";
+
+  return (
+    <span
+      className={[
+        "inline-flex w-fit items-center gap-1.5",
+        "text-[0.62rem] font-semibold",
+        appearance.text,
+        className,
+      ].join(" ")}
+    >
+      <span className="relative flex h-1.5 w-1.5 shrink-0">
+        {needsAttention && (
+          <span
+            className={[
+              "absolute inline-flex h-full w-full animate-ping rounded-full opacity-30",
+              appearance.dot,
+            ].join(" ")}
+          />
+        )}
+
+        <span
+          className={[
+            "relative inline-flex h-1.5 w-1.5 rounded-full",
+            appearance.dot,
+          ].join(" ")}
+        />
+      </span>
+
+      {appearance.label}
+    </span>
+  );
+}
+
+/* =========================================================
    PROJECT NAVIGATION
 ========================================================= */
 
@@ -426,20 +561,14 @@ function ProjectNavigation({
   onNavigate,
 }: ProjectNavigationProps) {
   return (
-    <nav
-      className="space-y-0.5"
-      aria-label="Project workspace"
-    >
+    <nav className="space-y-0.5" aria-label="Project workspace">
       {managerLinks.map(link => {
         const href = link.path
           ? `${basePath}/${link.path}`
           : basePath;
 
         return (
-          <div
-            key={link.label}
-            onClick={onNavigate}
-          >
+          <div key={link.label} onClick={onNavigate}>
             <DashboardNavLink
               href={href}
               icon={link.icon}
@@ -464,6 +593,7 @@ type ProjectSwitcherProps = {
   onRetry: () => void;
   canCreateProject: boolean;
   isAllocat: boolean;
+  side?: "top" | "bottom";
 };
 
 function ProjectSwitcher({
@@ -474,11 +604,8 @@ function ProjectSwitcher({
   onRetry,
   canCreateProject,
   isAllocat,
+  side = "top",
 }: ProjectSwitcherProps) {
-  /* =======================================================
-     ERROR
-  ======================================================= */
-
   if (error) {
     return (
       <button
@@ -505,19 +632,17 @@ function ProjectSwitcher({
     );
   }
 
-  /* =======================================================
-     SWITCHER
-  ======================================================= */
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button
           type="button"
+          aria-label="Switch project"
           className={[
             "group flex w-full items-center justify-between gap-3",
             "rounded-lg px-2 py-2.5 text-left",
-            "transition-colors hover:bg-muted/40",
+            "transition-colors duration-200",
+            "hover:bg-muted/40",
             "data-[state=open]:bg-muted/40",
           ].join(" ")}
         >
@@ -525,9 +650,10 @@ function ProjectSwitcher({
             <span
               className={[
                 "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
-                "bg-muted text-muted-foreground transition-colors",
+                "bg-muted text-muted-foreground transition-colors duration-200",
                 "group-hover:bg-primary group-hover:text-secondary",
-                "group-data-[state=open]:bg-primary group-data-[state=open]:text-secondary",
+                "group-data-[state=open]:bg-primary",
+                "group-data-[state=open]:text-secondary",
               ].join(" ")}
             >
               <ArrowRightLeftIcon size={14} />
@@ -546,17 +672,17 @@ function ProjectSwitcher({
 
           <ChevronDownIcon
             size={14}
-            className="shrink-0 text-muted-foreground transition-transform group-data-[state=open]:rotate-180"
+            className="shrink-0 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180"
           />
         </button>
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
         align="start"
-        side="top"
+        side={side}
         sideOffset={8}
         className={[
-          "w-[270px] rounded-xl border-border",
+          "w-[min(290px,calc(100vw-2rem))] rounded-xl border-border",
           "bg-popover p-1.5 text-popover-foreground",
           "shadow-lg",
         ].join(" ")}
@@ -569,7 +695,7 @@ function ProjectSwitcher({
 
         <DropdownMenuSeparator />
 
-        <div className="max-h-64 overflow-y-auto py-1">
+        <div className="max-h-72 overflow-y-auto py-1">
           {projects.length > 0 ? (
             projects.map(project => {
               const isCurrent =
@@ -581,25 +707,31 @@ function ProjectSwitcher({
                   asChild
                   className={[
                     "rounded-lg",
-                    isCurrent
-                      ? "bg-muted/50"
-                      : "",
+                    isCurrent ? "bg-muted/50" : "",
                   ].join(" ")}
                 >
                   <Link
                     to={`/projects/${project.id}`}
-                    className="flex items-center justify-between gap-3 px-2.5 py-2"
+                    className="flex items-center justify-between gap-3 px-2.5 py-2.5"
                   >
                     <div className="min-w-0">
                       <p className="truncate text-sm font-semibold">
                         {project.title}
                       </p>
 
-                      {project.projectCode && (
-                        <p className="mt-0.5 truncate text-[0.62rem] text-muted-foreground">
-                          {project.projectCode}
-                        </p>
-                      )}
+                      <div className="mt-1 flex min-w-0 items-center gap-2">
+                        {project.projectCode && (
+                          <>
+                            <span className="truncate text-[0.62rem] text-muted-foreground">
+                              {project.projectCode}
+                            </span>
+
+                            <span className="h-0.5 w-0.5 shrink-0 rounded-full bg-muted-foreground/50" />
+                          </>
+                        )}
+
+                        <ProjectStatus status={project.status} />
+                      </div>
                     </div>
 
                     {isCurrent && (
@@ -626,10 +758,7 @@ function ProjectSwitcher({
           <>
             <DropdownMenuSeparator />
 
-            <DropdownMenuItem
-              asChild
-              className="rounded-lg"
-            >
+            <DropdownMenuItem asChild className="rounded-lg">
               <Link
                 to="/projects/new"
                 className="py-2"
@@ -694,8 +823,8 @@ function ProjectWorkspaceError({
         </h2>
 
         <p className="mt-2 text-xs leading-6 text-muted-foreground">
-          We couldn't confirm your project access. Try loading your
-          workspace again.
+          We couldn't confirm your project access. Try loading your workspace
+          again.
         </p>
 
         <Button
@@ -714,16 +843,13 @@ function ProjectWorkspaceError({
 
 /* =========================================================
    PROJECT UNAVAILABLE
-
-   Deliberately avoids confirming whether the supplied project
-   ID belongs to another account or exists at all.
 ========================================================= */
 
 function ProjectUnavailable() {
   return (
     <div className="flex min-h-[420px] items-center justify-center">
       <div className="max-w-sm text-center">
-        <span className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-secondary shadow-sm shadow-primary/10">
+        <span className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-secondary">
           <BlocksIcon size={17} />
         </span>
 
@@ -732,8 +858,7 @@ function ProjectUnavailable() {
         </h2>
 
         <p className="mt-2 text-xs leading-6 text-muted-foreground">
-          This project doesn't exist or isn't available to your
-          account.
+          This project doesn't exist or isn't available to your account.
         </p>
 
         <Button
@@ -767,6 +892,27 @@ function SidebarUnavailable() {
       </p>
     </div>
   );
+}
+
+/* =========================================================
+   HELPERS
+========================================================= */
+
+function normalizeProjectStatus(status?: string) {
+  return String(status ?? "")
+    .toLowerCase()
+    .replace(/[\s_-]/g, "");
+}
+
+function formatProjectStatus(status?: string) {
+  if (!status?.trim()) {
+    return "Unknown";
+  }
+
+  return status
+    .trim()
+    .replace(/[_-]+/g, " ")
+    .replace(/\b\w/g, letter => letter.toUpperCase());
 }
 
 export default Dashboard;

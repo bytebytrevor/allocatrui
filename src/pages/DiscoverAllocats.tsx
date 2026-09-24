@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import {
   BadgeCheckIcon,
@@ -9,6 +9,7 @@ import {
   CircleDollarSignIcon,
   Clock3Icon,
   Grid2X2Icon,
+  Layers3Icon,
   ListIcon,
   MapPinIcon,
   PawPrintIcon,
@@ -16,38 +17,37 @@ import {
   SlidersHorizontalIcon,
   SparklesIcon,
   StarIcon,
+  TagsIcon,
   UsersIcon,
   XIcon,
 } from "lucide-react";
 
 import api from "@/api/axios";
 
-import type { Project } from "@/Types/project";
 import type { AllocatProfile } from "@/Types/allocatProfile";
-import type { ProjectAllocat } from "@/Types/projectAllocat";
-import type { ProjectAllocatStatus } from "@/Types/enums";
 
 import { AllocatCardGrid } from "@/components/AllocatCard";
 import MinimalNavMenu from "@/components/MinimalNavMenu";
 
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
-import { Button } from "@/components/ui/button";
 
 /* =========================================================
    TYPES
 ========================================================= */
 
 type SortOption =
-  | "match"
   | "rating"
-  | "rate-low"
   | "experience"
+  | "rate-low"
   | "recent";
 
 type ViewMode = "grid" | "list";
 
 type OpenFilter =
+  | "category"
+  | "skills"
   | "location"
   | "rate"
   | "experience"
@@ -78,12 +78,6 @@ type FilterableAllocat = Omit<AllocatProfile, "skills"> & {
   updatedAt?: string;
 };
 
-type MatchedAllocat = FilterableAllocat & {
-  matchScore: number;
-  matchedSkillCount: number;
-  requiredSkillCount: number;
-};
-
 type AllocatsResponse = {
   items: FilterableAllocat[];
   page: number;
@@ -96,6 +90,8 @@ type AllocatsResponse = {
    DEFAULTS
 ========================================================= */
 
+const DEFAULT_SEARCH = "";
+const DEFAULT_CATEGORY = "";
 const DEFAULT_LOCATION = "";
 const DEFAULT_MIN_EXPERIENCE = 0;
 
@@ -136,21 +132,21 @@ const experienceOptions = [
    PAGE
 ========================================================= */
 
-function FindAllocats() {
-  const { projectId } = useParams();
+export default function Discover() {
+  const navigate = useNavigate();
 
-  const [project, setProject] = useState<Project>();
   const [allocats, setAllocats] = useState<FilterableAllocat[]>([]);
-  const [projectAllocats, setProjectAllocats] = useState<ProjectAllocat[]>([]);
 
+  const [search, setSearch] = useState(DEFAULT_SEARCH);
+  const [category, setCategory] = useState(DEFAULT_CATEGORY);
+  const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const [location, setLocation] = useState(DEFAULT_LOCATION);
   const [maxHourlyRate, setMaxHourlyRate] = useState<number | null>(null);
   const [minExperience, setMinExperience] = useState(DEFAULT_MIN_EXPERIENCE);
   const [verifiedOnly, setVerifiedOnly] = useState(false);
 
   const [openFilter, setOpenFilter] = useState<OpenFilter>(null);
-
-  const [sortBy, setSortBy] = useState<SortOption>("match");
+  const [sortBy, setSortBy] = useState<SortOption>("rating");
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
 
   const [loading, setLoading] = useState(true);
@@ -161,12 +157,6 @@ function FindAllocats() {
   ======================================================= */
 
   useEffect(() => {
-    if (!projectId) {
-      setError("No project was selected.");
-      setLoading(false);
-      return;
-    }
-
     let cancelled = false;
 
     async function loadAllAllocats() {
@@ -177,7 +167,6 @@ function FindAllocats() {
             page: 1,
             pageSize: 100,
           },
-          withCredentials: true,
         },
       );
 
@@ -191,7 +180,9 @@ function FindAllocats() {
 
       const remainingPages = await Promise.all(
         Array.from(
-          { length: firstPage.totalPages - 1 },
+          {
+            length: firstPage.totalPages - 1,
+          },
           (_, index) =>
             api.get<AllocatsResponse>(
               "/allocats/profiles",
@@ -200,7 +191,6 @@ function FindAllocats() {
                   page: index + 2,
                   pageSize: firstPage.pageSize,
                 },
-                withCredentials: true,
               },
             ),
         ),
@@ -208,9 +198,7 @@ function FindAllocats() {
 
       return [
         ...(firstPage.items ?? []),
-        ...remainingPages.flatMap(
-          response => response.data.items ?? [],
-        ),
+        ...remainingPages.flatMap(response => response.data.items ?? []),
       ];
     }
 
@@ -219,52 +207,21 @@ function FindAllocats() {
       setError(null);
 
       try {
-        const [
-          projectResponse,
-          allAllocats,
-          projectAllocatsResponse,
-        ] = await Promise.all([
-          api.get<Project>(
-            `/projects/${projectId}`,
-            {
-              withCredentials: true,
-            },
-          ),
+        const allAllocats = await loadAllAllocats();
 
-          loadAllAllocats(),
+        if (cancelled) return;
 
-          api.get<ProjectAllocat[]>(
-            `/projects/${projectId}/allocats`,
-            {
-              withCredentials: true,
-            },
-          ),
-        ]);
-
-        if (cancelled) {
-          return;
-        }
-
-        setProject(projectResponse.data);
         setAllocats(allAllocats);
-
-        setProjectAllocats(
-          Array.isArray(projectAllocatsResponse.data)
-            ? projectAllocatsResponse.data
-            : [],
-        );
       } catch (requestError) {
-        if (cancelled) {
-          return;
-        }
+        if (cancelled) return;
 
         console.error(
-          "Could not load matching Allocats:",
+          "Could not load discoverable Allocats:",
           requestError,
         );
 
         setError(
-          "We could not load the professionals for this project. Please try again.",
+          "We could not load professionals right now. Please try again.",
         );
       } finally {
         if (!cancelled) {
@@ -278,60 +235,62 @@ function FindAllocats() {
     return () => {
       cancelled = true;
     };
-  }, [projectId]);
+  }, []);
 
   /* =======================================================
-     SKILL MATCHING
+     CATEGORIES
   ======================================================= */
 
-  const projectSkillIds = useMemo(() => {
-    return new Set(
-      (project?.skills ?? []).map(
-        skill => skill.id,
-      ),
-    );
-  }, [project]);
+  const categories = useMemo(() => {
+    const categoryMap = new Map<string, string>();
 
-  const skillMatchedAllocats = useMemo<MatchedAllocat[]>(() => {
-    if (projectSkillIds.size === 0) {
-      return [];
-    }
+    allocats.forEach(allocat => {
+      allocat.skills?.forEach(skill => {
+        const value = skill.category?.trim();
 
-    return allocats
-      .filter(
-        allocat =>
-          (allocat.skills?.length ?? 0) > 0,
-      )
-      .map(allocat => {
-        const matchedSkillCount = (
-          allocat.skills ?? []
-        ).filter(
-          skill =>
-            projectSkillIds.has(skill.id),
-        ).length;
+        if (!value) return;
 
-        const matchScore = Math.round(
-          (
-            matchedSkillCount /
-            projectSkillIds.size
-          ) * 100,
+        categoryMap.set(
+          value.toLowerCase(),
+          value,
         );
+      });
+    });
 
-        return {
-          ...allocat,
-          matchScore,
-          matchedSkillCount,
-          requiredSkillCount: projectSkillIds.size,
-        };
-      })
-      .filter(
-        allocat =>
-          allocat.matchedSkillCount > 0,
-      );
-  }, [
-    allocats,
-    projectSkillIds,
-  ]);
+    return [...categoryMap.values()].sort(
+      (a, b) => a.localeCompare(b),
+    );
+  }, [allocats]);
+
+  /* =======================================================
+     SKILLS
+  ======================================================= */
+
+  const skills = useMemo(() => {
+    const skillMap = new Map<string, SkillSummary>();
+
+    allocats.forEach(allocat => {
+      allocat.skills?.forEach(skill => {
+        if (!skill.id || !skill.name?.trim()) return;
+
+        if (!skillMap.has(skill.id)) {
+          skillMap.set(skill.id, skill);
+        }
+      });
+    });
+
+    return [...skillMap.values()].sort(
+      (a, b) => a.name.localeCompare(b.name),
+    );
+  }, [allocats]);
+
+  const visibleSkills = useMemo(() => {
+    if (!category) return skills;
+
+    return skills.filter(
+      skill => skill.category === category,
+    );
+  }, [skills, category]);
 
   /* =======================================================
      RATE RANGE
@@ -339,42 +298,68 @@ function FindAllocats() {
 
   const rateCeiling = useMemo(() => {
     const highestRate = Math.max(
-      ...skillMatchedAllocats.map(
-        allocat =>
-          allocat.hourlyRate ?? 0,
+      ...allocats.map(
+        allocat => allocat.hourlyRate ?? 0,
       ),
       100,
     );
 
     return Math.ceil(highestRate / 10) * 10;
-  }, [skillMatchedAllocats]);
+  }, [allocats]);
 
   /* =======================================================
      FILTERING
   ======================================================= */
 
   const filteredAllocats = useMemo(() => {
-    const normalizedLocation =
-      location.trim().toLowerCase();
+    const normalizedSearch = search.trim().toLowerCase();
+    const normalizedLocation = location.trim().toLowerCase();
 
-    const results = skillMatchedAllocats.filter(allocat => {
-      const yearsExperience =
-        allocat.yearsExperience ?? 0;
+    const results = allocats.filter(allocat => {
+      const allocatSkills = allocat.skills ?? [];
+      const yearsExperience = allocat.yearsExperience ?? 0;
+      const allocatLocation = getAllocatLocation(allocat);
 
-      const allocatLocation =
-        getAllocatLocation(allocat);
+      const searchableText = [
+        allocat.fullName,
+        allocat.title,
+        allocat.headline,
+        allocat.bio,
+        allocat.location,
+        allocat.city,
+        allocat.country,
+        ...allocatSkills.map(skill => skill.name),
+        ...allocatSkills.map(skill => skill.category),
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+
+      const matchesSearch =
+        !normalizedSearch ||
+        searchableText.includes(normalizedSearch);
+
+      const matchesCategory =
+        !category ||
+        allocatSkills.some(
+          skill => skill.category === category,
+        );
+
+      const matchesSkills =
+        selectedSkills.length === 0 ||
+        selectedSkills.every(skillId =>
+          allocatSkills.some(
+            skill => skill.id === skillId,
+          ),
+        );
 
       const matchesLocation =
         !normalizedLocation ||
         (
           Boolean(allocatLocation) &&
           (
-            allocatLocation.includes(
-              normalizedLocation,
-            ) ||
-            normalizedLocation.includes(
-              allocatLocation,
-            )
+            allocatLocation.includes(normalizedLocation) ||
+            normalizedLocation.includes(allocatLocation)
           )
         );
 
@@ -392,6 +377,9 @@ function FindAllocats() {
         getIsVerified(allocat);
 
       return (
+        matchesSearch &&
+        matchesCategory &&
+        matchesSkills &&
         matchesLocation &&
         matchesRate &&
         matchesExperience &&
@@ -401,28 +389,16 @@ function FindAllocats() {
 
     return [...results].sort((a, b) => {
       switch (sortBy) {
-        case "rating":
-          return (
-            getRating(b) -
-            getRating(a)
-          );
-
-        case "rate-low":
-          return (
-            (
-              a.hourlyRate ??
-              Number.MAX_SAFE_INTEGER
-            ) -
-            (
-              b.hourlyRate ??
-              Number.MAX_SAFE_INTEGER
-            )
-          );
-
         case "experience":
           return (
             (b.yearsExperience ?? 0) -
             (a.yearsExperience ?? 0)
+          );
+
+        case "rate-low":
+          return (
+            (a.hourlyRate ?? Number.MAX_SAFE_INTEGER) -
+            (b.hourlyRate ?? Number.MAX_SAFE_INTEGER)
           );
 
         case "recent":
@@ -439,36 +415,16 @@ function FindAllocats() {
             )
           );
 
-        case "match":
+        case "rating":
         default:
-          if (
-            b.matchScore !==
-            a.matchScore
-          ) {
-            return (
-              b.matchScore -
-              a.matchScore
-            );
-          }
-
-          if (
-            b.matchedSkillCount !==
-            a.matchedSkillCount
-          ) {
-            return (
-              b.matchedSkillCount -
-              a.matchedSkillCount
-            );
-          }
-
-          return (
-            getRating(b) -
-            getRating(a)
-          );
+          return getRating(b) - getRating(a);
       }
     });
   }, [
-    skillMatchedAllocats,
+    allocats,
+    search,
+    category,
+    selectedSkills,
     location,
     maxHourlyRate,
     minExperience,
@@ -477,56 +433,23 @@ function FindAllocats() {
   ]);
 
   /* =======================================================
-     RELATIONSHIPS
-  ======================================================= */
-
-  const relationshipStatusByAllocat = useMemo(() => {
-    return new Map<
-      string,
-      ProjectAllocatStatus
-    >(
-      projectAllocats.map(
-        relationship => [
-          relationship.allocatProfileId,
-          relationship.status,
-        ],
-      ),
-    );
-  }, [projectAllocats]);
-
-  /* =======================================================
-     FILTER COUNT
+     ACTIVE FILTER COUNT
   ======================================================= */
 
   const activeFilterCount = useMemo(() => {
     let count = 0;
 
-    if (
-      location !==
-      DEFAULT_LOCATION
-    ) {
-      count += 1;
-    }
-
-    if (
-      maxHourlyRate !== null
-    ) {
-      count += 1;
-    }
-
-    if (
-      minExperience !==
-      DEFAULT_MIN_EXPERIENCE
-    ) {
-      count += 1;
-    }
-
-    if (verifiedOnly) {
-      count += 1;
-    }
+    if (category !== DEFAULT_CATEGORY) count += 1;
+    if (selectedSkills.length > 0) count += 1;
+    if (location !== DEFAULT_LOCATION) count += 1;
+    if (maxHourlyRate !== null) count += 1;
+    if (minExperience !== DEFAULT_MIN_EXPERIENCE) count += 1;
+    if (verifiedOnly) count += 1;
 
     return count;
   }, [
+    category,
+    selectedSkills,
     location,
     maxHourlyRate,
     minExperience,
@@ -537,9 +460,7 @@ function FindAllocats() {
      ACTIONS
   ======================================================= */
 
-  function toggleFilter(
-    filter: OpenFilter,
-  ) {
+  function toggleFilter(filter: OpenFilter) {
     setOpenFilter(current =>
       current === filter
         ? null
@@ -547,57 +468,35 @@ function FindAllocats() {
     );
   }
 
+  function selectCategory(nextCategory: string) {
+    setCategory(nextCategory);
+    setSelectedSkills([]);
+  }
+
+  function toggleSkill(skillId: string) {
+    setSelectedSkills(current =>
+      current.includes(skillId)
+        ? current.filter(id => id !== skillId)
+        : [...current, skillId],
+    );
+  }
+
   function resetFilters() {
+    setSearch(DEFAULT_SEARCH);
+    setCategory(DEFAULT_CATEGORY);
+    setSelectedSkills([]);
     setLocation(DEFAULT_LOCATION);
     setMaxHourlyRate(null);
     setMinExperience(DEFAULT_MIN_EXPERIENCE);
     setVerifiedOnly(false);
-    setSortBy("match");
+    setSortBy("rating");
     setOpenFilter(null);
   }
 
-  function handleStatusChange(
-    allocatProfileId: string,
-    status: ProjectAllocatStatus,
-  ) {
-    if (!project) {
-      return;
-    }
-
-    setProjectAllocats(current => {
-      const existing =
-        current.find(
-          relationship =>
-            relationship.allocatProfileId ===
-            allocatProfileId,
-        );
-
-      if (existing) {
-        return current.map(
-          relationship =>
-            relationship.allocatProfileId ===
-            allocatProfileId
-              ? {
-                  ...relationship,
-                  status,
-                }
-              : relationship,
-        );
-      }
-
-      return [
-        ...current,
-        {
-          projectId: project.id,
-          allocatProfileId,
-          status,
-          invitedAt:
-            new Date().toISOString(),
-          respondedAt: null,
-          removedAt: null,
-        },
-      ];
-    });
+  function handleStartProject(allocatId: string) {
+    navigate(
+      `/projects/new?allocat=${encodeURIComponent(allocatId)}`,
+    );
   }
 
   /* =======================================================
@@ -607,7 +506,9 @@ function FindAllocats() {
   return (
     <div className="min-h-screen bg-background text-foreground">
 
-      {/* HEADER */}
+      {/* =====================================================
+          HEADER
+      ===================================================== */}
 
       <header className="sticky top-0 z-40 border-b border-border/60 bg-background/90 backdrop-blur-xl">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -617,49 +518,67 @@ function FindAllocats() {
 
       <main className="container mx-auto px-4 py-7 sm:px-5 md:px-8 lg:py-12">
 
-        {/* =================================================
+        {/* =====================================================
             INTRO
-        ================================================= */}
+        ===================================================== */}
 
         <section className="pb-7">
           <div className="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-end">
             <div className="min-w-0 max-w-4xl">
-
               <div className="flex items-center gap-2.5">
                 <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-secondary shadow-sm shadow-primary/10">
                   <UsersIcon size={15} />
                 </span>
 
                 <p className="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                  Find Allocats
+                  Discover
                 </p>
               </div>
 
-              {loading ? (
-                <>
-                  <h1 className="mt-5 text-3xl font-black leading-[1.02] tracking-[-0.035em] sm:text-4xl lg:text-5xl">
-                    Finding your best Allocats
-                  </h1>
+              <h1 className="mt-5 max-w-4xl text-3xl font-black leading-[1.02] tracking-[-0.035em] sm:text-4xl lg:text-5xl">
+                Find the right people for what comes next.
+              </h1>
 
-                  <p className="mt-4 max-w-2xl text-sm leading-7 text-muted-foreground sm:text-base">
-                    Matching the right professionals to your project.
-                  </p>
-                </>
-              ) : (
-                <>
-                  <h1 className="mt-5 max-w-4xl text-3xl font-black leading-[1.02] tracking-[-0.035em] sm:text-4xl lg:text-5xl">
-                    Find Allocats for{" "}
-                    <span>
-                      {project?.title || "your project"}
-                    </span>
-                  </h1>
+              <p className="mt-4 max-w-2xl text-sm leading-7 text-muted-foreground sm:text-base">
+                Explore skilled Allocats across categories, experience levels
+                and locations, then start a project when you find the right fit.
+              </p>
 
-                  <p className="mt-4 max-w-2xl text-sm leading-7 text-muted-foreground sm:text-base">
-                    Discover suitable professionals and refine the results
-                    by rate, experience, location and verification.
-                  </p>
-                </>
-              )}
+              {/* SEARCH */}
+
+              <div className="relative mt-6 max-w-2xl">
+                <SearchIcon
+                  size={16}
+                  className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground"
+                />
+
+                <Input
+                  value={search}
+                  onChange={event => setSearch(event.target.value)}
+                  placeholder="Search by name, skill or profession"
+                  className={[
+                    "h-12 rounded-xl bg-background",
+                    "pl-11 pr-11 shadow-none",
+                    "focus-visible:ring-1 focus-visible:ring-primary/40",
+                  ].join(" ")}
+                />
+
+                {search && (
+                  <button
+                    type="button"
+                    onClick={() => setSearch("")}
+                    aria-label="Clear search"
+                    className={[
+                      "absolute right-3 top-1/2 flex h-7 w-7 -translate-y-1/2",
+                      "items-center justify-center rounded-md",
+                      "text-muted-foreground transition-colors",
+                      "hover:bg-muted hover:text-foreground",
+                    ].join(" ")}
+                  >
+                    <XIcon size={13} />
+                  </button>
+                )}
+              </div>
             </div>
 
             {!loading && !error && (
@@ -698,7 +617,7 @@ function FindAllocats() {
           >
 
             {/* =================================================
-                DESKTOP SIDEBAR
+                DESKTOP FILTERS
             ================================================= */}
 
             <aside className="hidden lg:block">
@@ -735,10 +654,73 @@ function FindAllocats() {
                 </div>
 
                 <p className="mt-2 text-xs leading-5 text-muted-foreground">
-                  Narrow down the professionals shown for this project.
+                  Narrow the community to the professionals you're looking for.
                 </p>
 
                 <div className="mt-6 divide-y divide-border">
+
+                  {/* CATEGORY */}
+
+                  <DesktopFilterSection title="Category">
+                    <div className="grid gap-1">
+                      <FilterOption
+                        selected={!category}
+                        label="All categories"
+                        onClick={() => selectCategory("")}
+                      />
+
+                      {categories.map(item => (
+                        <FilterOption
+                          key={item}
+                          selected={category === item}
+                          label={item}
+                          onClick={() => selectCategory(item)}
+                        />
+                      ))}
+                    </div>
+                  </DesktopFilterSection>
+
+                  {/* SKILLS */}
+
+                  <DesktopFilterSection title="Skills">
+                    {visibleSkills.length > 0 ? (
+                      <div className="flex max-h-56 flex-wrap gap-1.5 overflow-y-auto pr-1">
+                        {visibleSkills.map(skill => {
+                          const selected =
+                            selectedSkills.includes(skill.id);
+
+                          return (
+                            <button
+                              key={skill.id}
+                              type="button"
+                              onClick={() => toggleSkill(skill.id)}
+                              className={[
+                                "max-w-full truncate rounded-md border",
+                                "px-2 py-1.5 text-[0.65rem] font-semibold",
+                                "transition-colors",
+
+                                selected
+                                  ? "border-primary bg-primary text-secondary"
+                                  : [
+                                      "border-border",
+                                      "bg-background",
+                                      "text-muted-foreground",
+                                      "hover:bg-muted/40",
+                                      "hover:text-foreground",
+                                    ].join(" "),
+                              ].join(" ")}
+                            >
+                              {skill.name}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <p className="text-xs leading-5 text-muted-foreground">
+                        No skills are available for this category yet.
+                      </p>
+                    )}
+                  </DesktopFilterSection>
 
                   {/* LOCATION */}
 
@@ -751,13 +733,14 @@ function FindAllocats() {
 
                       <Input
                         value={location}
-                        onChange={event =>
-                          setLocation(
-                            event.target.value,
-                          )
-                        }
+                        onChange={event => setLocation(event.target.value)}
                         placeholder="City or area"
-                        className="h-10 rounded-lg bg-background pl-9 text-xs shadow-none focus-visible:bg-background"
+                        className={[
+                          "h-10 rounded-lg bg-background",
+                          "pl-9 text-xs shadow-none",
+                          "focus-visible:bg-background",
+                          "focus-visible:ring-1 focus-visible:ring-primary/40",
+                        ].join(" ")}
                       />
                     </div>
                   </DesktopFilterSection>
@@ -778,16 +761,11 @@ function FindAllocats() {
                     </div>
 
                     <Slider
-                      value={[
-                        maxHourlyRate ??
-                        rateCeiling,
-                      ]}
+                      value={[maxHourlyRate ?? rateCeiling]}
                       min={0}
                       max={rateCeiling}
                       step={1}
-                      onValueChange={([value]) =>
-                        setMaxHourlyRate(value)
-                      }
+                      onValueChange={([value]) => setMaxHourlyRate(value)}
                     />
 
                     <div className="mt-3 flex items-center justify-between">
@@ -798,9 +776,7 @@ function FindAllocats() {
                       {maxHourlyRate !== null ? (
                         <button
                           type="button"
-                          onClick={() =>
-                            setMaxHourlyRate(null)
-                          }
+                          onClick={() => setMaxHourlyRate(null)}
                           className="text-[0.62rem] font-semibold text-foreground underline decoration-primary/50 underline-offset-4"
                         >
                           Any rate
@@ -838,11 +814,7 @@ function FindAllocats() {
                             key={option.value}
                             type="button"
                             title={option.label}
-                            onClick={() =>
-                              setMinExperience(
-                                option.value,
-                              )
-                            }
+                            onClick={() => setMinExperience(option.value)}
                             className={[
                               "flex h-12 min-w-0 flex-col items-center justify-center rounded-lg border",
                               "transition-all duration-200",
@@ -872,7 +844,6 @@ function FindAllocats() {
                               <span
                                 className={[
                                   "mt-1 text-[0.5rem] font-semibold uppercase tracking-[0.08em]",
-
                                   selected
                                     ? "text-secondary/75"
                                     : "text-muted-foreground/70",
@@ -894,11 +865,7 @@ function FindAllocats() {
                       type="button"
                       role="switch"
                       aria-checked={verifiedOnly}
-                      onClick={() =>
-                        setVerifiedOnly(
-                          current => !current,
-                        )
-                      }
+                      onClick={() => setVerifiedOnly(current => !current)}
                       className={[
                         "flex w-full items-center gap-3 rounded-lg border px-3 py-3",
                         "text-left transition-colors",
@@ -915,7 +882,6 @@ function FindAllocats() {
                       <span
                         className={[
                           "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
-
                           verifiedOnly
                             ? "bg-primary text-secondary"
                             : "bg-muted text-muted-foreground",
@@ -937,7 +903,6 @@ function FindAllocats() {
                       <span
                         className={[
                           "relative h-5 w-9 shrink-0 rounded-full transition-colors",
-
                           verifiedOnly
                             ? "bg-primary"
                             : "bg-muted-foreground/25",
@@ -971,12 +936,10 @@ function FindAllocats() {
               ================================================= */}
 
               <section className="py-4 lg:hidden">
-                <div className="flex items-center gap-1.5 sm:gap-2">
+                <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:gap-2">
 
-                  {/* REFINE */}
-
-                  <div className="mr-auto flex min-w-0 items-center gap-2">
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/[0.08] text-primary">
+                  <div className="mr-auto flex shrink-0 items-center gap-2">
+                    <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/[0.08] text-primary">
                       <SlidersHorizontalIcon size={14} />
                     </span>
 
@@ -991,104 +954,75 @@ function FindAllocats() {
                     )}
                   </div>
 
-                  {/* LOCATION */}
-
                   <ResponsiveFilterChip
-                    icon={
-                      <MapPinIcon size={13} />
-                    }
-                    label={
-                      location ||
-                      "Location"
-                    }
-                    title="Location"
-                    active={Boolean(location)}
-                    open={
-                      openFilter ===
-                      "location"
-                    }
-                    onClick={() =>
-                      toggleFilter(
-                        "location",
-                      )
-                    }
+                    icon={<Layers3Icon size={13} />}
+                    label={category || "Category"}
+                    title="Category"
+                    active={Boolean(category)}
+                    open={openFilter === "category"}
+                    onClick={() => toggleFilter("category")}
                   />
 
-                  {/* RATE */}
+                  <ResponsiveFilterChip
+                    icon={<TagsIcon size={13} />}
+                    label={
+                      selectedSkills.length > 0
+                        ? `${selectedSkills.length} skills`
+                        : "Skills"
+                    }
+                    title="Skills"
+                    active={selectedSkills.length > 0}
+                    open={openFilter === "skills"}
+                    onClick={() => toggleFilter("skills")}
+                  />
 
                   <ResponsiveFilterChip
-                    icon={
-                      <CircleDollarSignIcon size={13} />
-                    }
+                    icon={<MapPinIcon size={13} />}
+                    label={location || "Location"}
+                    title="Location"
+                    active={Boolean(location)}
+                    open={openFilter === "location"}
+                    onClick={() => toggleFilter("location")}
+                  />
+
+                  <ResponsiveFilterChip
+                    icon={<CircleDollarSignIcon size={13} />}
                     label={
                       maxHourlyRate === null
                         ? "Rate"
                         : `US$${maxHourlyRate}`
                     }
                     title="Hourly rate"
-                    active={
-                      maxHourlyRate !==
-                      null
-                    }
-                    open={
-                      openFilter ===
-                      "rate"
-                    }
-                    onClick={() =>
-                      toggleFilter(
-                        "rate",
-                      )
-                    }
+                    active={maxHourlyRate !== null}
+                    open={openFilter === "rate"}
+                    onClick={() => toggleFilter("rate")}
                   />
 
-                  {/* EXPERIENCE */}
-
                   <ResponsiveFilterChip
-                    icon={
-                      <Clock3Icon size={13} />
-                    }
+                    icon={<Clock3Icon size={13} />}
                     label={
                       minExperience === 0
                         ? "Experience"
                         : `${minExperience}+ yrs`
                     }
                     title="Experience"
-                    active={
-                      minExperience > 0
-                    }
-                    open={
-                      openFilter ===
-                      "experience"
-                    }
-                    onClick={() =>
-                      toggleFilter(
-                        "experience",
-                      )
-                    }
+                    active={minExperience > 0}
+                    open={openFilter === "experience"}
+                    onClick={() => toggleFilter("experience")}
                   />
-
-                  {/* VERIFIED */}
 
                   <button
                     type="button"
                     title="Verified only"
                     aria-label="Verified only"
-                    onClick={() =>
-                      setVerifiedOnly(
-                        current => !current,
-                      )
-                    }
+                    onClick={() => setVerifiedOnly(current => !current)}
                     className={[
-                      "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border",
-                      "text-xs font-semibold transition-colors",
-                      "sm:w-auto sm:gap-2 sm:px-3",
+                      "flex h-9 shrink-0 items-center justify-center rounded-lg border",
+                      "px-2.5 text-xs font-semibold transition-colors",
+                      "sm:gap-2 sm:px-3",
 
                       verifiedOnly
-                        ? [
-                            "border-primary",
-                            "bg-primary",
-                            "text-secondary",
-                          ].join(" ")
+                        ? "border-primary bg-primary text-secondary"
                         : [
                             "border-border",
                             "bg-background",
@@ -1103,17 +1037,7 @@ function FindAllocats() {
                     <span className="hidden sm:inline">
                       Verified
                     </span>
-
-                    {verifiedOnly && (
-                      <CheckIcon
-                        size={10}
-                        strokeWidth={3}
-                        className="hidden sm:block"
-                      />
-                    )}
                   </button>
-
-                  {/* CLEAR */}
 
                   {activeFilterCount > 0 && (
                     <button
@@ -1122,10 +1046,10 @@ function FindAllocats() {
                       aria-label="Clear filters"
                       onClick={resetFilters}
                       className={[
-                        "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
-                        "text-muted-foreground transition-colors",
+                        "flex h-9 shrink-0 items-center justify-center rounded-lg",
+                        "px-2.5 text-muted-foreground transition-colors",
                         "hover:bg-muted hover:text-foreground",
-                        "sm:w-auto sm:gap-1.5 sm:px-2.5 sm:text-xs",
+                        "sm:gap-1.5 sm:text-xs",
                       ].join(" ")}
                     >
                       <XIcon size={13} />
@@ -1137,10 +1061,56 @@ function FindAllocats() {
                   )}
                 </div>
 
+                {/* CATEGORY PANEL */}
+
+                {openFilter === "category" && (
+                  <MobileFilterPanel>
+                    <div className="flex flex-wrap gap-1.5">
+                      <FilterChip
+                        selected={!category}
+                        label="All categories"
+                        onClick={() => selectCategory("")}
+                      />
+
+                      {categories.map(item => (
+                        <FilterChip
+                          key={item}
+                          selected={category === item}
+                          label={item}
+                          onClick={() => selectCategory(item)}
+                        />
+                      ))}
+                    </div>
+                  </MobileFilterPanel>
+                )}
+
+                {/* SKILLS PANEL */}
+
+                {openFilter === "skills" && (
+                  <MobileFilterPanel>
+                    {visibleSkills.length > 0 ? (
+                      <div className="flex flex-wrap gap-1.5">
+                        {visibleSkills.map(skill => (
+                          <FilterChip
+                            key={skill.id}
+                            selected={selectedSkills.includes(skill.id)}
+                            label={skill.name}
+                            onClick={() => toggleSkill(skill.id)}
+                          />
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-muted-foreground">
+                        No skills are available for this category yet.
+                      </p>
+                    )}
+                  </MobileFilterPanel>
+                )}
+
                 {/* LOCATION PANEL */}
 
                 {openFilter === "location" && (
-                  <div className="mt-3 max-w-sm rounded-xl border border-border bg-muted/[0.12] p-3">
+                  <MobileFilterPanel>
                     <div className="relative">
                       <MapPinIcon
                         size={14}
@@ -1149,22 +1119,18 @@ function FindAllocats() {
 
                       <Input
                         value={location}
-                        onChange={event =>
-                          setLocation(
-                            event.target.value,
-                          )
-                        }
+                        onChange={event => setLocation(event.target.value)}
                         placeholder="City or area"
-                        className="h-10 rounded-lg bg-background pl-9 shadow-none focus-visible:bg-background"
+                        className="h-10 rounded-lg bg-background pl-9 shadow-none"
                       />
                     </div>
-                  </div>
+                  </MobileFilterPanel>
                 )}
 
                 {/* RATE PANEL */}
 
                 {openFilter === "rate" && (
-                  <div className="mt-3 max-w-md rounded-xl border border-border bg-muted/[0.12] p-4">
+                  <MobileFilterPanel>
                     <div className="mb-4 flex items-center justify-between gap-4">
                       <div>
                         <p className="text-xs font-bold">
@@ -1181,9 +1147,7 @@ function FindAllocats() {
                       {maxHourlyRate !== null && (
                         <button
                           type="button"
-                          onClick={() =>
-                            setMaxHourlyRate(null)
-                          }
+                          onClick={() => setMaxHourlyRate(null)}
                           className="text-[0.65rem] font-semibold text-foreground underline decoration-primary/50 underline-offset-4"
                         >
                           Any rate
@@ -1192,16 +1156,11 @@ function FindAllocats() {
                     </div>
 
                     <Slider
-                      value={[
-                        maxHourlyRate ??
-                        rateCeiling,
-                      ]}
+                      value={[maxHourlyRate ?? rateCeiling]}
                       min={0}
                       max={rateCeiling}
                       step={1}
-                      onValueChange={([value]) =>
-                        setMaxHourlyRate(value)
-                      }
+                      onValueChange={([value]) => setMaxHourlyRate(value)}
                     />
 
                     <div className="mt-3 flex justify-between text-[0.62rem] text-muted-foreground">
@@ -1213,13 +1172,13 @@ function FindAllocats() {
                         US${rateCeiling}+
                       </span>
                     </div>
-                  </div>
+                  </MobileFilterPanel>
                 )}
 
                 {/* EXPERIENCE PANEL */}
 
                 {openFilter === "experience" && (
-                  <div className="mt-3 max-w-xl rounded-xl border border-border bg-muted/[0.12] p-3">
+                  <MobileFilterPanel>
                     <div className="grid grid-cols-5 gap-1.5">
                       {experienceOptions.map(option => {
                         const selected =
@@ -1229,21 +1188,13 @@ function FindAllocats() {
                           <button
                             key={option.value}
                             type="button"
-                            onClick={() =>
-                              setMinExperience(
-                                option.value,
-                              )
-                            }
+                            onClick={() => setMinExperience(option.value)}
                             className={[
                               "flex min-h-10 flex-col items-center justify-center rounded-lg border px-1.5",
                               "transition-colors",
 
                               selected
-                                ? [
-                                    "border-primary",
-                                    "bg-primary",
-                                    "text-secondary",
-                                  ].join(" ")
+                                ? "border-primary bg-primary text-secondary"
                                 : [
                                     "border-border",
                                     "bg-background",
@@ -1261,7 +1212,6 @@ function FindAllocats() {
                               <span
                                 className={[
                                   "text-[0.48rem] font-semibold uppercase",
-
                                   selected
                                     ? "text-secondary/75"
                                     : "text-muted-foreground/70",
@@ -1274,7 +1224,7 @@ function FindAllocats() {
                         );
                       })}
                     </div>
-                  </div>
+                  </MobileFilterPanel>
                 )}
               </section>
 
@@ -1285,12 +1235,12 @@ function FindAllocats() {
               <section className="relative flex items-center justify-between gap-3 border-t border-border/70 py-5 lg:border-t-0 lg:py-7">
                 <div className="min-w-0">
                   <p className="hidden text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground sm:block">
-                    Recommendations
+                    Professionals
                   </p>
 
                   <div className="flex min-w-0 items-center gap-2 sm:mt-1">
                     <h2 className="truncate text-sm font-bold tracking-[-0.02em] sm:text-lg">
-                      Best matches
+                      Explore Allocats
                     </h2>
 
                     <span className="shrink-0 rounded-full bg-primary px-2 py-0.5 text-[0.58rem] font-black text-secondary sm:hidden">
@@ -1317,11 +1267,7 @@ function FindAllocats() {
               ================================================= */}
 
               <section>
-                {projectSkillIds.size === 0 ? (
-                  <NoMatchesState />
-                ) : skillMatchedAllocats.length === 0 ? (
-                  <NoMatchesState />
-                ) : filteredAllocats.length > 0 ? (
+                {filteredAllocats.length > 0 ? (
                   <div
                     className={
                       viewMode === "grid"
@@ -1329,93 +1275,32 @@ function FindAllocats() {
                         : "grid grid-cols-1 gap-3 sm:gap-4"
                     }
                   >
-                    {filteredAllocats.map(allocat => {
-                      const relationshipStatus =
-                        relationshipStatusByAllocat.get(
-                          allocat.allocatrUserId,
-                        ) ?? null;
-
-                      return (
-                        <div
-                          key={allocat.allocatrUserId}
-                          className="min-w-0"
-                        >
-                          <AllocatCardGrid
-                            allocat={allocat}
-                            project={project}
-                            viewMode={viewMode}
-                            relationshipStatus={
-                              relationshipStatus
-                            }
-                            onStatusChange={status =>
-                              handleStatusChange(
-                                allocat.allocatrUserId,
-                                status,
-                              )
-                            }
-                          />
-                        </div>
-                      );
-                    })}
+                    {filteredAllocats.map(allocat => (
+                      <div
+                        key={allocat.allocatrUserId}
+                        className="min-w-0"
+                      >
+                        <AllocatCardGrid
+                          allocat={allocat}
+                          viewMode={viewMode}
+                          mode="discovery"
+                          onStartProject={() =>
+                            handleStartProject(
+                              allocat.allocatrUserId,
+                            )
+                          }
+                        />
+                      </div>
+                    ))}
                   </div>
                 ) : (
-                  <EmptyState
-                    onReset={resetFilters}
-                  />
+                  <EmptyState onReset={resetFilters} />
                 )}
               </section>
             </div>
           </div>
         )}
       </main>
-    </div>
-  );
-}
-
-/* =========================================================
-   LOADING
-========================================================= */
-
-function AllocatLoadingState() {
-  return (
-    <div
-      role="status"
-      aria-live="polite"
-      className="flex min-h-[250px] items-center justify-center px-6 py-10 text-center"
-    >
-      <div>
-        <div className="relative mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-primary text-secondary shadow-lg shadow-primary/10">
-          <CatIcon
-            size={28}
-            strokeWidth={1.8}
-          />
-
-          <span className="absolute -right-2 -top-2 flex h-7 w-7 animate-bounce items-center justify-center rounded-full border-2 border-background bg-background text-foreground shadow-sm">
-            <SparklesIcon size={12} />
-          </span>
-        </div>
-
-        <div className="mt-4 flex justify-center gap-2 text-muted-foreground">
-          <PawPrintIcon
-            size={13}
-            className="animate-pulse"
-          />
-
-          <PawPrintIcon
-            size={13}
-            className="animate-pulse [animation-delay:150ms]"
-          />
-
-          <PawPrintIcon
-            size={13}
-            className="animate-pulse [animation-delay:300ms]"
-          />
-        </div>
-
-        <p className="mt-4 text-sm font-semibold text-foreground">
-          Paws at work — finding your Allocats...
-        </p>
-      </div>
     </div>
   );
 }
@@ -1439,6 +1324,104 @@ function DesktopFilterSection({
 
       {children}
     </section>
+  );
+}
+
+/* =========================================================
+   FILTER OPTION
+========================================================= */
+
+function FilterOption({
+  selected,
+  label,
+  onClick,
+}: {
+  selected: boolean;
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={[
+        "flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2",
+        "text-left text-xs font-semibold transition-colors",
+
+        selected
+          ? "bg-primary/[0.08] text-primary"
+          : [
+              "text-muted-foreground",
+              "hover:bg-muted/40",
+              "hover:text-foreground",
+            ].join(" "),
+      ].join(" ")}
+    >
+      <span className="truncate">
+        {label}
+      </span>
+
+      {selected && (
+        <CheckIcon
+          size={12}
+          strokeWidth={3}
+          className="shrink-0"
+        />
+      )}
+    </button>
+  );
+}
+
+/* =========================================================
+   MOBILE FILTER PANEL
+========================================================= */
+
+function MobileFilterPanel({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="mt-3 rounded-xl border border-border bg-muted/[0.12] p-3">
+      {children}
+    </div>
+  );
+}
+
+/* =========================================================
+   FILTER CHIP
+========================================================= */
+
+function FilterChip({
+  selected,
+  label,
+  onClick,
+}: {
+  selected: boolean;
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={[
+        "max-w-full truncate rounded-lg border px-3 py-2",
+        "text-xs font-semibold transition-colors",
+
+        selected
+          ? "border-primary bg-primary text-secondary"
+          : [
+              "border-border",
+              "bg-background",
+              "text-muted-foreground",
+              "hover:bg-muted/40",
+              "hover:text-foreground",
+            ].join(" "),
+      ].join(" ")}
+    >
+      {label}
+    </button>
   );
 }
 
@@ -1468,16 +1451,12 @@ function ResponsiveFilterChip({
       aria-label={title}
       onClick={onClick}
       className={[
-        "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border",
-        "text-xs font-semibold transition-all",
-        "sm:w-auto sm:gap-2 sm:px-3",
+        "flex h-9 shrink-0 items-center justify-center rounded-lg border",
+        "px-2.5 text-xs font-semibold transition-all",
+        "sm:gap-2 sm:px-3",
 
         active || open
-          ? [
-              "border-primary",
-              "bg-primary",
-              "text-secondary",
-            ].join(" ")
+          ? "border-primary bg-primary text-secondary"
           : [
               "border-border",
               "bg-background",
@@ -1497,9 +1476,7 @@ function ResponsiveFilterChip({
         size={10}
         className={[
           "hidden transition-transform sm:block",
-          open
-            ? "rotate-180"
-            : "",
+          open ? "rotate-180" : "",
         ].join(" ")}
       />
     </button>
@@ -1516,24 +1493,19 @@ const sortOptions: {
   description: string;
 }[] = [
   {
-    value: "match",
-    label: "Best match",
-    description: "Most relevant first",
-  },
-  {
     value: "rating",
     label: "Highest rated",
     description: "Top rated professionals",
   },
   {
-    value: "rate-low",
-    label: "Lowest rate",
-    description: "Lowest hourly rate first",
-  },
-  {
     value: "experience",
     label: "Most experienced",
     description: "Most years first",
+  },
+  {
+    value: "rate-low",
+    label: "Lowest rate",
+    description: "Lowest hourly rate first",
   },
   {
     value: "recent",
@@ -1553,19 +1525,15 @@ function SortDropdown({
   value: SortOption;
   onChange: (value: SortOption) => void;
 }) {
-  const [open, setOpen] =
-    useState(false);
+  const [open, setOpen] = useState(false);
 
   const selected =
     sortOptions.find(
-      option =>
-        option.value === value,
+      option => option.value === value,
     ) ??
     sortOptions[0];
 
-  function selectOption(
-    option: SortOption,
-  ) {
+  function selectOption(option: SortOption) {
     onChange(option);
     setOpen(false);
   }
@@ -1577,11 +1545,7 @@ function SortDropdown({
         title={`Sort: ${selected.label}`}
         aria-label={`Sort results: ${selected.label}`}
         aria-expanded={open}
-        onClick={() =>
-          setOpen(
-            current => !current,
-          )
-        }
+        onClick={() => setOpen(current => !current)}
         className={[
           "flex h-10 w-10 items-center justify-center rounded-lg border",
           "border-border bg-background transition-all",
@@ -1607,9 +1571,7 @@ function SortDropdown({
           size={12}
           className={[
             "hidden shrink-0 text-muted-foreground transition-transform sm:block",
-            open
-              ? "rotate-180"
-              : "",
+            open ? "rotate-180" : "",
           ].join(" ")}
         />
       </button>
@@ -1632,11 +1594,7 @@ function SortDropdown({
               <button
                 key={option.value}
                 type="button"
-                onClick={() =>
-                  selectOption(
-                    option.value,
-                  )
-                }
+                onClick={() => selectOption(option.value)}
                 className={[
                   "flex w-full items-center gap-3 rounded-lg px-3 py-2.5",
                   "text-left text-popover-foreground transition-colors",
@@ -1649,7 +1607,6 @@ function SortDropdown({
                 <span
                   className={[
                     "flex h-7 w-7 shrink-0 items-center justify-center rounded-md",
-
                     isSelected
                       ? "bg-primary text-secondary"
                       : "bg-muted text-muted-foreground",
@@ -1700,18 +1657,12 @@ function ViewToggle({
         type="button"
         title="Grid view"
         aria-label="Grid view"
-        onClick={() =>
-          onChange("grid")
-        }
+        onClick={() => onChange("grid")}
         className={[
           "flex h-8 w-8 items-center justify-center rounded-md transition-all",
 
           value === "grid"
-            ? [
-                "bg-primary",
-                "text-secondary",
-                "shadow-sm",
-              ].join(" ")
+            ? "bg-primary text-secondary shadow-sm"
             : [
                 "text-muted-foreground",
                 "hover:bg-background",
@@ -1726,18 +1677,12 @@ function ViewToggle({
         type="button"
         title="List view"
         aria-label="List view"
-        onClick={() =>
-          onChange("list")
-        }
+        onClick={() => onChange("list")}
         className={[
           "flex h-8 w-8 items-center justify-center rounded-md transition-all",
 
           value === "list"
-            ? [
-                "bg-primary",
-                "text-secondary",
-                "shadow-sm",
-              ].join(" ")
+            ? "bg-primary text-secondary shadow-sm"
             : [
                 "text-muted-foreground",
                 "hover:bg-background",
@@ -1747,6 +1692,54 @@ function ViewToggle({
       >
         <ListIcon size={15} />
       </button>
+    </div>
+  );
+}
+
+/* =========================================================
+   LOADING
+========================================================= */
+
+function AllocatLoadingState() {
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      className="flex min-h-[250px] items-center justify-center px-6 py-10 text-center"
+    >
+      <div>
+        <div className="relative mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-primary text-secondary shadow-lg shadow-primary/10">
+          <CatIcon
+            size={28}
+            strokeWidth={1.8}
+          />
+
+          <span className="absolute -right-2 -top-2 flex h-7 w-7 animate-bounce items-center justify-center rounded-full border-2 border-background bg-background text-foreground shadow-sm">
+            <SparklesIcon size={12} />
+          </span>
+        </div>
+
+        <div className="mt-4 flex justify-center gap-2 text-muted-foreground">
+          <PawPrintIcon
+            size={13}
+            className="animate-pulse"
+          />
+
+          <PawPrintIcon
+            size={13}
+            className="animate-pulse [animation-delay:150ms]"
+          />
+
+          <PawPrintIcon
+            size={13}
+            className="animate-pulse [animation-delay:300ms]"
+          />
+        </div>
+
+        <p className="mt-4 text-sm font-semibold text-foreground">
+          Paws at work — exploring the community...
+        </p>
+      </div>
     </div>
   );
 }
@@ -1791,16 +1784,12 @@ function getRating(
 function getDateValue(
   date?: string,
 ): number {
-  if (!date) {
-    return 0;
-  }
+  if (!date) return 0;
 
   const parsedDate =
     new Date(date).getTime();
 
-  return Number.isNaN(
-    parsedDate,
-  )
+  return Number.isNaN(parsedDate)
     ? 0
     : parsedDate;
 }
@@ -1821,7 +1810,7 @@ function ErrorState({
       </span>
 
       <h2 className="mt-5 text-xl font-bold">
-        We could not load the results
+        We could not load Allocats
       </h2>
 
       <p className="mx-auto mt-2 max-w-md text-sm leading-7 text-muted-foreground">
@@ -1830,32 +1819,11 @@ function ErrorState({
 
       <Button
         type="button"
-        onClick={() =>
-          window.location.reload()
-        }
+        onClick={() => window.location.reload()}
         className="mt-6 h-10 rounded-lg px-5 shadow-none"
       >
         Try again
       </Button>
-    </div>
-  );
-}
-
-function NoMatchesState() {
-  return (
-    <div className="flex min-h-[320px] flex-col items-center justify-center border-y border-border px-6 text-center">
-      <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary text-secondary">
-        <UsersIcon size={21} />
-      </span>
-
-      <h2 className="mt-5 text-xl font-bold">
-        No suitable Allocats found yet
-      </h2>
-
-      <p className="mt-2 max-w-md text-sm leading-7 text-muted-foreground">
-        We don't currently have enough profile information to recommend
-        suitable professionals for this project.
-      </p>
     </div>
   );
 }
@@ -1872,11 +1840,11 @@ function EmptyState({
       </span>
 
       <h2 className="mt-5 text-xl font-bold">
-        No results with these filters
+        No Allocats found
       </h2>
 
       <p className="mt-2 max-w-md text-sm leading-7 text-muted-foreground">
-        Try widening your location, rate or experience requirements.
+        Try changing your search, category, skills or other filters.
       </p>
 
       <Button
@@ -1889,5 +1857,3 @@ function EmptyState({
     </div>
   );
 }
-
-export default FindAllocats;
