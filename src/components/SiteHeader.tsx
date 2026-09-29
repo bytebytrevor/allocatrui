@@ -1,4 +1,8 @@
-import { useEffect, useState } from "react";
+import {
+  useEffect,
+  useState,
+} from "react";
+
 import {
   Link,
   NavLink,
@@ -24,6 +28,7 @@ import {
 import allocatrLogoLight from "@/assets/allocatr-neg-light.svg";
 import allocatrLogoDark from "@/assets/allocatr-dark-02.svg";
 import allocatrIcon from "@/assets/icon-variant-01.svg";
+
 import { useAuth } from "@/auth/useAuth";
 
 import {
@@ -44,6 +49,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+/* =========================================================
+   TYPES
+========================================================= */
+
 type Theme = "light" | "dark";
 
 type NavigationItem = {
@@ -58,10 +67,14 @@ type AccountUser = {
   isAllocat?: boolean;
 };
 
+/* =========================================================
+   NAVIGATION
+========================================================= */
+
 const landingNavigation: NavigationItem[] = [
   {
     label: "Explore",
-    href: "/allocats",
+    href: "/discover",
   },
   {
     label: "How it works",
@@ -92,14 +105,27 @@ const publicNavigation: NavigationItem[] = [
   },
 ];
 
-function getInitialTheme(): Theme {
-  const storedTheme = localStorage.getItem("theme");
+/* =========================================================
+   HELPERS
+========================================================= */
 
-  if (storedTheme === "light" || storedTheme === "dark") {
+function getInitialTheme(): Theme {
+  if (typeof window === "undefined") {
+    return "light";
+  }
+
+  const storedTheme = window.localStorage.getItem("theme");
+
+  if (
+    storedTheme === "light" ||
+    storedTheme === "dark"
+  ) {
     return storedTheme;
   }
 
-  return window.matchMedia("(prefers-color-scheme: dark)").matches
+  return window.matchMedia(
+    "(prefers-color-scheme: dark)",
+  ).matches
     ? "dark"
     : "light";
 }
@@ -113,9 +139,15 @@ function getInitials(name?: string) {
     .trim()
     .split(/\s+/)
     .slice(0, 2)
-    .map((part) => part.charAt(0).toUpperCase())
+    .map((part) =>
+      part.charAt(0).toUpperCase(),
+    )
     .join("");
 }
+
+/* =========================================================
+   HEADER
+========================================================= */
 
 function SiteHeader() {
   const { user, logout } = useAuth();
@@ -123,12 +155,20 @@ function SiteHeader() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const [theme, setTheme] = useState<Theme>(getInitialTheme);
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [loggingOut, setLoggingOut] = useState(false);
+  const [theme, setTheme] =
+    useState<Theme>(getInitialTheme);
 
-  const isLandingPage = location.pathname === "/";
+  const [isScrolled, setIsScrolled] =
+    useState(false);
+
+  const [isMenuOpen, setIsMenuOpen] =
+    useState(false);
+
+  const [loggingOut, setLoggingOut] =
+    useState(false);
+
+  const isLandingPage =
+    location.pathname === "/";
 
   const baseNavigation = isLandingPage
     ? landingNavigation
@@ -136,69 +176,144 @@ function SiteHeader() {
 
   const navigation = user?.isAllocat
     ? baseNavigation.filter(
-        (item) => item.href !== "/become-an-allocat",
+        (item) =>
+          item.href !==
+          "/become-an-allocat",
       )
     : baseNavigation;
 
-  const initials = getInitials(user?.fullName);
+  const initials = getInitials(
+    user?.fullName,
+  );
 
   const headerLogo =
     theme === "dark"
       ? allocatrLogoLight
       : allocatrLogoDark;
 
+  /* =======================================================
+     THEME
+  ======================================================= */
+
   useEffect(() => {
-    const root = document.documentElement;
+    const root =
+      document.documentElement;
 
-    root.classList.toggle("dark", theme === "dark");
-    root.classList.toggle("light", theme === "light");
+    root.classList.toggle(
+      "dark",
+      theme === "dark",
+    );
 
-    localStorage.setItem("theme", theme);
+    root.classList.toggle(
+      "light",
+      theme === "light",
+    );
+
+    root.style.colorScheme = theme;
+
+    window.localStorage.setItem(
+      "theme",
+      theme,
+    );
   }, [theme]);
+
+  /* =======================================================
+     SCROLL
+  ======================================================= */
 
   useEffect(() => {
     function handleScroll() {
-      setIsScrolled(window.scrollY > 14);
+      setIsScrolled(
+        window.scrollY > 12,
+      );
     }
 
     handleScroll();
 
-    window.addEventListener("scroll", handleScroll, {
-      passive: true,
-    });
+    window.addEventListener(
+      "scroll",
+      handleScroll,
+      {
+        passive: true,
+      },
+    );
 
     return () => {
-      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener(
+        "scroll",
+        handleScroll,
+      );
     };
   }, []);
 
+  /* =======================================================
+     MOBILE MENU
+  ======================================================= */
+
   useEffect(() => {
-    document.body.style.overflow = isMenuOpen
-      ? "hidden"
-      : "";
+    const previousOverflow =
+      document.body.style.overflow;
+
+    if (isMenuOpen) {
+      document.body.style.overflow =
+        "hidden";
+    }
 
     return () => {
-      document.body.style.overflow = "";
+      document.body.style.overflow =
+        previousOverflow;
     };
   }, [isMenuOpen]);
 
   useEffect(() => {
-    function handleEscape(event: KeyboardEvent) {
+    function handleEscape(
+      event: KeyboardEvent,
+    ) {
       if (event.key === "Escape") {
         setIsMenuOpen(false);
       }
     }
 
-    window.addEventListener("keydown", handleEscape);
+    window.addEventListener(
+      "keydown",
+      handleEscape,
+    );
 
     return () => {
-      window.removeEventListener("keydown", handleEscape);
+      window.removeEventListener(
+        "keydown",
+        handleEscape,
+      );
+    };
+  }, []);
+
+  useEffect(() => {
+    function handleResize() {
+      if (window.innerWidth >= 1024) {
+        setIsMenuOpen(false);
+      }
+    }
+
+    window.addEventListener(
+      "resize",
+      handleResize,
+    );
+
+    return () => {
+      window.removeEventListener(
+        "resize",
+        handleResize,
+      );
     };
   }, []);
 
   useEffect(() => {
     setIsMenuOpen(false);
   }, [location.pathname]);
+
+  /* =======================================================
+     ACTIONS
+  ======================================================= */
 
   function closeMenu() {
     setIsMenuOpen(false);
@@ -214,10 +329,11 @@ function SiteHeader() {
 
   function handleLogin() {
     closeMenu();
+
     navigate("/login");
   }
 
-  function handlePostTask() {
+  function handleCreateProject() {
     closeMenu();
 
     navigate(
@@ -225,6 +341,24 @@ function SiteHeader() {
         ? "/projects/new"
         : "/register",
     );
+  }
+
+  function handleProjects() {
+    closeMenu();
+
+    navigate("/projects");
+  }
+
+  function handleProfile() {
+    closeMenu();
+
+    navigate("/profile");
+  }
+
+  function handleSettings() {
+    closeMenu();
+
+    navigate("/settings");
   }
 
   async function handleLogout() {
@@ -242,30 +376,59 @@ function SiteHeader() {
         replace: true,
       });
     } catch (error) {
-      console.error("Logout failed:", error);
+      console.error(
+        "Logout failed:",
+        error,
+      );
     } finally {
       setLoggingOut(false);
     }
   }
+
+  /* =======================================================
+     HEADER SURFACE
+  ======================================================= */
+
+  const scrolledSurface = isLandingPage
+    ? [
+        "border-black/[0.06]",
+        "bg-[#f7f7f4]/95",
+        "dark:border-white/[0.055]",
+        "dark:bg-[#080808]/95",
+      ].join(" ")
+    : [
+        "border-border/60",
+        "bg-background/95",
+      ].join(" ");
+
+  const initialSurface = isLandingPage
+    ? [
+        "border-transparent",
+        "bg-transparent",
+      ].join(" ")
+    : [
+        "border-border/40",
+        "bg-background/85",
+        "backdrop-blur-xl",
+      ].join(" ");
 
   return (
     <>
       <header
         className={[
           "fixed inset-x-0 top-0 z-50",
+          "border-b",
           "transition-[background-color,border-color,box-shadow,backdrop-filter]",
           "duration-300",
           isScrolled
             ? [
-                "border-b border-border/60",
-                "bg-background/88",
-                "backdrop-blur-xl",
-                "shadow-[0_8px_30px_rgba(0,0,0,0.035)]",
-                "dark:shadow-[0_10px_34px_rgba(0,0,0,0.2)]",
+                scrolledSurface,
+                "backdrop-blur-2xl",
+                "shadow-[0_8px_32px_rgba(0,0,0,0.035)]",
+                "dark:shadow-[0_10px_34px_rgba(0,0,0,0.20)]",
               ].join(" ")
             : [
-                "border-b border-transparent",
-                "bg-transparent",
+                initialSurface,
                 "shadow-none",
               ].join(" "),
         ].join(" ")}
@@ -273,25 +436,37 @@ function SiteHeader() {
         <div
           className={[
             "mx-auto flex w-full max-w-7xl items-center justify-between",
-            "h-14 px-5",
-            "sm:h-[60px] sm:px-8",
-            "lg:px-8 xl:px-10",
+            "h-14 px-4",
+            "sm:h-[60px] sm:px-6",
+            "md:px-8",
+            "xl:px-10",
           ].join(" ")}
         >
+          {/* ===============================================
+              LOGO
+          =============================================== */}
+
           <Link
             to="/"
             onClick={closeMenu}
-            className="group flex shrink-0 items-center outline-none"
+            className={[
+              "group flex shrink-0 items-center",
+              "outline-none",
+              "focus-visible:ring-2",
+              "focus-visible:ring-[#DEDA00]/35",
+              "focus-visible:ring-offset-4",
+              "focus-visible:ring-offset-transparent",
+            ].join(" ")}
             aria-label="Allocatr home"
           >
             <img
               src={allocatrIcon}
               alt=""
               className={[
-                "h-7 w-7 object-contain sm:hidden",
-                "transition-transform duration-300",
-                "group-hover:-rotate-6",
-                "group-hover:scale-105",
+                "h-7 w-7 object-contain",
+                "sm:hidden",
+                "transition-opacity duration-200",
+                "group-hover:opacity-75",
               ].join(" ")}
             />
 
@@ -299,13 +474,18 @@ function SiteHeader() {
               src={headerLogo}
               alt="Allocatr"
               className={[
-                "hidden h-7 w-auto object-contain sm:block",
-                "lg:h-[26px] xl:h-7",
+                "hidden h-[25px] w-auto object-contain",
+                "sm:block",
+                "lg:h-[26px]",
                 "transition-opacity duration-200",
-                "group-hover:opacity-80",
+                "group-hover:opacity-75",
               ].join(" ")}
             />
           </Link>
+
+          {/* ===============================================
+              DESKTOP NAV
+          =============================================== */}
 
           <nav
             className="hidden h-full items-center lg:flex"
@@ -315,15 +495,20 @@ function SiteHeader() {
               <NavLink
                 key={item.label}
                 to={item.href}
-                className={({ isActive }) =>
+                className={({
+                  isActive,
+                }) =>
                   [
                     "group relative flex h-full items-center",
                     "px-3 xl:px-4",
-                    "text-[0.8rem] font-medium xl:text-[0.82rem]",
+                    "text-[0.78rem] font-medium xl:text-[0.8rem]",
                     "transition-colors duration-200",
                     isActive
                       ? "text-foreground"
-                      : "text-muted-foreground hover:text-foreground",
+                      : [
+                          "text-muted-foreground",
+                          "hover:text-foreground",
+                        ].join(" "),
                   ].join(" ")
                 }
               >
@@ -333,16 +518,16 @@ function SiteHeader() {
 
                     <span
                       className={[
-                        "absolute bottom-[9px] left-1/2",
-                        "h-1 w-1 -translate-x-1/2 rounded-full",
-                        "bg-primary",
+                        "absolute bottom-[7px] left-1/2",
+                        "h-[2px] -translate-x-1/2 rounded-full",
+                        "bg-[#DEDA00]",
                         "transition-all duration-200",
                         isActive
-                          ? "scale-100 opacity-100"
+                          ? "w-4 opacity-100"
                           : [
-                              "scale-0 opacity-0",
-                              "group-hover:scale-100",
-                              "group-hover:opacity-40",
+                              "w-0 opacity-0",
+                              "group-hover:w-2.5",
+                              "group-hover:opacity-45",
                             ].join(" "),
                       ].join(" ")}
                     />
@@ -352,31 +537,17 @@ function SiteHeader() {
             ))}
           </nav>
 
-          <div className="hidden items-center gap-1 lg:flex">
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={toggleTheme}
-              className={[
-                "h-9 w-9 rounded-lg shadow-none",
-                "text-muted-foreground",
-                "hover:text-foreground",
-              ].join(" ")}
-              aria-label={
-                theme === "dark"
-                  ? "Switch to light theme"
-                  : "Switch to dark theme"
-              }
-            >
-              {theme === "dark" ? (
-                <SunIcon size={16} />
-              ) : (
-                <MoonIcon size={16} />
-              )}
-            </Button>
+          {/* ===============================================
+              DESKTOP ACTIONS
+          =============================================== */}
 
-            <div className="mx-1.5 h-4 w-px bg-border/80 xl:mx-2" />
+          <div className="hidden items-center gap-1.5 lg:flex">
+            <ThemeButton
+              theme={theme}
+              onToggle={toggleTheme}
+            />
+
+            <div className="mx-1 h-4 w-px bg-border/70" />
 
             {!user && (
               <Button
@@ -384,137 +555,138 @@ function SiteHeader() {
                 variant="ghost"
                 onClick={handleLogin}
                 className={[
-                  "h-9 w-9 rounded-lg p-0",
+                  "h-9 rounded-lg px-3",
                   "text-xs font-semibold",
                   "text-muted-foreground",
                   "shadow-none",
+                  "hover:bg-black/[0.04]",
                   "hover:text-foreground",
-                  "xl:w-auto xl:px-3.5",
+                  "dark:hover:bg-white/[0.055]",
                 ].join(" ")}
-                aria-label="Log in"
               >
-                <LogInIcon size={14} />
-
-                <span className="hidden xl:inline">
-                  Log in
-                </span>
+                Log in
               </Button>
             )}
 
             <Button
               type="button"
-              onClick={handlePostTask}
+              onClick={
+                handleCreateProject
+              }
               className={[
-                "ml-0.5 h-9 w-9 rounded-lg p-0",
-                "text-xs font-semibold shadow-none",
-                "xl:ml-1 xl:w-auto xl:px-4",
+                "group h-9 rounded-lg px-3.5",
+                "text-xs font-semibold",
+                "shadow-none",
+                "bg-[#303030] text-white",
+                "hover:bg-[#202020] hover:text-white",
+                "dark:bg-[#DEDA00]",
+                "dark:text-[#202020]",
+                "dark:hover:bg-[#d3cf00]",
+                "dark:hover:text-[#202020]",
+                "xl:px-4",
               ].join(" ")}
-              aria-label="Post a task"
             >
-              <span className="hidden xl:inline">
-                Post a task
-              </span>
+              Create project
 
-              <ArrowUpRightIcon size={14} />
+              <ArrowUpRightIcon
+                size={13}
+                className={[
+                  "transition-transform duration-200",
+                  "group-hover:translate-x-0.5",
+                  "group-hover:-translate-y-0.5",
+                ].join(" ")}
+              />
             </Button>
 
             {user && (
-              <div className="ml-0.5 xl:ml-1">
+              <div className="ml-0.5">
                 <AccountMenu
                   user={user}
                   initials={initials}
-                  loggingOut={loggingOut}
-                  onProjects={() =>
-                    navigate("/projects")
+                  loggingOut={
+                    loggingOut
                   }
-                  onProfile={() =>
-                    navigate("/profile")
+                  onProjects={
+                    handleProjects
                   }
-                  onSettings={() =>
-                    navigate("/settings")
+                  onProfile={
+                    handleProfile
                   }
-                  onLogout={handleLogout}
+                  onSettings={
+                    handleSettings
+                  }
+                  onLogout={
+                    handleLogout
+                  }
                 />
               </div>
             )}
           </div>
 
+          {/* ===============================================
+              MOBILE ACTIONS
+          =============================================== */}
+
           <div className="flex items-center gap-1 lg:hidden">
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={toggleTheme}
-              className={[
-                "h-9 w-9 rounded-lg shadow-none",
-                "text-muted-foreground",
-                "hover:text-foreground",
-              ].join(" ")}
-              aria-label={
-                theme === "dark"
-                  ? "Switch to light theme"
-                  : "Switch to dark theme"
-              }
-            >
-              {theme === "dark" ? (
-                <SunIcon size={16} />
-              ) : (
-                <MoonIcon size={16} />
-              )}
-            </Button>
+            <ThemeButton
+              theme={theme}
+              onToggle={toggleTheme}
+            />
 
             <Button
               type="button"
               variant="ghost"
               size="icon"
-              className="h-9 w-9 rounded-lg shadow-none"
+              className={[
+                "h-9 w-9 rounded-lg",
+                "text-foreground",
+                "shadow-none",
+                "hover:bg-black/[0.045]",
+                "dark:hover:bg-white/[0.055]",
+              ].join(" ")}
               onClick={() =>
-                setIsMenuOpen((current) => !current)
+                setIsMenuOpen(
+                  (current) =>
+                    !current,
+                )
               }
               aria-label={
                 isMenuOpen
                   ? "Close navigation"
                   : "Open navigation"
               }
-              aria-expanded={isMenuOpen}
+              aria-expanded={
+                isMenuOpen
+              }
               aria-controls="mobile-navigation"
             >
               {isMenuOpen ? (
-                <XIcon size={19} />
+                <XIcon size={18} />
               ) : (
-                <MenuIcon size={19} />
+                <MenuIcon size={18} />
               )}
             </Button>
-
-            {user && (
-              <AccountMenu
-                user={user}
-                initials={initials}
-                loggingOut={loggingOut}
-                compact
-                onProjects={() =>
-                  navigate("/projects")
-                }
-                onProfile={() =>
-                  navigate("/profile")
-                }
-                onSettings={() =>
-                  navigate("/settings")
-                }
-                onLogout={handleLogout}
-              />
-            )}
           </div>
         </div>
       </header>
 
+      {/* ===================================================
+          MOBILE NAVIGATION
+      =================================================== */}
+
       <div
         className={[
           "fixed inset-0 z-40 lg:hidden",
-          "transition-all duration-300",
+          "transition-[opacity,visibility] duration-250",
           isMenuOpen
-            ? "pointer-events-auto visible opacity-100"
-            : "pointer-events-none invisible opacity-0",
+            ? [
+                "pointer-events-auto",
+                "visible opacity-100",
+              ].join(" ")
+            : [
+                "pointer-events-none",
+                "invisible opacity-0",
+              ].join(" "),
         ].join(" ")}
         aria-hidden={!isMenuOpen}
       >
@@ -522,8 +694,10 @@ function SiteHeader() {
           type="button"
           className={[
             "absolute inset-0 top-14",
-            "bg-foreground/15 backdrop-blur-sm",
+            "bg-black/20",
+            "backdrop-blur-[3px]",
             "sm:top-[60px]",
+            "dark:bg-black/45",
           ].join(" ")}
           onClick={closeMenu}
           aria-label="Close navigation"
@@ -533,146 +707,224 @@ function SiteHeader() {
           id="mobile-navigation"
           className={[
             "absolute inset-x-0 top-14",
-            "border-b border-border/70",
-            "bg-background/98",
-            "backdrop-blur-xl",
-            "shadow-xl shadow-black/10",
-            "transition-all duration-300",
+            "border-b",
+            "shadow-[0_24px_70px_rgba(0,0,0,0.12)]",
+            "backdrop-blur-2xl",
+            "transition-[transform,opacity] duration-300",
             "sm:top-[60px]",
+            isLandingPage
+              ? [
+                  "border-black/[0.07]",
+                  "bg-[#f7f7f4]/98",
+                  "dark:border-white/[0.06]",
+                  "dark:bg-[#0b0b0b]/98",
+                ].join(" ")
+              : [
+                  "border-border/70",
+                  "bg-background/98",
+                ].join(" "),
             isMenuOpen
               ? "translate-y-0 opacity-100"
-              : "-translate-y-3 opacity-0",
+              : "-translate-y-2 opacity-0",
           ].join(" ")}
         >
           <div
             className={[
-              "mx-auto max-w-7xl",
-              "max-h-[calc(100vh-56px)] overflow-y-auto",
-              "px-5 pb-6 pt-3",
-              "sm:max-h-[calc(100vh-60px)] sm:px-8",
+              "mx-auto w-full max-w-7xl",
+              "max-h-[calc(100vh-56px)]",
+              "overflow-y-auto",
+              "px-4 pb-6",
+              "sm:max-h-[calc(100vh-60px)]",
+              "sm:px-6",
+              "md:px-8",
             ].join(" ")}
           >
-            <div className="flex items-center justify-between border-b border-border/60 py-4">
-              <Link
-                to="/"
-                onClick={closeMenu}
-                className="flex items-center"
-                aria-label="Allocatr home"
-              >
-                <img
-                  src={headerLogo}
-                  alt="Allocatr"
-                  className="h-6 w-auto object-contain"
-                />
-              </Link>
+            {/* ===========================================
+                USER ACCOUNT
+            =========================================== */}
 
-              <div className="flex items-center gap-1.5">
-                <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+            {user && (
+              <MobileAccountSummary
+                user={user}
+                initials={initials}
+                onProfile={
+                  handleProfile
+                }
+              />
+            )}
 
-                <span className="h-1 w-1 rounded-full bg-primary/50" />
-
-                <span className="h-1 w-1 rounded-full bg-primary/20" />
-              </div>
-            </div>
+            {/* ===========================================
+                MOBILE NAV LINKS
+            =========================================== */}
 
             <nav
-              className="mt-1"
+              className={
+                user
+                  ? ""
+                  : "pt-2"
+              }
               aria-label="Mobile navigation"
             >
               {!isLandingPage && (
-                <NavLink
-                  to="/"
+                <MobileNavigationLink
+                  label="Home"
+                  href="/"
                   onClick={closeMenu}
-                  className={({ isActive }) =>
-                    [
-                      "group flex min-h-14 items-center justify-between",
-                      "border-b border-border/60",
-                      "text-sm font-semibold transition-colors",
-                      isActive
-                        ? "text-primary"
-                        : "text-foreground hover:text-primary",
-                    ].join(" ")
-                  }
-                >
-                  Home
-
-                  <ArrowRightIcon
-                    size={15}
-                    className={[
-                      "text-muted-foreground",
-                      "transition-transform duration-200",
-                      "group-hover:translate-x-1",
-                    ].join(" ")}
-                  />
-                </NavLink>
+                />
               )}
 
-              {navigation.map((item) => (
-                <NavLink
-                  key={item.label}
-                  to={item.href}
-                  onClick={closeMenu}
-                  className={({ isActive }) =>
-                    [
-                      "group flex min-h-14 items-center justify-between",
-                      "border-b border-border/60",
-                      "text-sm font-semibold transition-colors",
-                      isActive
-                        ? "text-primary"
-                        : "text-foreground hover:text-primary",
-                    ].join(" ")
-                  }
-                >
-                  <span className="flex items-center gap-3">
-                    <span
-                      className={[
-                        "h-1.5 w-1.5 rounded-full",
-                        "bg-primary/25",
-                        "transition-all duration-200",
-                        "group-hover:bg-primary",
-                      ].join(" ")}
-                    />
-
-                    {item.label}
-                  </span>
-
-                  <ArrowRightIcon
-                    size={15}
-                    className={[
-                      "text-muted-foreground",
-                      "transition-transform duration-200",
-                      "group-hover:translate-x-1",
-                    ].join(" ")}
+              {navigation.map(
+                (item) => (
+                  <MobileNavigationLink
+                    key={item.label}
+                    label={item.label}
+                    href={item.href}
+                    onClick={
+                      closeMenu
+                    }
                   />
-                </NavLink>
-              ))}
+                ),
+              )}
             </nav>
 
-            <div className="mt-6 grid gap-2.5 sm:grid-cols-2">
+            {/* ===========================================
+                ACCOUNT SHORTCUTS
+            =========================================== */}
+
+            {user && (
+              <div className="mt-5 grid grid-cols-2 gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={
+                    handleProjects
+                  }
+                  className={[
+                    "h-10 rounded-lg",
+                    "border-border/80",
+                    "bg-transparent",
+                    "text-xs",
+                    "shadow-none",
+                  ].join(" ")}
+                >
+                  <FolderOpenIcon
+                    size={13}
+                  />
+
+                  Projects
+                </Button>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={
+                    handleSettings
+                  }
+                  className={[
+                    "h-10 rounded-lg",
+                    "border-border/80",
+                    "bg-transparent",
+                    "text-xs",
+                    "shadow-none",
+                  ].join(" ")}
+                >
+                  <SettingsIcon
+                    size={13}
+                  />
+
+                  Settings
+                </Button>
+              </div>
+            )}
+
+            {/* ===========================================
+                MOBILE PRIMARY ACTION
+            =========================================== */}
+
+            <div
+              className={[
+                "mt-5 grid gap-2.5",
+                !user
+                  ? "sm:grid-cols-2"
+                  : "",
+              ].join(" ")}
+            >
               {!user && (
                 <Button
                   type="button"
                   variant="outline"
                   onClick={handleLogin}
-                  className="h-11 rounded-lg text-xs shadow-none"
+                  className={[
+                    "h-11 rounded-lg",
+                    "border-black/[0.12]",
+                    "bg-transparent",
+                    "text-xs font-semibold",
+                    "shadow-none",
+                    "dark:border-white/[0.10]",
+                  ].join(" ")}
                 >
-                  <LogInIcon size={14} />
+                  <LogInIcon
+                    size={14}
+                  />
+
                   Log in
                 </Button>
               )}
 
               <Button
                 type="button"
-                onClick={handlePostTask}
+                onClick={
+                  handleCreateProject
+                }
                 className={[
-                  "h-11 rounded-lg text-xs shadow-none",
-                  user ? "sm:col-span-2" : "",
+                  "h-11 rounded-lg",
+                  "text-xs font-semibold",
+                  "shadow-none",
+                  "bg-[#303030] text-white",
+                  "hover:bg-[#202020]",
+                  "hover:text-white",
+                  "dark:bg-[#DEDA00]",
+                  "dark:text-[#202020]",
+                  "dark:hover:bg-[#d3cf00]",
+                  "dark:hover:text-[#202020]",
                 ].join(" ")}
               >
-                Post a task
-                <ArrowUpRightIcon size={14} />
+                Create project
+
+                <ArrowUpRightIcon
+                  size={14}
+                />
               </Button>
             </div>
+
+            {user && (
+              <button
+                type="button"
+                disabled={loggingOut}
+                onClick={() => {
+                  void handleLogout();
+                }}
+                className={[
+                  "mt-5 flex w-full items-center justify-center gap-2",
+                  "border-t border-border/60",
+                  "pt-5",
+                  "text-xs font-medium",
+                  "text-muted-foreground",
+                  "transition-colors",
+                  "hover:text-foreground",
+                  "disabled:pointer-events-none",
+                  "disabled:opacity-50",
+                ].join(" ")}
+              >
+                <LogOutIcon
+                  size={13}
+                />
+
+                {loggingOut
+                  ? "Logging out..."
+                  : "Log out"}
+              </button>
+            )}
           </div>
         </aside>
       </div>
@@ -680,11 +932,189 @@ function SiteHeader() {
   );
 }
 
+/* =========================================================
+   THEME BUTTON
+========================================================= */
+
+function ThemeButton({
+  theme,
+  onToggle,
+}: {
+  theme: Theme;
+  onToggle: () => void;
+}) {
+  return (
+    <Button
+      type="button"
+      variant="ghost"
+      size="icon"
+      onClick={onToggle}
+      className={[
+        "h-9 w-9 rounded-lg",
+        "text-muted-foreground",
+        "shadow-none",
+        "transition-colors",
+        "hover:bg-black/[0.045]",
+        "hover:text-foreground",
+        "dark:hover:bg-white/[0.055]",
+      ].join(" ")}
+      aria-label={
+        theme === "dark"
+          ? "Switch to light theme"
+          : "Switch to dark theme"
+      }
+    >
+      {theme === "dark" ? (
+        <SunIcon size={15} />
+      ) : (
+        <MoonIcon size={15} />
+      )}
+    </Button>
+  );
+}
+
+/* =========================================================
+   MOBILE NAV LINK
+========================================================= */
+
+function MobileNavigationLink({
+  label,
+  href,
+  onClick,
+}: {
+  label: string;
+  href: string;
+  onClick: () => void;
+}) {
+  return (
+    <NavLink
+      to={href}
+      onClick={onClick}
+      className={({ isActive }) =>
+        [
+          "group flex min-h-[54px] items-center justify-between",
+          "border-b border-border/60",
+          "text-sm font-semibold",
+          "transition-colors duration-200",
+          isActive
+            ? "text-foreground"
+            : [
+                "text-foreground/80",
+                "hover:text-foreground",
+              ].join(" "),
+        ].join(" ")
+      }
+    >
+      {({ isActive }) => (
+        <>
+          <span className="flex items-center gap-3">
+            <span
+              className={[
+                "h-1.5 w-1.5 rounded-full",
+                "transition-all duration-200",
+                isActive
+                  ? "bg-[#DEDA00]"
+                  : [
+                      "bg-foreground/15",
+                      "group-hover:bg-[#DEDA00]/70",
+                    ].join(" "),
+              ].join(" ")}
+            />
+
+            {label}
+          </span>
+
+          <ArrowRightIcon
+            size={14}
+            className={[
+              "text-muted-foreground",
+              "transition-transform duration-200",
+              "group-hover:translate-x-0.5",
+            ].join(" ")}
+          />
+        </>
+      )}
+    </NavLink>
+  );
+}
+
+/* =========================================================
+   MOBILE ACCOUNT SUMMARY
+========================================================= */
+
+function MobileAccountSummary({
+  user,
+  initials,
+  onProfile,
+}: {
+  user: AccountUser;
+  initials: string;
+  onProfile: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onProfile}
+      className={[
+        "group flex w-full items-center gap-3",
+        "border-b border-border/60",
+        "py-5 text-left",
+      ].join(" ")}
+    >
+      <Avatar className="h-10 w-10 shrink-0 border border-border/80">
+        <AvatarImage
+          src={user.avatarUrl}
+          alt={
+            user.fullName
+              ? `${user.fullName}'s profile`
+              : "User profile"
+          }
+          className="object-cover"
+        />
+
+        <AvatarFallback className="bg-primary/[0.08] text-xs font-bold text-primary">
+          {user.fullName ? (
+            initials
+          ) : (
+            <UserCircleIcon
+              size={17}
+            />
+          )}
+        </AvatarFallback>
+      </Avatar>
+
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-semibold text-foreground">
+          {user.fullName ||
+            "Allocatr user"}
+        </p>
+
+        <p className="mt-0.5 truncate text-[0.68rem] text-muted-foreground">
+          {user.email ||
+            "View your profile"}
+        </p>
+      </div>
+
+      <ArrowRightIcon
+        size={14}
+        className={[
+          "shrink-0 text-muted-foreground",
+          "transition-transform duration-200",
+          "group-hover:translate-x-0.5",
+        ].join(" ")}
+      />
+    </button>
+  );
+}
+
+/* =========================================================
+   DESKTOP ACCOUNT MENU
+========================================================= */
+
 type AccountMenuProps = {
   user: AccountUser;
   initials: string;
   loggingOut: boolean;
-  compact?: boolean;
   onProjects: () => void;
   onProfile: () => void;
   onSettings: () => void;
@@ -695,7 +1125,6 @@ function AccountMenu({
   user,
   initials,
   loggingOut,
-  compact = false,
   onProjects,
   onProfile,
   onSettings,
@@ -707,15 +1136,14 @@ function AccountMenu({
         <button
           type="button"
           className={[
-            "flex h-9 items-center rounded-lg",
+            "flex h-9 items-center gap-2 rounded-lg",
+            "px-1.5",
             "transition-colors",
-            "hover:bg-muted/40",
+            "hover:bg-black/[0.04]",
+            "dark:hover:bg-white/[0.055]",
             "focus-visible:outline-none",
             "focus-visible:ring-2",
-            "focus-visible:ring-primary/30",
-            compact
-              ? "w-9 justify-center"
-              : "gap-2 px-1.5",
+            "focus-visible:ring-[#DEDA00]/30",
           ].join(" ")}
           aria-label="Open account menu"
         >
@@ -734,16 +1162,17 @@ function AccountMenu({
               {user.fullName ? (
                 initials
               ) : (
-                <UserCircleIcon size={15} />
+                <UserCircleIcon
+                  size={15}
+                />
               )}
             </AvatarFallback>
           </Avatar>
 
-          {!compact && (
-            <span className="hidden max-w-28 truncate text-xs font-semibold xl:block">
-              {user.fullName || "Account"}
-            </span>
-          )}
+          <span className="hidden max-w-28 truncate text-xs font-semibold xl:block">
+            {user.fullName ||
+              "Account"}
+          </span>
         </button>
       </DropdownMenuTrigger>
 
@@ -751,9 +1180,13 @@ function AccountMenu({
         align="end"
         sideOffset={10}
         className={[
-          "w-64 rounded-xl border-border/90",
-          "bg-popover p-1.5 text-popover-foreground",
-          "shadow-xl shadow-black/[0.06]",
+          "w-64 rounded-xl",
+          "border-border/80",
+          "bg-popover",
+          "p-1.5",
+          "text-popover-foreground",
+          "shadow-xl",
+          "shadow-black/[0.06]",
           "dark:shadow-black/25",
         ].join(" ")}
       >
@@ -774,18 +1207,22 @@ function AccountMenu({
                 {user.fullName ? (
                   initials
                 ) : (
-                  <UserCircleIcon size={17} />
+                  <UserCircleIcon
+                    size={17}
+                  />
                 )}
               </AvatarFallback>
             </Avatar>
 
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold text-foreground">
-                {user.fullName || "Allocatr user"}
+                {user.fullName ||
+                  "Allocatr user"}
               </p>
 
               <p className="mt-1 truncate text-[0.68rem] text-muted-foreground">
-                {user.email || "No email available"}
+                {user.email ||
+                  "No email available"}
               </p>
             </div>
           </div>
@@ -797,7 +1234,10 @@ function AccountMenu({
           onSelect={onProjects}
           className="rounded-lg px-2.5 py-2 text-sm"
         >
-          <FolderOpenIcon size={15} />
+          <FolderOpenIcon
+            size={15}
+          />
+
           Projects
         </DropdownMenuItem>
 
@@ -814,7 +1254,10 @@ function AccountMenu({
             onSelect={onSettings}
             className="rounded-lg px-2.5 py-2 text-sm"
           >
-            <SettingsIcon size={15} />
+            <SettingsIcon
+              size={15}
+            />
+
             Settings
           </DropdownMenuItem>
         </DropdownMenuGroup>
@@ -828,9 +1271,11 @@ function AccountMenu({
             void onLogout();
           }}
           className={[
-            "rounded-lg px-2.5 py-2 font-medium",
+            "rounded-lg px-2.5 py-2",
+            "font-medium",
             "text-muted-foreground",
-            "focus:bg-muted/50 focus:text-foreground",
+            "focus:bg-muted/50",
+            "focus:text-foreground",
           ].join(" ")}
         >
           <LogOutIcon size={15} />

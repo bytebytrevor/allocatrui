@@ -105,7 +105,10 @@ type ProjectStatusAppearance = {
   text: string;
 };
 
-type ProjectPriority = "standard" | "high" | "urgent";
+type ProjectPriority =
+  | "standard"
+  | "high"
+  | "urgent";
 
 type UpdateProjectRequest = {
   title: string;
@@ -146,56 +149,81 @@ type RatingDraft = {
   comment: string;
 };
 
+type ProjectRatingRecord = {
+  allocatId?: string | null;
+  allocatProfileId?: string | null;
+  rating: number;
+  comment?: string | null;
+};
+
+type ProjectRatingsResponse =
+  | ProjectRatingRecord[]
+  | {
+      ratings?: ProjectRatingRecord[] | null;
+    };
+
 /* =========================================================
    STATUS
 ========================================================= */
 
-const statusAppearance: Record<string, ProjectStatusAppearance> = {
+const statusAppearance: Record<
+  string,
+  ProjectStatusAppearance
+> = {
   pending: {
     label: "Pending",
     dot: "bg-chart-3",
     text: "text-chart-3",
   },
+
   active: {
     label: "Active",
     dot: "bg-foreground/70",
     text: "text-foreground/70",
   },
+
   completionrequested: {
     label: "Awaiting confirmation",
     dot: "bg-chart-3",
     text: "text-chart-3",
   },
+
   onhold: {
     label: "On hold",
     dot: "bg-muted-foreground",
     text: "text-muted-foreground",
   },
+
   paused: {
     label: "Paused",
     dot: "bg-muted-foreground",
     text: "text-muted-foreground",
   },
+
   complete: {
     label: "Complete",
     dot: "bg-chart-2",
     text: "text-chart-2",
   },
+
   completed: {
     label: "Complete",
     dot: "bg-chart-2",
     text: "text-chart-2",
   },
+
   closed: {
     label: "Closed",
     dot: "bg-muted-foreground",
     text: "text-muted-foreground",
   },
+
   cancelled: {
     label: "Cancelled",
     dot: "bg-muted-foreground",
     text: "text-muted-foreground",
   },
+
   canceled: {
     label: "Cancelled",
     dot: "bg-muted-foreground",
@@ -219,144 +247,329 @@ function normalizeStatus(status?: string) {
     .replace(/[\s_-]/g, "");
 }
 
-function normalizeMemberStatus(status?: string | null) {
-  return String(status ?? "").trim().toLowerCase();
+function normalizeMemberStatus(
+  status?: string | null,
+) {
+  return String(status ?? "")
+    .trim()
+    .toLowerCase();
 }
 
 function formatStatusLabel(status?: string) {
-  if (!status?.trim()) return "On hold";
+  if (!status?.trim()) {
+    return "On hold";
+  }
 
   return status
     .trim()
     .replace(/[_-]+/g, " ")
-    .replace(/\b\w/g, letter => letter.toUpperCase());
+    .replace(
+      /\b\w/g,
+      letter => letter.toUpperCase(),
+    );
 }
 
-function getStatusAppearance(status?: string) {
-  const normalizedStatus = normalizeStatus(status);
+function getStatusAppearance(
+  status?: string,
+) {
+  const normalizedStatus =
+    normalizeStatus(status);
 
-  return statusAppearance[normalizedStatus] ?? {
-    label: formatStatusLabel(status),
-    dot: "bg-muted-foreground",
-    text: "text-muted-foreground",
-  };
+  return (
+    statusAppearance[normalizedStatus] ?? {
+      label: formatStatusLabel(status),
+      dot: "bg-muted-foreground",
+      text: "text-muted-foreground",
+    }
+  );
 }
 
-function parseProjectDate(value?: string | Date | null): Date | null {
+function parseProjectDate(
+  value?: string | Date | null,
+): Date | null {
   if (!value) return null;
 
   if (value instanceof Date) {
-    return Number.isNaN(value.getTime()) ? null : value;
+    return Number.isNaN(value.getTime())
+      ? null
+      : value;
   }
 
-  const dateOnlyMatch = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  const dateOnlyMatch = value.match(
+    /^(\d{4})-(\d{2})-(\d{2})$/,
+  );
 
   if (dateOnlyMatch) {
-    const [, year, month, day] = dateOnlyMatch;
-    return new Date(Number(year), Number(month) - 1, Number(day));
+    const [, year, month, day] =
+      dateOnlyMatch;
+
+    return new Date(
+      Number(year),
+      Number(month) - 1,
+      Number(day),
+    );
   }
 
   const parsedDate = new Date(value);
-  return Number.isNaN(parsedDate.getTime()) ? null : parsedDate;
+
+  return Number.isNaN(
+    parsedDate.getTime(),
+  )
+    ? null
+    : parsedDate;
 }
 
-function formatDate(date?: string | Date | null) {
-  const parsedDate = parseProjectDate(date);
-  if (!parsedDate) return "Not set";
+function formatDate(
+  date?: string | Date | null,
+) {
+  const parsedDate =
+    parseProjectDate(date);
 
-  return new Intl.DateTimeFormat("en", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  }).format(parsedDate);
+  if (!parsedDate) {
+    return "Not set";
+  }
+
+  return new Intl.DateTimeFormat(
+    "en",
+    {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    },
+  ).format(parsedDate);
 }
 
-function toDateOnly(value?: Date | null): string | null {
-  if (!value || Number.isNaN(value.getTime())) return null;
+function toDateOnly(
+  value?: Date | null,
+): string | null {
+  if (
+    !value ||
+    Number.isNaN(value.getTime())
+  ) {
+    return null;
+  }
 
   const year = value.getFullYear();
-  const month = String(value.getMonth() + 1).padStart(2, "0");
-  const day = String(value.getDate()).padStart(2, "0");
+
+  const month = String(
+    value.getMonth() + 1,
+  ).padStart(2, "0");
+
+  const day = String(
+    value.getDate(),
+  ).padStart(2, "0");
 
   return `${year}-${month}-${day}`;
 }
 
-function getInitials(name?: string | null) {
-  const normalizedName = name?.trim();
-  if (!normalizedName) return "A";
+function getInitials(
+  name?: string | null,
+) {
+  const normalizedName =
+    name?.trim();
+
+  if (!normalizedName) {
+    return "A";
+  }
 
   return normalizedName
     .split(/\s+/)
     .slice(0, 2)
-    .map(part => part.charAt(0).toUpperCase())
+    .map(part =>
+      part
+        .charAt(0)
+        .toUpperCase(),
+    )
     .join("");
 }
 
-function clampProgress(progress?: number) {
-  if (typeof progress !== "number" || !Number.isFinite(progress)) return 0;
-  return Math.min(100, Math.max(0, progress));
+function clampProgress(
+  progress?: number,
+) {
+  if (
+    typeof progress !== "number" ||
+    !Number.isFinite(progress)
+  ) {
+    return 0;
+  }
+
+  return Math.min(
+    100,
+    Math.max(0, progress),
+  );
 }
 
-function normalizePriority(priority?: string | null): ProjectPriority {
-  const normalized = priority?.trim().toLowerCase();
+function normalizePriority(
+  priority?: string | null,
+): ProjectPriority {
+  const normalized =
+    priority
+      ?.trim()
+      .toLowerCase();
 
-  if (normalized === "high" || normalized === "urgent") return normalized;
+  if (
+    normalized === "high" ||
+    normalized === "urgent"
+  ) {
+    return normalized;
+  }
+
   return "standard";
 }
 
-function isClientWorkProject(project: Project) {
-  return Boolean((project as ProjectWithWorkContext).projectAllocatStatus);
+function isClientWorkProject(
+  project: Project,
+) {
+  return Boolean(
+    (
+      project as ProjectWithWorkContext
+    ).projectAllocatStatus,
+  );
 }
 
-function isAcceptedClientWorkProject(project: Project) {
-  const workProject = project as ProjectWithWorkContext;
+function isAcceptedClientWorkProject(
+  project: Project,
+) {
+  const workProject =
+    project as ProjectWithWorkContext;
 
   return (
-    String(workProject.projectAllocatStatus ?? "")
+    String(
+      workProject.projectAllocatStatus ??
+        "",
+    )
       .trim()
       .toLowerCase() === "accepted"
   );
 }
 
-function isTerminalProject(project: Project) {
+function isTerminalProject(
+  project: Project,
+) {
   return [
     "complete",
     "completed",
     "closed",
     "cancelled",
     "canceled",
-  ].includes(normalizeStatus(project.status));
-}
-
-function isCompletionRequested(project: Project) {
-  return normalizeStatus(project.status) === "completionrequested";
-}
-
-function canModifyOwnedProject(project: Project) {
-  if (isClientWorkProject(project)) return false;
-
-  const status = normalizeStatus(project.status);
-  return status === "pending" || status === "active";
-}
-
-function canCancelProject(project: Project) {
-  return canModifyOwnedProject(project) && !isTerminalProject(project);
-}
-
-function canMarkProjectComplete(project: Project) {
-  return (
-    isAcceptedClientWorkProject(project) &&
-    normalizeStatus(project.status) === "active"
+  ].includes(
+    normalizeStatus(project.status),
   );
 }
 
-function canReviewCompletion(project: Project) {
-  return !isClientWorkProject(project) && isCompletionRequested(project);
+function isCompletedProject(
+  project: Project,
+) {
+  return [
+    "complete",
+    "completed",
+    "closed",
+  ].includes(
+    normalizeStatus(project.status),
+  );
 }
 
-function getProjectCategoryContext(project: Project) {
-  const isClientWork = isClientWorkProject(project);
-  const hasCategory = Boolean(project.category?.trim());
+function isCompletionRequested(
+  project: Project,
+) {
+  return (
+    normalizeStatus(
+      project.status,
+    ) === "completionrequested"
+  );
+}
+
+function canModifyOwnedProject(
+  project: Project,
+) {
+  if (
+    isClientWorkProject(project)
+  ) {
+    return false;
+  }
+
+  const status =
+    normalizeStatus(project.status);
+
+  return (
+    status === "pending" ||
+    status === "active"
+  );
+}
+
+function canCancelProject(
+  project: Project,
+) {
+  return (
+    canModifyOwnedProject(project) &&
+    !isTerminalProject(project)
+  );
+}
+
+function canMarkProjectComplete(
+  project: Project,
+) {
+  return (
+    isAcceptedClientWorkProject(
+      project,
+    ) &&
+    normalizeStatus(
+      project.status,
+    ) === "active"
+  );
+}
+
+function canReviewCompletion(
+  project: Project,
+) {
+  return (
+    !isClientWorkProject(project) &&
+    isCompletionRequested(project)
+  );
+}
+
+function canManageProjectRatings(
+  project: Project,
+) {
+  return (
+    !isClientWorkProject(project) &&
+    isCompletedProject(project)
+  );
+}
+
+function normalizeProjectRatings(
+  response: ProjectRatingsResponse,
+): ProjectRatingRecord[] {
+  if (Array.isArray(response)) {
+    return response;
+  }
+
+  return Array.isArray(
+    response.ratings,
+  )
+    ? response.ratings
+    : [];
+}
+
+function getRatingAllocatId(
+  rating: ProjectRatingRecord,
+) {
+  return (
+    rating.allocatId?.trim() ||
+    rating.allocatProfileId?.trim() ||
+    ""
+  );
+}
+
+function getProjectCategoryContext(
+  project: Project,
+) {
+  const isClientWork =
+    isClientWorkProject(project);
+
+  const hasCategory = Boolean(
+    project.category?.trim(),
+  );
 
   const iconCategory = hasCategory
     ? project.category
@@ -364,10 +577,13 @@ function getProjectCategoryContext(project: Project) {
       ? "client work"
       : "default";
 
-  const label = getProjectCategoryLabel(
-    project.category,
-    isClientWork ? "Client project" : "General project",
-  );
+  const label =
+    getProjectCategoryLabel(
+      project.category,
+      isClientWork
+        ? "Client project"
+        : "General project",
+    );
 
   return {
     iconCategory,
@@ -380,14 +596,27 @@ function getProjectCategoryContext(project: Project) {
    SKILLS
 ========================================================= */
 
-function getProjectSkillIds(project: Project) {
-  const projectWithSkills = project as ProjectWithSkillContext;
+function getProjectSkillIds(
+  project: Project,
+) {
+  const projectWithSkills =
+    project as ProjectWithSkillContext;
 
-  if (Array.isArray(projectWithSkills.skillIds)) {
-    return [...projectWithSkills.skillIds];
+  if (
+    Array.isArray(
+      projectWithSkills.skillIds,
+    )
+  ) {
+    return [
+      ...projectWithSkills.skillIds,
+    ];
   }
 
-  if (Array.isArray(projectWithSkills.skills)) {
+  if (
+    Array.isArray(
+      projectWithSkills.skills,
+    )
+  ) {
     return projectWithSkills.skills
       .map(skill => skill.id)
       .filter(Boolean);
@@ -396,58 +625,108 @@ function getProjectSkillIds(project: Project) {
   return [];
 }
 
-function getEmbeddedProjectSkills(project: Project): SkillOption[] {
-  const projectWithSkills = project as ProjectWithSkillContext;
+function getEmbeddedProjectSkills(
+  project: Project,
+): SkillOption[] {
+  const projectWithSkills =
+    project as ProjectWithSkillContext;
 
-  if (!Array.isArray(projectWithSkills.skills)) return [];
+  if (
+    !Array.isArray(
+      projectWithSkills.skills,
+    )
+  ) {
+    return [];
+  }
 
   return projectWithSkills.skills
-    .filter(skill => Boolean(skill?.id && skill?.name))
+    .filter(skill =>
+      Boolean(
+        skill?.id &&
+          skill?.name,
+      ),
+    )
     .map(skill => ({
       id: skill.id,
       name: skill.name!,
-      categoryId: skill.categoryId ?? "",
-      category: skill.category ?? project.category ?? "",
+      categoryId:
+        skill.categoryId ?? "",
+      category:
+        skill.category ??
+        project.category ??
+        "",
     }));
 }
 
-function mergeSkillOptions(...sources: SkillOption[][]) {
-  const skillsById = new Map<string, SkillOption>();
+function mergeSkillOptions(
+  ...sources: SkillOption[][]
+) {
+  const skillsById =
+    new Map<string, SkillOption>();
 
   for (const source of sources) {
     for (const skill of source) {
-      skillsById.set(skill.id, skill);
+      skillsById.set(
+        skill.id,
+        skill,
+      );
     }
   }
 
-  return Array.from(skillsById.values());
+  return Array.from(
+    skillsById.values(),
+  );
 }
 
-function resolveProjectSkills(project: Project, catalogue: SkillOption[]) {
-  const skillIds = getProjectSkillIds(project);
+function resolveProjectSkills(
+  project: Project,
+  catalogue: SkillOption[],
+) {
+  const skillIds =
+    getProjectSkillIds(project);
 
-  const availableSkills = mergeSkillOptions(
-    catalogue,
-    getEmbeddedProjectSkills(project),
-  );
+  const availableSkills =
+    mergeSkillOptions(
+      catalogue,
+      getEmbeddedProjectSkills(
+        project,
+      ),
+    );
 
   return skillIds
-    .map(id => availableSkills.find(skill => skill.id === id))
-    .filter((skill): skill is SkillOption => Boolean(skill));
+    .map(id =>
+      availableSkills.find(
+        skill => skill.id === id,
+      ),
+    )
+    .filter(
+      (
+        skill,
+      ): skill is SkillOption =>
+        Boolean(skill),
+    );
 }
 
 /* =========================================================
    SYNC
 ========================================================= */
 
-function useSyncedProject(project: Project) {
-  const [currentProject, setCurrentProject] = useState<Project>(project);
+function useSyncedProject(
+  project: Project,
+) {
+  const [
+    currentProject,
+    setCurrentProject,
+  ] = useState<Project>(project);
 
   useEffect(() => {
     setCurrentProject(project);
   }, [project]);
 
-  return [currentProject, setCurrentProject] as const;
+  return [
+    currentProject,
+    setCurrentProject,
+  ] as const;
 }
 
 /* =========================================================
@@ -458,29 +737,60 @@ export function GridView({
   project,
   onProjectUpdated,
 }: ViewProps) {
-  const [currentProject, setCurrentProject] = useSyncedProject(project);
-  const progress = clampProgress(currentProject.progress);
-  const category = getProjectCategoryContext(currentProject);
+  const [
+    currentProject,
+    setCurrentProject,
+  ] = useSyncedProject(project);
 
-  function handleProjectUpdated(updatedProject: Project) {
-    setCurrentProject(updatedProject);
-    onProjectUpdated?.(updatedProject);
+  const progress =
+    clampProgress(
+      currentProject.progress,
+    );
+
+  const category =
+    getProjectCategoryContext(
+      currentProject,
+    );
+
+  function handleProjectUpdated(
+    updatedProject: Project,
+  ) {
+    setCurrentProject(
+      updatedProject,
+    );
+
+    onProjectUpdated?.(
+      updatedProject,
+    );
   }
 
   return (
     <motion.article
       layout="position"
-      initial={{ opacity: 0, y: 5 }}
-      animate={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -1.5 }}
+      initial={{
+        opacity: 0,
+        y: 5,
+      }}
+      animate={{
+        opacity: 1,
+        y: 0,
+      }}
+      whileHover={{
+        y: -1.5,
+      }}
       transition={{
-        opacity: { duration: 0.18, ease: "easeOut" },
+        opacity: {
+          duration: 0.18,
+          ease: "easeOut",
+        },
+
         y: {
           type: "spring",
           stiffness: 340,
           damping: 28,
           mass: 0.45,
         },
+
         layout: {
           type: "spring",
           stiffness: 420,
@@ -514,7 +824,10 @@ export function GridView({
               "dark:text-[#DEDA00]",
             ].join(" ")}
           >
-            {getProjectIcon(category.iconCategory, 13)}
+            {getProjectIcon(
+              category.iconCategory,
+              13,
+            )}
           </span>
 
           <div className="min-w-0">
@@ -524,14 +837,20 @@ export function GridView({
 
             {currentProject.projectCode && (
               <p className="mt-0.5 truncate text-[0.53rem] text-foreground/30 dark:text-white/30">
-                {currentProject.projectCode}
+                {
+                  currentProject.projectCode
+                }
               </p>
             )}
           </div>
         </div>
 
         <div className="flex shrink-0 items-center gap-2">
-          <HeaderStatusIndicator status={currentProject.status} />
+          <HeaderStatusIndicator
+            status={
+              currentProject.status
+            }
+          />
 
           <div
             className={[
@@ -543,8 +862,12 @@ export function GridView({
             ].join(" ")}
           >
             <ProjectMenu
-              project={currentProject}
-              onProjectUpdated={handleProjectUpdated}
+              project={
+                currentProject
+              }
+              onProjectUpdated={
+                handleProjectUpdated
+              }
               header
             />
           </div>
@@ -555,7 +878,9 @@ export function GridView({
         <MotionLink
           to={`/projects/${currentProject.id}`}
           className="block min-w-0"
-          whileTap={{ scale: 0.995 }}
+          whileTap={{
+            scale: 0.995,
+          }}
         >
           <h3
             className={[
@@ -566,17 +891,25 @@ export function GridView({
               "group-hover:opacity-80",
             ].join(" ")}
           >
-            {currentProject.title}
+            {
+              currentProject.title
+            }
           </h3>
         </MotionLink>
 
         {currentProject.description && (
           <p className="mt-2 line-clamp-2 text-[0.69rem] leading-[1.15rem] text-muted-foreground">
-            {currentProject.description}
+            {
+              currentProject.description
+            }
           </p>
         )}
 
-        <ProjectCompletionNotice project={currentProject} />
+        <ProjectCompletionNotice
+          project={
+            currentProject
+          }
+        />
 
         <div className="mt-5">
           <div className="mb-2 flex items-center justify-between gap-4">
@@ -586,21 +919,30 @@ export function GridView({
 
             <span className="text-xs font-black tabular-nums">
               {progress}
+
               <span className="ml-0.5 text-[0.58rem] font-semibold text-muted-foreground">
                 %
               </span>
             </span>
           </div>
 
-          <Progress value={progress} className="h-[3px]" />
+          <Progress
+            value={progress}
+            className="h-[3px]"
+          />
         </div>
 
         <div className="mt-auto flex items-center justify-between gap-3 pt-5">
           <span className="flex min-w-0 items-center gap-1.5 text-[0.62rem] text-muted-foreground">
-            <CalendarDaysIcon size={11} className="shrink-0" />
+            <CalendarDaysIcon
+              size={11}
+              className="shrink-0"
+            />
 
             <span className="truncate">
-              {formatDate(currentProject.createdAt)}
+              {formatDate(
+                currentProject.createdAt,
+              )}
             </span>
           </span>
 
@@ -673,8 +1015,8 @@ export function ListView({
         <span
           className={[
             "flex h-8 w-8 shrink-0 items-center justify-center rounded-md",
-            "bg-[#242424] text-white/80",
-            "dark:bg-[#1b1b1b]",
+            "bg-black/[0.055] text-foreground/75",
+            "dark:bg-white/[0.065]",
             "dark:text-[#DEDA00]",
           ].join(" ")}
         >
@@ -720,10 +1062,7 @@ export function ListView({
             </div>
           </div>
 
-          <ProjectCompletionNotice
-            project={currentProject}
-            compact
-          />
+          <ProjectCompletionNotice project={currentProject} compact />
         </div>
 
         <div className="flex shrink-0 items-center">
@@ -749,8 +1088,8 @@ export function ListView({
             <span
               className={[
                 "flex h-8 w-8 shrink-0 items-center justify-center rounded-md",
-                "bg-[#242424] text-white/80",
-                "dark:bg-[#1b1b1b]",
+                "bg-black/[0.055] text-foreground/75",
+                "dark:bg-white/[0.065]",
                 "dark:text-[#DEDA00]",
               ].join(" ")}
             >
@@ -786,10 +1125,7 @@ export function ListView({
             </p>
           )}
 
-          <ProjectCompletionNotice
-            project={currentProject}
-            compact
-          />
+          <ProjectCompletionNotice project={currentProject} compact />
         </div>
 
         <div className="min-w-0">
@@ -849,7 +1185,13 @@ function ProjectIdentity({
   project: Project;
   compact?: boolean;
 }) {
-  const { iconCategory, label } = getProjectCategoryContext(project);
+  const {
+    iconCategory,
+    label,
+  } =
+    getProjectCategoryContext(
+      project,
+    );
 
   return (
     <div className="flex min-w-0 items-center gap-2.5">
@@ -861,7 +1203,10 @@ function ProjectIdentity({
           "dark:text-[#DEDA00]",
         ].join(" ")}
       >
-        {getProjectIcon(iconCategory, compact ? 13 : 14)}
+        {getProjectIcon(
+          iconCategory,
+          compact ? 13 : 14,
+        )}
       </span>
 
       <div className="min-w-0">
@@ -871,7 +1216,9 @@ function ProjectIdentity({
 
         {project.projectCode && (
           <p className="mt-0.5 truncate text-[0.58rem] text-muted-foreground/55">
-            {project.projectCode}
+            {
+              project.projectCode
+            }
           </p>
         )}
       </div>
@@ -883,8 +1230,13 @@ function ProjectIdentity({
    STATUS
 ========================================================= */
 
-function StatusIndicator({ status }: { status?: string }) {
-  const appearance = getStatusAppearance(status);
+function StatusIndicator({
+  status,
+}: {
+  status?: string;
+}) {
+  const appearance =
+    getStatusAppearance(status);
 
   return (
     <span
@@ -925,27 +1277,48 @@ function ActiveListBadge() {
       ].join(" ")}
     >
       <span className="h-1.5 w-1.5 rounded-full bg-[#DEDA00]" />
+
       Active
     </span>
   );
 }
 
-function ListStatusIndicator({ status }: { status?: string }) {
-  if (normalizeStatus(status) === "active") {
-    return <ActiveListBadge />;
+function ListStatusIndicator({
+  status,
+}: {
+  status?: string;
+}) {
+  if (
+    normalizeStatus(status) ===
+    "active"
+  ) {
+    return (
+      <ActiveListBadge />
+    );
   }
 
-  return <StatusIndicator status={status} />;
+  return (
+    <StatusIndicator
+      status={status}
+    />
+  );
 }
 
 /* =========================================================
    GRID HEADER STATUS
 ========================================================= */
 
-function HeaderStatusIndicator({ status }: { status?: string }) {
-  const normalized = normalizeStatus(status);
+function HeaderStatusIndicator({
+  status,
+}: {
+  status?: string;
+}) {
+  const normalized =
+    normalizeStatus(status);
 
-  if (normalized === "active") {
+  if (
+    normalized === "active"
+  ) {
     return (
       <span
         className={[
@@ -957,12 +1330,14 @@ function HeaderStatusIndicator({ status }: { status?: string }) {
         ].join(" ")}
       >
         <span className="h-1.5 w-1.5 rounded-full bg-foreground/65 dark:bg-[#DEDA00]" />
+
         Active
       </span>
     );
   }
 
-  const appearance = getStatusAppearance(status);
+  const appearance =
+    getStatusAppearance(status);
 
   return (
     <span
@@ -996,14 +1371,23 @@ function ProjectCompletionNotice({
   project: Project;
   compact?: boolean;
 }) {
-  if (!isCompletionRequested(project)) return null;
+  if (
+    !isCompletionRequested(
+      project,
+    )
+  ) {
+    return null;
+  }
 
-  const isClientWork = isClientWorkProject(project);
+  const isClientWork =
+    isClientWorkProject(project);
 
   return (
     <div
       className={[
-        compact ? "mt-3" : "mt-4",
+        compact
+          ? "mt-3"
+          : "mt-4",
         "flex items-center gap-2",
         "border-l-2 border-chart-3/60 pl-3",
       ].join(" ")}
@@ -1034,21 +1418,63 @@ function ProjectMenu({
   onProjectUpdated,
   header = false,
 }: ProjectMenuProps) {
-  const [detailsOpen, setDetailsOpen] = useState(false);
-  const [editOpen, setEditOpen] = useState(false);
-  const [completeOpen, setCompleteOpen] = useState(false);
-  const [reviewCompletionOpen, setReviewCompletionOpen] = useState(false);
+  const [
+    detailsOpen,
+    setDetailsOpen,
+  ] = useState(false);
 
-  const isClientWork = isClientWorkProject(project);
-  const canModifyOwned = canModifyOwnedProject(project);
-  const showCancel = canCancelProject(project);
-  const showMarkComplete = canMarkProjectComplete(project);
-  const showReviewCompletion = canReviewCompletion(project);
+  const [
+    editOpen,
+    setEditOpen,
+  ] = useState(false);
+
+  const [
+    completeOpen,
+    setCompleteOpen,
+  ] = useState(false);
+
+  const [
+    reviewCompletionOpen,
+    setReviewCompletionOpen,
+  ] = useState(false);
+
+  const [
+    ratingsOpen,
+    setRatingsOpen,
+  ] = useState(false);
+
+  const isClientWork =
+    isClientWorkProject(project);
+
+  const canModifyOwned =
+    canModifyOwnedProject(
+      project,
+    );
+
+  const showCancel =
+    canCancelProject(project);
+
+  const showMarkComplete =
+    canMarkProjectComplete(
+      project,
+    );
+
+  const showReviewCompletion =
+    canReviewCompletion(
+      project,
+    );
+
+  const showManageRatings =
+    canManageProjectRatings(
+      project,
+    );
 
   return (
     <>
       <DropdownMenu>
-        <DropdownMenuTrigger asChild>
+        <DropdownMenuTrigger
+          asChild
+        >
           <Button
             type="button"
             variant="ghost"
@@ -1068,7 +1494,9 @@ function ProjectMenu({
             ].join(" ")}
             aria-label={`Open menu for ${project.title}`}
           >
-            <EllipsisVerticalIcon size={15} />
+            <EllipsisVerticalIcon
+              size={15}
+            />
           </Button>
         </DropdownMenuTrigger>
 
@@ -1076,18 +1504,31 @@ function ProjectMenu({
           align="end"
           className="w-56 rounded-xl border-border bg-popover p-1.5 text-popover-foreground shadow-lg"
         >
-          <DropdownMenuItem asChild className="rounded-lg">
-            <Link to={`/projects/${project.id}`}>
-              <FolderOpenIcon size={14} />
+          <DropdownMenuItem
+            asChild
+            className="rounded-lg"
+          >
+            <Link
+              to={`/projects/${project.id}`}
+            >
+              <FolderOpenIcon
+                size={14}
+              />
+
               Open project
             </Link>
           </DropdownMenuItem>
 
           <DropdownMenuItem
             className="rounded-lg"
-            onSelect={() => setDetailsOpen(true)}
+            onSelect={() =>
+              setDetailsOpen(
+                true,
+              )
+            }
           >
             <EyeIcon size={14} />
+
             View details
           </DropdownMenuItem>
 
@@ -1097,10 +1538,38 @@ function ProjectMenu({
 
               <DropdownMenuItem
                 className="rounded-lg text-chart-3 focus:bg-chart-3/[0.08] focus:text-chart-3"
-                onSelect={() => setReviewCompletionOpen(true)}
+                onSelect={() =>
+                  setReviewCompletionOpen(
+                    true,
+                  )
+                }
               >
-                <Clock3Icon size={14} />
+                <Clock3Icon
+                  size={14}
+                />
+
                 Review completion
+              </DropdownMenuItem>
+            </>
+          )}
+
+          {showManageRatings && (
+            <>
+              <DropdownMenuSeparator />
+
+              <DropdownMenuItem
+                className="rounded-lg"
+                onSelect={() =>
+                  setRatingsOpen(
+                    true,
+                  )
+                }
+              >
+                <StarIcon
+                  size={14}
+                />
+
+                Rate Allocats
               </DropdownMenuItem>
             </>
           )}
@@ -1109,18 +1578,33 @@ function ProjectMenu({
             <>
               <DropdownMenuSeparator />
 
-              <DropdownMenuItem asChild className="rounded-lg">
-                <Link to={`/projects/${project.id}/allocats/find`}>
-                  <UserPlusIcon size={14} />
+              <DropdownMenuItem
+                asChild
+                className="rounded-lg"
+              >
+                <Link
+                  to={`/projects/${project.id}/allocats/find`}
+                >
+                  <UserPlusIcon
+                    size={14}
+                  />
+
                   Find Allocats
                 </Link>
               </DropdownMenuItem>
 
               <DropdownMenuItem
                 className="rounded-lg"
-                onSelect={() => setEditOpen(true)}
+                onSelect={() =>
+                  setEditOpen(
+                    true,
+                  )
+                }
               >
-                <Edit3Icon size={14} />
+                <Edit3Icon
+                  size={14}
+                />
+
                 Edit project
               </DropdownMenuItem>
 
@@ -1129,7 +1613,10 @@ function ProjectMenu({
                   <DropdownMenuSeparator />
 
                   <DropdownMenuItem className="rounded-lg text-destructive focus:bg-destructive/[0.07] focus:text-destructive">
-                    <BanIcon size={14} />
+                    <BanIcon
+                      size={14}
+                    />
+
                     Cancel project
                   </DropdownMenuItem>
                 </>
@@ -1143,9 +1630,16 @@ function ProjectMenu({
 
               <DropdownMenuItem
                 className="rounded-lg text-chart-2 focus:bg-chart-2/[0.08] focus:text-chart-2"
-                onSelect={() => setCompleteOpen(true)}
+                onSelect={() =>
+                  setCompleteOpen(
+                    true,
+                  )
+                }
               >
-                <CircleCheckBigIcon size={14} />
+                <CircleCheckBigIcon
+                  size={14}
+                />
+
                 Mark complete
               </DropdownMenuItem>
             </>
@@ -1156,15 +1650,21 @@ function ProjectMenu({
       <ProjectDetailsDialog
         project={project}
         open={detailsOpen}
-        onOpenChange={setDetailsOpen}
+        onOpenChange={
+          setDetailsOpen
+        }
       />
 
       {canModifyOwned && (
         <EditProjectDialog
           project={project}
           open={editOpen}
-          onOpenChange={setEditOpen}
-          onProjectUpdated={onProjectUpdated}
+          onOpenChange={
+            setEditOpen
+          }
+          onProjectUpdated={
+            onProjectUpdated
+          }
         />
       )}
 
@@ -1172,18 +1672,38 @@ function ProjectMenu({
         <RequestCompletionDialog
           project={project}
           open={completeOpen}
-          onOpenChange={setCompleteOpen}
-          onProjectUpdated={onProjectUpdated}
+          onOpenChange={
+            setCompleteOpen
+          }
+          onProjectUpdated={
+            onProjectUpdated
+          }
         />
       )}
 
       {!isClientWork && (
-        <ReviewCompletionDialog
-          project={project}
-          open={reviewCompletionOpen}
-          onOpenChange={setReviewCompletionOpen}
-          onProjectUpdated={onProjectUpdated}
-        />
+        <>
+          <ReviewCompletionDialog
+            project={project}
+            open={
+              reviewCompletionOpen
+            }
+            onOpenChange={
+              setReviewCompletionOpen
+            }
+            onProjectUpdated={
+              onProjectUpdated
+            }
+          />
+
+          <ManageRatingsDialog
+            project={project}
+            open={ratingsOpen}
+            onOpenChange={
+              setRatingsOpen
+            }
+          />
+        </>
       )}
     </>
   );
@@ -1199,11 +1719,30 @@ function RequestCompletionDialog({
   onOpenChange,
   onProjectUpdated,
 }: EditProjectDialogProps) {
-  const [tasks, setTasks] = useState<TaskPreview[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [loadError, setLoadError] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [reloadKey, setReloadKey] = useState(0);
+  const [
+    tasks,
+    setTasks,
+  ] = useState<TaskPreview[]>([]);
+
+  const [
+    loading,
+    setLoading,
+  ] = useState(false);
+
+  const [
+    loadError,
+    setLoadError,
+  ] = useState(false);
+
+  const [
+    submitting,
+    setSubmitting,
+  ] = useState(false);
+
+  const [
+    reloadKey,
+    setReloadKey,
+  ] = useState(0);
 
   useEffect(() => {
     if (!open) return;
@@ -1215,21 +1754,43 @@ function RequestCompletionDialog({
         setLoading(true);
         setLoadError(false);
 
-        const response = await api.get<TaskPreview[]>(
-          `/projects/tasks/${project.id}`,
-          { withCredentials: true },
+        const response =
+          await api.get<
+            TaskPreview[]
+          >(
+            `/projects/tasks/${project.id}`,
+            {
+              withCredentials:
+                true,
+            },
+          );
+
+        if (cancelled) {
+          return;
+        }
+
+        setTasks(
+          Array.isArray(
+            response.data,
+          )
+            ? response.data
+            : [],
+        );
+      } catch (error) {
+        if (cancelled) {
+          return;
+        }
+
+        console.error(
+          "Could not load project tasks:",
+          error,
         );
 
-        if (cancelled) return;
-
-        setTasks(Array.isArray(response.data) ? response.data : []);
-      } catch (error) {
-        if (cancelled) return;
-
-        console.error("Could not load project tasks:", error);
         setLoadError(true);
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     }
 
@@ -1238,38 +1799,66 @@ function RequestCompletionDialog({
     return () => {
       cancelled = true;
     };
-  }, [open, project.id, reloadKey]);
+  }, [
+    open,
+    project.id,
+    reloadKey,
+  ]);
 
-  const incompleteTasks = useMemo(
-    () =>
-      tasks.filter(
-        task => task.status?.trim().toLowerCase() !== "complete",
-      ),
-    [tasks],
-  );
+  const incompleteTasks =
+    useMemo(
+      () =>
+        tasks.filter(
+          task =>
+            task.status
+              ?.trim()
+              .toLowerCase() !==
+            "complete",
+        ),
+      [tasks],
+    );
 
   async function requestCompletion() {
-    if (submitting || loading || loadError) return;
+    if (
+      submitting ||
+      loading ||
+      loadError
+    ) {
+      return;
+    }
 
     try {
       setSubmitting(true);
 
-      const response = await api.patch<Project>(
-        `/projects/${project.id}/completion/request`,
-        {},
-        { withCredentials: true },
-      );
+      const response =
+        await api.patch<Project>(
+          `/projects/${project.id}/completion/request`,
+          {},
+          {
+            withCredentials:
+              true,
+          },
+        );
 
       onProjectUpdated({
         ...project,
         ...response.data,
       });
 
-      toast.success("Completion request sent to the client.");
+      toast.success(
+        "Completion request sent to the client.",
+      );
+
       onOpenChange(false);
     } catch (error) {
-      console.error("Could not request project completion:", error);
-      toast.error("The completion request could not be sent.");
+      console.error(
+        "Could not request project completion:",
+        error,
+      );
+
+      toast.error(
+        "The completion request could not be sent.",
+      );
     } finally {
       setSubmitting(false);
     }
@@ -1278,23 +1867,35 @@ function RequestCompletionDialog({
   return (
     <Dialog
       open={open}
-      onOpenChange={nextOpen => {
-        if (submitting) return;
-        onOpenChange(nextOpen);
-      }}
+      onOpenChange={
+        nextOpen => {
+          if (submitting) {
+            return;
+          }
+
+          onOpenChange(
+            nextOpen,
+          );
+        }
+      }
     >
       <DialogContent className="rounded-[1.5rem] border-border bg-background p-0 sm:max-w-lg">
         <DialogHeader className="border-b border-border px-6 pb-6 pt-7 text-left">
           <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-chart-2/[0.10] text-chart-2">
-            <CircleCheckBigIcon size={18} />
+            <CircleCheckBigIcon
+              size={18}
+            />
           </span>
 
           <DialogTitle className="mt-4 text-2xl font-black tracking-[-0.03em]">
-            Mark project complete?
+            Mark project
+            complete?
           </DialogTitle>
 
           <DialogDescription className="mt-2 leading-7">
-            This will send the project to the client for final completion
+            This will send the
+            project to the client
+            for final completion
             confirmation.
           </DialogDescription>
         </DialogHeader>
@@ -1302,17 +1903,24 @@ function RequestCompletionDialog({
         <div className="px-6 py-6">
           {loading ? (
             <div className="flex min-h-24 items-center gap-3 text-sm text-muted-foreground">
-              <LoaderCircleIcon size={16} className="animate-spin" />
+              <LoaderCircleIcon
+                size={16}
+                className="animate-spin"
+              />
+
               Checking project tasks
             </div>
           ) : loadError ? (
             <div className="rounded-xl border border-destructive/20 bg-destructive/[0.06] p-4">
               <p className="text-sm font-semibold text-destructive">
-                We couldn't check the project tasks.
+                We couldn't check
+                the project tasks.
               </p>
 
               <p className="mt-1 text-xs leading-6 text-muted-foreground">
-                Try again before sending the completion request.
+                Try again before
+                sending the
+                completion request.
               </p>
 
               <Button
@@ -1320,12 +1928,18 @@ function RequestCompletionDialog({
                 variant="outline"
                 size="sm"
                 className="mt-4 rounded-lg bg-transparent shadow-none"
-                onClick={() => setReloadKey(value => value + 1)}
+                onClick={() =>
+                  setReloadKey(
+                    value =>
+                      value + 1,
+                  )
+                }
               >
                 Try again
               </Button>
             </div>
-          ) : incompleteTasks.length > 0 ? (
+          ) : incompleteTasks.length >
+            0 ? (
             <div className="rounded-xl border border-chart-3/25 bg-chart-3/[0.08] p-4">
               <div className="flex gap-3">
                 <AlertTriangleIcon
@@ -1335,57 +1949,86 @@ function RequestCompletionDialog({
 
                 <div>
                   <p className="text-sm font-bold text-chart-3">
-                    {incompleteTasks.length}{" "}
-                    {incompleteTasks.length === 1
+                    {
+                      incompleteTasks.length
+                    }{" "}
+
+                    {incompleteTasks.length ===
+                    1
                       ? "task is"
                       : "tasks are"}{" "}
+
                     still incomplete.
                   </p>
 
                   <p className="mt-1 text-xs leading-6 text-foreground/70">
-                    Continuing will automatically mark{" "}
-                    {incompleteTasks.length === 1
+                    Continuing will
+                    automatically
+                    mark{" "}
+
+                    {incompleteTasks.length ===
+                    1
                       ? "this task"
                       : "these tasks"}{" "}
-                    as complete before the project is sent to the client.
+
+                    as complete
+                    before the
+                    project is sent
+                    to the client.
                   </p>
                 </div>
               </div>
 
               <div className="mt-4 max-h-32 space-y-2 overflow-y-auto border-t border-chart-3/20 pt-3">
-                {incompleteTasks.map(task => (
-                  <div
-                    key={task.id}
-                    className="flex items-center gap-2 text-xs"
-                  >
-                    <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-chart-3" />
+                {incompleteTasks.map(
+                  task => (
+                    <div
+                      key={task.id}
+                      className="flex items-center gap-2 text-xs"
+                    >
+                      <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-chart-3" />
 
-                    <span className="truncate font-medium">
-                      {task.title}
-                    </span>
-                  </div>
-                ))}
+                      <span className="truncate font-medium">
+                        {
+                          task.title
+                        }
+                      </span>
+                    </div>
+                  ),
+                )}
               </div>
             </div>
           ) : tasks.length > 0 ? (
             <div className="rounded-xl border border-chart-2/20 bg-chart-2/[0.07] p-4">
               <p className="text-sm font-semibold text-chart-2">
-                All project tasks are complete.
+                All project tasks
+                are complete.
               </p>
 
               <p className="mt-1 text-xs leading-6 text-foreground/70">
-                The project is ready to be sent to the client for confirmation.
+                The project is ready
+                to be sent to the
+                client for
+                confirmation.
               </p>
             </div>
           ) : (
             <div className="rounded-xl bg-muted/50 p-4">
               <p className="text-sm font-semibold">
-                No tasks were created for this project.
+                No tasks were
+                created for this
+                project.
               </p>
 
               <p className="mt-1 text-xs leading-6 text-muted-foreground">
-                That's okay. The task manager is optional, and you can still
-                send the project to the client for completion confirmation.
+                That's okay. The
+                task manager is
+                optional, and you
+                can still send the
+                project to the
+                client for
+                completion
+                confirmation.
               </p>
             </div>
           )}
@@ -1395,8 +2038,12 @@ function RequestCompletionDialog({
           <Button
             type="button"
             variant="ghost"
-            disabled={submitting}
-            onClick={() => onOpenChange(false)}
+            disabled={
+              submitting
+            }
+            onClick={() =>
+              onOpenChange(false)
+            }
             className="rounded-lg px-5 text-muted-foreground shadow-none"
           >
             Cancel
@@ -1404,17 +2051,30 @@ function RequestCompletionDialog({
 
           <Button
             type="button"
-            disabled={submitting || loading || loadError}
-            onClick={() => void requestCompletion()}
+            disabled={
+              submitting ||
+              loading ||
+              loadError
+            }
+            onClick={() =>
+              void requestCompletion()
+            }
             className="rounded-lg px-6 shadow-none"
           >
             {submitting ? (
-              <LoaderCircleIcon size={14} className="animate-spin" />
+              <LoaderCircleIcon
+                size={14}
+                className="animate-spin"
+              />
             ) : (
-              <CircleCheckBigIcon size={14} />
+              <CircleCheckBigIcon
+                size={14}
+              />
             )}
 
-            {submitting ? "Sending" : "Send for confirmation"}
+            {submitting
+              ? "Sending"
+              : "Send for confirmation"}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -1432,10 +2092,36 @@ function ReviewCompletionDialog({
   onOpenChange,
   onProjectUpdated,
 }: EditProjectDialogProps) {
-  const [members, setMembers] = useState<ProjectAllocatMember[]>([]);
-  const [ratings, setRatings] = useState<Record<string, RatingDraft>>({});
-  const [loading, setLoading] = useState(false);
-  const [acting, setActing] = useState<"confirm" | "reject" | null>(null);
+  const [
+    members,
+    setMembers,
+  ] = useState<
+    ProjectAllocatMember[]
+  >([]);
+
+  const [
+    ratings,
+    setRatings,
+  ] = useState<
+    Record<
+      string,
+      RatingDraft
+    >
+  >({});
+
+  const [
+    loading,
+    setLoading,
+  ] = useState(false);
+
+  const [
+    acting,
+    setActing,
+  ] = useState<
+    "confirm" |
+    "reject" |
+    null
+  >(null);
 
   useEffect(() => {
     if (!open) return;
@@ -1446,40 +2132,72 @@ function ReviewCompletionDialog({
       try {
         setLoading(true);
 
-        const response = await api.get<ProjectAllocatMember[]>(
-          `/projects/${project.id}/allocats/members`,
-          { withCredentials: true },
-        );
+        const response =
+          await api.get<
+            ProjectAllocatMember[]
+          >(
+            `/projects/${project.id}/allocats/members`,
+            {
+              withCredentials:
+                true,
+            },
+          );
 
-        if (cancelled) return;
+        if (cancelled) {
+          return;
+        }
 
         const acceptedMembers = (
-          Array.isArray(response.data)
+          Array.isArray(
+            response.data,
+          )
             ? response.data
             : []
         ).filter(
-          member => normalizeMemberStatus(member.status) === "accepted",
+          member =>
+            normalizeMemberStatus(
+              member.status,
+            ) === "accepted",
         );
 
-        setMembers(acceptedMembers);
+        setMembers(
+          acceptedMembers,
+        );
 
-        const nextRatings: Record<string, RatingDraft> = {};
+        const nextRatings: Record<
+          string,
+          RatingDraft
+        > = {};
 
         for (const member of acceptedMembers) {
-          nextRatings[member.allocatProfileId] = {
+          nextRatings[
+            member.allocatProfileId
+          ] = {
             rating: 0,
             comment: "",
           };
         }
 
-        setRatings(nextRatings);
+        setRatings(
+          nextRatings,
+        );
       } catch (error) {
-        if (cancelled) return;
+        if (cancelled) {
+          return;
+        }
 
-        console.error("Could not load project Allocats:", error);
-        toast.error("The project team could not be loaded.");
+        console.error(
+          "Could not load project Allocats:",
+          error,
+        );
+
+        toast.error(
+          "The project team could not be loaded.",
+        );
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     }
 
@@ -1488,102 +2206,179 @@ function ReviewCompletionDialog({
     return () => {
       cancelled = true;
     };
-  }, [open, project.id]);
+  }, [
+    open,
+    project.id,
+  ]);
 
-  function setMemberRating(allocatId: string, rating: number) {
-    setRatings(current => ({
-      ...current,
-      [allocatId]: {
-        rating,
-        comment: current[allocatId]?.comment ?? "",
-      },
-    }));
+  function setMemberRating(
+    allocatId: string,
+    rating: number,
+  ) {
+    setRatings(
+      current => ({
+        ...current,
+
+        [allocatId]: {
+          rating,
+
+          comment:
+            current[
+              allocatId
+            ]?.comment ?? "",
+        },
+      }),
+    );
   }
 
-  function clearMemberRating(allocatId: string) {
-    setRatings(current => ({
-      ...current,
-      [allocatId]: {
-        rating: 0,
-        comment: "",
-      },
-    }));
+  function clearMemberRating(
+    allocatId: string,
+  ) {
+    setRatings(
+      current => ({
+        ...current,
+
+        [allocatId]: {
+          rating: 0,
+          comment: "",
+        },
+      }),
+    );
   }
 
-  function setMemberComment(allocatId: string, comment: string) {
-    setRatings(current => ({
-      ...current,
-      [allocatId]: {
-        rating: current[allocatId]?.rating ?? 0,
-        comment,
-      },
-    }));
+  function setMemberComment(
+    allocatId: string,
+    comment: string,
+  ) {
+    setRatings(
+      current => ({
+        ...current,
+
+        [allocatId]: {
+          rating:
+            current[
+              allocatId
+            ]?.rating ?? 0,
+
+          comment,
+        },
+      }),
+    );
   }
 
   async function needsMoreWork() {
-    if (acting) return;
+    if (acting) {
+      return;
+    }
 
     try {
       setActing("reject");
 
-      const response = await api.patch<Project>(
-        `/projects/${project.id}/completion/reject`,
-        {},
-        { withCredentials: true },
-      );
+      const response =
+        await api.patch<Project>(
+          `/projects/${project.id}/completion/reject`,
+          {},
+          {
+            withCredentials:
+              true,
+          },
+        );
 
       onProjectUpdated({
         ...project,
         ...response.data,
       });
 
-      toast.success("The project has been returned for more work.");
+      toast.success(
+        "The project has been returned for more work.",
+      );
+
       onOpenChange(false);
     } catch (error) {
-      console.error("Could not return project for more work:", error);
-      toast.error("The project could not be returned for more work.");
+      console.error(
+        "Could not return project for more work:",
+        error,
+      );
+
+      toast.error(
+        "The project could not be returned for more work.",
+      );
     } finally {
       setActing(null);
     }
   }
 
   async function confirmCompletion() {
-    if (acting) return;
+    if (acting) {
+      return;
+    }
 
     try {
       setActing("confirm");
 
-      const response = await api.patch<Project>(
-        `/projects/${project.id}/completion/confirm`,
-        {},
-        { withCredentials: true },
-      );
-
-      const submittedRatings = members.flatMap(member => {
-        const draft = ratings[member.allocatProfileId];
-
-        if (!draft || draft.rating < 1) return [];
-
-        return [
+      const response =
+        await api.patch<Project>(
+          `/projects/${project.id}/completion/confirm`,
+          {},
           {
-            allocatId: member.allocatProfileId,
-            rating: draft.rating,
-            comment: draft.comment.trim() || null,
+            withCredentials:
+              true,
           },
-        ];
-      });
+        );
 
-      let ratingsSaved = true;
+      const submittedRatings =
+        members.flatMap(
+          member => {
+            const draft =
+              ratings[
+                member.allocatProfileId
+              ];
 
-      if (submittedRatings.length > 0) {
+            if (
+              !draft ||
+              draft.rating < 1
+            ) {
+              return [];
+            }
+
+            return [
+              {
+                allocatId:
+                  member.allocatProfileId,
+
+                rating:
+                  draft.rating,
+
+                comment:
+                  draft.comment.trim() ||
+                  null,
+              },
+            ];
+          },
+        );
+
+      let ratingsSaved =
+        true;
+
+      if (
+        submittedRatings.length >
+        0
+      ) {
         try {
           await api.put(
             `/projects/${project.id}/ratings`,
-            { ratings: submittedRatings },
-            { withCredentials: true },
+            {
+              ratings:
+                submittedRatings,
+            },
+            {
+              withCredentials:
+                true,
+            },
           );
         } catch (error) {
-          ratingsSaved = false;
+          ratingsSaved =
+            false;
 
           console.error(
             "Project completed but ratings could not be saved:",
@@ -1601,16 +2396,29 @@ function ReviewCompletionDialog({
         toast.warning(
           "Project completed, but the ratings could not be saved.",
         );
-      } else if (submittedRatings.length > 0) {
-        toast.success("Project completed and ratings submitted.");
+      } else if (
+        submittedRatings.length >
+        0
+      ) {
+        toast.success(
+          "Project completed and ratings submitted.",
+        );
       } else {
-        toast.success("Project completion confirmed.");
+        toast.success(
+          "Project completion confirmed.",
+        );
       }
 
       onOpenChange(false);
     } catch (error) {
-      console.error("Could not confirm project completion:", error);
-      toast.error("Project completion could not be confirmed.");
+      console.error(
+        "Could not confirm project completion:",
+        error,
+      );
+
+      toast.error(
+        "Project completion could not be confirmed.",
+      );
     } finally {
       setActing(null);
     }
@@ -1619,24 +2427,37 @@ function ReviewCompletionDialog({
   return (
     <Dialog
       open={open}
-      onOpenChange={nextOpen => {
-        if (acting) return;
-        onOpenChange(nextOpen);
-      }}
+      onOpenChange={
+        nextOpen => {
+          if (acting) {
+            return;
+          }
+
+          onOpenChange(
+            nextOpen,
+          );
+        }
+      }
     >
       <DialogContent className="flex max-h-[90vh] flex-col overflow-hidden rounded-[1.5rem] border-border bg-background p-0 sm:max-w-2xl">
         <DialogHeader className="shrink-0 border-b border-border px-6 pb-6 pt-7 text-left sm:px-8">
           <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-chart-3/[0.10] text-chart-3">
-            <Clock3Icon size={18} />
+            <Clock3Icon
+              size={18}
+            />
           </span>
 
           <DialogTitle className="mt-4 text-2xl font-black tracking-[-0.03em]">
-            Confirm project completion
+            Confirm project
+            completion
           </DialogTitle>
 
           <DialogDescription className="mt-2 max-w-xl leading-7">
-            The project team has marked this job as complete. Confirm the work
-            or send it back if more work is needed.
+            The project team has
+            marked this job as
+            complete. Confirm the
+            work or send it back if
+            more work is needed.
           </DialogDescription>
         </DialogHeader>
 
@@ -1647,7 +2468,9 @@ function ReviewCompletionDialog({
             </p>
 
             <p className="mt-1 text-xs leading-6 text-muted-foreground">
-              Confirming completion will close the project and make the project
+              Confirming completion
+              will close the project
+              and make the project
               work read-only.
             </p>
           </div>
@@ -1658,12 +2481,19 @@ function ReviewCompletionDialog({
             </p>
 
             <h3 className="mt-1 text-lg font-black tracking-[-0.02em]">
-              How was the experience?
+              How was the
+              experience?
             </h3>
 
             <p className="mt-2 text-xs leading-6 text-muted-foreground">
-              Ratings are optional. You can rate one, several or all of the
-              Allocats who worked on this project.
+              Ratings are optional.
+              You can rate one,
+              several or all of the
+              Allocats who worked on
+              this project. You can
+              also add or update
+              ratings later from the
+              completed project.
             </p>
 
             {loading ? (
@@ -1672,127 +2502,183 @@ function ReviewCompletionDialog({
                   size={15}
                   className="animate-spin"
                 />
+
                 Loading project team
               </div>
-            ) : members.length === 0 ? (
+            ) : members.length ===
+              0 ? (
               <div className="mt-5 rounded-xl bg-muted/50 p-4">
                 <p className="text-sm font-semibold">
-                  No accepted Allocats were found.
+                  No accepted
+                  Allocats were
+                  found.
                 </p>
 
                 <p className="mt-1 text-xs leading-6 text-muted-foreground">
-                  You can still confirm project completion.
+                  You can still
+                  confirm project
+                  completion.
                 </p>
               </div>
             ) : (
               <div className="mt-5 divide-y divide-border border-y border-border">
-                {members.map(member => {
-                  const draft =
-                    ratings[member.allocatProfileId] ?? {
-                      rating: 0,
-                      comment: "",
-                    };
+                {members.map(
+                  member => {
+                    const draft =
+                      ratings[
+                        member.allocatProfileId
+                      ] ?? {
+                        rating: 0,
+                        comment: "",
+                      };
 
-                  return (
-                    <div
-                      key={member.allocatProfileId}
-                      className="py-5"
-                    >
-                      <div className="flex items-center gap-3">
-                        <Avatar className="h-10 w-10 border border-border">
-                          <AvatarImage
-                            src={member.avatarUrl}
-                            alt={member.fullName}
-                            className="object-cover"
-                          />
+                    return (
+                      <div
+                        key={
+                          member.allocatProfileId
+                        }
+                        className="py-5"
+                      >
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-10 w-10 border border-border">
+                            <AvatarImage
+                              src={
+                                member.avatarUrl
+                              }
+                              alt={
+                                member.fullName
+                              }
+                              className="object-cover"
+                            />
 
-                          <AvatarFallback className="bg-muted text-xs font-bold text-foreground">
-                            {getInitials(member.fullName)}
-                          </AvatarFallback>
-                        </Avatar>
+                            <AvatarFallback className="bg-muted text-xs font-bold text-foreground">
+                              {getInitials(
+                                member.fullName,
+                              )}
+                            </AvatarFallback>
+                          </Avatar>
 
-                        <div className="min-w-0">
-                          <p className="truncate text-sm font-bold">
-                            {member.fullName}
-                          </p>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold">
+                              {
+                                member.fullName
+                              }
+                            </p>
 
-                          <p className="text-xs text-muted-foreground">
-                            {member.title || "Allocat professional"}
-                          </p>
+                            <p className="text-xs text-muted-foreground">
+                              {member.title ||
+                                "Allocat professional"}
+                            </p>
+                          </div>
                         </div>
-                      </div>
 
-                      <div className="mt-4 flex flex-wrap items-center gap-1">
-                        {[1, 2, 3, 4, 5].map(value => {
-                          const selected = value <= draft.rating;
+                        <div className="mt-4 flex flex-wrap items-center gap-1">
+                          {[
+                            1,
+                            2,
+                            3,
+                            4,
+                            5,
+                          ].map(
+                            value => {
+                              const selected =
+                                value <=
+                                draft.rating;
 
-                          return (
-                            <button
-                              key={value}
-                              type="button"
-                              disabled={acting !== null}
-                              onClick={() =>
-                                setMemberRating(
-                                  member.allocatProfileId,
-                                  value,
-                                )
-                              }
-                              className="rounded-md p-1 transition-transform hover:scale-110 disabled:pointer-events-none"
-                              aria-label={`Rate ${member.fullName} ${value} out of 5`}
-                            >
-                              <StarIcon
-                                size={21}
-                                className={
-                                  selected
-                                    ? "fill-amber-400 text-amber-400"
-                                    : "text-muted-foreground/35"
+                              return (
+                                <button
+                                  key={
+                                    value
+                                  }
+                                  type="button"
+                                  disabled={
+                                    acting !==
+                                    null
+                                  }
+                                  onClick={() =>
+                                    setMemberRating(
+                                      member.allocatProfileId,
+                                      value,
+                                    )
+                                  }
+                                  className="rounded-md p-1 transition-transform hover:scale-110 disabled:pointer-events-none"
+                                  aria-label={`Rate ${member.fullName} ${value} out of 5`}
+                                >
+                                  <StarIcon
+                                    size={
+                                      21
+                                    }
+                                    className={
+                                      selected
+                                        ? "fill-amber-400 text-amber-400"
+                                        : "text-muted-foreground/35"
+                                    }
+                                  />
+                                </button>
+                              );
+                            },
+                          )}
+
+                          {draft.rating >
+                            0 && (
+                            <>
+                              <span className="ml-2 text-xs font-semibold text-muted-foreground">
+                                {
+                                  draft.rating
                                 }
-                              />
-                            </button>
-                          );
-                        })}
+                                /5
+                              </span>
 
-                        {draft.rating > 0 && (
-                          <>
-                            <span className="ml-2 text-xs font-semibold text-muted-foreground">
-                              {draft.rating}/5
-                            </span>
+                              <button
+                                type="button"
+                                disabled={
+                                  acting !==
+                                  null
+                                }
+                                onClick={() =>
+                                  clearMemberRating(
+                                    member.allocatProfileId,
+                                  )
+                                }
+                                className="ml-2 text-[0.65rem] font-semibold text-muted-foreground transition-colors hover:text-foreground"
+                              >
+                                Clear
+                              </button>
+                            </>
+                          )}
+                        </div>
 
-                            <button
-                              type="button"
-                              disabled={acting !== null}
-                              onClick={() =>
-                                clearMemberRating(
+                        {draft.rating >
+                          0 && (
+                          <Textarea
+                            value={
+                              draft.comment
+                            }
+                            disabled={
+                              acting !==
+                              null
+                            }
+                            maxLength={
+                              1000
+                            }
+                            rows={3}
+                            onChange={
+                              event =>
+                                setMemberComment(
                                   member.allocatProfileId,
+                                  event
+                                    .target
+                                    .value,
                                 )
-                              }
-                              className="ml-2 text-[0.65rem] font-semibold text-muted-foreground transition-colors hover:text-foreground"
-                            >
-                              Clear
-                            </button>
-                          </>
+                            }
+                            placeholder="Add a comment (optional)"
+                            className="mt-3 min-h-20 resize-none rounded-lg border-border bg-background text-sm shadow-none"
+                          />
                         )}
                       </div>
-
-                      {draft.rating > 0 && (
-                        <Textarea
-                          value={draft.comment}
-                          disabled={acting !== null}
-                          maxLength={1000}
-                          rows={3}
-                          onChange={event =>
-                            setMemberComment(
-                              member.allocatProfileId,
-                              event.target.value,
-                            )
-                          }
-                          placeholder="Add a comment (optional)"
-                          className="mt-3 min-h-20 resize-none rounded-lg border-border bg-background text-sm shadow-none"
-                        />
-                      )}
-                    </div>
-                  );
-                })}
+                    );
+                  },
+                )}
               </div>
             )}
           </section>
@@ -1802,11 +2688,16 @@ function ReviewCompletionDialog({
           <Button
             type="button"
             variant="ghost"
-            disabled={acting !== null}
-            onClick={() => void needsMoreWork()}
+            disabled={
+              acting !== null
+            }
+            onClick={() =>
+              void needsMoreWork()
+            }
             className="rounded-lg px-5 text-muted-foreground shadow-none"
           >
-            {acting === "reject" && (
+            {acting ===
+              "reject" && (
               <LoaderCircleIcon
                 size={14}
                 className="animate-spin"
@@ -1818,22 +2709,750 @@ function ReviewCompletionDialog({
 
           <Button
             type="button"
-            disabled={acting !== null || loading}
-            onClick={() => void confirmCompletion()}
+            disabled={
+              acting !== null ||
+              loading
+            }
+            onClick={() =>
+              void confirmCompletion()
+            }
             className="rounded-lg px-6 shadow-none"
           >
-            {acting === "confirm" ? (
+            {acting ===
+            "confirm" ? (
               <LoaderCircleIcon
                 size={14}
                 className="animate-spin"
               />
             ) : (
-              <CircleCheckBigIcon size={14} />
+              <CircleCheckBigIcon
+                size={14}
+              />
             )}
 
-            {acting === "confirm"
+            {acting ===
+            "confirm"
               ? "Confirming"
               : "Confirm completion"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+/* =========================================================
+   MANAGE RATINGS AFTER COMPLETION
+========================================================= */
+
+function ManageRatingsDialog({
+  project,
+  open,
+  onOpenChange,
+}: ProjectDialogProps) {
+  const [
+    members,
+    setMembers,
+  ] = useState<
+    ProjectAllocatMember[]
+  >([]);
+
+  const [
+    ratings,
+    setRatings,
+  ] = useState<
+    Record<
+      string,
+      RatingDraft
+    >
+  >({});
+
+  const [
+    loadingMembers,
+    setLoadingMembers,
+  ] = useState(false);
+
+  const [
+    loadingRatings,
+    setLoadingRatings,
+  ] = useState(false);
+
+  const [
+    membersError,
+    setMembersError,
+  ] = useState<
+    string | null
+  >(null);
+
+  const [
+    ratingsError,
+    setRatingsError,
+  ] = useState<
+    string | null
+  >(null);
+
+  const [
+    saving,
+    setSaving,
+  ] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+
+    let cancelled = false;
+
+    async function loadMembers() {
+      try {
+        setLoadingMembers(
+          true,
+        );
+
+        setMembersError(null);
+
+        const response =
+          await api.get<
+            ProjectAllocatMember[]
+          >(
+            `/projects/${project.id}/allocats/members`,
+            {
+              withCredentials:
+                true,
+            },
+          );
+
+        if (cancelled) {
+          return [];
+        }
+
+        const accepted =
+          (
+            Array.isArray(
+              response.data,
+            )
+              ? response.data
+              : []
+          ).filter(
+            member =>
+              normalizeMemberStatus(
+                member.status,
+              ) === "accepted",
+          );
+
+        setMembers(accepted);
+
+        return accepted;
+      } catch (error) {
+        if (!cancelled) {
+          console.error(
+            "Could not load project Allocats:",
+            error,
+          );
+
+          setMembersError(
+            "The project team could not be loaded.",
+          );
+
+          setMembers([]);
+        }
+
+        return [];
+      } finally {
+        if (!cancelled) {
+          setLoadingMembers(
+            false,
+          );
+        }
+      }
+    }
+
+    async function loadRatings() {
+      try {
+        setLoadingRatings(
+          true,
+        );
+
+        setRatingsError(null);
+
+        const response =
+          await api.get<
+            ProjectRatingsResponse
+          >(
+            `/projects/${project.id}/ratings`,
+            {
+              withCredentials:
+                true,
+            },
+          );
+
+        if (cancelled) {
+          return [];
+        }
+
+        return normalizeProjectRatings(
+          response.data,
+        );
+      } catch (error) {
+        if (!cancelled) {
+          console.error(
+            "Could not load existing project ratings:",
+            error,
+          );
+
+          setRatingsError(
+            "Existing ratings could not be loaded.",
+          );
+        }
+
+        return [];
+      } finally {
+        if (!cancelled) {
+          setLoadingRatings(
+            false,
+          );
+        }
+      }
+    }
+
+    async function load() {
+      setMembers([]);
+      setRatings({});
+
+      const [
+        acceptedMembers,
+        existingRatings,
+      ] = await Promise.all([
+        loadMembers(),
+        loadRatings(),
+      ]);
+
+      if (cancelled) {
+        return;
+      }
+
+      const nextRatings: Record<
+        string,
+        RatingDraft
+      > = {};
+
+      for (const member of acceptedMembers) {
+        const existing =
+          existingRatings.find(
+            rating =>
+              getRatingAllocatId(
+                rating,
+              ) ===
+              member.allocatProfileId,
+          );
+
+        nextRatings[
+          member.allocatProfileId
+        ] = {
+          rating:
+            typeof existing?.rating ===
+            "number"
+              ? Math.min(
+                  5,
+                  Math.max(
+                    0,
+                    existing.rating,
+                  ),
+                )
+              : 0,
+
+          comment:
+            existing?.comment ??
+            "",
+        };
+      }
+
+      setRatings(
+        nextRatings,
+      );
+    }
+
+    void load();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    open,
+    project.id,
+  ]);
+
+  function setMemberRating(
+    allocatId: string,
+    rating: number,
+  ) {
+    setRatings(
+      current => ({
+        ...current,
+
+        [allocatId]: {
+          rating,
+
+          comment:
+            current[
+              allocatId
+            ]?.comment ?? "",
+        },
+      }),
+    );
+  }
+
+  function setMemberComment(
+    allocatId: string,
+    comment: string,
+  ) {
+    setRatings(
+      current => ({
+        ...current,
+
+        [allocatId]: {
+          rating:
+            current[
+              allocatId
+            ]?.rating ?? 0,
+
+          comment,
+        },
+      }),
+    );
+  }
+
+  async function saveRatings() {
+    if (
+      saving ||
+      loadingMembers ||
+      loadingRatings ||
+      membersError ||
+      ratingsError
+    ) {
+      return;
+    }
+
+    const submittedRatings =
+      members.flatMap(
+        member => {
+          const draft =
+            ratings[
+              member.allocatProfileId
+            ];
+
+          if (
+            !draft ||
+            draft.rating < 1
+          ) {
+            return [];
+          }
+
+          return [
+            {
+              allocatId:
+                member.allocatProfileId,
+
+              rating:
+                draft.rating,
+
+              comment:
+                draft.comment.trim() ||
+                null,
+            },
+          ];
+        },
+      );
+
+    if (
+      submittedRatings.length ===
+      0
+    ) {
+      toast.error(
+        "Rate at least one Allocat before saving.",
+      );
+
+      return;
+    }
+
+    try {
+      setSaving(true);
+
+      await api.put(
+        `/projects/${project.id}/ratings`,
+        {
+          ratings:
+            submittedRatings,
+        },
+        {
+          withCredentials:
+            true,
+        },
+      );
+
+      toast.success(
+        "Ratings saved.",
+      );
+
+      onOpenChange(false);
+    } catch (error) {
+      console.error(
+        "Could not save project ratings:",
+        error,
+      );
+
+      toast.error(
+        "The ratings could not be saved.",
+      );
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const loading =
+    loadingMembers ||
+    loadingRatings;
+
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={
+        nextOpen => {
+          if (saving) {
+            return;
+          }
+
+          onOpenChange(
+            nextOpen,
+          );
+        }
+      }
+    >
+      <DialogContent
+        className={[
+          "flex max-h-[90vh] flex-col overflow-hidden",
+          "rounded-[1.5rem] border-border bg-background p-0",
+          "text-foreground sm:max-w-2xl",
+        ].join(" ")}
+      >
+        <DialogHeader className="shrink-0 border-b border-border px-6 pb-6 pt-7 text-left sm:px-8">
+          <span
+            className={[
+              "flex h-10 w-10 items-center justify-center rounded-xl",
+              "bg-amber-500/[0.10]",
+              "text-amber-600",
+              "dark:text-amber-300",
+            ].join(" ")}
+          >
+            <StarIcon
+              size={18}
+            />
+          </span>
+
+          <DialogTitle className="mt-4 text-2xl font-black tracking-[-0.03em]">
+            Rate your Allocats
+          </DialogTitle>
+
+          <DialogDescription className="mt-2 max-w-xl leading-7">
+            Add feedback for
+            Allocats you skipped
+            when the project was
+            completed, or update a
+            rating you have already
+            submitted.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="min-h-0 flex-1 overflow-y-auto px-6 py-6 sm:px-8">
+          <div className="rounded-xl bg-muted/50 p-4">
+            <p className="text-sm font-bold">
+              {project.title}
+            </p>
+
+            <p className="mt-1 text-xs leading-6 text-muted-foreground">
+              Your feedback remains
+              connected to this
+              completed project.
+              Existing ratings can
+              be updated at any
+              time.
+            </p>
+          </div>
+
+          {loading ? (
+            <div className="flex min-h-40 items-center justify-center">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <LoaderCircleIcon
+                  size={16}
+                  className="animate-spin"
+                />
+
+                Loading ratings
+              </div>
+            </div>
+          ) : membersError ? (
+            <div className="mt-6 rounded-xl border border-destructive/20 bg-destructive/[0.05] p-4">
+              <p className="text-sm font-semibold text-destructive">
+                Project team
+                unavailable
+              </p>
+
+              <p className="mt-1 text-xs leading-6 text-muted-foreground">
+                {membersError}
+              </p>
+            </div>
+          ) : ratingsError ? (
+            <div className="mt-6 rounded-xl border border-destructive/20 bg-destructive/[0.05] p-4">
+              <p className="text-sm font-semibold text-destructive">
+                Ratings unavailable
+              </p>
+
+              <p className="mt-1 text-xs leading-6 text-muted-foreground">
+                {ratingsError}
+              </p>
+
+              <p className="mt-2 text-xs leading-6 text-muted-foreground">
+                Existing ratings
+                need to be loaded
+                before they can be
+                safely updated.
+              </p>
+            </div>
+          ) : members.length ===
+            0 ? (
+            <div className="mt-6 rounded-xl bg-muted/50 p-4">
+              <p className="text-sm font-semibold">
+                No accepted
+                Allocats were
+                found.
+              </p>
+
+              <p className="mt-1 text-xs leading-6 text-muted-foreground">
+                There is currently
+                nobody to rate on
+                this project.
+              </p>
+            </div>
+          ) : (
+            <div className="mt-7 divide-y divide-border border-y border-border">
+              {members.map(
+                member => {
+                  const draft =
+                    ratings[
+                      member.allocatProfileId
+                    ] ?? {
+                      rating: 0,
+                      comment: "",
+                    };
+
+                  const hasRating =
+                    draft.rating > 0;
+
+                  return (
+                    <div
+                      key={
+                        member.allocatProfileId
+                      }
+                      className="py-6"
+                    >
+                      <div className="flex items-start gap-3">
+                        <Avatar className="h-11 w-11 shrink-0 border border-border">
+                          <AvatarImage
+                            src={
+                              member.avatarUrl
+                            }
+                            alt={
+                              member.fullName
+                            }
+                            className="object-cover"
+                          />
+
+                          <AvatarFallback className="bg-muted text-xs font-bold text-foreground">
+                            {getInitials(
+                              member.fullName,
+                            )}
+                          </AvatarFallback>
+                        </Avatar>
+
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                            <p className="truncate text-sm font-bold">
+                              {
+                                member.fullName
+                              }
+                            </p>
+
+                            <span
+                              className={[
+                                "text-[0.6rem] font-semibold",
+                                hasRating
+                                  ? "text-foreground/55"
+                                  : "text-muted-foreground/60",
+                              ].join(" ")}
+                            >
+                              {hasRating
+                                ? "Rated"
+                                : "Not rated"}
+                            </span>
+                          </div>
+
+                          <p className="mt-1 truncate text-xs text-muted-foreground">
+                            {member.title ||
+                              "Allocat professional"}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="mt-4 flex flex-wrap items-center gap-1">
+                        {[
+                          1,
+                          2,
+                          3,
+                          4,
+                          5,
+                        ].map(
+                          value => {
+                            const selected =
+                              value <=
+                              draft.rating;
+
+                            return (
+                              <button
+                                key={
+                                  value
+                                }
+                                type="button"
+                                disabled={
+                                  saving
+                                }
+                                onClick={() =>
+                                  setMemberRating(
+                                    member.allocatProfileId,
+                                    value,
+                                  )
+                                }
+                                className={[
+                                  "rounded-md p-1",
+                                  "transition-transform duration-150",
+                                  "hover:scale-110",
+                                  "disabled:pointer-events-none",
+                                ].join(" ")}
+                                aria-label={`Rate ${member.fullName} ${value} out of 5`}
+                              >
+                                <StarIcon
+                                  size={
+                                    22
+                                  }
+                                  className={
+                                    selected
+                                      ? "fill-amber-400 text-amber-400"
+                                      : "text-muted-foreground/30"
+                                  }
+                                />
+                              </button>
+                            );
+                          },
+                        )}
+
+                        {hasRating && (
+                          <span className="ml-2 text-xs font-semibold text-muted-foreground">
+                            {
+                              draft.rating
+                            }
+                            /5
+                          </span>
+                        )}
+                      </div>
+
+                      {hasRating && (
+                        <div className="mt-3">
+                          <Textarea
+                            value={
+                              draft.comment
+                            }
+                            disabled={
+                              saving
+                            }
+                            maxLength={
+                              1000
+                            }
+                            rows={3}
+                            onChange={
+                              event =>
+                                setMemberComment(
+                                  member.allocatProfileId,
+                                  event
+                                    .target
+                                    .value,
+                                )
+                            }
+                            placeholder="Add or update your comment (optional)"
+                            className="min-h-20 resize-none rounded-lg border-border bg-background text-sm shadow-none"
+                          />
+
+                          <div className="mt-1.5 flex justify-end">
+                            <span className="text-[0.6rem] tabular-nums text-muted-foreground/60">
+                              {
+                                draft
+                                  .comment
+                                  .length
+                              }
+                              /1000
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                },
+              )}
+            </div>
+          )}
+        </div>
+
+        <DialogFooter className="shrink-0 border-t border-border bg-background px-6 py-5 sm:px-8">
+          <Button
+            type="button"
+            variant="ghost"
+            disabled={saving}
+            onClick={() =>
+              onOpenChange(false)
+            }
+            className="rounded-lg px-5 text-muted-foreground shadow-none"
+          >
+            Cancel
+          </Button>
+
+          <Button
+            type="button"
+            disabled={
+              saving ||
+              loading ||
+              Boolean(
+                membersError,
+              ) ||
+              Boolean(
+                ratingsError,
+              ) ||
+              members.length === 0
+            }
+            onClick={() =>
+              void saveRatings()
+            }
+            className="rounded-lg px-6 shadow-none"
+          >
+            {saving ? (
+              <LoaderCircleIcon
+                size={14}
+                className="animate-spin"
+              />
+            ) : (
+              <StarIcon
+                size={14}
+              />
+            )}
+
+            {saving
+              ? "Saving"
+              : "Save ratings"}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -1850,30 +3469,79 @@ function ProjectDetailsDialog({
   open,
   onOpenChange,
 }: ProjectDialogProps) {
-  const [members, setMembers] = useState<ProjectAllocatMember[]>([]);
-  const [membersLoading, setMembersLoading] = useState(false);
-  const [membersError, setMembersError] = useState<string | null>(null);
+  const [
+    members,
+    setMembers,
+  ] = useState<
+    ProjectAllocatMember[]
+  >([]);
 
-  const [skillCatalogue, setSkillCatalogue] = useState<SkillOption[]>(
-    getEmbeddedProjectSkills(project),
+  const [
+    membersLoading,
+    setMembersLoading,
+  ] = useState(false);
+
+  const [
+    membersError,
+    setMembersError,
+  ] = useState<
+    string | null
+  >(null);
+
+  const [
+    skillCatalogue,
+    setSkillCatalogue,
+  ] = useState<
+    SkillOption[]
+  >(
+    getEmbeddedProjectSkills(
+      project,
+    ),
   );
 
-  const [skillsLoading, setSkillsLoading] = useState(false);
-  const [skillsError, setSkillsError] = useState<string | null>(null);
+  const [
+    skillsLoading,
+    setSkillsLoading,
+  ] = useState(false);
 
-  const progress = clampProgress(project.progress);
+  const [
+    skillsError,
+    setSkillsError,
+  ] = useState<
+    string | null
+  >(null);
+
+  const progress =
+    clampProgress(
+      project.progress,
+    );
 
   const {
-    label: categoryLabel,
+    label:
+      categoryLabel,
     isClientWork,
-  } = getProjectCategoryContext(project);
+  } =
+    getProjectCategoryContext(
+      project,
+    );
 
-  const priority = project.priority?.toLowerCase() || "standard";
+  const priority =
+    project.priority
+      ?.toLowerCase() ||
+    "standard";
 
-  const selectedSkills = useMemo(
-    () => resolveProjectSkills(project, skillCatalogue),
-    [project, skillCatalogue],
-  );
+  const selectedSkills =
+    useMemo(
+      () =>
+        resolveProjectSkills(
+          project,
+          skillCatalogue,
+        ),
+      [
+        project,
+        skillCatalogue,
+      ],
+    );
 
   useEffect(() => {
     if (!open) return;
@@ -1882,25 +3550,54 @@ function ProjectDetailsDialog({
 
     async function loadMembers() {
       try {
-        setMembersLoading(true);
+        setMembersLoading(
+          true,
+        );
+
         setMembersError(null);
         setMembers([]);
 
-        const response = await api.get<ProjectAllocatMember[]>(
-          `/projects/${project.id}/allocats/members`,
-          { withCredentials: true },
+        const response =
+          await api.get<
+            ProjectAllocatMember[]
+          >(
+            `/projects/${project.id}/allocats/members`,
+            {
+              withCredentials:
+                true,
+            },
+          );
+
+        if (cancelled) {
+          return;
+        }
+
+        setMembers(
+          Array.isArray(
+            response.data,
+          )
+            ? response.data
+            : [],
+        );
+      } catch (error) {
+        if (cancelled) {
+          return;
+        }
+
+        console.error(
+          "Could not load project members:",
+          error,
         );
 
-        if (cancelled) return;
-
-        setMembers(Array.isArray(response.data) ? response.data : []);
-      } catch (error) {
-        if (cancelled) return;
-
-        console.error("Could not load project members:", error);
-        setMembersError("Could not load the project team.");
+        setMembersError(
+          "Could not load the project team.",
+        );
       } finally {
-        if (!cancelled) setMembersLoading(false);
+        if (!cancelled) {
+          setMembersLoading(
+            false,
+          );
+        }
       }
     }
 
@@ -1909,7 +3606,10 @@ function ProjectDetailsDialog({
     return () => {
       cancelled = true;
     };
-  }, [open, project.id]);
+  }, [
+    open,
+    project.id,
+  ]);
 
   useEffect(() => {
     if (!open) return;
@@ -1918,21 +3618,42 @@ function ProjectDetailsDialog({
 
     async function loadSkills() {
       try {
-        setSkillsLoading(true);
+        setSkillsLoading(
+          true,
+        );
+
         setSkillsError(null);
 
-        const embeddedSkills = getEmbeddedProjectSkills(project);
-        setSkillCatalogue(embeddedSkills);
+        const embeddedSkills =
+          getEmbeddedProjectSkills(
+            project,
+          );
 
-        const response = await api.get<SkillOption[]>("/skills", {
-          withCredentials: true,
-        });
+        setSkillCatalogue(
+          embeddedSkills,
+        );
 
-        if (cancelled) return;
+        const response =
+          await api.get<
+            SkillOption[]
+          >(
+            "/skills",
+            {
+              withCredentials:
+                true,
+            },
+          );
 
-        const catalogue = Array.isArray(response.data)
-          ? response.data
-          : [];
+        if (cancelled) {
+          return;
+        }
+
+        const catalogue =
+          Array.isArray(
+            response.data,
+          )
+            ? response.data
+            : [];
 
         setSkillCatalogue(
           mergeSkillOptions(
@@ -1941,12 +3662,24 @@ function ProjectDetailsDialog({
           ),
         );
       } catch (error) {
-        if (cancelled) return;
+        if (cancelled) {
+          return;
+        }
 
-        console.error("Could not load project skills:", error);
-        setSkillsError("Could not load the project skills.");
+        console.error(
+          "Could not load project skills:",
+          error,
+        );
+
+        setSkillsError(
+          "Could not load the project skills.",
+        );
       } finally {
-        if (!cancelled) setSkillsLoading(false);
+        if (!cancelled) {
+          setSkillsLoading(
+            false,
+          );
+        }
       }
     }
 
@@ -1955,38 +3688,51 @@ function ProjectDetailsDialog({
     return () => {
       cancelled = true;
     };
-  }, [open, project]);
+  }, [
+    open,
+    project,
+  ]);
 
-  /*
-   * Owners can see accepted Allocats and pending invitations.
-   *
-   * An Allocat viewing client work should only see actual members of
-   * the active project team. Other pending invitations remain client-side
-   * recruitment information and are therefore intentionally hidden.
-   */
-
-  const acceptedMembers = useMemo(
-    () =>
-      members.filter(
-        member => normalizeMemberStatus(member.status) === "accepted",
-      ),
-    [members],
-  );
-
-  const invitedMembers = useMemo(() => {
-    if (isClientWork) return [];
-
-    return members.filter(
-      member => normalizeMemberStatus(member.status) === "invited",
+  const acceptedMembers =
+    useMemo(
+      () =>
+        members.filter(
+          member =>
+            normalizeMemberStatus(
+              member.status,
+            ) === "accepted",
+        ),
+      [members],
     );
-  }, [members, isClientWork]);
+
+  const invitedMembers =
+    useMemo(() => {
+      if (isClientWork) {
+        return [];
+      }
+
+      return members.filter(
+        member =>
+          normalizeMemberStatus(
+            member.status,
+          ) === "invited",
+      );
+    }, [
+      members,
+      isClientWork,
+    ]);
 
   const visibleMemberCount =
     acceptedMembers.length +
     invitedMembers.length;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog
+      open={open}
+      onOpenChange={
+        onOpenChange
+      }
+    >
       <DialogContent
         className={[
           "flex max-h-[90vh] flex-col overflow-hidden",
@@ -1995,18 +3741,23 @@ function ProjectDetailsDialog({
         ].join(" ")}
       >
         <DialogHeader className="shrink-0 border-b border-border px-6 pb-6 pt-7 text-left sm:px-8">
-          <ProjectIdentity project={project} />
+          <ProjectIdentity
+            project={project}
+          />
 
           {project.priority && (
             <div className="mt-5">
               <span
                 className={[
                   "text-xs font-semibold capitalize",
-                  priorityAppearance[priority] ??
+                  priorityAppearance[
+                    priority
+                  ] ??
                     priorityAppearance.standard,
                 ].join(" ")}
               >
-                {project.priority} priority
+                {project.priority}{" "}
+                priority
               </span>
             </div>
           )}
@@ -2025,17 +3776,23 @@ function ProjectDetailsDialog({
           <div className="grid gap-6 border-b border-border pb-7 sm:grid-cols-3">
             <DateDetail
               label="Created"
-              value={project.createdAt}
+              value={
+                project.createdAt
+              }
             />
 
             <DateDetail
               label="Start date"
-              value={project.startDate}
+              value={
+                project.startDate
+              }
             />
 
             <DateDetail
               label="Due date"
-              value={project.dueDate}
+              value={
+                project.dueDate
+              }
             />
           </div>
 
@@ -2047,28 +3804,43 @@ function ProjectDetailsDialog({
                 </p>
 
                 <div className="mt-2">
-                  <StatusIndicator status={project.status} />
+                  <StatusIndicator
+                    status={
+                      project.status
+                    }
+                  />
                 </div>
               </div>
 
               <p className="text-4xl font-black tracking-[-0.045em] tabular-nums">
                 {progress}
-                <span className="text-lg text-muted-foreground">%</span>
+
+                <span className="text-lg text-muted-foreground">
+                  %
+                </span>
               </p>
             </div>
 
-            <Progress value={progress} className="mt-5 h-1.5" />
+            <Progress
+              value={progress}
+              className="mt-5 h-1.5"
+            />
           </section>
 
           <div className="grid gap-6 border-y border-border py-7 sm:grid-cols-2">
             <DetailRow
               label="Category"
-              value={categoryLabel}
+              value={
+                categoryLabel
+              }
             />
 
             <DetailRow
               label="Project code"
-              value={project.projectCode || "Not assigned"}
+              value={
+                project.projectCode ||
+                "Not assigned"
+              }
             />
           </div>
 
@@ -2084,14 +3856,20 @@ function ProjectDetailsDialog({
                 </h3>
               </div>
 
-              {!skillsLoading && selectedSkills.length > 0 && (
-                <span className="text-xs font-semibold text-muted-foreground">
-                  {selectedSkills.length}{" "}
-                  {selectedSkills.length === 1
-                    ? "skill"
-                    : "skills"}
-                </span>
-              )}
+              {!skillsLoading &&
+                selectedSkills.length >
+                  0 && (
+                  <span className="text-xs font-semibold text-muted-foreground">
+                    {
+                      selectedSkills.length
+                    }{" "}
+
+                    {selectedSkills.length ===
+                    1
+                      ? "skill"
+                      : "skills"}
+                  </span>
+                )}
             </div>
 
             {skillsLoading ? (
@@ -2100,18 +3878,26 @@ function ProjectDetailsDialog({
                   size={14}
                   className="animate-spin"
                 />
+
                 Loading skills
               </div>
-            ) : selectedSkills.length > 0 ? (
+            ) : selectedSkills.length >
+              0 ? (
               <div className="mt-4 flex flex-wrap gap-2">
-                {selectedSkills.map(skill => (
-                  <span
-                    key={skill.id}
-                    className="inline-flex items-center rounded-lg bg-muted/60 px-3 py-1.5 text-[0.68rem] font-semibold text-foreground"
-                  >
-                    {skill.name}
-                  </span>
-                ))}
+                {selectedSkills.map(
+                  skill => (
+                    <span
+                      key={
+                        skill.id
+                      }
+                      className="inline-flex items-center rounded-lg bg-muted/60 px-3 py-1.5 text-[0.68rem] font-semibold text-foreground"
+                    >
+                      {
+                        skill.name
+                      }
+                    </span>
+                  ),
+                )}
               </div>
             ) : skillsError ? (
               <p className="mt-4 text-xs text-destructive">
@@ -2119,7 +3905,10 @@ function ProjectDetailsDialog({
               </p>
             ) : (
               <p className="mt-4 text-xs leading-6 text-muted-foreground">
-                No required skills are currently attached to this project.
+                No required skills
+                are currently
+                attached to this
+                project.
               </p>
             )}
           </section>
@@ -2128,22 +3917,31 @@ function ProjectDetailsDialog({
             <div className="flex items-end justify-between gap-4">
               <div>
                 <p className="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                  {isClientWork ? "People" : "Project team"}
+                  {isClientWork
+                    ? "People"
+                    : "Project team"}
                 </p>
 
                 <h3 className="mt-1 text-lg font-black tracking-[-0.02em]">
-                  {isClientWork ? "Project team" : "Allocats"}
+                  {isClientWork
+                    ? "Project team"
+                    : "Allocats"}
                 </h3>
               </div>
 
-              {!membersLoading && !membersError && (
-                <span className="text-xs font-semibold text-muted-foreground">
-                  {visibleMemberCount}{" "}
-                  {visibleMemberCount === 1
-                    ? "member"
-                    : "members"}
-                </span>
-              )}
+              {!membersLoading &&
+                !membersError && (
+                  <span className="text-xs font-semibold text-muted-foreground">
+                    {
+                      visibleMemberCount
+                    }{" "}
+
+                    {visibleMemberCount ===
+                    1
+                      ? "member"
+                      : "members"}
+                  </span>
+                )}
             </div>
 
             {membersLoading ? (
@@ -2153,20 +3951,23 @@ function ProjectDetailsDialog({
                     size={16}
                     className="animate-spin"
                   />
+
                   Loading team
                 </div>
               </div>
             ) : membersError ? (
               <div className="mt-5 border-l-2 border-destructive pl-4">
                 <p className="text-sm font-semibold text-destructive">
-                  Project team unavailable
+                  Project team
+                  unavailable
                 </p>
 
                 <p className="mt-1 text-xs leading-6 text-muted-foreground">
                   {membersError}
                 </p>
               </div>
-            ) : visibleMemberCount === 0 ? (
+            ) : visibleMemberCount ===
+              0 ? (
               <div className="mt-6 border-y border-border py-8">
                 <UsersIcon
                   size={21}
@@ -2192,8 +3993,15 @@ function ProjectDetailsDialog({
                     size="sm"
                     className="mt-4 -ml-3 rounded-lg text-foreground shadow-none"
                   >
-                    <Link to={`/projects/${project.id}/allocats/find`}>
-                      <UserPlusIcon size={14} />
+                    <Link
+                      to={`/projects/${project.id}/allocats/find`}
+                    >
+                      <UserPlusIcon
+                        size={
+                          14
+                        }
+                      />
+
                       Find Allocats
                     </Link>
                   </Button>
@@ -2201,25 +4009,36 @@ function ProjectDetailsDialog({
               </div>
             ) : (
               <div className="mt-6 space-y-8">
-                {acceptedMembers.length > 0 && (
+                {acceptedMembers.length >
+                  0 && (
                   <MemberSection
-                    title={isClientWork ? "Team" : "Accepted"}
+                    title={
+                      isClientWork
+                        ? "Team"
+                        : "Accepted"
+                    }
                     description={
                       isClientWork
                         ? "Allocats currently working with you on this project."
                         : "Allocats currently working on this project."
                     }
-                    members={acceptedMembers}
+                    members={
+                      acceptedMembers
+                    }
                   />
                 )}
 
-                {!isClientWork && invitedMembers.length > 0 && (
-                  <MemberSection
-                    title="Pending invitations"
-                    description="Waiting for these Allocats to respond."
-                    members={invitedMembers}
-                  />
-                )}
+                {!isClientWork &&
+                  invitedMembers.length >
+                    0 && (
+                    <MemberSection
+                      title="Pending invitations"
+                      description="Waiting for these Allocats to respond."
+                      members={
+                        invitedMembers
+                      }
+                    />
+                  )}
               </div>
             )}
           </section>
@@ -2239,7 +4058,9 @@ function ProjectDetailsDialog({
             asChild
             className="group rounded-lg px-6 shadow-none"
           >
-            <Link to={`/projects/${project.id}`}>
+            <Link
+              to={`/projects/${project.id}`}
+            >
               Open project
 
               <ArrowRightIcon
@@ -2280,12 +4101,18 @@ function MemberSection({
       </div>
 
       <div className="divide-y divide-border border-y border-border">
-        {members.map(member => (
-          <ProjectMemberRow
-            key={member.allocatProfileId}
-            member={member}
-          />
-        ))}
+        {members.map(
+          member => (
+            <ProjectMemberRow
+              key={
+                member.allocatProfileId
+              }
+              member={
+                member
+              }
+            />
+          ),
+        )}
       </div>
     </div>
   );
@@ -2296,27 +4123,38 @@ function ProjectMemberRow({
 }: {
   member: ProjectAllocatMember;
 }) {
-  const accepted = normalizeMemberStatus(member.status) === "accepted";
+  const accepted =
+    normalizeMemberStatus(
+      member.status,
+    ) === "accepted";
 
   return (
     <div className="flex items-center justify-between gap-4 py-4">
       <div className="flex min-w-0 items-center gap-3">
         <Avatar className="h-10 w-10 shrink-0 border border-border">
           <AvatarImage
-            src={member.avatarUrl}
-            alt={member.fullName}
+            src={
+              member.avatarUrl
+            }
+            alt={
+              member.fullName
+            }
             className="object-cover"
           />
 
           <AvatarFallback className="bg-muted text-xs font-bold text-foreground">
-            {getInitials(member.fullName)}
+            {getInitials(
+              member.fullName,
+            )}
           </AvatarFallback>
         </Avatar>
 
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <p className="truncate text-sm font-bold">
-              {member.fullName}
+              {
+                member.fullName
+              }
             </p>
 
             <span
@@ -2341,7 +4179,8 @@ function ProjectMemberRow({
           </div>
 
           <p className="mt-1 truncate text-xs text-muted-foreground">
-            {member.title || "Allocat professional"}
+            {member.title ||
+              "Allocat professional"}
           </p>
         </div>
       </div>
@@ -2353,7 +4192,10 @@ function ProjectMemberRow({
         className="shrink-0 rounded-lg px-3 text-xs shadow-none"
       >
         Profile
-        <ArrowRightIcon size={13} />
+
+        <ArrowRightIcon
+          size={13}
+        />
       </Button>
     </div>
   );
@@ -2418,53 +4260,146 @@ function EditProjectDialog({
   onOpenChange,
   onProjectUpdated,
 }: EditProjectDialogProps) {
-  const [title, setTitle] = useState(project.title);
-  const [description, setDescription] = useState(project.description ?? "");
-
-  const [startDate, setStartDate] = useState<Date | null>(
-    parseProjectDate(project.startDate),
+  const [
+    title,
+    setTitle,
+  ] = useState(
+    project.title,
   );
 
-  const [dueDate, setDueDate] = useState<Date | null>(
-    parseProjectDate(project.dueDate),
+  const [
+    description,
+    setDescription,
+  ] = useState(
+    project.description ?? "",
   );
 
-  const [priority, setPriority] = useState<ProjectPriority>(
-    normalizePriority(project.priority),
+  const [
+    startDate,
+    setStartDate,
+  ] = useState<Date | null>(
+    parseProjectDate(
+      project.startDate,
+    ),
   );
 
-  const [skillIds, setSkillIds] = useState<string[]>(
-    getProjectSkillIds(project),
+  const [
+    dueDate,
+    setDueDate,
+  ] = useState<Date | null>(
+    parseProjectDate(
+      project.dueDate,
+    ),
   );
 
-  const [skillsChanged, setSkillsChanged] = useState(false);
-
-  const [skillOptions, setSkillOptions] = useState<SkillOption[]>(
-    getEmbeddedProjectSkills(project),
+  const [
+    priority,
+    setPriority,
+  ] = useState<ProjectPriority>(
+    normalizePriority(
+      project.priority,
+    ),
   );
 
-  const [skillsLoading, setSkillsLoading] = useState(false);
-  const [skillsError, setSkillsError] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
-
-  const categoryLabel = getProjectCategoryLabel(
-    project.category,
-    "General project",
+  const [
+    skillIds,
+    setSkillIds,
+  ] = useState<string[]>(
+    getProjectSkillIds(
+      project,
+    ),
   );
+
+  const [
+    skillsChanged,
+    setSkillsChanged,
+  ] = useState(false);
+
+  const [
+    skillOptions,
+    setSkillOptions,
+  ] = useState<
+    SkillOption[]
+  >(
+    getEmbeddedProjectSkills(
+      project,
+    ),
+  );
+
+  const [
+    skillsLoading,
+    setSkillsLoading,
+  ] = useState(false);
+
+  const [
+    skillsError,
+    setSkillsError,
+  ] = useState<
+    string | null
+  >(null);
+
+  const [
+    saving,
+    setSaving,
+  ] = useState(false);
+
+  const categoryLabel =
+    getProjectCategoryLabel(
+      project.category,
+      "General project",
+    );
 
   useEffect(() => {
     if (!open) return;
 
-    setTitle(project.title);
-    setDescription(project.description ?? "");
-    setStartDate(parseProjectDate(project.startDate));
-    setDueDate(parseProjectDate(project.dueDate));
-    setPriority(normalizePriority(project.priority));
-    setSkillIds(getProjectSkillIds(project));
-    setSkillOptions(getEmbeddedProjectSkills(project));
-    setSkillsChanged(false);
+    setTitle(
+      project.title,
+    );
+
+    setDescription(
+      project.description ??
+        "",
+    );
+
+    setStartDate(
+      parseProjectDate(
+        project.startDate,
+      ),
+    );
+
+    setDueDate(
+      parseProjectDate(
+        project.dueDate,
+      ),
+    );
+
+    setPriority(
+      normalizePriority(
+        project.priority,
+      ),
+    );
+
+    setSkillIds(
+      getProjectSkillIds(
+        project,
+      ),
+    );
+
+    setSkillOptions(
+      getEmbeddedProjectSkills(
+        project,
+      ),
+    );
+
+    setSkillsChanged(
+      false,
+    );
+
     setSkillsError(null);
-  }, [open, project]);
+  }, [
+    open,
+    project,
+  ]);
 
   useEffect(() => {
     if (!open) return;
@@ -2473,20 +4408,38 @@ function EditProjectDialog({
 
     async function loadSkills() {
       try {
-        setSkillsLoading(true);
+        setSkillsLoading(
+          true,
+        );
+
         setSkillsError(null);
 
-        const embeddedSkills = getEmbeddedProjectSkills(project);
+        const embeddedSkills =
+          getEmbeddedProjectSkills(
+            project,
+          );
 
-        const response = await api.get<SkillOption[]>("/skills", {
-          withCredentials: true,
-        });
+        const response =
+          await api.get<
+            SkillOption[]
+          >(
+            "/skills",
+            {
+              withCredentials:
+                true,
+            },
+          );
 
-        if (cancelled) return;
+        if (cancelled) {
+          return;
+        }
 
-        const catalogue = Array.isArray(response.data)
-          ? response.data
-          : [];
+        const catalogue =
+          Array.isArray(
+            response.data,
+          )
+            ? response.data
+            : [];
 
         setSkillOptions(
           mergeSkillOptions(
@@ -2495,12 +4448,24 @@ function EditProjectDialog({
           ),
         );
       } catch (error) {
-        if (cancelled) return;
+        if (cancelled) {
+          return;
+        }
 
-        console.error("Could not load skills:", error);
-        setSkillsError("The skills catalogue could not be loaded.");
+        console.error(
+          "Could not load skills:",
+          error,
+        );
+
+        setSkillsError(
+          "The skills catalogue could not be loaded.",
+        );
       } finally {
-        if (!cancelled) setSkillsLoading(false);
+        if (!cancelled) {
+          setSkillsLoading(
+            false,
+          );
+        }
       }
     }
 
@@ -2509,70 +4474,137 @@ function EditProjectDialog({
     return () => {
       cancelled = true;
     };
-  }, [open, project]);
+  }, [
+    open,
+    project,
+  ]);
 
-  function handleSkillsChange(nextSkillIds: string[]) {
-    setSkillIds(nextSkillIds);
-    setSkillsChanged(true);
+  function handleSkillsChange(
+    nextSkillIds: string[],
+  ) {
+    setSkillIds(
+      nextSkillIds,
+    );
+
+    setSkillsChanged(
+      true,
+    );
   }
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(
+    event: FormEvent<HTMLFormElement>,
+  ) {
     event.preventDefault();
 
     if (saving) return;
 
-    const cleanTitle = title.trim();
-    const cleanDescription = description.trim();
+    const cleanTitle =
+      title.trim();
+
+    const cleanDescription =
+      description.trim();
 
     if (!cleanTitle) {
-      toast.error("Add a project title before saving.");
+      toast.error(
+        "Add a project title before saving.",
+      );
+
       return;
     }
 
-    if (skillsChanged && skillIds.length === 0) {
-      toast.error("Select at least one skill for this project.");
+    if (
+      skillsChanged &&
+      skillIds.length === 0
+    ) {
+      toast.error(
+        "Select at least one skill for this project.",
+      );
+
       return;
     }
 
-    if (skillsChanged && skillIds.length > 15) {
-      toast.error("Choose no more than 15 skills.");
+    if (
+      skillsChanged &&
+      skillIds.length > 15
+    ) {
+      toast.error(
+        "Choose no more than 15 skills.",
+      );
+
       return;
     }
 
     if (
       startDate &&
       dueDate &&
-      dueDate.getTime() < startDate.getTime()
+      dueDate.getTime() <
+        startDate.getTime()
     ) {
-      toast.error("The due date must be after the start date.");
+      toast.error(
+        "The due date must be after the start date.",
+      );
+
       return;
     }
 
-    const payload: UpdateProjectRequest = {
-      title: cleanTitle,
-      description: cleanDescription,
-      startDate: toDateOnly(startDate),
-      dueDate: toDateOnly(dueDate),
-      priority,
-      ...(skillsChanged ? { skillIds } : {}),
-    };
+    const payload: UpdateProjectRequest =
+      {
+        title:
+          cleanTitle,
+
+        description:
+          cleanDescription,
+
+        startDate:
+          toDateOnly(
+            startDate,
+          ),
+
+        dueDate:
+          toDateOnly(
+            dueDate,
+          ),
+
+        priority,
+
+        ...(skillsChanged
+          ? {
+              skillIds,
+            }
+          : {}),
+      };
 
     try {
       setSaving(true);
 
-      const response = await api.patch<Project>(
-        `/projects/${project.id}`,
-        payload,
-        { withCredentials: true },
+      const response =
+        await api.patch<Project>(
+          `/projects/${project.id}`,
+          payload,
+          {
+            withCredentials:
+              true,
+          },
+        );
+
+      onProjectUpdated(
+        response.data,
       );
 
-      onProjectUpdated(response.data);
+      toast.success(
+        "Project updated.",
+      );
 
-      toast.success("Project updated.");
       onOpenChange(false);
     } catch (error) {
-      console.error("Could not update project:", error);
-      toast.error("The project could not be updated.");
+      console.error(
+        "Could not update project:",
+        error,
+      );
+
+      toast.error(
+        "The project could not be updated.",
+      );
     } finally {
       setSaving(false);
     }
@@ -2581,10 +4613,17 @@ function EditProjectDialog({
   return (
     <Dialog
       open={open}
-      onOpenChange={nextOpen => {
-        if (saving) return;
-        onOpenChange(nextOpen);
-      }}
+      onOpenChange={
+        nextOpen => {
+          if (saving) {
+            return;
+          }
+
+          onOpenChange(
+            nextOpen,
+          );
+        }
+      }
     >
       <DialogContent
         className={[
@@ -2593,11 +4632,18 @@ function EditProjectDialog({
           "text-foreground sm:max-w-2xl",
         ].join(" ")}
       >
-        <form onSubmit={handleSubmit} noValidate>
+        <form
+          onSubmit={
+            handleSubmit
+          }
+          noValidate
+        >
           <DialogHeader className="border-b border-border px-6 pb-6 pt-7 text-left sm:px-8">
             <div className="flex items-start gap-3">
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted text-foreground">
-                <Edit3Icon size={17} />
+                <Edit3Icon
+                  size={17}
+                />
               </span>
 
               <div className="min-w-0">
@@ -2612,7 +4658,9 @@ function EditProjectDialog({
             </div>
 
             <DialogDescription className="mt-4 max-w-xl text-sm leading-7">
-              Update the project information, schedule and required skills.
+              Update the project
+              information, schedule
+              and required skills.
             </DialogDescription>
           </DialogHeader>
 
@@ -2635,10 +4683,21 @@ function EditProjectDialog({
                   <Input
                     id={`edit-title-${project.id}`}
                     value={title}
-                    onChange={event => setTitle(event.target.value)}
-                    maxLength={160}
+                    onChange={
+                      event =>
+                        setTitle(
+                          event
+                            .target
+                            .value,
+                        )
+                    }
+                    maxLength={
+                      160
+                    }
                     autoFocus
-                    disabled={saving}
+                    disabled={
+                      saving
+                    }
                     className="h-11 rounded-lg border-border bg-background shadow-none"
                   />
                 </div>
@@ -2650,7 +4709,9 @@ function EditProjectDialog({
 
                   <div className="flex h-11 items-center justify-between gap-3 rounded-lg bg-muted/45 px-3.5">
                     <span className="truncate text-sm font-medium">
-                      {categoryLabel}
+                      {
+                        categoryLabel
+                      }
                     </span>
 
                     <LockKeyholeIcon
@@ -2660,8 +4721,13 @@ function EditProjectDialog({
                   </div>
 
                   <p className="text-[0.68rem] leading-5 text-muted-foreground">
-                    Category is fixed after the project is created. You can
-                    still update the required skills within this category.
+                    Category is fixed
+                    after the project
+                    is created. You
+                    can still update
+                    the required
+                    skills within
+                    this category.
                   </p>
                 </div>
 
@@ -2674,32 +4740,60 @@ function EditProjectDialog({
                     <span
                       className={[
                         "text-[0.62rem] font-medium tabular-nums",
-                        skillsChanged && skillIds.length === 0
+                        skillsChanged &&
+                        skillIds.length ===
+                          0
                           ? "text-destructive"
                           : "text-muted-foreground",
                       ].join(" ")}
                     >
-                      {skillIds.length}/15
+                      {
+                        skillIds.length
+                      }
+                      /15
                     </span>
                   </div>
 
                   <EditSkillsPicker
-                    skills={skillOptions}
-                    value={skillIds}
-                    category={project.category ?? ""}
-                    loading={skillsLoading}
-                    error={skillsError}
-                    disabled={saving}
-                    onChange={handleSkillsChange}
+                    skills={
+                      skillOptions
+                    }
+                    value={
+                      skillIds
+                    }
+                    category={
+                      project.category ??
+                      ""
+                    }
+                    loading={
+                      skillsLoading
+                    }
+                    error={
+                      skillsError
+                    }
+                    disabled={
+                      saving
+                    }
+                    onChange={
+                      handleSkillsChange
+                    }
                   />
 
-                  {skillsChanged && skillIds.length === 0 ? (
+                  {skillsChanged &&
+                  skillIds.length ===
+                    0 ? (
                     <p className="text-[0.68rem] leading-5 text-destructive">
-                      Select at least one skill before saving the project.
+                      Select at least
+                      one skill
+                      before saving
+                      the project.
                     </p>
                   ) : (
                     <p className="text-[0.68rem] leading-5 text-muted-foreground">
-                      Skills help Allocatr match this project with suitable
+                      Skills help
+                      Allocatr match
+                      this project
+                      with suitable
                       professionals.
                     </p>
                   )}
@@ -2715,17 +4809,33 @@ function EditProjectDialog({
                     </Label>
 
                     <span className="text-[0.62rem] tabular-nums text-muted-foreground">
-                      {description.length}/2000
+                      {
+                        description.length
+                      }
+                      /2000
                     </span>
                   </div>
 
                   <Textarea
                     id={`edit-description-${project.id}`}
-                    value={description}
-                    onChange={event => setDescription(event.target.value)}
-                    maxLength={2000}
+                    value={
+                      description
+                    }
+                    onChange={
+                      event =>
+                        setDescription(
+                          event
+                            .target
+                            .value,
+                        )
+                    }
+                    maxLength={
+                      2000
+                    }
                     rows={5}
-                    disabled={saving}
+                    disabled={
+                      saving
+                    }
                     className="min-h-32 resize-none rounded-lg border-border bg-background leading-6 shadow-none"
                   />
                 </div>
@@ -2744,16 +4854,24 @@ function EditProjectDialog({
                 <Calendar28
                   id={`edit-start-date-${project.id}`}
                   label="Start date"
-                  value={startDate}
-                  onChange={setStartDate}
+                  value={
+                    startDate
+                  }
+                  onChange={
+                    setStartDate
+                  }
                   className="h-11 rounded-lg border-border bg-background shadow-none"
                 />
 
                 <Calendar28
                   id={`edit-due-date-${project.id}`}
                   label="Due date"
-                  value={dueDate}
-                  onChange={setDueDate}
+                  value={
+                    dueDate
+                  }
+                  onChange={
+                    setDueDate
+                  }
                   className="h-11 rounded-lg border-border bg-background shadow-none"
                 />
               </div>
@@ -2772,27 +4890,48 @@ function EditProjectDialog({
                   value="standard"
                   label="Standard"
                   description="Normal timeline"
-                  selected={priority === "standard"}
-                  disabled={saving}
-                  onSelect={setPriority}
+                  selected={
+                    priority ===
+                    "standard"
+                  }
+                  disabled={
+                    saving
+                  }
+                  onSelect={
+                    setPriority
+                  }
                 />
 
                 <PriorityOption
                   value="high"
                   label="High"
                   description="Needs attention soon"
-                  selected={priority === "high"}
-                  disabled={saving}
-                  onSelect={setPriority}
+                  selected={
+                    priority ===
+                    "high"
+                  }
+                  disabled={
+                    saving
+                  }
+                  onSelect={
+                    setPriority
+                  }
                 />
 
                 <PriorityOption
                   value="urgent"
                   label="Urgent"
                   description="Immediate priority"
-                  selected={priority === "urgent"}
-                  disabled={saving}
-                  onSelect={setPriority}
+                  selected={
+                    priority ===
+                    "urgent"
+                  }
+                  disabled={
+                    saving
+                  }
+                  onSelect={
+                    setPriority
+                  }
                 />
               </div>
             </section>
@@ -2803,7 +4942,11 @@ function EditProjectDialog({
               type="button"
               variant="ghost"
               disabled={saving}
-              onClick={() => onOpenChange(false)}
+              onClick={() =>
+                onOpenChange(
+                  false,
+                )
+              }
               className="rounded-lg px-5 text-muted-foreground shadow-none"
             >
               Cancel
@@ -2811,7 +4954,10 @@ function EditProjectDialog({
 
             <Button
               type="submit"
-              disabled={saving || !title.trim()}
+              disabled={
+                saving ||
+                !title.trim()
+              }
               className="min-w-32 rounded-lg px-6 shadow-none"
             >
               {saving && (
@@ -2821,7 +4967,9 @@ function EditProjectDialog({
                 />
               )}
 
-              {saving ? "Saving" : "Save changes"}
+              {saving
+                ? "Saving"
+                : "Save changes"}
             </Button>
           </DialogFooter>
         </form>
@@ -2849,60 +4997,117 @@ function EditSkillsPicker({
   loading: boolean;
   error: string | null;
   disabled: boolean;
-  onChange: (value: string[]) => void;
+  onChange: (
+    value: string[],
+  ) => void;
 }) {
-  const [query, setQuery] = useState("");
-
-  const normalizedCategory = category.trim().toLowerCase();
-
-  const selectedSkills = useMemo(
-    () =>
-      value
-        .map(id => skills.find(skill => skill.id === id))
-        .filter((skill): skill is SkillOption => Boolean(skill)),
-    [skills, value],
-  );
-
-  const availableSkills = useMemo(() => {
-    const search = query.trim().toLowerCase();
-
-    return skills
-      .filter(skill => {
-        const skillCategory = String(skill.category ?? "")
-          .trim()
-          .toLowerCase();
-
-        const skillCategoryId = String(skill.categoryId ?? "")
-          .trim()
-          .toLowerCase();
-
-        if (!normalizedCategory) return true;
-
-        return (
-          skillCategory === normalizedCategory ||
-          skillCategoryId === normalizedCategory
-        );
-      })
-      .filter(skill => !value.includes(skill.id))
-      .filter(
-        skill =>
-          !search ||
-          skill.name.toLowerCase().includes(search),
-      )
-      .sort((first, second) =>
-        first.name.localeCompare(second.name),
-      );
-  }, [
-    skills,
-    value,
+  const [
     query,
-    normalizedCategory,
-  ]);
+    setQuery,
+  ] = useState("");
 
-  function addSkill(skillId: string) {
+  const normalizedCategory =
+    category
+      .trim()
+      .toLowerCase();
+
+  const selectedSkills =
+    useMemo(
+      () =>
+        value
+          .map(id =>
+            skills.find(
+              skill =>
+                skill.id === id,
+            ),
+          )
+          .filter(
+            (
+              skill,
+            ): skill is SkillOption =>
+              Boolean(skill),
+          ),
+      [
+        skills,
+        value,
+      ],
+    );
+
+  const availableSkills =
+    useMemo(() => {
+      const search =
+        query
+          .trim()
+          .toLowerCase();
+
+      return skills
+        .filter(skill => {
+          const skillCategory =
+            String(
+              skill.category ??
+                "",
+            )
+              .trim()
+              .toLowerCase();
+
+          const skillCategoryId =
+            String(
+              skill.categoryId ??
+                "",
+            )
+              .trim()
+              .toLowerCase();
+
+          if (
+            !normalizedCategory
+          ) {
+            return true;
+          }
+
+          return (
+            skillCategory ===
+              normalizedCategory ||
+            skillCategoryId ===
+              normalizedCategory
+          );
+        })
+        .filter(
+          skill =>
+            !value.includes(
+              skill.id,
+            ),
+        )
+        .filter(
+          skill =>
+            !search ||
+            skill.name
+              .toLowerCase()
+              .includes(search),
+        )
+        .sort(
+          (
+            first,
+            second,
+          ) =>
+            first.name.localeCompare(
+              second.name,
+            ),
+        );
+    }, [
+      skills,
+      value,
+      query,
+      normalizedCategory,
+    ]);
+
+  function addSkill(
+    skillId: string,
+  ) {
     if (
       disabled ||
-      value.includes(skillId) ||
+      value.includes(
+        skillId,
+      ) ||
       value.length >= 15
     ) {
       return;
@@ -2916,11 +5121,17 @@ function EditSkillsPicker({
     setQuery("");
   }
 
-  function removeSkill(skillId: string) {
-    if (disabled) return;
+  function removeSkill(
+    skillId: string,
+  ) {
+    if (disabled) {
+      return;
+    }
 
     onChange(
-      value.filter(id => id !== skillId),
+      value.filter(
+        id => id !== skillId,
+      ),
     );
   }
 
@@ -2932,7 +5143,9 @@ function EditSkillsPicker({
         "transition-colors",
         "focus-within:bg-background",
         "focus-within:ring-1 focus-within:ring-foreground/15",
-        disabled ? "opacity-60" : "",
+        disabled
+          ? "opacity-60"
+          : "",
       ].join(" ")}
     >
       <div className="flex min-h-11 items-center gap-2 px-3.5">
@@ -2943,9 +5156,21 @@ function EditSkillsPicker({
 
         <input
           value={query}
-          disabled={disabled || loading}
-          onChange={event => setQuery(event.target.value)}
-          placeholder={loading ? "Loading skills..." : "Search skills"}
+          disabled={
+            disabled ||
+            loading
+          }
+          onChange={
+            event =>
+              setQuery(
+                event.target.value,
+              )
+          }
+          placeholder={
+            loading
+              ? "Loading skills..."
+              : "Search skills"
+          }
           className="h-10 min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground/55"
         />
 
@@ -2957,80 +5182,116 @@ function EditSkillsPicker({
         )}
       </div>
 
-      {selectedSkills.length > 0 && (
+      {selectedSkills.length >
+        0 && (
         <div className="border-t border-border/60 px-3.5 pb-3 pt-3">
           <p className="mb-2 text-[0.58rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
             Selected
           </p>
 
           <div className="flex flex-wrap gap-2">
-            {selectedSkills.map(skill => (
-              <span
-                key={skill.id}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-background px-2.5 py-1.5 text-[0.68rem] font-semibold ring-1 ring-inset ring-border/60"
-              >
-                {skill.name}
-
-                <button
-                  type="button"
-                  disabled={disabled}
-                  onClick={() => removeSkill(skill.id)}
-                  className="flex h-4 w-4 items-center justify-center rounded-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                  aria-label={`Remove ${skill.name}`}
+            {selectedSkills.map(
+              skill => (
+                <span
+                  key={
+                    skill.id
+                  }
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-background px-2.5 py-1.5 text-[0.68rem] font-semibold ring-1 ring-inset ring-border/60"
                 >
-                  <XIcon size={10} />
-                </button>
-              </span>
-            ))}
+                  {
+                    skill.name
+                  }
+
+                  <button
+                    type="button"
+                    disabled={
+                      disabled
+                    }
+                    onClick={() =>
+                      removeSkill(
+                        skill.id,
+                      )
+                    }
+                    className="flex h-4 w-4 items-center justify-center rounded-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                    aria-label={`Remove ${skill.name}`}
+                  >
+                    <XIcon
+                      size={10}
+                    />
+                  </button>
+                </span>
+              ),
+            )}
           </div>
         </div>
       )}
 
-      {!loading && !disabled && (
-        <div className="border-t border-border/60 px-2 py-2">
-          {error ? (
-            <div className="px-2 py-3">
-              <p className="text-xs text-destructive">
-                {error}
-              </p>
-            </div>
-          ) : availableSkills.length > 0 ? (
-            <div className="max-h-48 overflow-y-auto">
-              {availableSkills.map(skill => (
-                <button
-                  key={skill.id}
-                  type="button"
-                  disabled={value.length >= 15}
-                  onClick={() => addSkill(skill.id)}
-                  className="flex w-full items-center justify-between gap-4 rounded-lg px-3 py-2.5 text-left transition-colors hover:bg-muted/60 disabled:pointer-events-none disabled:opacity-45"
-                >
-                  <div className="min-w-0">
-                    <p className="truncate text-xs font-semibold">
-                      {skill.name}
-                    </p>
+      {!loading &&
+        !disabled && (
+          <div className="border-t border-border/60 px-2 py-2">
+            {error ? (
+              <div className="px-2 py-3">
+                <p className="text-xs text-destructive">
+                  {error}
+                </p>
+              </div>
+            ) : availableSkills.length >
+              0 ? (
+              <div className="max-h-48 overflow-y-auto">
+                {availableSkills.map(
+                  skill => (
+                    <button
+                      key={
+                        skill.id
+                      }
+                      type="button"
+                      disabled={
+                        value.length >=
+                        15
+                      }
+                      onClick={() =>
+                        addSkill(
+                          skill.id,
+                        )
+                      }
+                      className="flex w-full items-center justify-between gap-4 rounded-lg px-3 py-2.5 text-left transition-colors hover:bg-muted/60 disabled:pointer-events-none disabled:opacity-45"
+                    >
+                      <div className="min-w-0">
+                        <p className="truncate text-xs font-semibold">
+                          {
+                            skill.name
+                          }
+                        </p>
 
-                    <p className="mt-0.5 text-[0.58rem] text-muted-foreground">
-                      {skill.category}
-                    </p>
-                  </div>
+                        <p className="mt-0.5 text-[0.58rem] text-muted-foreground">
+                          {
+                            skill.category
+                          }
+                        </p>
+                      </div>
 
-                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-muted text-foreground/70">
-                    <CheckIcon size={11} />
-                  </span>
-                </button>
-              ))}
-            </div>
-          ) : (
-            <div className="px-3 py-3">
-              <p className="text-xs text-muted-foreground">
-                {query.trim()
-                  ? "No matching skills found."
-                  : "No additional skills are available for this category."}
-              </p>
-            </div>
-          )}
-        </div>
-      )}
+                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-muted text-foreground/70">
+                        <CheckIcon
+                          size={
+                            11
+                          }
+                        />
+                      </span>
+                    </button>
+                  ),
+                )}
+              </div>
+            ) : (
+              <div className="px-3 py-3">
+                <p className="text-xs text-muted-foreground">
+                  {query.trim()
+                    ? "No matching skills found."
+                    : "No additional skills are available for this category."}
+                </p>
+              </div>
+            )}
+          </div>
+        )}
     </div>
   );
 }
@@ -3072,13 +5333,17 @@ function PriorityOption({
   description: string;
   selected: boolean;
   disabled: boolean;
-  onSelect: (value: ProjectPriority) => void;
+  onSelect: (
+    value: ProjectPriority,
+  ) => void;
 }) {
   return (
     <button
       type="button"
       disabled={disabled}
-      onClick={() => onSelect(value)}
+      onClick={() =>
+        onSelect(value)
+      }
       className={[
         "flex min-h-24 items-start justify-between gap-3",
         "rounded-xl border p-4 text-left",

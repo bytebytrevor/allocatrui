@@ -1,202 +1,123 @@
-import { useEffect, useState } from "react";
+import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 
-import {
-  ArrowRightIcon,
-} from "lucide-react";
-
+import { ArrowRightIcon } from "lucide-react";
 
 import allocatrLogoLight from "@/assets/allocatr-neg-light.svg";
 import allocatrLogoDark from "@/assets/allocatr-dark-02.svg";
+
 import { useAuth } from "@/auth/useAuth";
 
-type Theme = "light" | "dark";
+/* =========================================================
+   LINKS
+========================================================= */
 
 const productLinks = [
-  {
-    label: "Find Allocats",
-    href: "/allocats",
-  },
-  {
-    label: "How it works",
-    href: "/how-it-works",
-  },
+  { label: "Find Allocats", href: "/discover" },
+  { label: "How it works", href: "/how-it-works" },
 ];
 
 const companyLinks = [
-  {
-    label: "About Allocatr",
-    href: "/about",
-  },
-  {
-    label: "Contact",
-    href: "/contact",
-  },
+  { label: "About Allocatr", href: "/about" },
+  { label: "Contact", href: "/contact" },
 ];
 
 const legalLinks = [
-  {
-    label: "Terms",
-    href: "/terms",
-  },
-  {
-    label: "Privacy",
-    href: "/privacy",
-  },
+  { label: "Terms", href: "/terms" },
+  { label: "Privacy", href: "/privacy" },
 ];
 
-function getCurrentTheme(): Theme {
-  if (
-    typeof document !== "undefined" &&
-    document.documentElement.classList.contains("dark")
-  ) {
-    return "dark";
-  }
-
-  return "light";
-}
+/* =========================================================
+   FOOTER
+========================================================= */
 
 function SiteFooter() {
   const { user } = useAuth();
-  const [theme, setTheme] = useState<Theme>(getCurrentTheme);
 
-  const postTaskHref = user
-    ? "/projects/new"
-    : "/register";
+  const postProjectHref = user ? "/projects/new" : "/register";
 
   const allocatHref = user?.isAllocat
     ? "/projects"
     : "/become-an-allocat";
 
   const allocatLabel = user?.isAllocat
-    ? "View projects"
+    ? "View my work"
     : "Become an Allocat";
 
-  useEffect(() => {
-    const root = document.documentElement;
-
-    function syncTheme() {
-      setTheme(
-        root.classList.contains("dark")
-          ? "dark"
-          : "light",
-      );
-    }
-
-    syncTheme();
-
-    const observer = new MutationObserver(syncTheme);
-
-    observer.observe(root, {
-      attributes: true,
-      attributeFilter: ["class"],
-    });
-
-    return () => {
-      observer.disconnect();
-    };
-  }, []);
-
-  const footerLogo =
-    theme === "dark"
-      ? allocatrLogoLight
-      : allocatrLogoDark;
-
   return (
-    <footer className="relative overflow-hidden border-t border-border bg-background">
-      <div className="pointer-events-none absolute inset-0">
+    <footer
+      className={[
+        "border-t border-black/[0.07] bg-[#f1f1ed] text-[#303030]",
+        "dark:border-white/[0.07] dark:bg-[#0d0d0d] dark:text-white",
+      ].join(" ")}
+    >
+      <div className="container mx-auto px-5 md:px-8">
+        {/* =================================================
+            MAIN FOOTER
+        ================================================= */}
+
         <div
           className={[
-            "absolute -bottom-52 -left-44 h-96 w-96 rounded-full blur-[120px]",
-            "bg-dark-gray/[0.02]",
-            "dark:bg-brand-primary/[0.025]",
+            "grid grid-cols-2 gap-x-8 gap-y-11 py-14 sm:gap-x-12 sm:gap-y-12 sm:py-16",
+            "lg:grid-cols-[1.45fr_0.7fr_0.8fr_0.7fr_0.7fr] lg:gap-12 lg:py-20",
           ].join(" ")}
-        />
+        >
+          {/* BRAND */}
 
-        <div className="absolute -right-48 top-10 h-96 w-96 rounded-full bg-violet-500/[0.02] blur-[120px]" />
-      </div>
-
-      <div className="container relative mx-auto px-5 md:px-8">
-        <div className="grid gap-10 border-b border-border py-12 lg:grid-cols-[1fr_auto] lg:items-end lg:py-14">
-          <div className="max-w-2xl">
+          <div className="col-span-2 max-w-md lg:col-span-1">
             <Link
               to="/"
-              className="inline-block"
               aria-label="Allocatr home"
+              className="inline-block rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#303030]/25 dark:focus-visible:ring-[#DEDA00]/35"
             >
               <img
-                src={footerLogo}
+                src={allocatrLogoDark}
                 alt="Allocatr"
-                className="h-8 w-auto object-contain sm:h-9"
+                className="h-8 w-auto object-contain dark:hidden sm:h-9"
+              />
+
+              <img
+                src={allocatrLogoLight}
+                alt="Allocatr"
+                className="hidden h-8 w-auto object-contain dark:block sm:h-9"
               />
             </Link>
 
-            <p className="mt-6 max-w-xl text-sm leading-7 text-muted-foreground sm:text-base">
-              Find skilled people, bring them into your project and keep
-              tasks, progress and conversations together in one shared
-              workspace.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-3 text-xs font-medium text-muted-foreground">
-            <span>
-              Find
-            </span>
-
-            <FooterDot />
-
-            <span>
-              Allocate
-            </span>
-
-            <FooterDot />
-
-            <span>
-              Deliver
-            </span>
-          </div>
-        </div>
-
-        <div
-          className={[
-            "grid gap-10 border-b border-border py-12",
-            "sm:grid-cols-2",
-            "lg:grid-cols-[1.45fr_0.9fr_0.9fr_0.9fr] lg:gap-16",
-          ].join(" ")}
-        >
-          <div className="max-w-sm">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-              Work, properly allocated
+            <p className="mt-6 max-w-sm text-sm leading-7 text-black/52 dark:text-white/42 sm:mt-7">
+              Find the right people, manage the work and keep every project
+              moving from brief to completion.
             </p>
 
-            <p className="mt-5 text-sm leading-7 text-muted-foreground">
-              Start with the job, find the skills it needs and keep the
-              project moving through to final review.
-            </p>
+            <div className="mt-6 flex items-center gap-2.5 sm:mt-7">
+              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#303030] dark:bg-[#DEDA00]" />
 
-            <div className="mt-7 flex items-center gap-3">
-              <span className="h-2 w-2 rounded-full bg-dark-gray dark:bg-brand-primary" />
-
-              <p className="text-xs font-medium text-foreground/65">
-                One workspace from brief to delivery.
+              <p className="text-[0.56rem] font-semibold uppercase tracking-[0.18em] text-black/40 dark:text-white/32">
+                Work, properly allocated
               </p>
             </div>
           </div>
+
+          {/* PRODUCT */}
 
           <FooterColumn
             title="Product"
             links={productLinks}
           />
 
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-              Get started
-            </p>
+          {/* GET STARTED */}
 
-            <nav className="mt-5 flex flex-col items-start gap-3.5">
+          <div>
+            <FooterHeading>
+              Get started
+            </FooterHeading>
+
+            <nav
+              aria-label="Get started"
+              className="mt-5 flex flex-col items-start gap-3.5"
+            >
               <FooterLink
-                href={postTaskHref}
-                label="Post a task"
+                href={postProjectHref}
+                label="Create a project"
               />
 
               <FooterLink
@@ -206,55 +127,68 @@ function SiteFooter() {
             </nav>
           </div>
 
-          <div className="grid gap-8">
-            <FooterColumn
-              title="Company"
-              links={companyLinks}
-            />
+          {/* COMPANY */}
 
-            <FooterColumn
-              title="Legal"
-              links={legalLinks}
-            />
-          </div>
+          <FooterColumn
+            title="Company"
+            links={companyLinks}
+          />
+
+          {/* LEGAL */}
+
+          <FooterColumn
+            title="Legal"
+            links={legalLinks}
+          />
         </div>
 
-        <div className="flex flex-col gap-4 py-7 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+        {/* =================================================
+            BOTTOM BAR
+        ================================================= */}
+
+        <div
+          className={[
+            "flex flex-col gap-3 border-t border-black/[0.07] py-6",
+            "text-xs text-black/42",
+            "dark:border-white/[0.07] dark:text-white/32",
+            "sm:flex-row sm:items-center sm:justify-between sm:gap-6",
+          ].join(" ")}
+        >
           <p>
             © {new Date().getFullYear()} Allocatr. All rights reserved.
           </p>
 
-          <div className="flex items-center gap-2">
-            <span className="h-1.5 w-1.5 rounded-full bg-dark-gray dark:bg-brand-primary" />
-
-            <span>
-              Work, properly allocated.
-            </span>
-          </div>
+          <p className="sm:text-right">
+            Work, properly allocated.
+          </p>
         </div>
       </div>
     </footer>
   );
 }
 
+/* =========================================================
+   COLUMN
+========================================================= */
+
 function FooterColumn({
   title,
   links,
 }: {
   title: string;
-  links: {
-    label: string;
-    href: string;
-  }[];
+  links: { label: string; href: string }[];
 }) {
   return (
     <div>
-      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+      <FooterHeading>
         {title}
-      </p>
+      </FooterHeading>
 
-      <nav className="mt-5 flex flex-col items-start gap-3.5">
-        {links.map((link) => (
+      <nav
+        aria-label={title}
+        className="mt-5 flex flex-col items-start gap-3.5"
+      >
+        {links.map(link => (
           <FooterLink
             key={link.href}
             href={link.href}
@@ -265,6 +199,22 @@ function FooterColumn({
     </div>
   );
 }
+
+/* =========================================================
+   HEADING
+========================================================= */
+
+function FooterHeading({ children }: { children: ReactNode }) {
+  return (
+    <p className="text-[0.56rem] font-semibold uppercase tracking-[0.18em] text-black/38 dark:text-white/30">
+      {children}
+    </p>
+  );
+}
+
+/* =========================================================
+   LINK
+========================================================= */
 
 function FooterLink({
   href,
@@ -277,29 +227,29 @@ function FooterLink({
     <Link
       to={href}
       className={[
-        "group inline-flex items-center gap-1.5",
-        "text-sm font-medium text-foreground/70",
+        "group inline-flex items-center gap-1.5 rounded-sm",
+        "text-sm font-medium text-black/60",
         "transition-colors duration-200",
-        "hover:text-foreground",
+        "hover:text-[#303030]",
+        "focus-visible:outline-none focus-visible:text-[#303030]",
+        "dark:text-white/50",
+        "dark:hover:text-white",
+        "dark:focus-visible:text-white",
       ].join(" ")}
     >
       {label}
 
       <ArrowRightIcon
-        size={12}
+        size={11}
         className={[
           "-translate-x-1 opacity-0",
+          "text-[#303030] dark:text-[#DEDA00]",
           "transition-all duration-200",
           "group-hover:translate-x-0 group-hover:opacity-100",
+          "group-focus-visible:translate-x-0 group-focus-visible:opacity-100",
         ].join(" ")}
       />
     </Link>
-  );
-}
-
-function FooterDot() {
-  return (
-    <span className="h-1 w-1 rounded-full bg-dark-gray dark:bg-brand-primary" />
   );
 }
 

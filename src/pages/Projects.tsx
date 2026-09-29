@@ -120,6 +120,13 @@ const SORT_OPTIONS: SortOption[] = [
   { value: "title-desc", label: "Title Z–A" },
 ];
 
+const charcoalActionButton = [
+  "bg-[#242424] text-[#DEDA00]",
+  "hover:bg-[#303030] hover:text-[#DEDA00]",
+  "dark:bg-[#DEDA00] dark:text-[#303030]",
+  "dark:hover:bg-[#d4d000] dark:hover:text-[#303030]",
+].join(" ");
+
 /* =========================================================
    PAGE
 ========================================================= */
@@ -127,7 +134,9 @@ const SORT_OPTIONS: SortOption[] = [
 function Projects() {
   const { user } = useAuth();
 
-  const [workspaceSection, setWorkspaceSection] = useState<WorkspaceSection>("projects");
+  const [workspaceSection, setWorkspaceSection] =
+    useState<WorkspaceSection>("projects");
+
   const [view, setView] = useState<ProjectView>("grid");
   const [filter, setFilter] = useState<ProjectFilter>("active");
   const [workFilter, setWorkFilter] = useState<WorkFilter>("active");
@@ -266,12 +275,7 @@ function Projects() {
 
     workPrefetchedForUserRef.current = userKey;
     void fetchWorkProjects();
-  }, [
-    user?.isAllocat,
-    user?.userId,
-    user?.email,
-    fetchWorkProjects,
-  ]);
+  }, [user?.isAllocat, user?.userId, user?.email, fetchWorkProjects]);
 
   useEffect(() => {
     if (!user?.isAllocat && workspaceSection === "work") {
@@ -349,13 +353,7 @@ function Projects() {
     }
 
     return sortProjectItems(filteredProjects, sort);
-  }, [
-    filter,
-    activeProjects,
-    pendingProjects,
-    closedProjects,
-    sort,
-  ]);
+  }, [filter, activeProjects, pendingProjects, closedProjects, sort]);
 
   /* =======================================================
      ALLOCAT WORK
@@ -369,23 +367,27 @@ function Projects() {
     [workProjects],
   );
 
-  const activeWork = useMemo(() => {
-    return workProjects.filter(project => {
-      if (project.projectAllocatStatus !== "Accepted") return false;
+  const activeWork = useMemo(
+    () =>
+      workProjects.filter(project => {
+        if (project.projectAllocatStatus !== "Accepted") return false;
 
-      const status = normalizeProjectStatus(project.status);
-      return !CLOSED_PROJECT_STATUSES.has(status);
-    });
-  }, [workProjects]);
+        const status = normalizeProjectStatus(project.status);
+        return !CLOSED_PROJECT_STATUSES.has(status);
+      }),
+    [workProjects],
+  );
 
-  const completedWork = useMemo(() => {
-    return workProjects.filter(project => {
-      if (project.projectAllocatStatus !== "Accepted") return false;
+  const completedWork = useMemo(
+    () =>
+      workProjects.filter(project => {
+        if (project.projectAllocatStatus !== "Accepted") return false;
 
-      const status = normalizeProjectStatus(project.status);
-      return CLOSED_PROJECT_STATUSES.has(status);
-    });
-  }, [workProjects]);
+        const status = normalizeProjectStatus(project.status);
+        return CLOSED_PROJECT_STATUSES.has(status);
+      }),
+    [workProjects],
+  );
 
   const visibleWork = useMemo(() => {
     let filteredWork: WorkProject[];
@@ -399,13 +401,7 @@ function Projects() {
     }
 
     return sortProjectItems(filteredWork, sort);
-  }, [
-    workFilter,
-    invitations,
-    activeWork,
-    completedWork,
-    sort,
-  ]);
+  }, [workFilter, invitations, activeWork, completedWork, sort]);
 
   /* =======================================================
      INVITATIONS
@@ -461,8 +457,7 @@ function Projects() {
   ======================================================= */
 
   const workspaceLoading =
-    loading ||
-    Boolean(user?.isAllocat && workLoading && !workLoaded);
+    loading || Boolean(user?.isAllocat && workLoading && !workLoaded);
 
   if (workspaceLoading) {
     return <WorkspaceLoading />;
@@ -573,10 +568,6 @@ function Projects() {
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
-      {/* =====================================================
-          APP SHELL
-      ===================================================== */}
-
       {showNewClientState ? (
         <header className="sticky top-0 z-50 border-b border-border/60 bg-background/95 backdrop-blur-xl">
           <div className="container mx-auto px-4 sm:px-5 md:px-8">
@@ -604,19 +595,11 @@ function Projects() {
         </div>
       )}
 
-      {/* =====================================================
-          NEW CLIENT
-      ===================================================== */}
-
       {showNewClientState ? (
         <main className="container mx-auto flex flex-1 items-center justify-center px-4 py-10 sm:px-5 sm:py-14 md:px-8">
           <NewClientWelcome firstName={firstName} />
         </main>
       ) : (
-        /* ===================================================
-           WORKSPACE
-        =================================================== */
-
         <main className="container mx-auto flex-1 px-4 py-5 sm:px-5 sm:py-7 md:px-8 lg:py-8">
           <motion.section
             initial={{ opacity: 0, y: 7 }}
@@ -628,7 +611,7 @@ function Projects() {
             }}
           >
             <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-              <div>
+              <div className="min-w-0">
                 <p className="text-[0.58rem] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
                   {workspaceSection === "projects"
                     ? "Your workspace"
@@ -639,7 +622,7 @@ function Projects() {
                   {sectionTitle}
                 </h2>
 
-                <p className="mt-1 hidden text-xs leading-6 text-muted-foreground sm:block sm:text-sm">
+                <p className="mt-1 hidden max-w-2xl text-xs leading-6 text-muted-foreground sm:block sm:text-sm">
                   {sectionDescription}
                 </p>
               </div>
@@ -765,10 +748,7 @@ function NewClientWelcome({ firstName }: { firstName: string }) {
           asChild
           className={[
             "group h-10 rounded-lg px-5 text-xs font-bold shadow-none",
-            "bg-[#242424] text-white",
-            "hover:bg-[#303030] hover:text-white",
-            "dark:bg-[#DEDA00] dark:text-[#303030]",
-            "dark:hover:bg-[#d4d000] dark:hover:text-[#303030]",
+            charcoalActionButton,
           ].join(" ")}
         >
           <Link to="/projects/new">
@@ -862,7 +842,13 @@ function WorkspaceMasthead({
             </div>
 
             <div className="flex items-center gap-2 sm:hidden">
-              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-[#242424] text-[#DEDA00] dark:bg-[#DEDA00] dark:text-[#303030]">
+              <span
+                className={[
+                  "flex h-6 w-6 shrink-0 items-center justify-center rounded-md",
+                  "bg-[#242424] text-[#DEDA00]",
+                  "dark:bg-[#DEDA00] dark:text-[#303030]",
+                ].join(" ")}
+              >
                 <BriefcaseBusinessIcon size={11} />
               </span>
 
@@ -892,10 +878,7 @@ function WorkspaceMasthead({
               size="icon"
               className={[
                 "group h-8 w-8 rounded-lg shadow-none sm:h-9 sm:w-auto sm:px-4",
-                "bg-[#242424] text-white",
-                "hover:bg-[#303030] hover:text-white",
-                "dark:bg-[#DEDA00] dark:text-[#303030]",
-                "dark:hover:bg-[#d4d000] dark:hover:text-[#303030]",
+                charcoalActionButton,
               ].join(" ")}
             >
               <Link to="/projects/new" aria-label="New project">
@@ -950,9 +933,11 @@ function WorkspaceMasthead({
               {isAllocat ? (
                 <div
                   className={[
-                    "inline-flex items-center rounded-lg border p-0.5 sm:p-1",
-                    "border-border/80 bg-white/60",
-                    "dark:border-white/[0.07] dark:bg-black/20",
+                    "inline-flex items-center rounded-full border p-1",
+                    "border-black/[0.07] bg-black/[0.035]",
+                    "shadow-[inset_0_1px_0_rgba(255,255,255,0.65)]",
+                    "dark:border-white/[0.075] dark:bg-black/25",
+                    "dark:shadow-none",
                   ].join(" ")}
                 >
                   <WorkspaceTab
@@ -981,10 +966,7 @@ function WorkspaceMasthead({
 
             <div className="flex shrink-0 items-center gap-0.5 sm:gap-1">
               {items.map(item => (
-                <WorkspaceMetric
-                  key={item.label}
-                  item={item}
-                />
+                <WorkspaceMetric key={item.label} item={item} />
               ))}
             </div>
           </div>
@@ -1023,7 +1005,8 @@ function WorkspaceMetric({ item }: { item: SummaryItem }) {
       title={item.label}
       className={[
         "relative flex h-7 items-center gap-1.5 rounded-md px-2 text-left",
-        "transition-colors duration-200 ease-out sm:h-8 sm:gap-2 sm:px-2.5",
+        "transition-colors duration-200 ease-out",
+        "sm:h-8 sm:gap-2 sm:px-2.5",
         item.active
           ? "bg-black/[0.045] dark:bg-white/[0.08]"
           : "hover:bg-black/[0.03] dark:hover:bg-white/[0.045]",
@@ -1032,7 +1015,12 @@ function WorkspaceMetric({ item }: { item: SummaryItem }) {
       {item.active && (
         <motion.span
           layoutId="workspace-active-metric"
-          className="absolute bottom-0 left-2 right-2 h-[2px] rounded-full bg-[#303030] sm:left-2.5 sm:right-2.5 dark:bg-[#DEDA00]"
+          className={[
+            "absolute bottom-0 left-2 right-2 h-[2px] rounded-full",
+            "bg-[#303030]",
+            "sm:left-2.5 sm:right-2.5",
+            "dark:bg-[#DEDA00]",
+          ].join(" ")}
           transition={{
             type: "spring",
             stiffness: 500,
@@ -1049,10 +1037,7 @@ function WorkspaceMetric({ item }: { item: SummaryItem }) {
           </span>
         )}
 
-        <Icon
-          size={11}
-          className={iconStyle}
-        />
+        <Icon size={11} className={iconStyle} />
       </span>
 
       <span
@@ -1096,17 +1081,25 @@ function WorkspaceTab({
       onClick={onClick}
       aria-pressed={active}
       className={[
-        "relative flex h-7 shrink-0 items-center gap-1.5 rounded-md px-2.5",
-        "text-[0.64rem] font-semibold transition-colors duration-200 sm:px-3 sm:text-[0.67rem]",
+        "relative flex h-7 shrink-0 items-center gap-1.5 rounded-full px-3",
+        "text-[0.64rem] font-semibold",
+        "transition-colors duration-200",
+        "sm:h-8 sm:px-3.5 sm:text-[0.67rem]",
         active
-          ? "text-white dark:text-[#303030]"
+          ? "text-[#DEDA00] dark:text-[#303030]"
           : "text-muted-foreground hover:text-foreground dark:text-white/45 dark:hover:text-white",
       ].join(" ")}
     >
       {active && (
         <motion.span
           layoutId="workspace-active-tab"
-          className="absolute inset-0 rounded-md bg-[#242424] dark:bg-[#DEDA00]"
+          className={[
+            "absolute inset-0 rounded-full",
+            "bg-[#242424]",
+            "shadow-[0_1px_2px_rgba(0,0,0,0.12)]",
+            "dark:bg-[#DEDA00]",
+            "dark:shadow-none",
+          ].join(" ")}
           transition={{
             type: "spring",
             stiffness: 500,
@@ -1134,7 +1127,7 @@ function WorkspaceTab({
             className={[
               "text-[0.54rem] font-black tabular-nums sm:text-[0.56rem]",
               active
-                ? "text-white/55 dark:text-[#303030]/55"
+                ? "text-[#DEDA00]/60 dark:text-[#303030]/55"
                 : attention
                   ? "text-chart-3"
                   : "text-muted-foreground/70 dark:text-white/35",
@@ -1165,17 +1158,11 @@ function ProjectControls({
 }) {
   return (
     <div className="flex shrink-0 items-center gap-1">
-      <SortControl
-        value={sort}
-        onChange={setSort}
-      />
+      <SortControl value={sort} onChange={setSort} />
 
       <div className="mx-1 h-4 w-px bg-border/70" />
 
-      <ViewControls
-        view={view}
-        setView={setView}
-      />
+      <ViewControls view={view} setView={setView} />
     </div>
   );
 }
@@ -1203,26 +1190,20 @@ function SortControl({
           variant="ghost"
           size="sm"
           className={[
-            "h-8 rounded-lg px-2.5 text-xs font-medium text-muted-foreground shadow-none sm:h-9",
-            "transition-colors",
+            "h-8 rounded-lg px-2.5 text-xs font-medium text-muted-foreground shadow-none",
+            "transition-colors sm:h-9",
             "hover:bg-muted/40 hover:text-foreground",
             "data-[state=open]:bg-muted/40 data-[state=open]:text-foreground",
           ].join(" ")}
         >
-          <ArrowDownNarrowWideIcon
-            size={14}
-            className="shrink-0"
-          />
+          <ArrowDownNarrowWideIcon size={14} className="shrink-0" />
 
           <span className="hidden sm:inline">
             Sort by
           </span>
 
           <span className="relative hidden min-w-[76px] overflow-hidden text-left md:block">
-            <AnimatePresence
-              mode="wait"
-              initial={false}
-            >
+            <AnimatePresence mode="wait" initial={false}>
               <motion.span
                 key={value}
                 initial={{ opacity: 0, y: 4 }}
@@ -1240,10 +1221,7 @@ function SortControl({
             Sort
           </span>
 
-          <ChevronDownIcon
-            size={13}
-            className="shrink-0"
-          />
+          <ChevronDownIcon size={13} className="shrink-0" />
         </Button>
       </DropdownMenuTrigger>
 
@@ -1271,10 +1249,7 @@ function SortControl({
               {option.label}
 
               {active && (
-                <CheckCircle2Icon
-                  size={13}
-                  className="ml-auto"
-                />
+                <CheckCircle2Icon size={13} className="ml-auto" />
               )}
             </DropdownMenuItem>
           );
@@ -1299,32 +1274,38 @@ function ViewControls({
     <div className="flex shrink-0 items-center gap-1">
       <Button
         type="button"
-        variant={view === "grid" ? "default" : "ghost"}
+        variant="ghost"
         size="icon"
         className={[
-          "h-8 w-8 rounded-lg shadow-none sm:h-9 sm:w-9",
-          view !== "grid"
-            ? "text-muted-foreground hover:bg-muted/40 hover:text-foreground"
-            : "",
+          "h-8 w-8 rounded-lg shadow-none",
+          "transition-colors duration-200",
+          "sm:h-9 sm:w-9",
+          view === "grid"
+            ? charcoalActionButton
+            : "text-muted-foreground hover:bg-muted/40 hover:text-foreground",
         ].join(" ")}
         onClick={() => setView("grid")}
         aria-label="Grid view"
+        aria-pressed={view === "grid"}
       >
         <Grid2X2Icon size={15} />
       </Button>
 
       <Button
         type="button"
-        variant={view === "list" ? "default" : "ghost"}
+        variant="ghost"
         size="icon"
         className={[
-          "h-8 w-8 rounded-lg shadow-none sm:h-9 sm:w-9",
-          view !== "list"
-            ? "text-muted-foreground hover:bg-muted/40 hover:text-foreground"
-            : "",
+          "h-8 w-8 rounded-lg shadow-none",
+          "transition-colors duration-200",
+          "sm:h-9 sm:w-9",
+          view === "list"
+            ? charcoalActionButton
+            : "text-muted-foreground hover:bg-muted/40 hover:text-foreground",
         ].join(" ")}
         onClick={() => setView("list")}
         aria-label="List view"
+        aria-pressed={view === "list"}
       >
         <LayoutListIcon size={16} />
       </Button>
@@ -1425,10 +1406,9 @@ function InvitationCard({
   onDecline: () => Promise<void>;
 }) {
   const [detailsOpen, setDetailsOpen] = useState(false);
+
   const [responding, setResponding] = useState<
-    "accept" |
-    "decline" |
-    null
+    "accept" | "decline" | null
   >(null);
 
   async function handleAccept() {
@@ -1515,10 +1495,7 @@ function InvitationCard({
               className="h-9 rounded-lg px-3 text-xs text-muted-foreground shadow-none hover:bg-muted/40 hover:text-foreground sm:h-10 sm:px-4"
             >
               {responding === "decline" ? (
-                <LoaderCircleIcon
-                  size={15}
-                  className="animate-spin"
-                />
+                <LoaderCircleIcon size={15} className="animate-spin" />
               ) : (
                 <XIcon size={14} />
               )}
@@ -1530,13 +1507,13 @@ function InvitationCard({
               type="button"
               disabled={responding !== null}
               onClick={() => void handleAccept()}
-              className="h-9 rounded-lg px-4 text-xs shadow-none sm:h-10 sm:px-5"
+              className={[
+                "h-9 rounded-lg px-4 text-xs font-semibold shadow-none sm:h-10 sm:px-5",
+                charcoalActionButton,
+              ].join(" ")}
             >
               {responding === "accept" ? (
-                <LoaderCircleIcon
-                  size={15}
-                  className="animate-spin"
-                />
+                <LoaderCircleIcon size={15} className="animate-spin" />
               ) : (
                 <CheckCircle2Icon size={14} />
               )}
@@ -1579,10 +1556,7 @@ function ProjectInvitationDialog({
   onDecline: () => Promise<void>;
 }) {
   return (
-    <Dialog
-      open={open}
-      onOpenChange={onOpenChange}
-    >
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-y-auto rounded-[1.5rem] border-border bg-background p-0 sm:max-w-2xl">
         <DialogHeader className="border-b border-border px-5 pb-5 pt-6 text-left sm:px-8 sm:pb-6 sm:pt-7">
           <Badge
@@ -1597,7 +1571,8 @@ function ProjectInvitationDialog({
           </DialogTitle>
 
           <DialogDescription className="mt-2 max-w-xl leading-7">
-            Review the project before deciding whether you want to join the work.
+            Review the project before deciding whether you want to join the
+            work.
           </DialogDescription>
         </DialogHeader>
 
@@ -1662,7 +1637,10 @@ function ProjectInvitationDialog({
               type="button"
               disabled={responding !== null}
               onClick={() => void onAccept()}
-              className="h-10 rounded-lg px-6 shadow-none sm:h-11"
+              className={[
+                "h-10 rounded-lg px-6 font-semibold shadow-none sm:h-11",
+                charcoalActionButton,
+              ].join(" ")}
             >
               {responding === "accept" ? (
                 <LoaderCircleIcon className="h-4 w-4 animate-spin" />
@@ -1852,7 +1830,10 @@ function WorkspaceError({
 
           <Button
             type="button"
-            className="mt-7 h-11 rounded-lg px-6 shadow-none"
+            className={[
+              "mt-7 h-11 rounded-lg px-6 font-semibold shadow-none",
+              charcoalActionButton,
+            ].join(" ")}
             onClick={() => void onRetry()}
           >
             <RefreshCwIcon size={15} />
@@ -1875,15 +1856,11 @@ function normalizeProjectStatus(status?: string) {
 }
 
 function getProjectDateValue(project: Project) {
-  if (!project.createdAt) {
-    return 0;
-  }
+  if (!project.createdAt) return 0;
 
   const date = new Date(project.createdAt);
 
-  if (Number.isNaN(date.getTime())) {
-    return 0;
-  }
+  if (Number.isNaN(date.getTime())) return 0;
 
   return date.getTime();
 }
@@ -1920,9 +1897,7 @@ function sortProjectItems<T extends Project>(
 function formatShortDate(value: string) {
   const date = new Date(value);
 
-  if (Number.isNaN(date.getTime())) {
-    return "";
-  }
+  if (Number.isNaN(date.getTime())) return "";
 
   return new Intl.DateTimeFormat("en", {
     day: "numeric",
