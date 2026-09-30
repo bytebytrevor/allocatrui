@@ -1,508 +1,9 @@
-// // import {
-// //   ArrowLeftIcon,
-// //   FolderPlusIcon,
-// //   InfoIcon,
-// // } from "lucide-react";
-
-// // import {
-// //   motion,
-// // } from "framer-motion";
-
-// // import {
-// //   useNavigate,
-// // } from "react-router-dom";
-
-// // import NewProjectForm from "@/components/NewProjectForm";
-// // import MinimalNavMenu from "@/components/MinimalNavMenu";
-
-// // import {
-// //   Button,
-// // } from "@/components/ui/button";
-
-// // function CreateProject() {
-// //   const navigate =
-// //     useNavigate();
-
-// //   return (
-// //     <div className="min-h-screen bg-background text-foreground">
-// //       {/* =====================================================
-// //           HEADER
-// //       ===================================================== */}
-
-// //       <header
-// //         className={[
-// //           "sticky top-0 z-40",
-// //           "border-b border-border/60",
-// //           "bg-background/90 backdrop-blur-xl",
-// //         ].join(" ")}
-// //       >
-// //         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-// //           <MinimalNavMenu />
-// //         </div>
-// //       </header>
-
-// //       {/* =====================================================
-// //           PAGE
-// //       ===================================================== */}
-
-// //       <main className="relative">
-// //         <div
-// //           className={[
-// //             "mx-auto w-full max-w-5xl",
-// //             "px-4 py-7",
-// //             "sm:px-6 sm:py-10",
-// //             "lg:px-8 lg:py-12",
-// //           ].join(" ")}
-// //         >
-// //           {/* =================================================
-// //               BACK
-// //           ================================================= */}
-
-// //           {/* <Button
-// //             type="button"
-// //             variant="ghost"
-// //             onClick={() =>
-// //               navigate(-1)
-// //             }
-// //             className={[
-// //               "-ml-3 h-9 rounded-lg px-3",
-// //               "text-xs font-medium text-muted-foreground",
-// //               "shadow-none",
-// //               "hover:text-foreground",
-// //             ].join(" ")}
-// //           >
-// //             <ArrowLeftIcon
-// //               size={14}
-// //             />
-
-// //             Back
-// //           </Button> */}
-
-// //           {/* =================================================
-// //               PAGE INTRO
-// //           ================================================= */}
-
-// //           <motion.header
-// //             className="mt-8 max-w-3xl"
-// //             initial={{
-// //               opacity: 0,
-// //               y: 16,
-// //             }}
-// //             animate={{
-// //               opacity: 1,
-// //               y: 0,
-// //             }}
-// //             transition={{
-// //               duration: 0.5,
-// //               ease: "easeOut",
-// //             }}
-// //           >
-// //             <div className="flex items-center gap-2 text-primary">
-// //               <FolderPlusIcon
-// //                 size={16}
-// //               />
-
-// //               <p
-// //                 className={[
-// //                   "text-[0.62rem] font-semibold uppercase",
-// //                   "tracking-[0.17em]",
-// //                 ].join(" ")}
-// //               >
-// //                 New project
-// //               </p>
-// //             </div>
-
-// //             <h1
-// //               className={[
-// //                 "mt-4",
-// //                 "text-3xl font-black leading-[1.05]",
-// //                 "tracking-[-0.035em]",
-// //                 "sm:text-4xl",
-// //               ].join(" ")}
-// //             >
-// //               Create a project.
-// //             </h1>
-
-// //             <p
-// //               className={[
-// //                 "mt-3 max-w-2xl",
-// //                 "text-sm leading-7 text-muted-foreground",
-// //                 "sm:text-base",
-// //               ].join(" ")}
-// //             >
-// //               Add the core project details now.
-// //               Tasks, collaborators and other
-// //               workspace details can be added
-// //               afterwards.
-// //             </p>
-// //           </motion.header>
-
-// //           {/* =================================================
-// //               SMALL HINT
-// //           ================================================= */}
-
-// //           <motion.div
-// //             className={[
-// //               "mt-7 flex max-w-3xl items-start gap-2.5",
-// //               "border-l-2 border-primary/40",
-// //               "pl-4",
-// //             ].join(" ")}
-// //             initial={{
-// //               opacity: 0,
-// //               y: 10,
-// //             }}
-// //             animate={{
-// //               opacity: 1,
-// //               y: 0,
-// //             }}
-// //             transition={{
-// //               delay: 0.08,
-// //               duration: 0.45,
-// //             }}
-// //           >
-// //             <InfoIcon
-// //               size={14}
-// //               className="mt-1 shrink-0 text-muted-foreground"
-// //             />
-
-// //             <p className="text-xs leading-6 text-muted-foreground">
-// //               A clear title, category and brief
-// //               are enough to get started. You can
-// //               refine the project as the work
-// //               develops.
-// //             </p>
-// //           </motion.div>
-
-// //           {/* =================================================
-// //               FORM
-// //           ================================================= */}
-
-// //           <motion.section
-// //             className="mt-9 min-w-0"
-// //             initial={{
-// //               opacity: 0,
-// //               y: 20,
-// //             }}
-// //             animate={{
-// //               opacity: 1,
-// //               y: 0,
-// //             }}
-// //             transition={{
-// //               delay: 0.1,
-// //               duration: 0.55,
-// //               ease: "easeOut",
-// //             }}
-// //           >
-// //             <div
-// //               className={[
-// //                 "overflow-hidden",
-// //                 "rounded-[1.5rem]",
-// //                 "border border-border/80",
-// //                 "bg-background",
-// //               ].join(" ")}
-// //             >
-// //               {/* Form heading */}
-
-// //               <div
-// //                 className={[
-// //                   "flex items-center justify-between gap-5",
-// //                   "border-b border-border/70",
-// //                   "px-5 py-5",
-// //                   "sm:px-7",
-// //                   "lg:px-9",
-// //                 ].join(" ")}
-// //               >
-// //                 <div>
-// //                   <h2 className="text-sm font-bold sm:text-base">
-// //                     Project details
-// //                   </h2>
-
-// //                   <p className="mt-1 text-xs text-muted-foreground">
-// //                     Complete the three steps below.
-// //                   </p>
-// //                 </div>
-
-// //                 <span
-// //                   className={[
-// //                     "hidden text-[0.62rem] font-semibold uppercase",
-// //                     "tracking-[0.14em] text-muted-foreground",
-// //                     "sm:block",
-// //                   ].join(" ")}
-// //                 >
-// //                   Takes a few minutes
-// //                 </span>
-// //               </div>
-
-// //               {/* Form body */}
-
-// //               <div
-// //                 className={[
-// //                   "px-5 py-6",
-// //                   "sm:px-7 sm:py-8",
-// //                   "lg:px-9 lg:py-9",
-// //                 ].join(" ")}
-// //               >
-// //                 <NewProjectForm />
-// //               </div>
-// //             </div>
-// //           </motion.section>
-
-// //           {/* =================================================
-// //               FOOTER HINT
-// //           ================================================= */}
-
-// //           <div
-// //             className={[
-// //               "mt-4 flex items-center justify-between gap-5",
-// //               "px-1 text-[0.68rem] text-muted-foreground",
-// //             ].join(" ")}
-// //           >
-// //             <p>
-// //               Nothing here is permanent. Project
-// //               details can be updated later.
-// //             </p>
-// //           </div>
-// //         </div>
-// //       </main>
-// //     </div>
-// //   );
-// // }
-
-// // export default CreateProject;
-
-// import {
-//   FolderPlusIcon,
-//   InfoIcon,
-// } from "lucide-react";
-
-// import {
-//   motion,
-// } from "framer-motion";
-
-// import NewProjectForm from "@/components/NewProjectForm";
-// import MinimalNavMenu from "@/components/MinimalNavMenu";
-
-// /* =========================================================
-//    CREATE PROJECT
-// ========================================================= */
-
-// function CreateProject() {
-//   return (
-//     <div className="min-h-screen bg-background text-foreground">
-
-//       {/* =====================================================
-//           HEADER
-//       ===================================================== */}
-
-//       <header
-//         className={[
-//           "sticky top-0 z-40",
-//           "border-b border-border/60",
-//           "bg-background/90 backdrop-blur-xl",
-//         ].join(" ")}
-//       >
-//         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-//           <MinimalNavMenu />
-//         </div>
-//       </header>
-
-//       {/* =====================================================
-//           PAGE
-//       ===================================================== */}
-
-//       <main className="relative">
-//         <div
-//           className={[
-//             "mx-auto w-full max-w-5xl",
-//             "px-4 py-7",
-//             "sm:px-6 sm:py-10",
-//             "lg:px-8 lg:py-12",
-//           ].join(" ")}
-//         >
-
-//           {/* =================================================
-//               PAGE INTRO
-//           ================================================= */}
-
-//           <motion.header
-//             className="max-w-3xl"
-//             initial={{
-//               opacity: 0,
-//               y: 16,
-//             }}
-//             animate={{
-//               opacity: 1,
-//               y: 0,
-//             }}
-//             transition={{
-//               duration: 0.5,
-//               ease: "easeOut",
-//             }}
-//           >
-//             <div className="flex items-center gap-2 text-primary">
-//               <FolderPlusIcon
-//                 size={16}
-//               />
-
-//               <p
-//                 className={[
-//                   "text-[0.62rem] font-semibold uppercase",
-//                   "tracking-[0.17em]",
-//                 ].join(" ")}
-//               >
-//                 New project
-//               </p>
-//             </div>
-
-//             <h1
-//               className={[
-//                 "mt-4",
-//                 "text-3xl font-black leading-[1.05]",
-//                 "tracking-[-0.035em]",
-//                 "sm:text-4xl",
-//               ].join(" ")}
-//             >
-//               Create a project.
-//             </h1>
-
-//             <p
-//               className={[
-//                 "mt-3 max-w-2xl",
-//                 "text-sm leading-7 text-muted-foreground",
-//                 "sm:text-base",
-//               ].join(" ")}
-//             >
-//               Add the core project details now. Tasks, collaborators and
-//               other workspace details can be added afterwards.
-//             </p>
-//           </motion.header>
-
-//           {/* =================================================
-//               SMALL HINT
-//           ================================================= */}
-
-//           <motion.div
-//             className={[
-//               "mt-7 flex max-w-3xl items-start gap-2.5",
-//               "border-l-2 border-primary/40",
-//               "pl-4",
-//             ].join(" ")}
-//             initial={{
-//               opacity: 0,
-//               y: 10,
-//             }}
-//             animate={{
-//               opacity: 1,
-//               y: 0,
-//             }}
-//             transition={{
-//               delay: 0.08,
-//               duration: 0.45,
-//             }}
-//           >
-//             <InfoIcon
-//               size={14}
-//               className="mt-1 shrink-0 text-muted-foreground"
-//             />
-
-//             <p className="text-xs leading-6 text-muted-foreground">
-//               A clear title, category and brief are enough to get started.
-//               You can refine the project as the work develops.
-//             </p>
-//           </motion.div>
-
-//           {/* =================================================
-//               FORM
-//           ================================================= */}
-
-//           <motion.section
-//             className="mt-12 min-w-0"
-//             initial={{
-//               opacity: 0,
-//               y: 20,
-//             }}
-//             animate={{
-//               opacity: 1,
-//               y: 0,
-//             }}
-//             transition={{
-//               delay: 0.1,
-//               duration: 0.55,
-//               ease: "easeOut",
-//             }}
-//           >
-
-//             {/* ===============================================
-//                 FORM INTRO
-//             =============================================== */}
-
-//             <div
-//               className={[
-//                 "flex items-end justify-between gap-5",
-//                 "mb-8",
-//               ].join(" ")}
-//             >
-//               <div>
-//                 <h2 className="text-base font-bold sm:text-lg">
-//                   Project details
-//                 </h2>
-
-//                 <p className="mt-1.5 text-xs leading-5 text-muted-foreground">
-//                   Complete the three steps below.
-//                 </p>
-//               </div>
-
-//               <span
-//                 className={[
-//                   "hidden shrink-0",
-//                   "text-[0.62rem] font-semibold uppercase",
-//                   "tracking-[0.14em] text-muted-foreground",
-//                   "sm:block",
-//                 ].join(" ")}
-//               >
-//                 Takes a few minutes
-//               </span>
-//             </div>
-
-//             {/* ===============================================
-//                 FORM BODY
-//             =============================================== */}
-
-//             <div className="min-w-0">
-//               <NewProjectForm />
-//             </div>
-//           </motion.section>
-
-//           {/* =================================================
-//               FOOTER HINT
-//           ================================================= */}
-
-//           <div
-//             className={[
-//               "mt-8",
-//               "text-[0.68rem] text-muted-foreground",
-//             ].join(" ")}
-//           >
-//             <p>
-//               Nothing here is permanent. Project details can be updated
-//               later.
-//             </p>
-//           </div>
-//         </div>
-//       </main>
-//     </div>
-//   );
-// }
-
-// export default CreateProject;
-
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
 import {
   BadgeCheckIcon,
   FolderPlusIcon,
-  InfoIcon,
   LoaderCircleIcon,
   MapPinIcon,
   StarIcon,
@@ -514,8 +15,8 @@ import { motion } from "framer-motion";
 
 import api from "@/api/axios";
 
-import NewProjectForm from "@/components/NewProjectForm";
 import MinimalNavMenu from "@/components/MinimalNavMenu";
+import NewProjectForm from "@/components/NewProjectForm";
 
 import {
   Avatar,
@@ -555,14 +56,9 @@ function CreateProject() {
 
   const allocatId = searchParams.get("allocat");
 
-  const [selectedAllocat, setSelectedAllocat] =
-    useState<SelectedAllocat | null>(null);
-
-  const [loadingAllocat, setLoadingAllocat] =
-    useState(Boolean(allocatId));
-
-  const [allocatError, setAllocatError] =
-    useState<string | null>(null);
+  const [selectedAllocat, setSelectedAllocat] = useState<SelectedAllocat | null>(null);
+  const [loadingAllocat, setLoadingAllocat] = useState(Boolean(allocatId));
+  const [allocatError, setAllocatError] = useState<string | null>(null);
 
   /* =======================================================
      LOAD SELECTED ALLOCAT
@@ -593,10 +89,7 @@ function CreateProject() {
       } catch (error) {
         if (cancelled) return;
 
-        console.error(
-          "Could not load selected Allocat:",
-          error,
-        );
+        console.error("Could not load selected Allocat:", error);
 
         setSelectedAllocat(null);
 
@@ -604,9 +97,7 @@ function CreateProject() {
           "This Allocat profile is no longer available. Remove the selection to continue creating your project.",
         );
       } finally {
-        if (!cancelled) {
-          setLoadingAllocat(false);
-        }
+        if (!cancelled) setLoadingAllocat(false);
       }
     }
 
@@ -626,9 +117,7 @@ function CreateProject() {
 
     nextParams.delete("allocat");
 
-    setSearchParams(nextParams, {
-      replace: true,
-    });
+    setSearchParams(nextParams, { replace: true });
   }
 
   /* =======================================================
@@ -636,17 +125,16 @@ function CreateProject() {
   ======================================================= */
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-
-      {/* =====================================================
+    <div className="min-h-screen bg-[#F3F5F2] text-[#30383A] dark:bg-[#08171C] dark:text-white">
+      {/* ===================================================
           HEADER
-      ===================================================== */}
+      =================================================== */}
 
       <header
         className={[
-          "sticky top-0 z-40",
-          "border-b border-border/60",
-          "bg-background/90 backdrop-blur-xl",
+          "sticky top-0 z-40 border-b backdrop-blur-xl",
+          "border-[#0D566D]/[0.055] bg-[#F8FAF8]/95",
+          "dark:border-white/[0.055] dark:bg-[#08171C]/95",
         ].join(" ")}
       >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -654,66 +142,65 @@ function CreateProject() {
         </div>
       </header>
 
-      {/* =====================================================
+      {/* ===================================================
           PAGE
-      ===================================================== */}
+      =================================================== */}
 
-      <main className="relative">
-        <div
-          className={[
-            "mx-auto w-full max-w-5xl",
-            "px-4 py-7",
-            "sm:px-6 sm:py-10",
-            "lg:px-8 lg:py-12",
-          ].join(" ")}
-        >
-
+      <main>
+        <div className="mx-auto w-full max-w-5xl px-4 py-7 sm:px-6 sm:py-9 lg:px-8 lg:py-10">
           {/* =================================================
-              PAGE INTRO
+              INTRO
           ================================================= */}
 
           <motion.header
-            className="max-w-3xl"
-            initial={{
-              opacity: 0,
-              y: 16,
-            }}
-            animate={{
-              opacity: 1,
-              y: 0,
-            }}
-            transition={{
-              duration: 0.5,
-              ease: "easeOut",
-            }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
+            className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between"
           >
-            <div className="flex items-center gap-2 text-primary">
-              <FolderPlusIcon size={16} />
+            <div className="min-w-0 max-w-2xl">
+              <div className="flex items-center gap-2.5">
+                <span
+                  className={[
+                    "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
+                    "bg-[#DCE8E4] text-[#0D566D]",
+                    "dark:bg-[#DEDA00]/[0.08] dark:text-[#DEDA00]",
+                  ].join(" ")}
+                >
+                  <FolderPlusIcon size={15} />
+                </span>
 
-              <p className="text-[0.62rem] font-semibold uppercase tracking-[0.17em]">
-                New project
+                <p className="text-[0.57rem] font-semibold uppercase tracking-[0.17em] text-[#0D566D] dark:text-[#DEDA00]">
+                  New project
+                </p>
+              </div>
+
+              <h1 className="mt-4 text-3xl font-semibold leading-[1.06] tracking-[-0.035em] sm:text-4xl">
+                {selectedAllocat
+                  ? `Start a project with ${selectedAllocat.fullName}.`
+                  : "Create a project."}
+              </h1>
+
+              <p className="mt-2.5 max-w-xl text-sm leading-6 text-[#718084] sm:text-[0.93rem] dark:text-[#94A3B8]">
+                {selectedAllocat
+                  ? "Define the work, set the timeline and send an invitation once the project is ready."
+                  : "Add the essential project details now. You can refine the workspace as the work develops."}
               </p>
             </div>
 
-            <h1
-              className={[
-                "mt-4",
-                "text-3xl font-black leading-[1.05]",
-                "tracking-[-0.035em]",
-                "sm:text-4xl",
-              ].join(" ")}
-            >
-              {selectedAllocat
-                ? `Start a project with ${selectedAllocat.fullName}.`
-                : "Create a project."}
-            </h1>
-
-            <p className="mt-3 max-w-2xl text-sm leading-7 text-muted-foreground sm:text-base">
-              {selectedAllocat
-                ? "Add the project details below. Once the project is created, we’ll send this Allocat an invitation to join it."
-                : "Add the core project details now. Tasks, collaborators and other workspace details can be added afterwards."}
-            </p>
+            <div className="flex shrink-0 items-center gap-2 pb-0.5 text-[0.62rem] font-medium text-[#718084] dark:text-[#94A3B8]">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#0D566D] dark:bg-[#DEDA00]" />
+              3 steps
+              <span className="text-[#A0AAAC] dark:text-white/20">·</span>
+              A few minutes
+            </div>
           </motion.header>
+
+          {/* =================================================
+              DIVIDER
+          ================================================= */}
+
+          <div className="mt-6 h-px bg-[#0D566D]/[0.07] dark:bg-white/[0.055]" />
 
           {/* =================================================
               SELECTED ALLOCAT
@@ -721,19 +208,10 @@ function CreateProject() {
 
           {allocatId && (
             <motion.section
-              className="mt-7 max-w-3xl"
-              initial={{
-                opacity: 0,
-                y: 10,
-              }}
-              animate={{
-                opacity: 1,
-                y: 0,
-              }}
-              transition={{
-                delay: 0.05,
-                duration: 0.45,
-              }}
+              className="mt-5"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.04, duration: 0.35 }}
             >
               {loadingAllocat ? (
                 <SelectedAllocatLoading />
@@ -752,107 +230,31 @@ function CreateProject() {
           )}
 
           {/* =================================================
-              SMALL HINT
-          ================================================= */}
-
-          {!allocatError && (
-            <motion.div
-              className={[
-                "mt-7 flex max-w-3xl items-start gap-2.5",
-                "border-l-2 border-primary/40",
-                "pl-4",
-              ].join(" ")}
-              initial={{
-                opacity: 0,
-                y: 10,
-              }}
-              animate={{
-                opacity: 1,
-                y: 0,
-              }}
-              transition={{
-                delay: 0.08,
-                duration: 0.45,
-              }}
-            >
-              <InfoIcon
-                size={14}
-                className="mt-1 shrink-0 text-muted-foreground"
-              />
-
-              <p className="text-xs leading-6 text-muted-foreground">
-                {selectedAllocat
-                  ? "The Allocat will only be invited after the project has been created. They can still accept or decline the invitation."
-                  : "A clear title, category and brief are enough to get started. You can refine the project as the work develops."}
-              </p>
-            </motion.div>
-          )}
-
-          {/* =================================================
               FORM
           ================================================= */}
 
           {!loadingAllocat && !allocatError && (
             <motion.section
-              className="mt-12 min-w-0"
-              initial={{
-                opacity: 0,
-                y: 20,
-              }}
-              animate={{
-                opacity: 1,
-                y: 0,
-              }}
-              transition={{
-                delay: 0.1,
-                duration: 0.55,
-                ease: "easeOut",
-              }}
+              className={allocatId ? "mt-5 min-w-0" : "mt-6 min-w-0"}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.06, duration: 0.4, ease: "easeOut" }}
             >
-
-              {/* FORM INTRO */}
-
-              <div className="mb-8 flex items-end justify-between gap-5">
-                <div>
-                  <h2 className="text-base font-bold sm:text-lg">
-                    Project details
-                  </h2>
-
-                  <p className="mt-1.5 text-xs leading-5 text-muted-foreground">
-                    Complete the three steps below.
-                  </p>
-                </div>
-
-                <span className="hidden shrink-0 text-[0.62rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground sm:block">
-                  Takes a few minutes
-                </span>
-              </div>
-
-              {/* FORM BODY */}
-
-              <div className="min-w-0">
-                <NewProjectForm
-                  selectedAllocatId={
-                    selectedAllocat?.allocatrUserId ?? null
-                  }
-                  selectedAllocatName={
-                    selectedAllocat?.fullName ?? null
-                  }
-                />
-              </div>
+              <NewProjectForm
+                selectedAllocatId={selectedAllocat?.allocatrUserId ?? null}
+                selectedAllocatName={selectedAllocat?.fullName ?? null}
+              />
             </motion.section>
           )}
 
           {/* =================================================
-              FOOTER HINT
+              FOOTER NOTE
           ================================================= */}
 
           {!loadingAllocat && !allocatError && (
-            <div className="mt-8 text-[0.68rem] text-muted-foreground">
-              <p>
-                Nothing here is permanent. Project details can be updated later.
-              </p>
-            </div>
+            <p className="mt-4 px-1 text-[0.64rem] leading-5 text-[#7A878A] dark:text-[#7F9198]">
+              Project details can be edited later from the project workspace.
+            </p>
           )}
         </div>
       </main>
@@ -871,31 +273,27 @@ function SelectedAllocatCard({
   allocat: SelectedAllocat;
   onRemove: () => void;
 }) {
-  const rating =
-    allocat.averageRating ??
-    allocat.rating ??
-    0;
+  const rating = allocat.averageRating ?? allocat.rating ?? 0;
 
   const isVerified = Boolean(
     allocat.isVerified ??
-    allocat.verified ??
-    false,
+      allocat.verified ??
+      false,
   );
 
   return (
     <div
       className={[
-        "relative overflow-hidden rounded-2xl",
-        "border border-primary/20",
-        "bg-primary/[0.035]",
-        "p-4 sm:p-5",
+        "relative overflow-hidden rounded-xl border px-4 py-3.5 sm:px-5",
+        "border-[#0D566D]/[0.085] bg-[#EDF4F2]",
+        "dark:border-white/[0.065] dark:bg-[#10262D]",
       ].join(" ")}
     >
-      <div className="pointer-events-none absolute -right-16 -top-20 h-44 w-44 rounded-full bg-primary/[0.07] blur-3xl" />
+      <span className="pointer-events-none absolute -right-12 -top-16 h-36 w-36 rounded-full bg-[#0D566D]/[0.05] blur-3xl dark:bg-[#DEDA00]/[0.02]" />
 
-      <div className="relative flex items-center gap-4">
+      <div className="relative flex items-center gap-3.5">
         <div className="relative shrink-0">
-          <Avatar className="h-14 w-14 border border-border bg-muted sm:h-16 sm:w-16">
+          <Avatar className="h-12 w-12 border border-[#0D566D]/10 bg-[#DDE9E6] dark:border-white/[0.07] dark:bg-[#0C1D22]">
             {allocat.avatarUrl && (
               <AvatarImage
                 src={allocat.avatarUrl}
@@ -904,7 +302,7 @@ function SelectedAllocatCard({
               />
             )}
 
-            <AvatarFallback className="bg-primary/[0.08] text-sm font-black text-primary">
+            <AvatarFallback className="bg-[#DDE9E6] text-xs font-semibold text-[#0D566D] dark:bg-[#0C1D22] dark:text-[#DEDA00]">
               {getInitials(allocat.fullName)}
             </AvatarFallback>
           </Avatar>
@@ -912,79 +310,73 @@ function SelectedAllocatCard({
           {isVerified && (
             <span
               className={[
-                "absolute -bottom-1 -right-1",
-                "flex h-5 w-5 items-center justify-center",
-                "rounded-full border-2 border-background",
-                "bg-primary text-secondary",
+                "absolute -bottom-1 -right-1 flex h-[18px] w-[18px] items-center justify-center rounded-full border-2",
+                "border-[#EDF4F2] bg-[#0D566D] text-white",
+                "dark:border-[#10262D] dark:bg-[#DEDA00] dark:text-[#303030]",
               ].join(" ")}
               title="Verified professional"
             >
-              <BadgeCheckIcon size={10} />
+              <BadgeCheckIcon size={9} />
             </span>
           )}
         </div>
 
         <div className="min-w-0 flex-1">
-          <p className="text-[0.6rem] font-semibold uppercase tracking-[0.16em] text-primary">
-            Starting this project with
-          </p>
-
-          <div className="mt-1 flex min-w-0 items-center gap-1.5">
-            <h2 className="truncate text-base font-black tracking-[-0.02em]">
+          <div className="flex min-w-0 items-center gap-1.5">
+            <h2 className="truncate text-sm font-semibold tracking-[-0.015em]">
               {allocat.fullName}
             </h2>
 
             {isVerified && (
               <BadgeCheckIcon
-                size={14}
-                className="shrink-0 text-primary"
+                size={12}
+                className="shrink-0 text-[#0D566D] dark:text-[#DEDA00]"
               />
             )}
           </div>
 
-          <p className="mt-0.5 truncate text-xs text-muted-foreground">
+          <p className="mt-0.5 truncate text-[0.66rem] text-[#6E7D80] dark:text-[#94A3B8]">
             {allocat.title ||
               allocat.headline ||
               "Professional service provider"}
           </p>
 
-          <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[0.68rem] text-muted-foreground">
+          <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[0.61rem] text-[#718084] dark:text-[#94A3B8]">
             <span className="inline-flex items-center gap-1">
               <StarIcon
-                size={11}
+                size={10}
                 className={
                   rating > 0
-                    ? "fill-current text-chart-2"
-                    : "text-muted-foreground"
+                    ? "fill-current text-[#B98645] dark:text-[#DEDA00]"
+                    : ""
                 }
               />
 
-              {rating > 0
-                ? rating.toFixed(1)
-                : "New"}
+              {rating > 0 ? rating.toFixed(1) : "New"}
             </span>
 
             {allocat.location && (
               <span className="inline-flex min-w-0 items-center gap-1">
-                <MapPinIcon
-                  size={11}
-                  className="shrink-0"
-                />
-
-                <span className="truncate">
-                  {allocat.location}
-                </span>
+                <MapPinIcon size={10} className="shrink-0" />
+                <span className="truncate">{allocat.location}</span>
               </span>
             )}
 
             {allocat.hourlyRate !== null &&
               allocat.hourlyRate !== undefined && (
                 <span>
-                  {allocat.currency || "USD"}{" "}
-                  {allocat.hourlyRate}/hr
+                  {allocat.currency || "USD"} {allocat.hourlyRate}/hr
                 </span>
               )}
           </div>
+        </div>
+
+        <div className="hidden shrink-0 items-center gap-2 sm:flex">
+          <span className="text-[0.57rem] font-semibold uppercase tracking-[0.13em] text-[#0D566D] dark:text-[#DEDA00]">
+            Selected Allocat
+          </span>
+
+          <span className="h-1 w-1 rounded-full bg-[#0D566D]/30 dark:bg-[#DEDA00]/35" />
         </div>
 
         <Button
@@ -993,9 +385,13 @@ function SelectedAllocatCard({
           title="Remove selected Allocat"
           aria-label="Remove selected Allocat"
           onClick={onRemove}
-          className="h-9 w-9 shrink-0 rounded-lg p-0 text-muted-foreground shadow-none hover:bg-background hover:text-foreground"
+          className={[
+            "h-8 w-8 shrink-0 rounded-lg p-0 shadow-none",
+            "text-[#718084] hover:bg-[#DCE8E4] hover:text-[#0D566D]",
+            "dark:text-[#94A3B8] dark:hover:bg-white/[0.05] dark:hover:text-white",
+          ].join(" ")}
         >
-          <XIcon size={14} />
+          <XIcon size={13} />
         </Button>
       </div>
     </div>
@@ -1008,21 +404,18 @@ function SelectedAllocatCard({
 
 function SelectedAllocatLoading() {
   return (
-    <div className="flex min-h-24 items-center gap-4 rounded-2xl border border-border bg-muted/[0.12] p-5">
-      <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/[0.08] text-primary">
-        <LoaderCircleIcon
-          size={19}
-          className="animate-spin"
-        />
+    <div className="flex min-h-[76px] items-center gap-3.5 rounded-xl border border-[#0D566D]/[0.08] bg-[#EDF4F2] px-4 py-3.5 dark:border-white/[0.065] dark:bg-[#10262D]">
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#DCE8E4] text-[#0D566D] dark:bg-[#DEDA00]/[0.08] dark:text-[#DEDA00]">
+        <LoaderCircleIcon size={17} className="animate-spin" />
       </span>
 
       <div>
-        <p className="text-sm font-bold">
+        <p className="text-xs font-semibold">
           Loading selected Allocat
         </p>
 
-        <p className="mt-1 text-xs text-muted-foreground">
-          Getting their public profile before you continue.
+        <p className="mt-0.5 text-[0.64rem] text-[#718084] dark:text-[#94A3B8]">
+          Getting their public profile.
         </p>
       </div>
     </div>
@@ -1041,31 +434,32 @@ function SelectedAllocatError({
   onRemove: () => void;
 }) {
   return (
-    <div className="rounded-2xl border border-destructive/20 bg-destructive/[0.035] p-5">
-      <div className="flex items-start gap-4">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-destructive/10 text-destructive">
-          <UserRoundIcon size={17} />
+    <div className="rounded-xl border border-[#AD3A12]/15 bg-[#AD3A12]/[0.035] p-4 dark:border-[#AD3A12]/20 dark:bg-[#AD3A12]/[0.055]">
+      <div className="flex items-start gap-3.5">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#AD3A12]/10 text-[#9F3C1A] dark:text-[#D27857]">
+          <UserRoundIcon size={15} />
         </span>
 
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-bold">
+          <p className="text-xs font-semibold">
             Selected Allocat unavailable
           </p>
 
-          <p className="mt-1 text-xs leading-5 text-muted-foreground">
+          <p className="mt-1 max-w-2xl text-[0.65rem] leading-5 text-[#718084] dark:text-[#94A3B8]">
             {message}
           </p>
-
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onRemove}
-            className="mt-4 h-9 rounded-lg px-4 text-xs shadow-none"
-          >
-            <XIcon size={13} />
-            Remove selection
-          </Button>
         </div>
+
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={onRemove}
+          title="Remove selected Allocat"
+          aria-label="Remove selected Allocat"
+          className="h-8 w-8 shrink-0 rounded-lg p-0 text-[#9F3C1A] shadow-none hover:bg-[#AD3A12]/[0.06] dark:text-[#D27857]"
+        >
+          <XIcon size={13} />
+        </Button>
       </div>
     </div>
   );

@@ -6,11 +6,7 @@ import type { Task } from "@/Types/task";
 
 import TaskCard from "./TaskCard";
 
-type TaskStatus =
-  | "pending"
-  | "active"
-  | "complete"
-  | "overdue";
+type WorkflowStatus = "pending" | "active" | "complete";
 
 type DraggableTaskProps = {
   task: Task;
@@ -18,7 +14,7 @@ type DraggableTaskProps = {
 
   onMoveTask?: (
     taskId: string,
-    status: TaskStatus,
+    status: WorkflowStatus,
   ) => void | Promise<void>;
 
   onEditTask?: (task: Task) => void;
@@ -41,9 +37,7 @@ export function DraggableTask({
   } = useDraggable({
     id: task.id,
     disabled,
-    data: {
-      task,
-    },
+    data: { task },
   });
 
   const style: CSSProperties = {
@@ -51,6 +45,7 @@ export function DraggableTask({
       !disabled && transform
         ? `translate3d(${transform.x}px, ${transform.y}px, 0)`
         : undefined,
+
     opacity: isDragging ? 0 : 1,
   };
 
@@ -70,21 +65,9 @@ export function DraggableTask({
       <TaskCard
         task={task}
         canManageTasks={!disabled}
-        onMoveTask={
-          disabled
-            ? undefined
-            : onMoveTask
-        }
-        onEditTask={
-          disabled
-            ? undefined
-            : onEditTask
-        }
-        onDeleteTask={
-          disabled
-            ? undefined
-            : onDeleteTask
-        }
+        onMoveTask={disabled ? undefined : onMoveTask}
+        onEditTask={disabled ? undefined : onEditTask}
+        onDeleteTask={disabled ? undefined : onDeleteTask}
       />
     </div>
   );
