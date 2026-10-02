@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
+
 import { Link, useNavigate } from "react-router-dom";
 
 import {
@@ -7,8 +8,8 @@ import {
   CircleHelpIcon,
   FolderPlusIcon,
   LogOutIcon,
-  MenuIcon,
   MoonIcon,
+  PlusIcon,
   SettingsIcon,
   SunIcon,
   User2Icon,
@@ -22,6 +23,7 @@ import AllocatrIconLogo from "@/components/AllocatrIconLogo";
 import BecomeAllocatDialog from "@/components/BecomeAllocatDialog";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
 import { Button } from "@/components/ui/button";
 
 import {
@@ -73,28 +75,80 @@ type AccountMenuProps = {
 ========================================================= */
 
 function getInitials(name?: string) {
-  if (!name?.trim()) return "U";
+  if (!name?.trim()) {
+    return "U";
+  }
 
   return name
     .trim()
     .split(/\s+/)
     .slice(0, 2)
-    .map(part => part.charAt(0).toUpperCase())
+    .map((part) => part.charAt(0).toUpperCase())
     .join("");
 }
 
 function getInitialTheme(): Theme {
-  if (typeof window === "undefined") return "dark";
+  if (typeof window === "undefined") {
+    return "dark";
+  }
 
   const savedTheme = window.localStorage.getItem("theme");
 
-  if (savedTheme === "light" || savedTheme === "dark") return savedTheme;
+  if (savedTheme === "light" || savedTheme === "dark") {
+    return savedTheme;
+  }
 
   return "dark";
 }
 
 /* =========================================================
-   DASHBOARD NAV
+   SHARED STYLES
+========================================================= */
+
+const navIconButton = [
+  "relative h-9 w-9 rounded-lg",
+  "text-muted-foreground",
+  "shadow-none",
+
+  "transition-[background-color,color,border-color] duration-200",
+
+  "hover:bg-surface-3/55",
+  "hover:text-foreground",
+
+  "focus-visible:ring-2",
+  "focus-visible:ring-brand-secondary-highlight/15",
+
+  "dark:hover:bg-surface-3/65",
+  "dark:hover:text-foreground",
+  "dark:focus-visible:ring-secondary/15",
+].join(" ");
+
+const dropdownSurface = [
+  "rounded-xl border p-1.5",
+
+  "border-border/70",
+  "bg-popover",
+  "text-popover-foreground",
+
+  "shadow-none",
+
+  "dark:border-border",
+].join(" ");
+
+const dropdownItem = [
+  "rounded-lg px-2.5 py-2",
+  "text-sm text-foreground/75",
+
+  "transition-colors duration-150",
+
+  "focus:bg-surface-3/60",
+  "focus:text-foreground",
+
+  "dark:focus:bg-surface-3/70",
+].join(" ");
+
+/* =========================================================
+   NAV
 ========================================================= */
 
 function DashboardMainNav({ children, notificationCount = 0 }: Props) {
@@ -103,11 +157,17 @@ function DashboardMainNav({ children, notificationCount = 0 }: Props) {
 
   const [theme, setTheme] = useState<Theme>(getInitialTheme);
   const [loggingOut, setLoggingOut] = useState(false);
+
   const [becomeAllocatOpen, setBecomeAllocatOpen] = useState(false);
   const [becomingAllocat, setBecomingAllocat] = useState(false);
 
   const initials = useMemo(() => getInitials(user?.fullName), [user?.fullName]);
+
   const hasNotifications = notificationCount > 0;
+
+  /* =======================================================
+     THEME
+  ======================================================= */
 
   useEffect(() => {
     const root = document.documentElement;
@@ -115,21 +175,32 @@ function DashboardMainNav({ children, notificationCount = 0 }: Props) {
     root.classList.toggle("dark", theme === "dark");
     root.classList.toggle("light", theme === "light");
 
-    localStorage.setItem("theme", theme);
+    root.style.colorScheme = theme;
+
+    window.localStorage.setItem("theme", theme);
   }, [theme]);
 
   function toggleTheme() {
-    setTheme(currentTheme => (currentTheme === "dark" ? "light" : "dark"));
+    setTheme((current) => (current === "dark" ? "light" : "dark"));
   }
 
+  /* =======================================================
+     ACCOUNT
+  ======================================================= */
+
   async function handleLogout() {
-    if (loggingOut) return;
+    if (loggingOut) {
+      return;
+    }
 
     setLoggingOut(true);
 
     try {
       await logout();
-      navigate("/login", { replace: true });
+
+      navigate("/login", {
+        replace: true,
+      });
     } catch (error) {
       console.error("Logout failed:", error);
     } finally {
@@ -138,7 +209,9 @@ function DashboardMainNav({ children, notificationCount = 0 }: Props) {
   }
 
   async function handleBecomeAllocat() {
-    if (becomingAllocat || user?.isAllocat) return;
+    if (becomingAllocat || user?.isAllocat) {
+      return;
+    }
 
     setBecomingAllocat(true);
 
@@ -146,10 +219,13 @@ function DashboardMainNav({ children, notificationCount = 0 }: Props) {
       await api.patch(
         "/users/me/become-allocat",
         {},
-        { withCredentials: true },
+        {
+          withCredentials: true,
+        },
       );
 
       setBecomeAllocatOpen(false);
+
       navigate("/allocats/profile/create");
     } catch (error) {
       console.error("Could not update account mode:", error);
@@ -160,45 +236,96 @@ function DashboardMainNav({ children, notificationCount = 0 }: Props) {
 
   return (
     <>
-      <nav className="flex h-16 min-w-0 items-center justify-between gap-4 sm:h-[4.25rem]">
+      <nav
+        className={[
+          "flex h-16 min-w-0 items-center justify-between gap-4",
+          "sm:h-[4.25rem]",
+        ].join(" ")}
+      >
+        {/* =================================================
+            BRAND
+        ================================================= */}
+
         <div className="flex min-w-0 items-center gap-3">
           <Link
             to="/projects"
             aria-label="Go to projects"
             className={[
-              "group flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
-              "transition-[background-color,box-shadow] duration-200",
-              "hover:bg-[#E5EBE8]",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#315E6C]/20",
-              "dark:hover:bg-white/[0.05]",
-              "dark:focus-visible:ring-[#DEDA00]/20",
+              "group flex h-10 w-10 shrink-0 items-center justify-center",
+              "rounded-xl border",
+
+              "border-border/65",
+              "bg-surface-2/55",
+
+              "ring-1 ring-inset ring-border/20",
+
+              "transition-[background-color,border-color,transform] duration-200",
+
+              "hover:border-border/85",
+              "hover:bg-surface-3/60",
+
+              "focus-visible:outline-none",
+              "focus-visible:ring-2",
+              "focus-visible:ring-brand-secondary-highlight/20",
+
+              "dark:border-border",
+              "dark:bg-surface-2/70",
+              "dark:ring-border/40",
+
+              "dark:hover:bg-surface-3/70",
+              "dark:focus-visible:ring-secondary/20",
             ].join(" ")}
           >
-            <AllocatrIconLogo theme={""} />
+            {/* Small mark inside the larger brand tile */}
+
+            <span
+              className={[
+                "flex h-[22px] w-[22px] shrink-0 items-center justify-center",
+                "overflow-hidden",
+                "rounded-full",
+
+                "[&_img]:h-[18px]",
+                "[&_img]:w-[18px]",
+                "[&_img]:max-h-[18px]",
+                "[&_img]:max-w-[18px]",
+                "[&_img]:object-contain",
+
+                "[&_svg]:h-[18px]",
+                "[&_svg]:w-[18px]",
+                "[&_svg]:max-h-[18px]",
+                "[&_svg]:max-w-[18px]",
+              ].join(" ")}
+            >
+              <AllocatrIconLogo theme="" />
+            </span>
           </Link>
 
           {children && (
             <>
-              <span className="hidden h-5 w-px bg-[#315E6C]/[0.10] sm:block dark:bg-white/[0.08]" />
+              <span className="hidden h-5 w-px bg-border/70 sm:block" />
 
-              <div className="hidden min-w-0 md:block">
-                {children}
-              </div>
+              <div className="hidden min-w-0 md:block">{children}</div>
             </>
           )}
         </div>
 
+        {/* =================================================
+            ACTIONS
+        ================================================= */}
+
         <div className="flex shrink-0 items-center gap-0.5 sm:gap-1">
+          {/* THEME */}
+
           <NavIconButton
             label={
-              theme === "dark"
-                ? "Switch to light mode"
-                : "Switch to dark mode"
+              theme === "dark" ? "Switch to light mode" : "Switch to dark mode"
             }
             onClick={toggleTheme}
           >
             {theme === "dark" ? <SunIcon size={14} /> : <MoonIcon size={14} />}
           </NavIconButton>
+
+          {/* NOTIFICATIONS */}
 
           <NavIconButton
             label={
@@ -212,13 +339,17 @@ function DashboardMainNav({ children, notificationCount = 0 }: Props) {
             <BellIcon size={14} />
           </NavIconButton>
 
+          {/* QUICK ACTIONS */}
+
           <QuickActionsMenu
             onNewProject={() => navigate("/projects/new")}
             onSettings={() => navigate("/settings")}
             onHelp={() => navigate("/help")}
           />
 
-          <span className="mx-1.5 hidden h-5 w-px bg-[#315E6C]/[0.10] sm:block dark:bg-white/[0.08]" />
+          <span className="mx-1.5 hidden h-5 w-px bg-border/70 sm:block" />
+
+          {/* ACCOUNT */}
 
           <AccountMenu
             user={user}
@@ -265,20 +396,26 @@ function NavIconButton({
       variant="ghost"
       size="icon"
       onClick={onClick}
-      className={[
-        "relative h-9 w-9 rounded-lg shadow-none",
-        "text-[#68797D] transition-colors duration-200",
-        "hover:bg-[#E5EBE8] hover:text-[#29464E]",
-        "dark:text-white/38 dark:hover:bg-white/[0.05] dark:hover:text-white/78",
-      ].join(" ")}
+      className={navIconButton}
       aria-label={label}
+      title={label}
     >
       {children}
 
       {notification && (
-        <span className="absolute right-[7px] top-[7px] flex h-1.5 w-1.5">
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#315E6C] opacity-20 dark:bg-[#DEDA00]" />
-          <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[#315E6C] ring-2 ring-[#F7F8F5] dark:bg-[#DEDA00] dark:ring-[#08171C]" />
+        <span
+          aria-hidden
+          className="absolute right-[7px] top-[7px] flex h-1.5 w-1.5"
+        >
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-status-pending opacity-25" />
+
+          <span
+            className={[
+              "relative inline-flex h-1.5 w-1.5 rounded-full",
+              "bg-status-pending",
+              "ring-2 ring-background",
+            ].join(" ")}
+          />
         </span>
       )}
     </Button>
@@ -286,7 +423,7 @@ function NavIconButton({
 }
 
 /* =========================================================
-   QUICK ACTIONS MENU
+   QUICK ACTIONS
 ========================================================= */
 
 function QuickActionsMenu({
@@ -301,77 +438,37 @@ function QuickActionsMenu({
           type="button"
           variant="ghost"
           size="icon"
-          className={[
-            "h-9 w-9 rounded-lg shadow-none",
-            "text-[#68797D] transition-colors duration-200",
-            "hover:bg-[#E5EBE8] hover:text-[#29464E]",
-            "data-[state=open]:bg-[#E5EBE8] data-[state=open]:text-[#29464E]",
-            "dark:text-white/38 dark:hover:bg-white/[0.05] dark:hover:text-white/78",
-            "dark:data-[state=open]:bg-white/[0.05] dark:data-[state=open]:text-white",
-          ].join(" ")}
+          className={navIconButton}
           aria-label="Open quick actions"
+          title="Quick actions"
         >
-          <MenuIcon size={15} />
+          <PlusIcon size={15} />
         </Button>
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
         align="end"
         sideOffset={10}
-        className={[
-          "w-56 rounded-xl p-1.5",
-          "border-[#315E6C]/[0.09] bg-[#F8FAF7] text-[#30383A]",
-          "shadow-[0_18px_50px_-24px_rgba(28,48,54,0.28)]",
-          "dark:border-white/[0.08] dark:bg-[#10262D] dark:text-white",
-          "dark:shadow-[0_18px_50px_-24px_rgba(0,0,0,0.7)]",
-        ].join(" ")}
+        className={["w-56", dropdownSurface].join(" ")}
       >
-        <DropdownMenuLabel className="px-3 py-2.5 font-normal">
-          <p className="text-[0.55rem] font-semibold uppercase tracking-[0.16em] text-[#6D7D80] dark:text-white/30">
-            Quick actions
-          </p>
-
-          <p className="mt-1 text-[0.68rem] text-[#879294] dark:text-white/25">
-            Common workspace actions.
-          </p>
+        <DropdownMenuLabel className="px-2.5 py-2 text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+          Quick actions
         </DropdownMenuLabel>
 
-        <DropdownMenuSeparator className="bg-[#315E6C]/[0.08] dark:bg-white/[0.07]" />
+        <DropdownMenuSeparator className="bg-border/60" />
 
-        <DropdownMenuItem
-          onSelect={onNewProject}
-          className={[
-            "rounded-lg px-2.5 py-2.5 text-sm",
-            "focus:bg-[#E7ECE9] focus:text-[#29464E]",
-            "dark:focus:bg-white/[0.05] dark:focus:text-white",
-          ].join(" ")}
-        >
-          <span className="flex h-7 w-7 items-center justify-center rounded-md bg-[#DDE7E4] text-[#315E6C] dark:bg-[#DEDA00]/[0.08] dark:text-[#DEDA00]">
-            <FolderPlusIcon size={13} />
-          </span>
-
+        <DropdownMenuItem onSelect={onNewProject} className={dropdownItem}>
+          <FolderPlusIcon size={14} />
           New project
         </DropdownMenuItem>
 
-        <DropdownMenuItem
-          onSelect={onSettings}
-          className="rounded-lg px-2.5 py-2.5 text-sm focus:bg-[#E7ECE9] focus:text-[#29464E] dark:focus:bg-white/[0.05] dark:focus:text-white"
-        >
-          <span className="flex h-7 w-7 items-center justify-center rounded-md bg-[#E8ECE9] text-[#65787C] dark:bg-white/[0.04] dark:text-white/45">
-            <SettingsIcon size={13} />
-          </span>
-
+        <DropdownMenuItem onSelect={onSettings} className={dropdownItem}>
+          <SettingsIcon size={14} />
           Settings
         </DropdownMenuItem>
 
-        <DropdownMenuItem
-          onSelect={onHelp}
-          className="rounded-lg px-2.5 py-2.5 text-sm focus:bg-[#E7ECE9] focus:text-[#29464E] dark:focus:bg-white/[0.05] dark:focus:text-white"
-        >
-          <span className="flex h-7 w-7 items-center justify-center rounded-md bg-[#E8ECE9] text-[#65787C] dark:bg-white/[0.04] dark:text-white/45">
-            <CircleHelpIcon size={13} />
-          </span>
-
+        <DropdownMenuItem onSelect={onHelp} className={dropdownItem}>
+          <CircleHelpIcon size={14} />
           Help & support
         </DropdownMenuItem>
       </DropdownMenuContent>
@@ -398,33 +495,54 @@ function AccountMenu({
         <button
           type="button"
           className={[
-            "group ml-0.5 flex h-10 min-w-0 items-center gap-2.5 rounded-xl px-1.5",
+            "group ml-0.5 flex h-10 min-w-0 items-center gap-2.5",
+            "rounded-lg px-1.5",
+
+            "text-foreground",
+
             "transition-colors duration-200",
-            "hover:bg-[#E5EBE8]",
-            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#315E6C]/20",
-            "dark:hover:bg-white/[0.05]",
-            "dark:focus-visible:ring-[#DEDA00]/20",
+
+            "hover:bg-surface-3/55",
+
+            "focus-visible:outline-none",
+            "focus-visible:ring-2",
+            "focus-visible:ring-brand-secondary-highlight/15",
+
+            "dark:hover:bg-surface-3/65",
+            "dark:focus-visible:ring-secondary/15",
           ].join(" ")}
           aria-label="Open account menu"
         >
-          <Avatar className="h-8 w-8 shrink-0 border border-[#315E6C]/[0.10] bg-[#DDE7E4] dark:border-white/[0.09] dark:bg-[#10262D]">
+          <Avatar className="h-8 w-8 border border-border/70">
             <AvatarImage
               src={user?.avatarUrl}
-              alt={user?.fullName ? `${user.fullName}'s profile` : "User profile"}
+              alt={
+                user?.fullName ? `${user.fullName}'s profile` : "User profile"
+              }
               className="object-cover"
             />
 
-            <AvatarFallback className="bg-[#DDE7E4] text-[0.62rem] font-semibold text-[#315E6C] dark:bg-[#DEDA00]/[0.08] dark:text-[#DEDA00]">
+            <AvatarFallback
+              className={[
+                "bg-surface-3/75",
+
+                "text-[0.62rem] font-semibold",
+                "text-brand-secondary-highlight",
+
+                "dark:bg-surface-2",
+                "dark:text-secondary",
+              ].join(" ")}
+            >
               {user?.fullName ? initials : <UserCircleIcon size={15} />}
             </AvatarFallback>
           </Avatar>
 
           <div className="hidden max-w-[140px] min-w-0 text-left lg:block">
-            <p className="truncate text-[0.72rem] font-semibold leading-none text-[#344044] dark:text-white/80">
+            <p className="truncate text-[0.72rem] font-semibold text-foreground/85">
               {user?.fullName || "Allocatr"}
             </p>
 
-            <p className="mt-1.5 truncate text-[0.54rem] font-medium text-[#899294] dark:text-white/25">
+            <p className="mt-0.5 text-[0.54rem] text-muted-foreground">
               Account
             </p>
           </div>
@@ -434,104 +552,100 @@ function AccountMenu({
       <DropdownMenuContent
         align="end"
         sideOffset={10}
-        className={[
-          "w-64 rounded-xl p-1.5",
-          "border-[#315E6C]/[0.09] bg-[#F8FAF7] text-[#30383A]",
-          "shadow-[0_18px_50px_-24px_rgba(28,48,54,0.28)]",
-          "dark:border-white/[0.08] dark:bg-[#10262D] dark:text-white",
-          "dark:shadow-[0_18px_50px_-24px_rgba(0,0,0,0.7)]",
-        ].join(" ")}
+        className={["w-64", dropdownSurface].join(" ")}
       >
+        {/* ACCOUNT SUMMARY */}
+
         <DropdownMenuLabel className="p-3 font-normal">
           <div className="flex min-w-0 items-center gap-3">
-            <Avatar className="h-10 w-10 shrink-0 border border-[#315E6C]/[0.10] dark:border-white/[0.09]">
+            <Avatar className="h-10 w-10 shrink-0 border border-border/70">
               <AvatarImage
                 src={user?.avatarUrl}
-                alt={user?.fullName ? `${user.fullName}'s profile` : "User profile"}
+                alt={
+                  user?.fullName ? `${user.fullName}'s profile` : "User profile"
+                }
                 className="object-cover"
               />
 
-              <AvatarFallback className="bg-[#DDE7E4] text-xs font-semibold text-[#315E6C] dark:bg-[#DEDA00]/[0.08] dark:text-[#DEDA00]">
-                {user?.fullName ? initials : <UserCircleIcon size={17} />}
+              <AvatarFallback
+                className={[
+                  "bg-surface-3/75",
+
+                  "text-xs font-semibold",
+                  "text-brand-secondary-highlight",
+
+                  "dark:bg-surface-2",
+                  "dark:text-secondary",
+                ].join(" ")}
+              >
+                {user?.fullName ? initials : <UserCircleIcon size={16} />}
               </AvatarFallback>
             </Avatar>
 
             <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-[#30383A] dark:text-white">
+              <p className="truncate text-sm font-semibold text-foreground">
                 {user?.fullName || "Allocatr user"}
               </p>
 
-              <p className="mt-1 truncate text-[0.65rem] text-[#7D898B] dark:text-white/30">
-                {user?.email || "No email available"}
-              </p>
+              {user?.email && (
+                <p className="mt-1 truncate text-[0.68rem] text-muted-foreground">
+                  {user.email}
+                </p>
+              )}
             </div>
           </div>
         </DropdownMenuLabel>
 
-        <DropdownMenuSeparator className="bg-[#315E6C]/[0.08] dark:bg-white/[0.07]" />
+        <DropdownMenuSeparator className="bg-border/60" />
+
+        {/* ACCOUNT LINKS */}
 
         <DropdownMenuGroup>
-          <DropdownMenuItem
-            onSelect={onProfile}
-            className="rounded-lg px-2.5 py-2.5 text-sm focus:bg-[#E7ECE9] focus:text-[#29464E] dark:focus:bg-white/[0.05] dark:focus:text-white"
-          >
-            <User2Icon size={14} className="text-[#65787C] dark:text-white/40" />
+          <DropdownMenuItem onSelect={onProfile} className={dropdownItem}>
+            <User2Icon size={14} />
             Profile
           </DropdownMenuItem>
 
-          <DropdownMenuItem
-            onSelect={onSettings}
-            className="rounded-lg px-2.5 py-2.5 text-sm focus:bg-[#E7ECE9] focus:text-[#29464E] dark:focus:bg-white/[0.05] dark:focus:text-white"
-          >
-            <SettingsIcon size={14} className="text-[#65787C] dark:text-white/40" />
+          <DropdownMenuItem onSelect={onSettings} className={dropdownItem}>
+            <SettingsIcon size={14} />
             Settings
           </DropdownMenuItem>
+
+          {!user?.isAllocat && (
+            <DropdownMenuItem
+              onSelect={onBecomeAllocat}
+              className={dropdownItem}
+            >
+              <BadgeCheckIcon
+                size={14}
+                className="text-brand-secondary-highlight dark:text-secondary"
+              />
+              Become an Allocat
+            </DropdownMenuItem>
+          )}
         </DropdownMenuGroup>
 
-        {!user?.isAllocat && (
-          <>
-            <DropdownMenuSeparator className="bg-[#315E6C]/[0.08] dark:bg-white/[0.07]" />
+        <DropdownMenuSeparator className="bg-border/60" />
 
-            <DropdownMenuItem
-              onSelect={event => {
-                event.preventDefault();
-                onBecomeAllocat();
-              }}
-              className={[
-                "rounded-lg px-2.5 py-2.5",
-                "focus:bg-[#E4ECE8] focus:text-[#29464E]",
-                "dark:focus:bg-[#DEDA00]/[0.06] dark:focus:text-white",
-              ].join(" ")}
-            >
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#DDE7E4] text-[#315E6C] dark:bg-[#DEDA00]/[0.08] dark:text-[#DEDA00]">
-                <BadgeCheckIcon size={14} />
-              </span>
-
-              <div className="min-w-0">
-                <p className="text-sm font-medium">
-                  Become an Allocat
-                </p>
-
-                <p className="mt-0.5 text-[0.6rem] text-[#7F8A8C] dark:text-white/28">
-                  Offer your skills
-                </p>
-              </div>
-            </DropdownMenuItem>
-          </>
-        )}
-
-        <DropdownMenuSeparator className="bg-[#315E6C]/[0.08] dark:bg-white/[0.07]" />
+        {/* LOGOUT */}
 
         <DropdownMenuItem
           disabled={loggingOut}
-          onSelect={event => {
+          onSelect={(event) => {
             event.preventDefault();
             void onLogout();
           }}
           className={[
-            "rounded-lg px-2.5 py-2.5 font-medium",
-            "text-[#7C8789] focus:bg-[#E7ECE9] focus:text-[#3C4B4E]",
-            "dark:text-white/35 dark:focus:bg-white/[0.05] dark:focus:text-white/75",
+            "rounded-lg px-2.5 py-2",
+
+            "font-medium",
+
+            "text-muted-foreground",
+
+            "focus:bg-surface-3/60",
+            "focus:text-foreground",
+
+            "dark:focus:bg-surface-3/70",
           ].join(" ")}
         >
           <LogOutIcon size={14} />

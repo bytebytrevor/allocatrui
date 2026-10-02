@@ -1,719 +1,3 @@
-// import { useState, type ComponentType, type ReactNode } from "react";
-
-// import {
-//   BadgeCheckIcon,
-//   BriefcaseBusinessIcon,
-//   CalendarDaysIcon,
-//   CheckCircle2Icon,
-//   Clock3Icon,
-//   LoaderCircleIcon,
-//   MapPinIcon,
-//   SendIcon,
-//   SparklesIcon,
-//   StarIcon,
-// } from "lucide-react";
-
-// import type { AllocatProfile } from "@/Types/allocatProfile";
-// import type { Project } from "@/Types/project";
-
-// import { avatarFallback } from "@/utils/avatarFallback";
-
-// import {
-//   Avatar,
-//   AvatarFallback,
-//   AvatarImage,
-// } from "@/components/ui/avatar";
-
-// import { Button } from "@/components/ui/button";
-
-// import {
-//   Dialog,
-//   DialogContent,
-//   DialogDescription,
-//   DialogHeader,
-//   DialogTitle,
-// } from "@/components/ui/dialog";
-
-// /* =========================================================
-//    TYPES
-// ========================================================= */
-
-// type SkillItem =
-//   | string
-//   | {
-//       id?: string;
-//       name: string;
-//       categoryId?: string;
-//       category?: string;
-//     };
-
-// type DialogAllocat = Omit<AllocatProfile, "skills"> & {
-//   skills?: SkillItem[];
-//   matchScore?: number;
-//   averageRating?: number;
-//   verified?: boolean;
-//   isVerified?: boolean;
-//   availability?: boolean | string;
-// };
-
-// type Props = {
-//   allocat: DialogAllocat;
-//   project?: Project;
-//   open: boolean;
-//   onOpenChange: (open: boolean) => void;
-//   invited: boolean;
-//   inviting: boolean;
-//   onInvite: () => void;
-// };
-
-// type RatingStyle = {
-//   text: string;
-//   star: string;
-//   surface: string;
-// };
-
-// /* =========================================================
-//    DIALOG
-// ========================================================= */
-
-// export default function AllocatProfileDialog({
-//   allocat,
-//   project,
-//   open,
-//   onOpenChange,
-//   invited,
-//   inviting,
-//   onInvite,
-// }: Props) {
-//   const rating = allocat.rating ?? allocat.averageRating ?? 0;
-//   const completedProjects = allocat.completedProjects ?? 0;
-//   const yearsExperience = allocat.yearsExperience ?? 0;
-
-//   const isVerified = Boolean(
-//     allocat.isVerified ??
-//     allocat.verified ??
-//     false,
-//   );
-
-//   const hasSkills = (allocat.skills?.length ?? 0) > 0;
-//   const availability = formatAvailability(allocat.availability);
-//   const ratingStyle = getRatingStyle(rating);
-
-//   return (
-//     <Dialog
-//       open={open}
-//       onOpenChange={nextOpen => {
-//         if (!inviting) onOpenChange(nextOpen);
-//       }}
-//     >
-//       <DialogContent
-//         className={[
-//           "flex max-h-[92vh] flex-col overflow-hidden",
-//           "border-border bg-background p-0 text-foreground",
-//           "shadow-2xl shadow-black/[0.08]",
-//           "dark:shadow-black/35",
-//           "sm:max-w-2xl sm:rounded-[1.5rem]",
-//         ].join(" ")}
-//       >
-//         {/* =================================================
-//             HERO
-//         ================================================= */}
-
-//         <DialogHeader
-//           className={[
-//             "relative shrink-0 overflow-hidden",
-//             "border-b border-border",
-//             "px-6 pb-7 pt-7 text-left sm:px-8 sm:pt-8",
-//           ].join(" ")}
-//         >
-//           <div className="pointer-events-none absolute inset-0 overflow-hidden">
-//             <div className="absolute -right-20 -top-28 h-64 w-64 rounded-full bg-primary/[0.08] blur-3xl" />
-//             <div className="absolute right-12 top-10 h-24 w-24 rounded-full border border-primary/10" />
-//             <div className="absolute right-20 top-[4.8rem] h-10 w-10 rounded-full border border-primary/10" />
-//           </div>
-
-//           <div className="relative">
-//             <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
-//               {/* AVATAR */}
-
-//               <div className="relative shrink-0">
-//                 <Avatar className="h-[76px] w-[76px] border-2 border-background ring-1 ring-border">
-//                   <AvatarImage
-//                     src={allocat.avatarUrl}
-//                     alt={
-//                       allocat.fullName
-//                         ? `${allocat.fullName}'s profile`
-//                         : "Allocat profile"
-//                     }
-//                     className="object-cover"
-//                   />
-
-//                   <AvatarFallback className="bg-primary/[0.09] text-lg font-black text-primary">
-//                     {avatarFallback(allocat)}
-//                   </AvatarFallback>
-//                 </Avatar>
-
-//                 {isVerified && (
-//                   <span
-//                     className={[
-//                       "absolute -bottom-1 -right-1",
-//                       "flex h-7 w-7 items-center justify-center",
-//                       "rounded-full border-2 border-background",
-//                       "bg-primary text-secondary",
-//                     ].join(" ")}
-//                     title="Verified professional"
-//                   >
-//                     <BadgeCheckIcon size={14} />
-//                   </span>
-//                 )}
-//               </div>
-
-//               {/* IDENTITY */}
-
-//               <div className="min-w-0 flex-1">
-//                 <div className="flex flex-wrap items-center gap-2">
-//                   <DialogTitle className="min-w-0 truncate text-2xl font-black tracking-[-0.035em] sm:text-[2rem]">
-//                     {allocat.fullName || "Allocat professional"}
-//                   </DialogTitle>
-
-//                   {isVerified && (
-//                     <BadgeCheckIcon
-//                       size={17}
-//                       className="shrink-0 text-primary"
-//                     />
-//                   )}
-//                 </div>
-
-//                 <DialogDescription className="mt-1.5 text-sm font-medium text-muted-foreground">
-//                   {allocat.title || "Professional service provider"}
-//                 </DialogDescription>
-
-//                 <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
-//                   {allocat.location && (
-//                     <span className="inline-flex items-center gap-1.5">
-//                       <MapPinIcon size={13} />
-//                       {allocat.location}
-//                     </span>
-//                   )}
-
-//                   {yearsExperience > 0 && (
-//                     <span className="inline-flex items-center gap-1.5">
-//                       <BriefcaseBusinessIcon size={13} />
-
-//                       {yearsExperience}{" "}
-//                       {yearsExperience === 1 ? "year" : "years"}{" "}
-//                       experience
-//                     </span>
-//                   )}
-//                 </div>
-//               </div>
-//             </div>
-
-//             {/* HERO STATS */}
-
-//             <div
-//               className={[
-//                 "mt-7 grid overflow-hidden rounded-xl",
-//                 "border border-border bg-card/60",
-//                 "grid-cols-2 sm:grid-cols-4",
-//               ].join(" ")}
-//             >
-//               <HeroMetric
-//                 label="Rating"
-//                 value={rating > 0 ? rating.toFixed(1) : "New"}
-//                 icon={StarIcon}
-//                 iconClass={ratingStyle.star}
-//                 valueClass={ratingStyle.text}
-//                 surfaceClass={rating > 0 ? ratingStyle.surface : ""}
-//               />
-
-//               <HeroMetric
-//                 label="Projects"
-//                 value={completedProjects.toString()}
-//                 icon={CheckCircle2Icon}
-//                 divided
-//               />
-
-//               <HeroMetric
-//                 label="Rate"
-//                 value={`US$${allocat.hourlyRate ?? 0}`}
-//                 sub="/hour"
-//                 divided
-//               />
-
-//               <HeroMetric
-//                 label="Match"
-//                 value={
-//                   allocat.matchScore !== undefined
-//                     ? `${allocat.matchScore}%`
-//                     : "—"
-//                 }
-//                 icon={SparklesIcon}
-//                 accent
-//                 divided
-//               />
-//             </div>
-//           </div>
-//         </DialogHeader>
-
-//         {/* =================================================
-//             BODY
-//         ================================================= */}
-
-//         <div className="min-h-0 flex-1 overflow-y-auto px-6 sm:px-8">
-//           {/* ABOUT */}
-
-//           <ProfileSection
-//             eyebrow="About"
-//             title="A little about this Allocat"
-//           >
-//             <p className="max-w-xl whitespace-pre-line text-sm leading-7 text-foreground/80">
-//               {allocat.bio ||
-//                 "This Allocat has not added a profile description yet."}
-//             </p>
-//           </ProfileSection>
-
-//           {/* SKILLS */}
-
-//           <ProfileSection
-//             eyebrow="Skills"
-//             title="What they work with"
-//           >
-//             {hasSkills ? (
-//               <div className="flex flex-wrap gap-2">
-//                 {allocat.skills?.map((skill, index) => (
-//                   <span
-//                     key={getSkillKey(skill, index)}
-//                     className={[
-//                       "inline-flex items-center rounded-lg",
-//                       "border px-3 py-1.5",
-//                       "text-[0.7rem] font-semibold",
-//                       "transition-colors",
-//                       index === 0
-//                         ? "border-primary/20 bg-primary/[0.07] text-primary"
-//                         : "border-border bg-muted/30 text-foreground/80",
-//                     ].join(" ")}
-//                   >
-//                     {getSkillName(skill)}
-//                   </span>
-//                 ))}
-//               </div>
-//             ) : (
-//               <p className="text-sm text-muted-foreground">
-//                 No skills have been listed yet.
-//               </p>
-//             )}
-//           </ProfileSection>
-
-//           {/* DETAILS */}
-
-//           <ProfileSection
-//             eyebrow="Profile"
-//             title="Working details"
-//           >
-//             <div className="grid gap-3 sm:grid-cols-2">
-//               <InfoTile
-//                 icon={BriefcaseBusinessIcon}
-//                 label="Experience"
-//                 value={
-//                   yearsExperience > 0
-//                     ? `${yearsExperience} ${
-//                         yearsExperience === 1 ? "year" : "years"
-//                       }`
-//                     : "Not listed"
-//                 }
-//               />
-
-//               <InfoTile
-//                 icon={CalendarDaysIcon}
-//                 label="Member since"
-//                 value={formatJoinedDate(allocat.joinedAt)}
-//               />
-
-//               <InfoTile
-//                 icon={CheckCircle2Icon}
-//                 label="Completed work"
-//                 value={`${completedProjects} ${
-//                   completedProjects === 1 ? "project" : "projects"
-//                 }`}
-//               />
-
-//               <InfoTile
-//                 icon={Clock3Icon}
-//                 label="Availability"
-//                 value={availability}
-//               />
-//             </div>
-//           </ProfileSection>
-
-//           {/* RATE / MATCH */}
-
-//           <section className="pb-7 pt-1">
-//             <div
-//               className={[
-//                 "relative overflow-hidden rounded-xl",
-//                 "border border-border",
-//                 "bg-foreground/[0.035] p-5",
-//                 "dark:bg-card",
-//               ].join(" ")}
-//             >
-//               <div className="pointer-events-none absolute -right-14 -top-20 h-44 w-44 rounded-full bg-primary/[0.07] blur-3xl" />
-
-//               <div className="relative grid gap-5 sm:grid-cols-[1fr_auto] sm:items-center">
-//                 <div>
-//                   <p className="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-//                     Working rate
-//                   </p>
-
-//                   <p className="mt-2 text-2xl font-black tracking-[-0.035em]">
-//                     US${allocat.hourlyRate ?? 0}
-
-//                     <span className="ml-1 text-xs font-medium text-muted-foreground">
-//                       /hour
-//                     </span>
-//                   </p>
-
-//                   <p className="mt-2 max-w-sm text-xs leading-5 text-muted-foreground">
-//                     Final scope, availability and terms can be confirmed
-//                     directly after invitation.
-//                   </p>
-//                 </div>
-
-//                 {allocat.matchScore !== undefined && (
-//                   <div className="sm:border-l sm:border-border sm:pl-6">
-//                     <p className="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-//                       Match
-//                     </p>
-
-//                     <p className="mt-2 text-3xl font-black tracking-[-0.04em] text-primary">
-//                       {allocat.matchScore}%
-//                     </p>
-
-//                     <p className="mt-1 text-[0.68rem] text-muted-foreground">
-//                       for this project
-//                     </p>
-//                   </div>
-//                 )}
-//               </div>
-//             </div>
-//           </section>
-//         </div>
-
-//         {/* =================================================
-//             ACTION BAR
-//         ================================================= */}
-
-//         <div
-//           className={[
-//             "shrink-0 border-t border-border",
-//             "bg-muted/[0.18]",
-//             "px-6 py-5 sm:px-8",
-//           ].join(" ")}
-//         >
-//           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-//             <div className="min-w-0">
-//               <p className="text-sm font-bold">
-//                 Looks like a good fit?
-//               </p>
-
-//               <p className="mt-1 max-w-sm text-xs leading-5 text-muted-foreground">
-//                 Invite{" "}
-//                 {allocat.fullName || "this Allocat"}{" "}
-//                 to{" "}
-//                 {project?.title || "your project"}.
-//               </p>
-//             </div>
-
-//             <div className="flex shrink-0 gap-2">
-//               <Button
-//                 type="button"
-//                 variant="ghost"
-//                 disabled={inviting}
-//                 onClick={() => onOpenChange(false)}
-//                 className="h-10 rounded-lg px-4 text-xs text-muted-foreground shadow-none"
-//               >
-//                 Close
-//               </Button>
-
-//               <Button
-//                 type="button"
-//                 onClick={onInvite}
-//                 disabled={!project || inviting || invited}
-//                 variant={invited ? "outline" : "default"}
-//                 className={[
-//                   "h-10 rounded-lg px-5 text-xs shadow-none",
-//                   invited
-//                     ? "border-chart-3/25 bg-chart-3/[0.08] text-chart-3 hover:bg-chart-3/[0.08] hover:text-chart-3"
-//                     : "",
-//                 ].join(" ")}
-//               >
-//                 {inviting ? (
-//                   <>
-//                     <LoaderCircleIcon size={14} className="animate-spin" />
-//                     Sending
-//                   </>
-//                 ) : invited ? (
-//                   <>
-//                     <CheckCircle2Icon size={14} />
-//                     Invited
-//                   </>
-//                 ) : (
-//                   <>
-//                     <SendIcon size={14} />
-//                     Invite to project
-//                   </>
-//                 )}
-//               </Button>
-//             </div>
-//           </div>
-//         </div>
-//       </DialogContent>
-//     </Dialog>
-//   );
-// }
-
-// /* =========================================================
-//    PROFILE SECTION
-// ========================================================= */
-
-// function ProfileSection({
-//   eyebrow,
-//   title,
-//   children,
-// }: {
-//   eyebrow: string;
-//   title: string;
-//   children: ReactNode;
-// }) {
-//   return (
-//     <section className="border-b border-border py-7 last:border-b-0">
-//       <div className="mb-4">
-//         <p className="text-[0.6rem] font-semibold uppercase tracking-[0.17em] text-primary">
-//           {eyebrow}
-//         </p>
-
-//         <h3 className="mt-1.5 text-sm font-black tracking-[-0.015em]">
-//           {title}
-//         </h3>
-//       </div>
-
-//       {children}
-//     </section>
-//   );
-// }
-
-// /* =========================================================
-//    HERO METRIC
-// ========================================================= */
-
-// function HeroMetric({
-//   label,
-//   value,
-//   sub,
-//   icon: Icon,
-//   divided = false,
-//   accent = false,
-//   iconClass = "",
-//   valueClass = "",
-//   surfaceClass = "",
-// }: {
-//   label: string;
-//   value: string;
-//   sub?: string;
-//   icon?: ComponentType<{
-//     size?: number;
-//     className?: string;
-//   }>;
-//   divided?: boolean;
-//   accent?: boolean;
-//   iconClass?: string;
-//   valueClass?: string;
-//   surfaceClass?: string;
-// }) {
-//   return (
-//     <div
-//       className={[
-//         "min-w-0 px-4 py-4",
-//         divided ? "border-l border-border" : "",
-//         accent ? "bg-primary/[0.035]" : "",
-//         surfaceClass,
-//       ].join(" ")}
-//     >
-//       <div className="flex items-center gap-1.5 text-muted-foreground">
-//         {Icon && (
-//           <Icon
-//             size={12}
-//             className={
-//               iconClass ||
-//               (accent ? "text-primary" : "")
-//             }
-//           />
-//         )}
-
-//         <p className="text-[0.57rem] font-semibold uppercase tracking-[0.13em]">
-//           {label}
-//         </p>
-//       </div>
-
-//       <p
-//         className={[
-//           "mt-1.5 truncate text-sm font-black tracking-[-0.02em]",
-//           valueClass ||
-//           (accent ? "text-primary" : ""),
-//         ].join(" ")}
-//       >
-//         {value}
-
-//         {sub && (
-//           <span className="ml-1 text-[0.62rem] font-medium text-muted-foreground">
-//             {sub}
-//           </span>
-//         )}
-//       </p>
-//     </div>
-//   );
-// }
-
-// /* =========================================================
-//    INFO TILE
-// ========================================================= */
-
-// function InfoTile({
-//   icon: Icon,
-//   label,
-//   value,
-// }: {
-//   icon: ComponentType<{
-//     size?: number;
-//     className?: string;
-//   }>;
-//   label: string;
-//   value: string;
-// }) {
-//   return (
-//     <article
-//       className={[
-//         "group flex items-start gap-3",
-//         "rounded-xl border border-border",
-//         "bg-card/50 p-4",
-//         "transition-colors",
-//         "hover:bg-muted/20",
-//       ].join(" ")}
-//     >
-//       <span
-//         className={[
-//           "flex h-9 w-9 shrink-0 items-center justify-center",
-//           "rounded-lg bg-primary/[0.07] text-primary",
-//         ].join(" ")}
-//       >
-//         <Icon size={16} />
-//       </span>
-
-//       <div className="min-w-0">
-//         <p className="text-[0.61rem] font-semibold uppercase tracking-[0.13em] text-muted-foreground">
-//           {label}
-//         </p>
-
-//         <p className="mt-1.5 break-words text-sm font-semibold">
-//           {value}
-//         </p>
-//       </div>
-//     </article>
-//   );
-// }
-
-// /* =========================================================
-//    RATING STYLE
-// ========================================================= */
-
-// function getRatingStyle(rating: number): RatingStyle {
-//   if (rating <= 0) {
-//     return {
-//       text: "text-muted-foreground",
-//       star: "text-muted-foreground/55",
-//       surface: "",
-//     };
-//   }
-
-//   if (rating < 3) {
-//     return {
-//       text: "text-destructive",
-//       star: "fill-current text-destructive",
-//       surface: "bg-destructive/[0.04]",
-//     };
-//   }
-
-//   if (rating < 4) {
-//     return {
-//       text: "text-chart-3",
-//       star: "fill-current text-chart-3",
-//       surface: "bg-chart-3/[0.04]",
-//     };
-//   }
-
-//   return {
-//     text: "text-chart-2",
-//     star: "fill-current text-chart-2",
-//     surface: "bg-chart-2/[0.04]",
-//   };
-// }
-
-// /* =========================================================
-//    SKILLS
-// ========================================================= */
-
-// function getSkillName(skill: SkillItem): string {
-//   if (typeof skill === "string") return skill;
-
-//   return skill.name;
-// }
-
-// function getSkillKey(
-//   skill: SkillItem,
-//   index: number,
-// ): string {
-//   if (typeof skill === "string") {
-//     return `${skill}-${index}`;
-//   }
-
-//   return skill.id || `${skill.name}-${index}`;
-// }
-
-// /* =========================================================
-//    AVAILABILITY
-// ========================================================= */
-
-// function formatAvailability(
-//   availability?: boolean | string,
-// ): string {
-//   if (availability === true) return "Available";
-//   if (availability === false) return "Unavailable";
-//   if (!availability) return "Contact to confirm";
-
-//   return availability
-//     .replace(/[-_]/g, " ")
-//     .replace(/\b\w/g, character => character.toUpperCase());
-// }
-
-// /* =========================================================
-//    DATE
-// ========================================================= */
-
-// function formatJoinedDate(joinedAt?: string): string {
-//   if (!joinedAt) return "Not available";
-
-//   const joinedDate = new Date(joinedAt);
-
-//   if (Number.isNaN(joinedDate.getTime())) {
-//     return "Not available";
-//   }
-
-//   return new Intl.DateTimeFormat("en", {
-//     month: "long",
-//     year: "numeric",
-//   }).format(joinedDate);
-// }
-
 import { type ComponentType, type ReactNode } from "react";
 
 import {
@@ -734,11 +18,7 @@ import type { Project } from "@/Types/project";
 
 import { avatarFallback } from "@/utils/avatarFallback";
 
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 import { Button } from "@/components/ui/button";
 
@@ -793,6 +73,50 @@ type RatingStyle = {
 };
 
 /* =========================================================
+   SHARED THEME
+========================================================= */
+
+const primaryActionButton = [
+  "border border-brand-secondary-highlight/15",
+  "bg-brand-secondary-highlight",
+  "text-primary-foreground",
+
+  "hover:border-brand-secondary-highlight/20",
+  "hover:bg-brand-secondary-highlight/90",
+  "hover:text-primary-foreground",
+
+  "focus-visible:ring-brand-secondary-highlight/20",
+
+  "dark:border-secondary/10",
+  "dark:bg-secondary",
+  "dark:text-secondary-foreground",
+
+  "dark:hover:border-secondary/15",
+  "dark:hover:bg-secondary/90",
+  "dark:hover:text-secondary-foreground",
+
+  "dark:focus-visible:ring-secondary/20",
+].join(" ");
+
+const subtleIconSurface = [
+  "bg-surface-3/70",
+  "text-brand-secondary-highlight",
+  "ring-1 ring-inset ring-border/40",
+
+  "dark:bg-surface-2",
+  "dark:text-secondary",
+  "dark:ring-border",
+].join(" ");
+
+const subtlePanelSurface = [
+  "border-border/55",
+  "bg-surface-2/45",
+
+  "dark:border-border",
+  "dark:bg-surface-2/55",
+].join(" ");
+
+/* =========================================================
    DIALOG
 ========================================================= */
 
@@ -813,30 +137,35 @@ export default function AllocatProfileDialog({
 
   const isDiscovery = mode === "discovery" || !project;
 
-  const isVerified = Boolean(
-    allocat.isVerified ??
-    allocat.verified ??
-    false,
-  );
+  const isVerified = Boolean(allocat.isVerified ?? allocat.verified ?? false);
 
   const hasSkills = (allocat.skills?.length ?? 0) > 0;
+
   const availability = formatAvailability(allocat.availability);
+
   const ratingStyle = getRatingStyle(rating);
+
+  const professionalTitle =
+    allocat.title || allocat.headline || "Professional service provider";
+
+  const hourlyRate = formatHourlyRate(allocat.hourlyRate);
 
   return (
     <Dialog
       open={open}
-      onOpenChange={nextOpen => {
-        if (!inviting) onOpenChange(nextOpen);
+      onOpenChange={(nextOpen) => {
+        if (!inviting) {
+          onOpenChange(nextOpen);
+        }
       }}
     >
       <DialogContent
         className={[
-          "flex max-h-[92vh] flex-col overflow-hidden",
-          "border-border bg-background p-0 text-foreground",
-          "shadow-2xl shadow-black/[0.08]",
-          "dark:shadow-black/35",
-          "sm:max-w-2xl sm:rounded-[1.5rem]",
+          "flex max-h-[92vh] flex-col overflow-hidden p-0",
+          "rounded-xl border shadow-none",
+          "border-border/60 bg-card text-card-foreground",
+          "dark:border-border dark:bg-card",
+          "sm:max-w-2xl",
         ].join(" ")}
       >
         {/* =================================================
@@ -845,24 +174,25 @@ export default function AllocatProfileDialog({
 
         <DialogHeader
           className={[
-            "relative shrink-0 overflow-hidden",
-            "border-b border-border",
-            "px-6 pb-7 pt-7 text-left sm:px-8 sm:pt-8",
+            "shrink-0 border-b px-6 pb-6 pt-6 text-left",
+            "border-border/55 bg-surface-2/30",
+            "dark:border-border dark:bg-surface-2/45",
+            "sm:px-7 sm:pb-7 sm:pt-7",
           ].join(" ")}
         >
-          <div className="pointer-events-none absolute inset-0 overflow-hidden">
-            <div className="absolute -right-20 -top-28 h-64 w-64 rounded-full bg-primary/[0.08] blur-3xl" />
-            <div className="absolute right-12 top-10 h-24 w-24 rounded-full border border-primary/10" />
-            <div className="absolute right-20 top-[4.8rem] h-10 w-10 rounded-full border border-primary/10" />
-          </div>
+          <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
+            {/* AVATAR */}
 
-          <div className="relative">
-            <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
-
-              {/* AVATAR */}
-
-              <div className="relative shrink-0">
-                <Avatar className="h-[76px] w-[76px] border-2 border-background ring-1 ring-border">
+            <div className="relative shrink-0">
+              <Avatar
+                className={[
+                  "h-[72px] w-[72px]",
+                  "border border-border/65",
+                  "bg-surface-3",
+                  "ring-1 ring-inset ring-border/25",
+                ].join(" ")}
+              >
+                {allocat.avatarUrl && (
                   <AvatarImage
                     src={allocat.avatarUrl}
                     alt={
@@ -872,123 +202,151 @@ export default function AllocatProfileDialog({
                     }
                     className="object-cover"
                   />
+                )}
 
-                  <AvatarFallback className="bg-primary/[0.09] text-lg font-black text-primary">
-                    {avatarFallback(allocat)}
-                  </AvatarFallback>
-                </Avatar>
+                <AvatarFallback
+                  className={[
+                    "bg-surface-3",
+                    "text-base font-semibold",
+                    "text-brand-secondary-highlight",
+                    "dark:text-secondary",
+                  ].join(" ")}
+                >
+                  {avatarFallback(allocat)}
+                </AvatarFallback>
+              </Avatar>
+
+              {isVerified && (
+                <span
+                  className={[
+                    "absolute -bottom-1 -right-1",
+                    "flex h-6 w-6 items-center justify-center",
+                    "rounded-full border-2 border-surface-2",
+
+                    "bg-brand-secondary-highlight",
+                    "text-primary-foreground",
+
+                    "dark:border-surface-2",
+                    "dark:bg-secondary",
+                    "dark:text-secondary-foreground",
+                  ].join(" ")}
+                  title="Verified professional"
+                >
+                  <BadgeCheckIcon size={11} />
+                </span>
+              )}
+            </div>
+
+            {/* IDENTITY */}
+
+            <div className="min-w-0 flex-1">
+              <div className="flex min-w-0 flex-wrap items-center gap-2">
+                <DialogTitle
+                  className={[
+                    "min-w-0 break-words",
+                    "text-xl font-semibold leading-tight tracking-[-0.025em]",
+                    "text-foreground/90",
+                    "sm:text-2xl",
+                  ].join(" ")}
+                >
+                  {allocat.fullName || "Allocat professional"}
+                </DialogTitle>
 
                 {isVerified && (
-                  <span
-                    className={[
-                      "absolute -bottom-1 -right-1",
-                      "flex h-7 w-7 items-center justify-center",
-                      "rounded-full border-2 border-background",
-                      "bg-primary text-secondary",
-                    ].join(" ")}
-                    title="Verified professional"
-                  >
-                    <BadgeCheckIcon size={14} />
-                  </span>
+                  <BadgeCheckIcon
+                    size={14}
+                    className="shrink-0 text-brand-secondary-highlight dark:text-secondary"
+                  />
                 )}
               </div>
 
-              {/* IDENTITY */}
+              <DialogDescription className="mt-1.5 text-sm font-medium text-muted-foreground">
+                {professionalTitle}
+              </DialogDescription>
 
-              <div className="min-w-0 flex-1">
-                <div className="flex flex-wrap items-center gap-2">
-                  <DialogTitle className="min-w-0 truncate text-2xl font-black tracking-[-0.035em] sm:text-[2rem]">
-                    {allocat.fullName || "Allocat professional"}
-                  </DialogTitle>
+              <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-[0.68rem] text-muted-foreground">
+                {allocat.location && (
+                  <span className="inline-flex min-w-0 items-center gap-1.5">
+                    <MapPinIcon size={12} className="shrink-0" />
 
-                  {isVerified && (
-                    <BadgeCheckIcon
-                      size={17}
-                      className="shrink-0 text-primary"
-                    />
-                  )}
-                </div>
+                    <span className="break-words">{allocat.location}</span>
+                  </span>
+                )}
 
-                <DialogDescription className="mt-1.5 text-sm font-medium text-muted-foreground">
-                  {allocat.title ||
-                    "Professional service provider"}
-                </DialogDescription>
-
-                <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
-                  {allocat.location && (
-                    <span className="inline-flex items-center gap-1.5">
-                      <MapPinIcon size={13} />
-                      {allocat.location}
-                    </span>
-                  )}
-
-                  {yearsExperience > 0 && (
-                    <span className="inline-flex items-center gap-1.5">
-                      <BriefcaseBusinessIcon size={13} />
-
-                      {yearsExperience}{" "}
-                      {yearsExperience === 1
-                        ? "year"
-                        : "years"}{" "}
-                      experience
-                    </span>
-                  )}
-                </div>
+                {yearsExperience > 0 && (
+                  <span className="inline-flex items-center gap-1.5">
+                    <BriefcaseBusinessIcon size={12} className="shrink-0" />
+                    {yearsExperience} {yearsExperience === 1 ? "year" : "years"}{" "}
+                    experience
+                  </span>
+                )}
               </div>
             </div>
+          </div>
 
-            {/* HERO STATS */}
+          {/* HERO STATS */}
 
-            <div
+          <div
+            className={[
+              "mt-6 grid overflow-hidden rounded-xl border",
+              "border-border/55 bg-surface-2/40",
+              "dark:border-border dark:bg-surface-1/45",
+
+              isDiscovery ? "grid-cols-3" : "grid-cols-2 sm:grid-cols-4",
+            ].join(" ")}
+          >
+            <HeroMetric
+              label="Rating"
+              value={rating > 0 ? rating.toFixed(1) : "New"}
+              icon={StarIcon}
+              iconClass={ratingStyle.star}
+              valueClass={ratingStyle.text}
+              surfaceClass={rating > 0 ? ratingStyle.surface : ""}
+            />
+
+            <HeroMetric
+              label="Projects"
+              value={completedProjects.toString()}
+              icon={CheckCircle2Icon}
+              className="border-l border-border/55 dark:border-border"
+            />
+
+            <HeroMetric
+              label="Rate"
+              value={hourlyRate}
+              sub={
+                allocat.hourlyRate !== null && allocat.hourlyRate !== undefined
+                  ? "/hour"
+                  : undefined
+              }
               className={[
-                "mt-7 grid overflow-hidden rounded-xl",
-                "border border-border bg-card/60",
                 isDiscovery
-                  ? "grid-cols-3"
-                  : "grid-cols-2 sm:grid-cols-4",
+                  ? "border-l border-border/55 dark:border-border"
+                  : [
+                      "border-t border-border/55",
+                      "dark:border-border",
+                      "sm:border-l sm:border-t-0",
+                    ].join(" "),
               ].join(" ")}
-            >
+            />
+
+            {!isDiscovery && (
               <HeroMetric
-                label="Rating"
-                value={rating > 0 ? rating.toFixed(1) : "New"}
-                icon={StarIcon}
-                iconClass={ratingStyle.star}
-                valueClass={ratingStyle.text}
-                surfaceClass={
-                  rating > 0
-                    ? ratingStyle.surface
-                    : ""
+                label="Match"
+                value={
+                  allocat.matchScore !== undefined
+                    ? `${allocat.matchScore}%`
+                    : "—"
                 }
+                icon={SparklesIcon}
+                accent
+                className={[
+                  "border-l border-t border-border/55",
+                  "dark:border-border",
+                  "sm:border-t-0",
+                ].join(" ")}
               />
-
-              <HeroMetric
-                label="Projects"
-                value={completedProjects.toString()}
-                icon={CheckCircle2Icon}
-                divided
-              />
-
-              <HeroMetric
-                label="Rate"
-                value={`US$${allocat.hourlyRate ?? 0}`}
-                sub="/hour"
-                divided
-              />
-
-              {!isDiscovery && (
-                <HeroMetric
-                  label="Match"
-                  value={
-                    allocat.matchScore !== undefined
-                      ? `${allocat.matchScore}%`
-                      : "—"
-                  }
-                  icon={SparklesIcon}
-                  accent
-                  divided
-                />
-              )}
-            </div>
+            )}
           </div>
         </DialogHeader>
 
@@ -996,43 +354,40 @@ export default function AllocatProfileDialog({
             BODY
         ================================================= */}
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-6 sm:px-8">
+        <div className="min-h-0 flex-1 overflow-y-auto px-6 sm:px-7">
+          {/* =================================================
+              ABOUT
+          ================================================= */}
 
-          {/* ABOUT */}
-
-          <ProfileSection
-            eyebrow="About"
-            title="A little about this Allocat"
-          >
-            <p className="max-w-xl whitespace-pre-line text-sm leading-7 text-foreground/80">
+          <ProfileSection eyebrow="About" title="About this Allocat">
+            <p className="max-w-xl whitespace-pre-line text-sm leading-7 text-foreground/75">
               {allocat.bio ||
                 "This Allocat has not added a profile description yet."}
             </p>
           </ProfileSection>
 
-          {/* SKILLS */}
+          {/* =================================================
+              SKILLS
+          ================================================= */}
 
-          <ProfileSection
-            eyebrow="Skills"
-            title="What they work with"
-          >
+          <ProfileSection eyebrow="Skills" title="What they work with">
             {hasSkills ? (
               <div className="flex flex-wrap gap-2">
                 {allocat.skills?.map((skill, index) => (
                   <span
                     key={getSkillKey(skill, index)}
                     className={[
-                      "inline-flex items-center rounded-lg",
-                      "border px-3 py-1.5",
-                      "text-[0.7rem] font-semibold",
-                      "transition-colors",
+                      "inline-flex max-w-full items-center rounded-lg border",
+                      "border-border/55 bg-surface-2/50",
+                      "px-2.5 py-1.5",
+                      "text-[0.68rem] font-medium text-foreground/75",
 
-                      index === 0
-                        ? "border-primary/20 bg-primary/[0.07] text-primary"
-                        : "border-border bg-muted/30 text-foreground/80",
+                      "dark:border-border",
+                      "dark:bg-surface-2/60",
+                      "dark:text-foreground/80",
                     ].join(" ")}
                   >
-                    {getSkillName(skill)}
+                    <span className="truncate">{getSkillName(skill)}</span>
                   </span>
                 ))}
               </div>
@@ -1043,7 +398,9 @@ export default function AllocatProfileDialog({
             )}
           </ProfileSection>
 
-          {/* DETAILS */}
+          {/* =================================================
+              DETAILS
+          ================================================= */}
 
           <ProfileSection
             eyebrow="Profile"
@@ -1057,9 +414,7 @@ export default function AllocatProfileDialog({
                 value={
                   yearsExperience > 0
                     ? `${yearsExperience} ${
-                        yearsExperience === 1
-                          ? "year"
-                          : "years"
+                        yearsExperience === 1 ? "year" : "years"
                       }`
                     : "Not listed"
                 }
@@ -1075,9 +430,7 @@ export default function AllocatProfileDialog({
                 icon={CheckCircle2Icon}
                 label="Completed work"
                 value={`${completedProjects} ${
-                  completedProjects === 1
-                    ? "project"
-                    : "projects"
+                  completedProjects === 1 ? "project" : "projects"
                 }`}
               />
 
@@ -1096,58 +449,57 @@ export default function AllocatProfileDialog({
           <section className="pb-7">
             <div
               className={[
-                "relative overflow-hidden rounded-xl",
-                "border border-border",
-                "bg-foreground/[0.035] p-5",
-                "dark:bg-card",
+                "overflow-hidden rounded-xl border p-5",
+                subtlePanelSurface,
               ].join(" ")}
             >
-              <div className="pointer-events-none absolute -right-14 -top-20 h-44 w-44 rounded-full bg-primary/[0.07] blur-3xl" />
-
               <div
                 className={[
-                  "relative grid gap-5",
+                  "grid gap-5",
+
                   !isDiscovery && allocat.matchScore !== undefined
-                    ? "sm:grid-cols-[1fr_auto] sm:items-center"
+                    ? "sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"
                     : "",
                 ].join(" ")}
               >
                 <div>
-                  <p className="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                  <p className="text-[0.58rem] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
                     Working rate
                   </p>
 
-                  <p className="mt-2 text-2xl font-black tracking-[-0.035em]">
-                    US${allocat.hourlyRate ?? 0}
+                  <p className="mt-2 text-xl font-semibold tracking-[-0.025em] text-foreground/85 sm:text-2xl">
+                    {hourlyRate}
 
-                    <span className="ml-1 text-xs font-medium text-muted-foreground">
-                      /hour
-                    </span>
+                    {allocat.hourlyRate !== null &&
+                      allocat.hourlyRate !== undefined && (
+                        <span className="ml-1 text-xs font-medium text-muted-foreground">
+                          /hour
+                        </span>
+                      )}
                   </p>
 
-                  <p className="mt-2 max-w-sm text-xs leading-5 text-muted-foreground">
+                  <p className="mt-2 max-w-md text-xs leading-6 text-muted-foreground">
                     {isDiscovery
                       ? "Final scope, availability and terms can be confirmed when you start a project together."
-                      : "Final scope, availability and terms can be confirmed directly after invitation."}
+                      : "Final scope, availability and terms can be confirmed after the invitation is accepted."}
                   </p>
                 </div>
 
-                {!isDiscovery &&
-                  allocat.matchScore !== undefined && (
-                    <div className="sm:border-l sm:border-border sm:pl-6">
-                      <p className="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                        Match
-                      </p>
+                {!isDiscovery && allocat.matchScore !== undefined && (
+                  <div className="border-t border-border/55 pt-4 sm:border-l sm:border-t-0 sm:pl-6 sm:pt-0 dark:border-border">
+                    <p className="text-[0.58rem] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
+                      Project match
+                    </p>
 
-                      <p className="mt-2 text-3xl font-black tracking-[-0.04em] text-primary">
-                        {allocat.matchScore}%
-                      </p>
+                    <p className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-brand-secondary-highlight dark:text-secondary">
+                      {allocat.matchScore}%
+                    </p>
 
-                      <p className="mt-1 text-[0.68rem] text-muted-foreground">
-                        for this project
-                      </p>
-                    </div>
-                  )}
+                    <p className="mt-1 text-[0.66rem] text-muted-foreground">
+                      based on this project
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </section>
@@ -1159,46 +511,48 @@ export default function AllocatProfileDialog({
 
         <div
           className={[
-            "shrink-0 border-t border-border",
-            "bg-muted/[0.18]",
-            "px-6 py-5 sm:px-8",
+            "shrink-0 border-t px-6 py-4",
+            "border-border/55 bg-surface-2/35",
+            "dark:border-border dark:bg-surface-2/45",
+            "sm:px-7",
           ].join(" ")}
         >
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="min-w-0">
-              <p className="text-sm font-bold">
+              <p className="text-sm font-semibold text-foreground/85">
                 {isDiscovery
-                  ? `Want to work with ${
-                      allocat.fullName || "this Allocat"
-                    }?`
-                  : "Looks like a good fit?"}
+                  ? `Want to work with ${allocat.fullName || "this Allocat"}?`
+                  : "Ready to work together?"}
               </p>
 
               <p className="mt-1 max-w-sm text-xs leading-5 text-muted-foreground">
-                {isDiscovery ? (
-                  <>
-                    Start a project and invite{" "}
-                    {allocat.fullName || "this Allocat"}{" "}
-                    to work with you.
-                  </>
-                ) : (
-                  <>
-                    Invite{" "}
-                    {allocat.fullName || "this Allocat"}{" "}
-                    to{" "}
-                    {project?.title || "your project"}.
-                  </>
-                )}
+                {isDiscovery
+                  ? `Create a project and invite ${
+                      allocat.fullName || "this Allocat"
+                    } when you're ready.`
+                  : `Invite ${
+                      allocat.fullName || "this Allocat"
+                    } to ${project?.title || "your project"}.`}
               </p>
             </div>
 
-            <div className="flex shrink-0 gap-2">
+            <div className="flex shrink-0 items-center justify-end gap-2">
               <Button
                 type="button"
                 variant="ghost"
                 disabled={inviting}
                 onClick={() => onOpenChange(false)}
-                className="h-10 rounded-lg px-4 text-xs text-muted-foreground shadow-none"
+                className={[
+                  "h-10 rounded-lg px-4",
+                  "text-xs font-medium shadow-none",
+                  "text-muted-foreground",
+
+                  "hover:bg-surface-3/60",
+                  "hover:text-foreground/90",
+
+                  "dark:hover:bg-surface-3",
+                  "dark:hover:text-foreground",
+                ].join(" ")}
               >
                 Close
               </Button>
@@ -1206,9 +560,14 @@ export default function AllocatProfileDialog({
               {isDiscovery ? (
                 <Button
                   type="button"
+                  variant="ghost"
                   onClick={onStartProject}
                   disabled={!onStartProject}
-                  className="h-10 rounded-lg px-5 text-xs font-semibold shadow-none"
+                  className={[
+                    "h-10 rounded-lg px-5",
+                    "text-xs font-semibold shadow-none",
+                    primaryActionButton,
+                  ].join(" ")}
                 >
                   <BriefcaseBusinessIcon size={14} />
                   Start a project
@@ -1216,38 +575,31 @@ export default function AllocatProfileDialog({
               ) : (
                 <Button
                   type="button"
+                  variant="ghost"
                   onClick={onInvite}
-                  disabled={
-                    !project ||
-                    !onInvite ||
-                    inviting ||
-                    invited
-                  }
-                  variant={
-                    invited
-                      ? "outline"
-                      : "default"
-                  }
+                  disabled={!project || !onInvite || inviting || invited}
                   className={[
-                    "h-10 rounded-lg px-5 text-xs shadow-none",
+                    "h-10 rounded-lg px-5",
+                    "text-xs font-semibold shadow-none",
 
                     invited
                       ? [
-                          "border-chart-3/25",
-                          "bg-chart-3/[0.08]",
-                          "text-chart-3",
-                          "hover:bg-chart-3/[0.08]",
-                          "hover:text-chart-3",
+                          "border border-status-pending/20",
+                          "bg-status-pending/[0.07]",
+                          "text-status-pending-foreground",
+
+                          "hover:bg-status-pending/[0.07]",
+                          "hover:text-status-pending-foreground",
+
+                          "dark:border-status-pending/15",
+                          "dark:bg-status-pending/[0.06]",
                         ].join(" ")
-                      : "",
+                      : primaryActionButton,
                   ].join(" ")}
                 >
                   {inviting ? (
                     <>
-                      <LoaderCircleIcon
-                        size={14}
-                        className="animate-spin"
-                      />
+                      <LoaderCircleIcon size={14} className="animate-spin" />
                       Sending
                     </>
                   ) : invited ? (
@@ -1290,17 +642,19 @@ function ProfileSection({
     <section
       className={[
         "py-7",
-        bordered
-          ? "border-b border-border"
-          : "",
+        bordered ? "border-b border-border/55 dark:border-border" : "",
       ].join(" ")}
     >
       <div className="mb-4">
-        <p className="text-[0.6rem] font-semibold uppercase tracking-[0.17em] text-primary">
-          {eyebrow}
-        </p>
+        <div className="flex items-center gap-2">
+          <span className="h-1.5 w-1.5 rounded-full bg-brand-secondary-highlight/75 dark:bg-secondary/75" />
 
-        <h3 className="mt-1.5 text-sm font-black tracking-[-0.015em]">
+          <p className="text-[0.58rem] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
+            {eyebrow}
+          </p>
+        </div>
+
+        <h3 className="mt-2 text-sm font-semibold tracking-[-0.015em] text-foreground/85">
           {title}
         </h3>
       </div>
@@ -1319,11 +673,11 @@ function HeroMetric({
   value,
   sub,
   icon: Icon,
-  divided = false,
   accent = false,
   iconClass = "",
   valueClass = "",
   surfaceClass = "",
+  className = "",
 }: {
   label: string;
   value: string;
@@ -1332,60 +686,57 @@ function HeroMetric({
     size?: number;
     className?: string;
   }>;
-  divided?: boolean;
   accent?: boolean;
   iconClass?: string;
   valueClass?: string;
   surfaceClass?: string;
+  className?: string;
 }) {
   return (
     <div
       className={[
         "min-w-0 px-4 py-4",
-        divided
-          ? "border-l border-border"
-          : "",
-        accent
-          ? "bg-primary/[0.035]"
-          : "",
         surfaceClass,
+        accent
+          ? "bg-brand-secondary-highlight/[0.035] dark:bg-secondary/[0.035]"
+          : "",
+        className,
       ].join(" ")}
     >
       <div className="flex items-center gap-1.5 text-muted-foreground">
         {Icon && (
           <Icon
-            size={12}
+            size={11}
             className={
               iconClass ||
-              (
-                accent
-                  ? "text-primary"
-                  : ""
-              )
+              (accent
+                ? "text-brand-secondary-highlight dark:text-secondary"
+                : "")
             }
           />
         )}
 
-        <p className="text-[0.57rem] font-semibold uppercase tracking-[0.13em]">
+        <p className="truncate text-[0.54rem] font-semibold uppercase tracking-[0.12em]">
           {label}
         </p>
       </div>
 
       <p
         className={[
-          "mt-1.5 truncate text-sm font-black tracking-[-0.02em]",
+          "mt-1.5 truncate",
+          "text-sm font-semibold tracking-[-0.015em]",
+          "text-foreground/80",
+
           valueClass ||
-          (
-            accent
-              ? "text-primary"
-              : ""
-          ),
+            (accent
+              ? "text-brand-secondary-highlight dark:text-secondary"
+              : ""),
         ].join(" ")}
       >
         {value}
 
         {sub && (
-          <span className="ml-1 text-[0.62rem] font-medium text-muted-foreground">
+          <span className="ml-1 text-[0.6rem] font-medium text-muted-foreground">
             {sub}
           </span>
         )}
@@ -1413,28 +764,33 @@ function InfoTile({
   return (
     <article
       className={[
-        "group flex items-start gap-3",
-        "rounded-xl border border-border",
-        "bg-card/50 p-4",
-        "transition-colors",
-        "hover:bg-muted/20",
+        "flex items-start gap-3 rounded-xl border p-4",
+        "border-border/55 bg-surface-2/40",
+        "transition-[background-color,border-color] duration-150",
+
+        "hover:border-border/75",
+        "hover:bg-surface-2/60",
+
+        "dark:border-border",
+        "dark:bg-surface-2/50",
+        "dark:hover:bg-surface-3/55",
       ].join(" ")}
     >
       <span
         className={[
-          "flex h-9 w-9 shrink-0 items-center justify-center",
-          "rounded-lg bg-primary/[0.07] text-primary",
+          "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
+          subtleIconSurface,
         ].join(" ")}
       >
-        <Icon size={16} />
+        <Icon size={14} />
       </span>
 
       <div className="min-w-0">
-        <p className="text-[0.61rem] font-semibold uppercase tracking-[0.13em] text-muted-foreground">
+        <p className="text-[0.57rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
           {label}
         </p>
 
-        <p className="mt-1.5 break-words text-sm font-semibold">
+        <p className="mt-1.5 break-words text-sm font-semibold text-foreground/80">
           {value}
         </p>
       </div>
@@ -1446,9 +802,7 @@ function InfoTile({
    RATING STYLE
 ========================================================= */
 
-function getRatingStyle(
-  rating: number,
-): RatingStyle {
+function getRatingStyle(rating: number): RatingStyle {
   if (rating <= 0) {
     return {
       text: "text-muted-foreground",
@@ -1459,24 +813,24 @@ function getRatingStyle(
 
   if (rating < 3) {
     return {
-      text: "text-destructive",
-      star: "fill-current text-destructive",
-      surface: "bg-destructive/[0.04]",
+      text: "text-destructive/90",
+      star: "fill-current text-destructive/85",
+      surface: "bg-destructive/[0.025]",
     };
   }
 
   if (rating < 4) {
     return {
-      text: "text-chart-3",
-      star: "fill-current text-chart-3",
-      surface: "bg-chart-3/[0.04]",
+      text: "text-brand-amber/90",
+      star: "fill-current text-brand-amber/85",
+      surface: "bg-brand-amber/[0.025]",
     };
   }
 
   return {
-    text: "text-chart-2",
-    star: "fill-current text-chart-2",
-    surface: "bg-chart-2/[0.04]",
+    text: "text-brand-green/90",
+    star: "fill-current text-brand-green/80",
+    surface: "bg-brand-green/[0.025]",
   };
 }
 
@@ -1484,9 +838,7 @@ function getRatingStyle(
    SKILLS
 ========================================================= */
 
-function getSkillName(
-  skill: SkillItem,
-): string {
+function getSkillName(skill: SkillItem): string {
   if (typeof skill === "string") {
     return skill;
   }
@@ -1494,27 +846,19 @@ function getSkillName(
   return skill.name;
 }
 
-function getSkillKey(
-  skill: SkillItem,
-  index: number,
-): string {
+function getSkillKey(skill: SkillItem, index: number): string {
   if (typeof skill === "string") {
     return `${skill}-${index}`;
   }
 
-  return (
-    skill.id ||
-    `${skill.name}-${index}`
-  );
+  return skill.id || `${skill.name}-${index}`;
 }
 
 /* =========================================================
    AVAILABILITY
 ========================================================= */
 
-function formatAvailability(
-  availability?: boolean | string,
-): string {
+function formatAvailability(availability?: boolean | string): string {
   if (availability === true) {
     return "Available";
   }
@@ -1529,40 +873,42 @@ function formatAvailability(
 
   return availability
     .replace(/[-_]/g, " ")
-    .replace(
-      /\b\w/g,
-      character =>
-        character.toUpperCase(),
-    );
+    .replace(/\b\w/g, (character) => character.toUpperCase());
+}
+
+/* =========================================================
+   RATE
+========================================================= */
+
+function formatHourlyRate(hourlyRate?: number | null): string {
+  if (
+    hourlyRate === null ||
+    hourlyRate === undefined ||
+    !Number.isFinite(hourlyRate)
+  ) {
+    return "Not set";
+  }
+
+  return `US$${hourlyRate}`;
 }
 
 /* =========================================================
    DATE
 ========================================================= */
 
-function formatJoinedDate(
-  joinedAt?: string,
-): string {
+function formatJoinedDate(joinedAt?: string): string {
   if (!joinedAt) {
     return "Not available";
   }
 
-  const joinedDate =
-    new Date(joinedAt);
+  const joinedDate = new Date(joinedAt);
 
-  if (
-    Number.isNaN(
-      joinedDate.getTime(),
-    )
-  ) {
+  if (Number.isNaN(joinedDate.getTime())) {
     return "Not available";
   }
 
-  return new Intl.DateTimeFormat(
-    "en",
-    {
-      month: "long",
-      year: "numeric",
-    },
-  ).format(joinedDate);
+  return new Intl.DateTimeFormat("en", {
+    month: "long",
+    year: "numeric",
+  }).format(joinedDate);
 }

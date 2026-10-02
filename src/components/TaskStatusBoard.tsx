@@ -1,8 +1,4 @@
-import {
-  CircleDotIcon,
-  ListTodoIcon,
-  PlusIcon,
-} from "lucide-react";
+import { CircleDotIcon, ListTodoIcon, PlusIcon } from "lucide-react";
 
 import { useDroppable } from "@dnd-kit/core";
 
@@ -12,10 +8,14 @@ import type { Task } from "@/Types/task";
 import CreateTaskDialog from "./CreateTaskDialogue";
 import { DraggableTask } from "./DraggableTask";
 
-type Status = "pending" | "active" | "complete" | "overdue";
+/* =========================================================
+   TYPES
+========================================================= */
+
+type WorkflowStatus = "pending" | "active" | "complete";
 
 type Props = {
-  status: Status;
+  status: WorkflowStatus;
   title: string;
   description: string;
   tasks?: Task[];
@@ -23,7 +23,7 @@ type Props = {
   onTaskCreated?: () => void;
   canManageTasks?: boolean;
   className?: string;
-  onTaskMove?: (taskId: string, status: Status) => void | Promise<void>;
+  onTaskMove?: (taskId: string, status: WorkflowStatus) => void | Promise<void>;
   onTaskEdit?: (task: Task) => void;
   onTaskDelete?: (task: Task) => void;
 };
@@ -35,7 +35,11 @@ type StatusAppearance = {
   surface: string;
 };
 
-const statusAppearance: Record<Status, StatusAppearance> = {
+/* =========================================================
+   STATUS APPEARANCE
+========================================================= */
+
+const statusAppearance: Record<WorkflowStatus, StatusAppearance> = {
   pending: {
     dot: "bg-[#B98645] dark:bg-[#F0A23A]",
     text: "text-[#8A632F] dark:text-[#F0A23A]",
@@ -56,21 +60,11 @@ const statusAppearance: Record<Status, StatusAppearance> = {
     line: "bg-[#568B5E] dark:bg-[#38D200]",
     surface: "bg-[#568B5E]/[0.035] dark:bg-[#38D200]/[0.02]",
   },
-
-  overdue: {
-    dot: "bg-[#AD3A12]",
-    text: "text-[#9F3C1A] dark:text-[#D27857]",
-    line: "bg-[#AD3A12]",
-    surface: "bg-[#AD3A12]/[0.025]",
-  },
 };
 
 const emptyLaneMessages: Record<
-  Status,
-  {
-    manage: string;
-    view: string;
-  }
+  WorkflowStatus,
+  { manage: string; view: string }
 > = {
   pending: {
     manage: "Create a task or move one here.",
@@ -86,12 +80,11 @@ const emptyLaneMessages: Record<
     manage: "Move completed tasks here.",
     view: "Completed tasks will appear here.",
   },
-
-  overdue: {
-    manage: "Overdue tasks will appear here.",
-    view: "Overdue tasks will appear here.",
-  },
 };
+
+/* =========================================================
+   TASK STATUS BOARD
+========================================================= */
 
 function TaskStatusBoard({
   status,
@@ -118,8 +111,8 @@ function TaskStatusBoard({
     <section
       ref={setNodeRef}
       className={[
-        "group relative flex min-h-[240px] w-full min-w-[236px] flex-col overflow-hidden",
-        "max-h-[calc(100vh-250px)] rounded-[1.2rem] border",
+        "group relative flex min-h-[420px] w-full min-w-[280px] flex-col overflow-hidden",
+        "max-h-[calc(100vh-245px)] rounded-[1.15rem] border",
         "border-border/80 bg-background",
         "transition-[background-color,border-color,box-shadow] duration-200",
         canManageTasks && isOver
@@ -157,8 +150,7 @@ function TaskStatusBoard({
             <span
               className={[
                 "inline-flex h-5 min-w-5 items-center justify-center rounded-md",
-                "bg-muted px-1.5",
-                "text-[0.6rem] font-semibold text-muted-foreground",
+                "bg-muted px-1.5 text-[0.6rem] font-semibold text-muted-foreground",
               ].join(" ")}
             >
               {tasks.length}
@@ -188,12 +180,7 @@ function TaskStatusBoard({
         </div>
 
         <div className="mt-3 h-px overflow-hidden bg-border/70">
-          <div
-            className={[
-              "h-px w-10",
-              appearance.line,
-            ].join(" ")}
-          />
+          <div className={["h-px w-10", appearance.line].join(" ")} />
         </div>
       </div>
 
@@ -206,7 +193,7 @@ function TaskStatusBoard({
           />
         ) : (
           <div className="flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto pr-1 scrollbar-thin">
-            {tasks.map(task => (
+            {tasks.map((task) => (
               <DraggableTask
                 key={task.id}
                 task={task}
@@ -244,7 +231,7 @@ function EmptyLane({
   emptyTitle,
   canManageTasks,
 }: {
-  status: Status;
+  status: WorkflowStatus;
   emptyTitle: string;
   canManageTasks: boolean;
 }) {
@@ -257,7 +244,7 @@ function EmptyLane({
   return (
     <div
       className={[
-        "flex min-h-[170px] flex-1 flex-col items-center justify-center",
+        "flex min-h-[260px] flex-1 flex-col items-center justify-center",
         "rounded-xl border border-dashed border-border/70",
         "px-5 py-8 text-center",
         appearance.surface,
@@ -277,11 +264,9 @@ function EmptyLane({
         )}
       </span>
 
-      <p className="mt-3 text-xs font-semibold text-foreground">
-        {emptyTitle}
-      </p>
+      <p className="mt-3 text-xs font-semibold text-foreground">{emptyTitle}</p>
 
-      <p className="mt-1 max-w-[190px] text-[0.66rem] leading-5 text-muted-foreground">
+      <p className="mt-1 max-w-[190px] text-[0.66rem] leading-5 text-muted-foreground dark:text-[#94A3B8]">
         {message}
       </p>
     </div>

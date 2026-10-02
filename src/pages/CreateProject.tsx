@@ -18,11 +18,7 @@ import api from "@/api/axios";
 import MinimalNavMenu from "@/components/MinimalNavMenu";
 import NewProjectForm from "@/components/NewProjectForm";
 
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 import { Button } from "@/components/ui/button";
 
@@ -48,6 +44,28 @@ type SelectedAllocat = {
 };
 
 /* =========================================================
+   SHARED THEME
+========================================================= */
+
+const createProjectIconSurface = [
+  "bg-surface-2",
+  "text-brand-secondary-highlight",
+  "ring-1 ring-inset ring-border/45",
+
+  "dark:bg-secondary/[0.08]",
+  "dark:text-secondary",
+  "dark:ring-secondary/12",
+].join(" ");
+
+const subtleCardSurface = [
+  "border-border/65",
+  "bg-surface-2/60",
+
+  "dark:border-border",
+  "dark:bg-surface-1",
+].join(" ");
+
+/* =========================================================
    CREATE PROJECT
 ========================================================= */
 
@@ -56,7 +74,9 @@ function CreateProject() {
 
   const allocatId = searchParams.get("allocat");
 
-  const [selectedAllocat, setSelectedAllocat] = useState<SelectedAllocat | null>(null);
+  const [selectedAllocat, setSelectedAllocat] =
+    useState<SelectedAllocat | null>(null);
+
   const [loadingAllocat, setLoadingAllocat] = useState(Boolean(allocatId));
   const [allocatError, setAllocatError] = useState<string | null>(null);
 
@@ -69,6 +89,7 @@ function CreateProject() {
       setSelectedAllocat(null);
       setAllocatError(null);
       setLoadingAllocat(false);
+
       return;
     }
 
@@ -97,7 +118,9 @@ function CreateProject() {
           "This Allocat profile is no longer available. Remove the selection to continue creating your project.",
         );
       } finally {
-        if (!cancelled) setLoadingAllocat(false);
+        if (!cancelled) {
+          setLoadingAllocat(false);
+        }
       }
     }
 
@@ -125,16 +148,19 @@ function CreateProject() {
   ======================================================= */
 
   return (
-    <div className="min-h-screen bg-[#F3F5F2] text-[#30383A] dark:bg-[#08171C] dark:text-white">
+    <div className="min-h-screen bg-background text-foreground">
       {/* ===================================================
           HEADER
       =================================================== */}
 
       <header
         className={[
-          "sticky top-0 z-40 border-b backdrop-blur-xl",
-          "border-[#0D566D]/[0.055] bg-[#F8FAF8]/95",
-          "dark:border-white/[0.055] dark:bg-[#08171C]/95",
+          "sticky top-0 z-40 border-b",
+          "border-border/60",
+          "bg-background/95",
+          "backdrop-blur-xl",
+
+          "dark:border-border",
         ].join(" ")}
       >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -153,9 +179,9 @@ function CreateProject() {
           ================================================= */}
 
           <motion.header
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, ease: "easeOut" }}
+            transition={{ duration: 0.35, ease: "easeOut" }}
             className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between"
           >
             <div className="min-w-0 max-w-2xl">
@@ -163,36 +189,38 @@ function CreateProject() {
                 <span
                   className={[
                     "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
-                    "bg-[#DCE8E4] text-[#0D566D]",
-                    "dark:bg-[#DEDA00]/[0.08] dark:text-[#DEDA00]",
+                    createProjectIconSurface,
                   ].join(" ")}
                 >
                   <FolderPlusIcon size={15} />
                 </span>
 
-                <p className="text-[0.57rem] font-semibold uppercase tracking-[0.17em] text-[#0D566D] dark:text-[#DEDA00]">
+                <p className="text-[0.57rem] font-semibold uppercase tracking-[0.17em] text-brand-secondary-highlight dark:text-secondary/90">
                   New project
                 </p>
               </div>
 
-              <h1 className="mt-4 text-3xl font-semibold leading-[1.06] tracking-[-0.035em] sm:text-4xl">
+              <h1 className="mt-4 text-3xl font-semibold leading-[1.06] tracking-[-0.035em] text-foreground/90 sm:text-4xl dark:text-foreground">
                 {selectedAllocat
                   ? `Start a project with ${selectedAllocat.fullName}.`
                   : "Create a project."}
               </h1>
 
-              <p className="mt-2.5 max-w-xl text-sm leading-6 text-[#718084] sm:text-[0.93rem] dark:text-[#94A3B8]">
+              <p className="mt-2.5 max-w-xl text-sm leading-6 text-muted-foreground sm:text-[0.93rem]">
                 {selectedAllocat
                   ? "Define the work, set the timeline and send an invitation once the project is ready."
                   : "Add the essential project details now. You can refine the workspace as the work develops."}
               </p>
             </div>
 
-            <div className="flex shrink-0 items-center gap-2 pb-0.5 text-[0.62rem] font-medium text-[#718084] dark:text-[#94A3B8]">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#0D566D] dark:bg-[#DEDA00]" />
-              3 steps
-              <span className="text-[#A0AAAC] dark:text-white/20">·</span>
-              A few minutes
+            <div className="flex shrink-0 items-center gap-2 pb-0.5 text-[0.62rem] font-medium text-muted-foreground">
+              <span className="h-1.5 w-1.5 rounded-full bg-brand-secondary-highlight/75 dark:bg-secondary/80" />
+
+              <span>3 steps</span>
+
+              <span className="text-muted-foreground/35">·</span>
+
+              <span>A few minutes</span>
             </div>
           </motion.header>
 
@@ -200,7 +228,7 @@ function CreateProject() {
               DIVIDER
           ================================================= */}
 
-          <div className="mt-6 h-px bg-[#0D566D]/[0.07] dark:bg-white/[0.055]" />
+          <div className="mt-6 h-px bg-border/60 dark:bg-border" />
 
           {/* =================================================
               SELECTED ALLOCAT
@@ -209,9 +237,9 @@ function CreateProject() {
           {allocatId && (
             <motion.section
               className="mt-5"
-              initial={{ opacity: 0, y: 8 }}
+              initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.04, duration: 0.35 }}
+              transition={{ delay: 0.04, duration: 0.3 }}
             >
               {loadingAllocat ? (
                 <SelectedAllocatLoading />
@@ -236,9 +264,13 @@ function CreateProject() {
           {!loadingAllocat && !allocatError && (
             <motion.section
               className={allocatId ? "mt-5 min-w-0" : "mt-6 min-w-0"}
-              initial={{ opacity: 0, y: 12 }}
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.06, duration: 0.4, ease: "easeOut" }}
+              transition={{
+                delay: 0.05,
+                duration: 0.35,
+                ease: "easeOut",
+              }}
             >
               <NewProjectForm
                 selectedAllocatId={selectedAllocat?.allocatrUserId ?? null}
@@ -252,7 +284,7 @@ function CreateProject() {
           ================================================= */}
 
           {!loadingAllocat && !allocatError && (
-            <p className="mt-4 px-1 text-[0.64rem] leading-5 text-[#7A878A] dark:text-[#7F9198]">
+            <p className="mt-4 px-1 text-[0.64rem] leading-5 text-muted-foreground/75 dark:text-muted-foreground">
               Project details can be edited later from the project workspace.
             </p>
           )}
@@ -275,25 +307,28 @@ function SelectedAllocatCard({
 }) {
   const rating = allocat.averageRating ?? allocat.rating ?? 0;
 
-  const isVerified = Boolean(
-    allocat.isVerified ??
-      allocat.verified ??
-      false,
-  );
+  const isVerified = Boolean(allocat.isVerified ?? allocat.verified ?? false);
 
   return (
     <div
       className={[
-        "relative overflow-hidden rounded-xl border px-4 py-3.5 sm:px-5",
-        "border-[#0D566D]/[0.085] bg-[#EDF4F2]",
-        "dark:border-white/[0.065] dark:bg-[#10262D]",
+        "overflow-hidden rounded-xl border px-4 py-3.5 sm:px-5",
+        subtleCardSurface,
       ].join(" ")}
     >
-      <span className="pointer-events-none absolute -right-12 -top-16 h-36 w-36 rounded-full bg-[#0D566D]/[0.05] blur-3xl dark:bg-[#DEDA00]/[0.02]" />
-
-      <div className="relative flex items-center gap-3.5">
+      <div className="flex items-center gap-3.5">
         <div className="relative shrink-0">
-          <Avatar className="h-12 w-12 border border-[#0D566D]/10 bg-[#DDE9E6] dark:border-white/[0.07] dark:bg-[#0C1D22]">
+          <Avatar
+            className={[
+              "h-12 w-12 border",
+
+              "border-border/70",
+              "bg-surface-3",
+
+              "dark:border-border",
+              "dark:bg-surface-2",
+            ].join(" ")}
+          >
             {allocat.avatarUrl && (
               <AvatarImage
                 src={allocat.avatarUrl}
@@ -302,7 +337,17 @@ function SelectedAllocatCard({
               />
             )}
 
-            <AvatarFallback className="bg-[#DDE9E6] text-xs font-semibold text-[#0D566D] dark:bg-[#0C1D22] dark:text-[#DEDA00]">
+            <AvatarFallback
+              className={[
+                "text-xs font-semibold",
+
+                "bg-surface-3",
+                "text-brand-secondary-highlight",
+
+                "dark:bg-surface-2",
+                "dark:text-secondary",
+              ].join(" ")}
+            >
               {getInitials(allocat.fullName)}
             </AvatarFallback>
           </Avatar>
@@ -310,9 +355,22 @@ function SelectedAllocatCard({
           {isVerified && (
             <span
               className={[
-                "absolute -bottom-1 -right-1 flex h-[18px] w-[18px] items-center justify-center rounded-full border-2",
-                "border-[#EDF4F2] bg-[#0D566D] text-white",
-                "dark:border-[#10262D] dark:bg-[#DEDA00] dark:text-[#303030]",
+                "absolute -bottom-1 -right-1",
+
+                "flex h-[18px] w-[18px] items-center justify-center rounded-full",
+
+                "border-2 border-surface-2",
+
+                "bg-brand-secondary",
+                "text-primary-foreground",
+
+                "dark:border-surface-1",
+                "dark:bg-surface-3",
+                "dark:text-secondary",
+
+                "dark:ring-1",
+                "dark:ring-inset",
+                "dark:ring-secondary/20",
               ].join(" ")}
               title="Verified professional"
             >
@@ -323,31 +381,31 @@ function SelectedAllocatCard({
 
         <div className="min-w-0 flex-1">
           <div className="flex min-w-0 items-center gap-1.5">
-            <h2 className="truncate text-sm font-semibold tracking-[-0.015em]">
+            <h2 className="truncate text-sm font-semibold tracking-[-0.015em] text-foreground/90 dark:text-foreground">
               {allocat.fullName}
             </h2>
 
             {isVerified && (
               <BadgeCheckIcon
                 size={12}
-                className="shrink-0 text-[#0D566D] dark:text-[#DEDA00]"
+                className="shrink-0 text-brand-secondary-highlight dark:text-secondary"
               />
             )}
           </div>
 
-          <p className="mt-0.5 truncate text-[0.66rem] text-[#6E7D80] dark:text-[#94A3B8]">
+          <p className="mt-0.5 truncate text-[0.66rem] text-muted-foreground">
             {allocat.title ||
               allocat.headline ||
               "Professional service provider"}
           </p>
 
-          <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[0.61rem] text-[#718084] dark:text-[#94A3B8]">
+          <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[0.61rem] text-muted-foreground">
             <span className="inline-flex items-center gap-1">
               <StarIcon
                 size={10}
                 className={
                   rating > 0
-                    ? "fill-current text-[#B98645] dark:text-[#DEDA00]"
+                    ? "fill-current text-brand-amber/80 dark:text-status-pending-foreground"
                     : ""
                 }
               />
@@ -358,6 +416,7 @@ function SelectedAllocatCard({
             {allocat.location && (
               <span className="inline-flex min-w-0 items-center gap-1">
                 <MapPinIcon size={10} className="shrink-0" />
+
                 <span className="truncate">{allocat.location}</span>
               </span>
             )}
@@ -372,11 +431,11 @@ function SelectedAllocatCard({
         </div>
 
         <div className="hidden shrink-0 items-center gap-2 sm:flex">
-          <span className="text-[0.57rem] font-semibold uppercase tracking-[0.13em] text-[#0D566D] dark:text-[#DEDA00]">
+          <span className="text-[0.57rem] font-semibold uppercase tracking-[0.13em] text-brand-secondary-highlight/85 dark:text-secondary/85">
             Selected Allocat
           </span>
 
-          <span className="h-1 w-1 rounded-full bg-[#0D566D]/30 dark:bg-[#DEDA00]/35" />
+          <span className="h-1 w-1 rounded-full bg-brand-secondary-highlight/30 dark:bg-secondary/35" />
         </div>
 
         <Button
@@ -387,8 +446,14 @@ function SelectedAllocatCard({
           onClick={onRemove}
           className={[
             "h-8 w-8 shrink-0 rounded-lg p-0 shadow-none",
-            "text-[#718084] hover:bg-[#DCE8E4] hover:text-[#0D566D]",
-            "dark:text-[#94A3B8] dark:hover:bg-white/[0.05] dark:hover:text-white",
+
+            "text-muted-foreground",
+
+            "hover:bg-surface-3",
+            "hover:text-foreground/90",
+
+            "dark:hover:bg-surface-3/75",
+            "dark:hover:text-foreground",
           ].join(" ")}
         >
           <XIcon size={13} />
@@ -404,17 +469,27 @@ function SelectedAllocatCard({
 
 function SelectedAllocatLoading() {
   return (
-    <div className="flex min-h-[76px] items-center gap-3.5 rounded-xl border border-[#0D566D]/[0.08] bg-[#EDF4F2] px-4 py-3.5 dark:border-white/[0.065] dark:bg-[#10262D]">
-      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#DCE8E4] text-[#0D566D] dark:bg-[#DEDA00]/[0.08] dark:text-[#DEDA00]">
+    <div
+      className={[
+        "flex min-h-[76px] items-center gap-3.5 rounded-xl border px-4 py-3.5",
+        subtleCardSurface,
+      ].join(" ")}
+    >
+      <span
+        className={[
+          "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg",
+          createProjectIconSurface,
+        ].join(" ")}
+      >
         <LoaderCircleIcon size={17} className="animate-spin" />
       </span>
 
       <div>
-        <p className="text-xs font-semibold">
+        <p className="text-xs font-semibold text-foreground/85 dark:text-foreground">
           Loading selected Allocat
         </p>
 
-        <p className="mt-0.5 text-[0.64rem] text-[#718084] dark:text-[#94A3B8]">
+        <p className="mt-0.5 text-[0.64rem] text-muted-foreground">
           Getting their public profile.
         </p>
       </div>
@@ -434,18 +509,38 @@ function SelectedAllocatError({
   onRemove: () => void;
 }) {
   return (
-    <div className="rounded-xl border border-[#AD3A12]/15 bg-[#AD3A12]/[0.035] p-4 dark:border-[#AD3A12]/20 dark:bg-[#AD3A12]/[0.055]">
+    <div
+      className={[
+        "rounded-xl border p-4",
+
+        "border-destructive/15",
+        "bg-destructive/[0.035]",
+
+        "dark:border-status-overdue/20",
+        "dark:bg-status-overdue/[0.07]",
+      ].join(" ")}
+    >
       <div className="flex items-start gap-3.5">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#AD3A12]/10 text-[#9F3C1A] dark:text-[#D27857]">
+        <span
+          className={[
+            "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
+
+            "bg-destructive/[0.07]",
+            "text-destructive",
+
+            "dark:bg-status-overdue/[0.10]",
+            "dark:text-status-overdue-foreground",
+          ].join(" ")}
+        >
           <UserRoundIcon size={15} />
         </span>
 
         <div className="min-w-0 flex-1">
-          <p className="text-xs font-semibold">
+          <p className="text-xs font-semibold text-foreground/85 dark:text-foreground">
             Selected Allocat unavailable
           </p>
 
-          <p className="mt-1 max-w-2xl text-[0.65rem] leading-5 text-[#718084] dark:text-[#94A3B8]">
+          <p className="mt-1 max-w-2xl text-[0.65rem] leading-5 text-muted-foreground">
             {message}
           </p>
         </div>
@@ -456,7 +551,18 @@ function SelectedAllocatError({
           onClick={onRemove}
           title="Remove selected Allocat"
           aria-label="Remove selected Allocat"
-          className="h-8 w-8 shrink-0 rounded-lg p-0 text-[#9F3C1A] shadow-none hover:bg-[#AD3A12]/[0.06] dark:text-[#D27857]"
+          className={[
+            "h-8 w-8 shrink-0 rounded-lg p-0 shadow-none",
+
+            "text-destructive",
+
+            "hover:bg-destructive/[0.06]",
+            "hover:text-destructive",
+
+            "dark:text-status-overdue-foreground",
+            "dark:hover:bg-status-overdue/[0.10]",
+            "dark:hover:text-status-overdue-foreground",
+          ].join(" ")}
         >
           <XIcon size={13} />
         </Button>
@@ -476,7 +582,7 @@ function getInitials(name?: string | null) {
     .trim()
     .split(/\s+/)
     .slice(0, 2)
-    .map(part => part.charAt(0).toUpperCase())
+    .map((part) => part.charAt(0).toUpperCase())
     .join("");
 }
 

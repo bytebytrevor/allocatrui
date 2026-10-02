@@ -66,16 +66,9 @@ type CalendarEventType =
   | "task"
   | "plan-block";
 
-type CalendarRelationship =
-  | "owner"
-  | "allocat"
-  | "planning";
+type CalendarRelationship = "owner" | "allocat" | "planning";
 
-type CalendarTaskStatus =
-  | "pending"
-  | "active"
-  | "complete"
-  | "overdue";
+type CalendarTaskStatus = "pending" | "active" | "complete" | "overdue";
 
 type CalendarEvent = {
   id: string;
@@ -169,15 +162,7 @@ type CalendarItemAppearance = {
    CONSTANTS
 ========================================================= */
 
-const WEEK_DAYS = [
-  "Mon",
-  "Tue",
-  "Wed",
-  "Thu",
-  "Fri",
-  "Sat",
-  "Sun",
-];
+const WEEK_DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 const WEEK_START_HOUR = 6;
 const WEEK_END_HOUR = 23;
@@ -191,29 +176,139 @@ const HOUR_HEIGHT = 64;
 const WEEKLY_CAPACITY_HOURS = 40;
 
 /* =========================================================
+   THEME
+========================================================= */
+
+const calendarIconSurface = [
+  "bg-surface-3/65",
+  "text-foreground/55",
+  "ring-1 ring-inset ring-border/35",
+
+  "dark:bg-surface-2/80",
+  "dark:text-brand-secondary-highlight",
+  "dark:ring-border",
+].join(" ");
+
+const primaryActionButton = [
+  "border border-brand-secondary-highlight/15",
+  "bg-brand-secondary-highlight",
+  "text-primary-foreground",
+
+  "hover:border-brand-secondary-highlight/20",
+  "hover:bg-brand-secondary-highlight/90",
+  "hover:text-primary-foreground",
+
+  "dark:border-secondary/10",
+  "dark:bg-secondary",
+  "dark:text-secondary-foreground",
+
+  "dark:hover:border-secondary/15",
+  "dark:hover:bg-secondary/90",
+  "dark:hover:text-secondary-foreground",
+].join(" ");
+
+const secondaryActionButton = [
+  "border-border/65",
+  "bg-surface-2/40",
+  "text-foreground/70",
+
+  "hover:border-border/85",
+  "hover:bg-surface-3/60",
+  "hover:text-foreground/90",
+
+  "dark:border-border",
+  "dark:bg-surface-2/65",
+  "dark:text-foreground/75",
+
+  "dark:hover:bg-surface-3/70",
+  "dark:hover:text-foreground",
+].join(" ");
+
+const ghostActionButton = [
+  "text-muted-foreground",
+
+  "hover:bg-surface-3/55",
+  "hover:text-foreground/90",
+
+  "dark:hover:bg-surface-3/65",
+  "dark:hover:text-foreground",
+].join(" ");
+
+const calendarShell = [
+  "border-border/55",
+  "bg-card",
+
+  "dark:border-border",
+  "dark:bg-card",
+].join(" ");
+
+const softPanelSurface = [
+  "border-border/55",
+  "bg-surface-2/45",
+
+  "dark:border-border",
+  "dark:bg-surface-2/60",
+].join(" ");
+
+const insetPanelSurface = [
+  "border-border/50",
+  "bg-surface-1/70",
+
+  "dark:border-border",
+  "dark:bg-surface-1/80",
+].join(" ");
+
+const formControlSurface = [
+  "border-border/60",
+  "bg-surface-2/40",
+  "text-foreground/85",
+
+  "outline-none",
+  "shadow-none",
+
+  "transition-[background-color,border-color,box-shadow,color] duration-150",
+
+  "hover:border-border/80",
+  "hover:bg-surface-2/55",
+
+  "focus:border-ring/25",
+  "focus:bg-surface-1",
+  "focus:ring-1",
+  "focus:ring-ring/10",
+
+  "dark:border-border",
+  "dark:bg-surface-2/65",
+
+  "dark:hover:bg-surface-3/60",
+
+  "dark:focus:border-secondary/20",
+  "dark:focus:bg-surface-2",
+  "dark:focus:ring-secondary/[0.08]",
+].join(" ");
+
+/* =========================================================
    PAGE
 ========================================================= */
 
 function Calendar() {
   const navigate = useNavigate();
 
-  const {
-    projects,
-    currentProject,
-    projectId,
-    isAllocat,
-  } = useOutletContext<ProjectWorkspaceContext>();
+  const { projects, currentProject, projectId, isAllocat } =
+    useOutletContext<ProjectWorkspaceContext>();
 
   const [view, setView] = useState<CalendarView>("month");
   const [scope, setScope] = useState<CalendarScope>("all");
   const [anchorDate, setAnchorDate] = useState(() => startOfDay(new Date()));
 
   const [events, setEvents] = useState<CalendarEvent[]>([]);
-  const [planningBlocks, setPlanningBlocks] = useState<CalendarPlanningBlock[]>([]);
+  const [planningBlocks, setPlanningBlocks] = useState<CalendarPlanningBlock[]>(
+    [],
+  );
   const [focusTasks, setFocusTasks] = useState<CalendarFocusTask[]>([]);
 
   const [selectedItem, setSelectedItem] = useState<CalendarItem | null>(null);
-  const [editingBlock, setEditingBlock] = useState<CalendarPlanningBlock | null>(null);
+  const [editingBlock, setEditingBlock] =
+    useState<CalendarPlanningBlock | null>(null);
   const [planEditorOpen, setPlanEditorOpen] = useState(false);
   const [planningOpen, setPlanningOpen] = useState(false);
 
@@ -250,10 +345,7 @@ function Calendar() {
   const rangeStartKey = toDateKey(range.start);
   const rangeEndKey = toDateKey(range.end);
 
-  const focusWeekStart = useMemo(
-    () => startOfWeek(anchorDate),
-    [anchorDate],
-  );
+  const focusWeekStart = useMemo(() => startOfWeek(anchorDate), [anchorDate]);
 
   const focusWeekStartKey = toDateKey(focusWeekStart);
 
@@ -263,16 +355,9 @@ function Calendar() {
 
   const fetchCalendarData = useCallback(
     async (force = false) => {
-      const loadKey = [
-        rangeStartKey,
-        rangeEndKey,
-        focusWeekStartKey,
-      ].join(":");
+      const loadKey = [rangeStartKey, rangeEndKey, focusWeekStartKey].join(":");
 
-      if (
-        !force &&
-        lastAutomaticLoadRef.current === loadKey
-      ) {
+      if (!force && lastAutomaticLoadRef.current === loadKey) {
         return;
       }
 
@@ -284,79 +369,55 @@ function Calendar() {
         setLoading(true);
         setError(null);
 
-        const [
-          eventsResponse,
-          blocksResponse,
-          focusResponse,
-        ] = await Promise.all([
-          api.get<CalendarEvent[]>("/calendar", {
-            params: {
-              start: rangeStartKey,
-              end: rangeEndKey,
-            },
-            withCredentials: true,
-          }),
-
-          api.get<CalendarPlanningBlock[]>(
-            "/calendar/plan-blocks",
-            {
+        const [eventsResponse, blocksResponse, focusResponse] =
+          await Promise.all([
+            api.get<CalendarEvent[]>("/calendar", {
               params: {
                 start: rangeStartKey,
                 end: rangeEndKey,
               },
               withCredentials: true,
-            },
-          ),
+            }),
 
-          api.get<CalendarFocusTask[]>(
-            "/calendar/focus",
-            {
+            api.get<CalendarPlanningBlock[]>("/calendar/plan-blocks", {
+              params: {
+                start: rangeStartKey,
+                end: rangeEndKey,
+              },
+              withCredentials: true,
+            }),
+
+            api.get<CalendarFocusTask[]>("/calendar/focus", {
               params: {
                 weekStart: focusWeekStartKey,
               },
               withCredentials: true,
-            },
-          ),
-        ]);
+            }),
+          ]);
 
-        if (
-          requestVersion !==
-          requestVersionRef.current
-        ) {
+        if (requestVersion !== requestVersionRef.current) {
           return;
         }
 
         setEvents(
-          Array.isArray(eventsResponse.data)
-            ? eventsResponse.data
-            : [],
+          Array.isArray(eventsResponse.data) ? eventsResponse.data : [],
         );
 
         setPlanningBlocks(
-          Array.isArray(blocksResponse.data)
-            ? blocksResponse.data
-            : [],
+          Array.isArray(blocksResponse.data) ? blocksResponse.data : [],
         );
 
         setFocusTasks(
-          Array.isArray(focusResponse.data)
-            ? focusResponse.data
-            : [],
+          Array.isArray(focusResponse.data) ? focusResponse.data : [],
         );
       } catch (requestError) {
-        if (
-          requestVersion !==
-          requestVersionRef.current
-        ) {
+        if (requestVersion !== requestVersionRef.current) {
           return;
         }
 
         lastAutomaticLoadRef.current = null;
 
-        console.error(
-          "Could not load calendar:",
-          requestError,
-        );
+        console.error("Could not load calendar:", requestError);
 
         const responseMessage =
           axios.isAxiosError(requestError) &&
@@ -369,19 +430,12 @@ function Calendar() {
             "Your calendar could not be loaded. Please try again.",
         );
       } finally {
-        if (
-          requestVersion ===
-          requestVersionRef.current
-        ) {
+        if (requestVersion === requestVersionRef.current) {
           setLoading(false);
         }
       }
     },
-    [
-      rangeStartKey,
-      rangeEndKey,
-      focusWeekStartKey,
-    ],
+    [rangeStartKey, rangeEndKey, focusWeekStartKey],
   );
 
   useEffect(() => {
@@ -393,13 +447,13 @@ function Calendar() {
   ======================================================= */
 
   const calendarItems = useMemo<CalendarItem[]>(() => {
-    const projectEvents: CalendarItem[] = events.map(event => ({
+    const projectEvents: CalendarItem[] = events.map((event) => ({
       ...event,
       source: "event",
       sourceId: event.id,
     }));
 
-    const planItems: CalendarItem[] = planningBlocks.map(block => ({
+    const planItems: CalendarItem[] = planningBlocks.map((block) => ({
       id: `planning-${block.id}`,
       source: "planning",
       sourceId: block.id,
@@ -418,14 +472,11 @@ function Calendar() {
       relationship: "planning",
     }));
 
-    return [
-      ...projectEvents,
-      ...planItems,
-    ];
+    return [...projectEvents, ...planItems];
   }, [events, planningBlocks]);
 
   const visibleItems = useMemo(() => {
-    return calendarItems.filter(item => {
+    return calendarItems.filter((item) => {
       if (item.relationship === "planning") {
         return true;
       }
@@ -451,26 +502,22 @@ function Calendar() {
     const start = startOfWeek(startOfMonth(anchorDate));
     const today = new Date();
 
-    return Array.from(
-      { length: 42 },
-      (_, index) => {
-        const date = addDays(start, index);
+    return Array.from({ length: 42 }, (_, index) => {
+      const date = addDays(start, index);
 
-        return {
-          date,
-          inCurrentMonth: date.getMonth() === currentMonth,
-          isToday: isSameDay(date, today),
-        };
-      },
-    );
+      return {
+        date,
+        inCurrentMonth: date.getMonth() === currentMonth,
+        isToday: isSameDay(date, today),
+      };
+    });
   }, [anchorDate]);
 
-  const weekDays = useMemo(() => {
-    return Array.from(
-      { length: 7 },
-      (_, index) => addDays(focusWeekStart, index),
-    );
-  }, [focusWeekStart]);
+  const weekDays = useMemo(
+    () =>
+      Array.from({ length: 7 }, (_, index) => addDays(focusWeekStart, index)),
+    [focusWeekStart],
+  );
 
   /* =======================================================
      PLANNING INTELLIGENCE
@@ -484,35 +531,25 @@ function Calendar() {
         calendarItems,
         planningBlocks,
       ),
-    [
-      focusWeekStart,
-      calendarItems,
-      planningBlocks,
-    ],
+    [focusWeekStart, calendarItems, planningBlocks],
   );
 
   const upcomingItems = useMemo(() => {
     const now = new Date();
 
     return calendarItems
-      .filter(item => parseCalendarDate(item.start) >= now)
+      .filter((item) => parseCalendarDate(item.start) >= now)
       .sort(compareCalendarItems)
       .slice(0, 4);
   }, [calendarItems]);
 
   const ownedEventCount = useMemo(
-    () =>
-      events.filter(
-        event => event.relationship === "owner",
-      ).length,
+    () => events.filter((event) => event.relationship === "owner").length,
     [events],
   );
 
   const workEventCount = useMemo(
-    () =>
-      events.filter(
-        event => event.relationship === "allocat",
-      ).length,
+    () => events.filter((event) => event.relationship === "allocat").length,
     [events],
   );
 
@@ -521,25 +558,19 @@ function Calendar() {
   ======================================================= */
 
   function goPrevious() {
-    setAnchorDate(current =>
-      view === "month"
-        ? addMonths(current, -1)
-        : addDays(current, -7),
+    setAnchorDate((current) =>
+      view === "month" ? addMonths(current, -1) : addDays(current, -7),
     );
   }
 
   function goNext() {
-    setAnchorDate(current =>
-      view === "month"
-        ? addMonths(current, 1)
-        : addDays(current, 7),
+    setAnchorDate((current) =>
+      view === "month" ? addMonths(current, 1) : addDays(current, 7),
     );
   }
 
   function goToday() {
-    setAnchorDate(
-      startOfDay(new Date()),
-    );
+    setAnchorDate(startOfDay(new Date()));
   }
 
   /* =======================================================
@@ -547,21 +578,16 @@ function Calendar() {
   ======================================================= */
 
   async function toggleFocus(taskId: string) {
-    const focused = focusTasks.some(
-      task => task.taskId === taskId,
-    );
+    const focused = focusTasks.some((task) => task.taskId === taskId);
 
     try {
       const response = focused
-        ? await api.delete<CalendarFocusTask[]>(
-            `/calendar/focus/${taskId}`,
-            {
-              params: {
-                weekStart: focusWeekStartKey,
-              },
-              withCredentials: true,
+        ? await api.delete<CalendarFocusTask[]>(`/calendar/focus/${taskId}`, {
+            params: {
+              weekStart: focusWeekStartKey,
             },
-          )
+            withCredentials: true,
+          })
         : await api.put<CalendarFocusTask[]>(
             `/calendar/focus/${taskId}`,
             null,
@@ -576,10 +602,7 @@ function Calendar() {
       setFocusTasks(response.data);
     } catch (requestError) {
       setError(
-        getAxiosMessage(
-          requestError,
-          "The weekly focus could not be updated.",
-        ),
+        getAxiosMessage(requestError, "The weekly focus could not be updated."),
       );
     }
   }
@@ -597,8 +620,7 @@ function Calendar() {
     if (item.source !== "planning") return;
 
     const block = planningBlocks.find(
-      planningBlock =>
-        planningBlock.id === item.sourceId,
+      (planningBlock) => planningBlock.id === item.sourceId,
     );
 
     if (!block) return;
@@ -608,24 +630,18 @@ function Calendar() {
     setPlanEditorOpen(true);
   }
 
-  async function savePlanningBlock(
-    payload: PlanningBlockPayload,
-  ) {
+  async function savePlanningBlock(payload: PlanningBlockPayload) {
     try {
       setSavingPlan(true);
 
       if (editingBlock) {
-        await api.patch(
-          `/calendar/plan-blocks/${editingBlock.id}`,
-          payload,
-          { withCredentials: true },
-        );
+        await api.patch(`/calendar/plan-blocks/${editingBlock.id}`, payload, {
+          withCredentials: true,
+        });
       } else {
-        await api.post(
-          "/calendar/plan-blocks",
-          payload,
-          { withCredentials: true },
-        );
+        await api.post("/calendar/plan-blocks", payload, {
+          withCredentials: true,
+        });
       }
 
       setPlanEditorOpen(false);
@@ -634,10 +650,7 @@ function Calendar() {
       await fetchCalendarData(true);
     } catch (requestError) {
       throw new Error(
-        getAxiosMessage(
-          requestError,
-          "The planning block could not be saved.",
-        ),
+        getAxiosMessage(requestError, "The planning block could not be saved."),
       );
     } finally {
       setSavingPlan(false);
@@ -648,10 +661,9 @@ function Calendar() {
     if (item.source !== "planning") return;
 
     try {
-      await api.delete(
-        `/calendar/plan-blocks/${item.sourceId}`,
-        { withCredentials: true },
-      );
+      await api.delete(`/calendar/plan-blocks/${item.sourceId}`, {
+        withCredentials: true,
+      });
 
       setSelectedItem(null);
 
@@ -681,8 +693,7 @@ function Calendar() {
           <span
             className={[
               "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
-              "bg-[#DCE7E3] text-[#315E6C]",
-              "dark:bg-[#DEDA00]/[0.08] dark:text-[#DEDA00]",
+              calendarIconSurface,
             ].join(" ")}
           >
             <CalendarDaysIcon size={16} />
@@ -690,18 +701,18 @@ function Calendar() {
 
           <div className="min-w-0">
             <div className="flex min-w-0 items-center gap-2">
-              <h1 className="text-2xl font-semibold tracking-[-0.035em] text-[#30383A] sm:text-3xl dark:text-white">
+              <h1 className="text-2xl font-semibold tracking-[-0.035em] text-foreground/90 sm:text-3xl dark:text-foreground">
                 Calendar
               </h1>
 
-              <span className="hidden h-1 w-1 shrink-0 rounded-full bg-[#829093] sm:block dark:bg-white/20" />
+              <span className="hidden h-1 w-1 shrink-0 rounded-full bg-muted-foreground/35 sm:block" />
 
-              <span className="hidden max-w-52 truncate text-xs font-medium text-[#768487] sm:block dark:text-white/28">
+              <span className="hidden max-w-52 truncate text-xs font-medium text-muted-foreground/70 sm:block">
                 {currentProject.title}
               </span>
             </div>
 
-            <p className="mt-0.5 text-xs text-[#788689] dark:text-white/28">
+            <p className="mt-0.5 text-xs text-muted-foreground">
               Plan across your projects and client work.
             </p>
           </div>
@@ -721,19 +732,14 @@ function Calendar() {
             onClick={createPlanningBlock}
             className={[
               "h-9 rounded-lg px-3 text-xs font-semibold shadow-none",
-              "bg-[#315E6C] text-white hover:bg-[#294F5B] hover:text-white",
-              "dark:bg-[#DEDA00] dark:text-[#303030]",
-              "dark:hover:bg-[#D4D000] dark:hover:text-[#303030]",
+              primaryActionButton,
             ].join(" ")}
           >
             <PlusIcon size={13} />
             Plan time
           </Button>
 
-          <CalendarViewSwitch
-            view={view}
-            onChange={setView}
-          />
+          <CalendarViewSwitch view={view} onChange={setView} />
         </div>
       </div>
 
@@ -741,38 +747,29 @@ function Calendar() {
           PERIOD TOOLBAR
       =================================================== */}
 
-      <div className="mt-4 flex flex-col gap-3 border-y border-[#315E6C]/[0.07] py-3 sm:flex-row sm:items-center sm:justify-between dark:border-white/[0.055]">
+      <div className="mt-4 flex flex-col gap-3 border-y border-border/55 py-3 sm:flex-row sm:items-center sm:justify-between dark:border-border">
         <div className="flex min-w-0 items-center gap-3">
           <AnimatePresence mode="wait" initial={false}>
             <motion.h2
-              key={`${view}-${formatCalendarHeading(
-                anchorDate,
-                view,
-              )}`}
+              key={`${view}-${formatCalendarHeading(anchorDate, view)}`}
               initial={{ opacity: 0, y: 3 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -3 }}
               transition={{ duration: 0.14 }}
-              className="truncate text-base font-semibold tracking-[-0.02em] text-[#364447] sm:text-lg dark:text-white"
+              className="truncate text-base font-semibold tracking-[-0.02em] text-foreground/85 sm:text-lg dark:text-foreground"
             >
-              {formatCalendarHeading(
-                anchorDate,
-                view,
-              )}
+              {formatCalendarHeading(anchorDate, view)}
             </motion.h2>
           </AnimatePresence>
 
-          <span className="hidden rounded-full bg-[#E2E9E6] px-2 py-1 text-[0.6rem] font-semibold text-[#738185] md:inline-flex dark:bg-white/[0.045] dark:text-white/28">
-            {visibleItems.length}{" "}
-            {visibleItems.length === 1
-              ? "item"
-              : "items"}
+          <span className="hidden rounded-full bg-surface-3/65 px-2 py-1 text-[0.6rem] font-semibold text-muted-foreground md:inline-flex dark:bg-surface-2">
+            {visibleItems.length} {visibleItems.length === 1 ? "item" : "items"}
           </span>
 
-          <span className="hidden items-center gap-1.5 text-[0.6rem] text-[#768487] lg:inline-flex dark:text-white/27">
+          <span className="hidden items-center gap-1.5 text-[0.6rem] text-muted-foreground lg:inline-flex">
             <CircleDotIcon
               size={10}
-              className="text-[#315E6C] dark:text-[#DEDA00]"
+              className="text-brand-secondary-highlight dark:text-secondary"
             />
 
             {currentProject.title}
@@ -787,8 +784,7 @@ function Calendar() {
             onClick={goToday}
             className={[
               "h-8 rounded-lg px-2.5 text-[0.68rem] font-semibold shadow-none",
-              "text-[#708084] hover:bg-[#E4EAE7] hover:text-[#315E6C]",
-              "dark:text-white/30 dark:hover:bg-white/[0.045] dark:hover:text-[#DEDA00]",
+              ghostActionButton,
             ].join(" ")}
           >
             <RotateCcwIcon size={12} />
@@ -802,8 +798,7 @@ function Calendar() {
             onClick={goPrevious}
             className={[
               "h-8 w-8 rounded-lg shadow-none",
-              "text-[#708084] hover:bg-[#E4EAE7] hover:text-[#315E6C]",
-              "dark:text-white/30 dark:hover:bg-white/[0.045] dark:hover:text-[#DEDA00]",
+              ghostActionButton,
             ].join(" ")}
             aria-label="Previous period"
           >
@@ -817,8 +812,7 @@ function Calendar() {
             onClick={goNext}
             className={[
               "h-8 w-8 rounded-lg shadow-none",
-              "text-[#708084] hover:bg-[#E4EAE7] hover:text-[#315E6C]",
-              "dark:text-white/30 dark:hover:bg-white/[0.045] dark:hover:text-[#DEDA00]",
+              ghostActionButton,
             ].join(" ")}
             aria-label="Next period"
           >
@@ -833,24 +827,14 @@ function Calendar() {
 
       <CalendarPlanningBar
         open={planningOpen}
-        onToggle={() =>
-          setPlanningOpen(
-            current => !current,
-          )
-        }
+        onToggle={() => setPlanningOpen((current) => !current)}
         insights={insights}
         focusTasks={focusTasks}
         upcomingItems={upcomingItems}
         currentProjectId={projectId}
         onOpenItem={setSelectedItem}
-        onOpenProject={task =>
-          navigate(
-            `/projects/${task.projectId}`,
-          )
-        }
-        onRemoveFocus={taskId =>
-          void toggleFocus(taskId)
-        }
+        onOpenProject={(task) => navigate(`/projects/${task.projectId}`)}
+        onRemoveFocus={(taskId) => void toggleFocus(taskId)}
       />
 
       {/* ===================================================
@@ -863,12 +847,8 @@ function Calendar() {
         ) : error ? (
           <CalendarError
             message={error}
-            onRetry={() =>
-              void fetchCalendarData(true)
-            }
-            onDismiss={() =>
-              setError(null)
-            }
+            onRetry={() => void fetchCalendarData(true)}
+            onDismiss={() => setError(null)}
           />
         ) : (
           <AnimatePresence mode="wait" initial={false}>
@@ -902,11 +882,7 @@ function Calendar() {
         )}
       </div>
 
-      {!loading && !error && (
-        <CalendarLegend
-          showClientWork={isAllocat}
-        />
-      )}
+      {!loading && !error && <CalendarLegend showClientWork={isAllocat} />}
 
       {/* ===================================================
           DETAIL PANEL
@@ -922,39 +898,27 @@ function Calendar() {
             }
             isFocused={Boolean(
               selectedItem.taskId &&
-                focusTasks.some(
-                  task =>
-                    task.taskId === selectedItem.taskId,
-                ),
+              focusTasks.some((task) => task.taskId === selectedItem.taskId),
             )}
-            onClose={() =>
-              setSelectedItem(null)
-            }
+            onClose={() => setSelectedItem(null)}
             onOpenProject={() => {
               if (selectedItem.projectId) {
-                navigate(
-                  `/projects/${selectedItem.projectId}`,
-                );
+                navigate(`/projects/${selectedItem.projectId}`);
               }
             }}
             onToggleFocus={
               selectedItem.taskId
-                ? () =>
-                    void toggleFocus(
-                      selectedItem.taskId!,
-                    )
+                ? () => void toggleFocus(selectedItem.taskId!)
                 : undefined
             }
             onEdit={
               selectedItem.source === "planning"
-                ? () =>
-                    editPlanningBlock(selectedItem)
+                ? () => editPlanningBlock(selectedItem)
                 : undefined
             }
             onDelete={
               selectedItem.source === "planning"
-                ? () =>
-                    void deletePlanningBlock(selectedItem)
+                ? () => void deletePlanningBlock(selectedItem)
                 : undefined
             }
           />
@@ -1015,8 +979,7 @@ function CalendarPlanningBar({
     <div
       className={[
         "mt-3 overflow-hidden rounded-lg border",
-        "border-[#315E6C]/[0.07] bg-[#EEF2F0]",
-        "dark:border-white/[0.06] dark:bg-[#0C1D22]",
+        softPanelSurface,
       ].join(" ")}
     >
       <button
@@ -1024,56 +987,50 @@ function CalendarPlanningBar({
         onClick={onToggle}
         className={[
           "flex w-full min-w-0 items-center gap-3 px-3 py-2.5 text-left",
-          "transition-colors hover:bg-[#E7ECE9]",
-          "dark:hover:bg-white/[0.025]",
+          "transition-colors",
+          "hover:bg-surface-3/45",
+          "dark:hover:bg-surface-3/45",
           "sm:px-4",
         ].join(" ")}
       >
         <div className="flex shrink-0 items-center gap-2">
           <StarIcon
             size={12}
-            className="text-[#315E6C] dark:text-[#DEDA00]"
+            className="text-brand-secondary-highlight dark:text-secondary"
           />
 
-          <span className="text-[0.68rem] font-semibold text-[#3C4A4D] dark:text-white/72">
+          <span className="text-[0.68rem] font-semibold text-foreground/80">
             Week plan
           </span>
         </div>
 
-        <span className="hidden h-3 w-px bg-[#315E6C]/[0.09] sm:block dark:bg-white/[0.07]" />
+        <span className="hidden h-3 w-px bg-border/70 sm:block dark:bg-border" />
 
         <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden">
           <PlanningPill>
-            {formatHours(insights.plannedHours)}h /{" "}
-            {insights.capacityHours}h
+            {formatHours(insights.plannedHours)}h / {insights.capacityHours}h
           </PlanningPill>
 
-          <PlanningPill>
-            {insights.workloadLabel}
-          </PlanningPill>
+          <PlanningPill>{insights.workloadLabel}</PlanningPill>
 
-          <PlanningPill>
-            {focusTasks.length} focus
-          </PlanningPill>
+          <PlanningPill>{focusTasks.length} focus</PlanningPill>
 
           <PlanningPill>
             {insights.deadlineCount}{" "}
-            {insights.deadlineCount === 1
-              ? "deadline"
-              : "deadlines"}
+            {insights.deadlineCount === 1 ? "deadline" : "deadlines"}
           </PlanningPill>
 
           {insights.alerts.length > 0 && (
-            <span className="hidden items-center gap-1 rounded-full bg-[#AD3A12]/[0.07] px-2 py-1 text-[0.58rem] font-semibold text-[#9F3C1A] lg:inline-flex dark:text-[#D27857]">
+            <span className="hidden items-center gap-1 rounded-full bg-status-overdue/[0.07] px-2 py-1 text-[0.58rem] font-semibold text-status-overdue-foreground lg:inline-flex">
               <AlertTriangleIcon size={10} />
               {insights.alerts.length}
             </span>
           )}
 
           {nextItem && (
-            <span className="ml-auto hidden min-w-0 max-w-64 truncate text-[0.62rem] text-[#768487] xl:block dark:text-white/27">
+            <span className="ml-auto hidden min-w-0 max-w-64 truncate text-[0.62rem] text-muted-foreground xl:block">
               Next:{" "}
-              <span className="font-semibold text-[#465559] dark:text-white/60">
+              <span className="font-semibold text-foreground/70">
                 {nextItem.title}
               </span>
             </span>
@@ -1083,7 +1040,8 @@ function CalendarPlanningBar({
         <ChevronDownIcon
           size={14}
           className={[
-            "shrink-0 text-[#788689] transition-transform duration-200 dark:text-white/27",
+            "shrink-0 text-muted-foreground",
+            "transition-transform duration-200",
             open ? "rotate-180" : "",
           ].join(" ")}
         />
@@ -1109,16 +1067,17 @@ function CalendarPlanningBar({
             }}
             className="overflow-hidden"
           >
-            <div className="border-t border-[#315E6C]/[0.065] p-3 sm:p-4 dark:border-white/[0.055]">
+            <div className="border-t border-border/55 p-3 sm:p-4 dark:border-border">
               {insights.alerts.length > 0 && (
                 <div className="mb-3 flex flex-wrap gap-2">
-                  {insights.alerts.map(alert => (
+                  {insights.alerts.map((alert) => (
                     <span
                       key={alert}
                       className={[
                         "inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5",
-                        "bg-[#E2E9E6] text-[0.62rem] font-medium text-[#66777B]",
-                        "dark:bg-white/[0.035] dark:text-white/32",
+                        "bg-surface-3/60",
+                        "text-[0.62rem] font-medium text-muted-foreground",
+                        "dark:bg-surface-3/55",
                       ].join(" ")}
                     >
                       <AlertTriangleIcon size={10} />
@@ -1149,13 +1108,9 @@ function CalendarPlanningBar({
   );
 }
 
-function PlanningPill({
-  children,
-}: {
-  children: ReactNode;
-}) {
+function PlanningPill({ children }: { children: ReactNode }) {
   return (
-    <span className="whitespace-nowrap rounded-full bg-[#DDE6E3] px-2 py-1 text-[0.58rem] font-semibold text-[#68797D] dark:bg-white/[0.045] dark:text-white/30">
+    <span className="whitespace-nowrap rounded-full bg-surface-3/65 px-2 py-1 text-[0.58rem] font-semibold text-muted-foreground dark:bg-surface-3/55">
       {children}
     </span>
   );
@@ -1176,72 +1131,66 @@ function WeeklyFocusStrip({
 }) {
   return (
     <div
-      className={[
-        "rounded-lg border px-3 py-3",
-        "border-[#315E6C]/[0.07] bg-[#F6F8F6]",
-        "dark:border-white/[0.06] dark:bg-[#10262D]",
-      ].join(" ")}
+      className={["rounded-lg border px-3 py-3", insetPanelSurface].join(" ")}
     >
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
             <StarIcon
               size={12}
-              className="text-[#315E6C] dark:text-[#DEDA00]"
+              className="text-brand-secondary-highlight dark:text-secondary"
             />
 
-            <p className="text-[0.68rem] font-semibold">
+            <p className="text-[0.68rem] font-semibold text-foreground/80">
               Weekly focus
             </p>
           </div>
 
-          <p className="mt-0.5 text-[0.6rem] text-[#788689] dark:text-white/27">
+          <p className="mt-0.5 text-[0.6rem] text-muted-foreground">
             Up to five priorities for this week.
           </p>
         </div>
 
-        <span className="shrink-0 text-[0.6rem] font-semibold tabular-nums text-[#788689] dark:text-white/27">
+        <span className="shrink-0 text-[0.6rem] font-semibold tabular-nums text-muted-foreground">
           {tasks.length}/5
         </span>
       </div>
 
       {tasks.length > 0 ? (
         <div className="mt-3 flex flex-wrap gap-1.5">
-          {tasks.map(task => (
+          {tasks.map((task) => (
             <div
               key={task.taskId}
               className={[
                 "flex min-w-0 items-center gap-2 rounded-md border px-2.5 py-1.5",
-                "border-[#315E6C]/[0.07] bg-[#EDF2F0]",
-                "dark:border-white/[0.06] dark:bg-white/[0.025]",
+                "border-border/50 bg-surface-2/45",
+                "dark:border-border dark:bg-surface-2/60",
               ].join(" ")}
             >
               <button
                 type="button"
-                onClick={() =>
-                  onOpenProject(task)
-                }
+                onClick={() => onOpenProject(task)}
                 className="min-w-0 text-left"
               >
-                <p className="max-w-44 truncate text-[0.64rem] font-semibold">
+                <p className="max-w-44 truncate text-[0.64rem] font-semibold text-foreground/80">
                   {task.title}
                 </p>
 
-                <p className="mt-0.5 max-w-44 truncate text-[0.56rem] text-[#798689] dark:text-white/26">
+                <p className="mt-0.5 max-w-44 truncate text-[0.56rem] text-muted-foreground">
                   {task.projectTitle}
                 </p>
               </button>
 
               <button
                 type="button"
-                onClick={() =>
-                  onRemove(task.taskId)
-                }
+                onClick={() => onRemove(task.taskId)}
                 className={[
                   "flex h-6 w-6 shrink-0 items-center justify-center rounded-md",
-                  "text-[#7C898C] transition-colors",
-                  "hover:bg-[#E0E7E4] hover:text-[#315E6C]",
-                  "dark:text-white/25 dark:hover:bg-white/[0.05] dark:hover:text-white",
+                  "text-muted-foreground",
+                  "transition-colors",
+                  "hover:bg-surface-3",
+                  "hover:text-foreground",
+                  "dark:hover:bg-surface-3/75",
                 ].join(" ")}
                 aria-label={`Remove ${task.title} from weekly focus`}
               >
@@ -1251,7 +1200,7 @@ function WeeklyFocusStrip({
           ))}
         </div>
       ) : (
-        <p className="mt-3 text-[0.62rem] leading-5 text-[#788689] dark:text-white/27">
+        <p className="mt-3 text-[0.62rem] leading-5 text-muted-foreground">
           Open a task in the calendar and add it to your weekly focus.
         </p>
       )}
@@ -1273,39 +1222,29 @@ function UpcomingStrip({
   onOpen: (item: CalendarItem) => void;
 }) {
   return (
-    <div
-      className={[
-        "rounded-lg border p-3",
-        "border-[#315E6C]/[0.07] bg-[#F6F8F6]",
-        "dark:border-white/[0.06] dark:bg-[#10262D]",
-      ].join(" ")}
-    >
+    <div className={["rounded-lg border p-3", insetPanelSurface].join(" ")}>
       <div className="mb-2 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Clock3Icon
-            size={12}
-            className="text-[#778689] dark:text-white/28"
-          />
+          <Clock3Icon size={12} className="text-muted-foreground" />
 
-          <p className="text-[0.68rem] font-semibold">
+          <p className="text-[0.68rem] font-semibold text-foreground/80">
             Next up
           </p>
         </div>
 
-        <span className="text-[0.58rem] text-[#7A888B] dark:text-white/27">
+        <span className="text-[0.58rem] text-muted-foreground">
           {items.length} upcoming
         </span>
       </div>
 
       {items.length > 0 ? (
         <div className="grid gap-1.5 sm:grid-cols-2">
-          {items.map(item => {
+          {items.map((item) => {
             const current =
               Boolean(item.projectId) &&
               String(item.projectId) === String(currentProjectId);
 
-            const appearance =
-              getCalendarItemAppearance(item, current);
+            const appearance = getCalendarItemAppearance(item, current);
 
             return (
               <button
@@ -1324,9 +1263,7 @@ function UpcomingStrip({
                     appearance.meta,
                   ].join(" ")}
                 >
-                  {formatUpcomingDate(
-                    parseCalendarDate(item.start),
-                  )}
+                  {formatUpcomingDate(parseCalendarDate(item.start))}
                 </p>
 
                 <p className="mt-1 truncate text-[0.66rem] font-semibold">
@@ -1339,16 +1276,14 @@ function UpcomingStrip({
                     appearance.meta,
                   ].join(" ")}
                 >
-                  {item.type === "plan-block"
-                    ? "My plan"
-                    : item.projectTitle}
+                  {item.type === "plan-block" ? "My plan" : item.projectTitle}
                 </p>
               </button>
             );
           })}
         </div>
       ) : (
-        <p className="text-[0.62rem] leading-5 text-[#788689] dark:text-white/27">
+        <p className="text-[0.62rem] leading-5 text-muted-foreground">
           Nothing upcoming in the current calendar range.
         </p>
       )}
@@ -1371,8 +1306,8 @@ function CalendarViewSwitch({
     <div
       className={[
         "inline-flex w-fit items-center rounded-full border p-1",
-        "border-[#315E6C]/[0.08] bg-[#E2E9E6]",
-        "dark:border-white/[0.06] dark:bg-white/[0.035]",
+        "border-border/60 bg-surface-3/55",
+        "dark:border-border dark:bg-surface-2/70",
       ].join(" ")}
     >
       <CalendarViewButton
@@ -1405,16 +1340,26 @@ function CalendarViewButton({
       onClick={onClick}
       className={[
         "relative flex h-8 min-w-20 items-center justify-center rounded-full px-4",
-        "text-xs font-semibold transition-colors duration-200",
+        "text-xs font-semibold",
+        "transition-colors duration-200",
+
         active
-          ? "text-white dark:text-[#303030]"
-          : "text-[#6F7F83] hover:text-[#315E6C] dark:text-white/30 dark:hover:text-white",
+          ? "text-primary-foreground dark:text-secondary-foreground"
+          : [
+              "text-muted-foreground",
+              "hover:text-foreground/85",
+              "dark:hover:text-foreground",
+            ].join(" "),
       ].join(" ")}
     >
       {active && (
         <motion.span
           layoutId="calendar-view"
-          className="absolute inset-0 rounded-full bg-[#315E6C] shadow-sm dark:bg-[#DEDA00]"
+          className={[
+            "absolute inset-0 rounded-full",
+            "bg-brand-secondary-highlight",
+            "dark:bg-secondary",
+          ].join(" ")}
           transition={{
             type: "spring",
             stiffness: 500,
@@ -1423,9 +1368,7 @@ function CalendarViewButton({
         />
       )}
 
-      <span className="relative z-10">
-        {label}
-      </span>
+      <span className="relative z-10">{label}</span>
     </button>
   );
 }
@@ -1463,14 +1406,13 @@ function CalendarScopeControl({
           size="sm"
           className={[
             "h-9 rounded-lg px-3 text-xs font-semibold shadow-none",
-            "border-[#315E6C]/[0.09] bg-[#F6F8F6] text-[#566A6F]",
-            "hover:bg-[#E7ECE9] hover:text-[#315E6C]",
-            "dark:border-white/[0.07] dark:bg-white/[0.025] dark:text-white/55",
-            "dark:hover:bg-white/[0.05] dark:hover:text-white",
+            secondaryActionButton,
           ].join(" ")}
         >
           <Layers3Icon size={13} />
+
           {label}
+
           <ChevronDownIcon size={13} />
         </Button>
       </DropdownMenuTrigger>
@@ -1478,18 +1420,18 @@ function CalendarScopeControl({
       <DropdownMenuContent
         align="end"
         className={[
-          "w-56 rounded-xl p-1.5",
-          "border-[#315E6C]/[0.09] bg-[#F8FAF8]",
-          "dark:border-white/[0.08] dark:bg-[#10262D]",
+          "w-56 rounded-xl p-1.5 shadow-none",
+          "border-border/60 bg-popover text-popover-foreground",
+          "dark:border-border",
         ].join(" ")}
       >
         <DropdownMenuLabel className="px-2.5 py-2">
-          <p className="text-[0.58rem] font-semibold uppercase tracking-[0.15em] text-[#758386] dark:text-white/27">
+          <p className="text-[0.58rem] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
             Calendar scope
           </p>
         </DropdownMenuLabel>
 
-        <DropdownMenuSeparator className="bg-[#315E6C]/[0.07] dark:bg-white/[0.07]" />
+        <DropdownMenuSeparator className="bg-border/60 dark:bg-border" />
 
         <ScopeMenuItem
           active={value === "all"}
@@ -1541,9 +1483,25 @@ function ScopeMenuItem({
       onSelect={onSelect}
       className={[
         "rounded-lg px-3 py-2.5 text-xs",
-        "focus:bg-[#E5ECE9] dark:focus:bg-white/[0.05]",
+
+        "focus:bg-surface-3/60",
+        "focus:text-foreground",
+
+        "data-[highlighted]:bg-surface-3/60",
+        "data-[highlighted]:text-foreground",
+
+        "dark:focus:bg-surface-2",
+        "dark:data-[highlighted]:bg-surface-2",
+
         active
-          ? "bg-[#E5ECE9] font-semibold text-[#315E6C] dark:bg-[#DEDA00]/[0.07] dark:text-[#DEDA00]"
+          ? [
+              "bg-brand-secondary-highlight/[0.07]",
+              "font-semibold",
+              "text-brand-secondary-highlight",
+
+              "dark:bg-secondary/[0.07]",
+              "dark:text-secondary",
+            ].join(" ")
           : "",
       ].join(" ")}
     >
@@ -1551,28 +1509,18 @@ function ScopeMenuItem({
         size={13}
         className={
           active
-            ? "text-[#315E6C] dark:text-[#DEDA00]"
-            : "text-[#788689] dark:text-white/27"
+            ? "text-brand-secondary-highlight dark:text-secondary"
+            : "text-muted-foreground"
         }
       />
 
-      <span className="flex-1">
-        {label}
-      </span>
+      <span className="flex-1">{label}</span>
 
       {typeof count === "number" && (
-        <span className="text-[0.6rem] tabular-nums opacity-60">
-          {count}
-        </span>
+        <span className="text-[0.6rem] tabular-nums opacity-60">{count}</span>
       )}
 
-      {active && (
-        <CheckIcon
-          size={12}
-          strokeWidth={3}
-          className="ml-1"
-        />
-      )}
+      {active && <CheckIcon size={12} strokeWidth={3} className="ml-1" />}
     </DropdownMenuItem>
   );
 }
@@ -1594,18 +1542,14 @@ function MonthView({
 }) {
   return (
     <div
-      className={[
-        "overflow-x-auto rounded-xl border",
-        "border-[#315E6C]/[0.08] bg-[#F8FAF8]",
-        "dark:border-white/[0.06] dark:bg-[#0C1D22]",
-      ].join(" ")}
+      className={["overflow-x-auto rounded-xl border", calendarShell].join(" ")}
     >
       <div className="min-w-[760px]">
-        <div className="grid grid-cols-7 border-b border-[#315E6C]/[0.07] bg-[#EAF0EE] dark:border-white/[0.055] dark:bg-white/[0.025]">
-          {WEEK_DAYS.map(day => (
+        <div className="grid grid-cols-7 border-b border-border/55 bg-surface-2/55 dark:border-border dark:bg-surface-2/70">
+          {WEEK_DAYS.map((day) => (
             <div
               key={day}
-              className="px-2 py-3 text-center text-[0.58rem] font-semibold uppercase tracking-[0.12em] text-[#778588] dark:text-white/26"
+              className="px-2 py-3 text-center text-[0.58rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground"
             >
               {day}
             </div>
@@ -1615,11 +1559,8 @@ function MonthView({
         <div className="grid grid-cols-7">
           {days.map((day, index) => {
             const dayItems = items
-              .filter(item =>
-                isSameDay(
-                  parseCalendarDate(item.start),
-                  day.date,
-                ),
+              .filter((item) =>
+                isSameDay(parseCalendarDate(item.start), day.date),
               )
               .sort(compareCalendarItems);
 
@@ -1658,45 +1599,46 @@ function MonthDay({
 }) {
   const visibleItems = items.slice(0, 3);
 
-  const remainingCount = Math.max(
-    0,
-    items.length - visibleItems.length,
-  );
+  const remainingCount = Math.max(0, items.length - visibleItems.length);
 
   return (
     <div
       className={[
-        "relative min-h-[132px] min-w-0 p-2 transition-colors",
-        !isLastColumn
-          ? "border-r border-[#315E6C]/[0.055] dark:border-white/[0.045]"
-          : "",
-        !isLastRow
-          ? "border-b border-[#315E6C]/[0.055] dark:border-white/[0.045]"
-          : "",
+        "relative min-h-[132px] min-w-0 p-2",
+        "transition-colors",
+
+        !isLastColumn ? "border-r border-border/45 dark:border-border" : "",
+
+        !isLastRow ? "border-b border-border/45 dark:border-border" : "",
+
         day.inCurrentMonth
-          ? "bg-[#F8FAF8] dark:bg-[#0C1D22]"
-          : "bg-[#F0F3F1] dark:bg-[#0A181D]",
+          ? "bg-card dark:bg-card"
+          : "bg-surface-2/45 dark:bg-surface-1/55",
       ].join(" ")}
     >
       <span
         className={[
           "flex h-7 w-7 items-center justify-center rounded-full",
           "text-xs font-semibold tabular-nums",
+
           day.isToday
             ? [
-                "bg-[#315E6C] text-white",
-                "dark:bg-[#DEDA00] dark:text-[#303030]",
+                "bg-brand-secondary-highlight",
+                "text-primary-foreground",
+
+                "dark:bg-secondary",
+                "dark:text-secondary-foreground",
               ].join(" ")
             : day.inCurrentMonth
-              ? "text-[#435154] dark:text-white/70"
-              : "text-[#9AA4A6] dark:text-white/18",
+              ? "text-foreground/75"
+              : "text-muted-foreground/45",
         ].join(" ")}
       >
         {day.date.getDate()}
       </span>
 
       <div className="mt-2 space-y-1">
-        {visibleItems.map(item => (
+        {visibleItems.map((item) => (
           <CalendarItemButton
             key={item.id}
             item={item}
@@ -1705,14 +1647,12 @@ function MonthDay({
               String(item.projectId) === String(currentProjectId)
             }
             compact
-            onClick={() =>
-              onItemClick(item)
-            }
+            onClick={() => onItemClick(item)}
           />
         ))}
 
         {remainingCount > 0 && (
-          <p className="px-1 pt-1 text-[0.6rem] font-semibold text-[#788689] dark:text-white/25">
+          <p className="px-1 pt-1 text-[0.6rem] font-semibold text-muted-foreground">
             +{remainingCount} more
           </p>
         )}
@@ -1736,38 +1676,30 @@ function WeekView({
   currentProjectId: string;
   onItemClick: (item: CalendarItem) => void;
 }) {
-  const allDayItems = items.filter(item => item.allDay);
-  const timedItems = items.filter(item => !item.allDay);
+  const allDayItems = items.filter((item) => item.allDay);
+  const timedItems = items.filter((item) => !item.allDay);
 
-  const timelineHeight =
-    WEEK_HOURS.length * HOUR_HEIGHT;
+  const timelineHeight = WEEK_HOURS.length * HOUR_HEIGHT;
 
   return (
     <div
-      className={[
-        "overflow-x-auto rounded-xl border",
-        "border-[#315E6C]/[0.08] bg-[#F8FAF8]",
-        "dark:border-white/[0.06] dark:bg-[#0C1D22]",
-      ].join(" ")}
+      className={["overflow-x-auto rounded-xl border", calendarShell].join(" ")}
     >
       <div className="min-w-[900px]">
         {/* HEADER */}
 
-        <div className="grid grid-cols-[64px_repeat(7,minmax(0,1fr))] border-b border-[#315E6C]/[0.07] dark:border-white/[0.055]">
+        <div className="grid grid-cols-[64px_repeat(7,minmax(0,1fr))] border-b border-border/55 bg-surface-2/40 dark:border-border dark:bg-surface-2/55">
           <div />
 
-          {days.map(date => {
-            const today = isSameDay(
-              date,
-              new Date(),
-            );
+          {days.map((date) => {
+            const today = isSameDay(date, new Date());
 
             return (
               <div
                 key={toDateKey(date)}
-                className="border-l border-[#315E6C]/[0.055] px-3 py-3 text-center dark:border-white/[0.045]"
+                className="border-l border-border/45 px-3 py-3 text-center dark:border-border"
               >
-                <p className="text-[0.58rem] font-semibold uppercase tracking-[0.12em] text-[#778588] dark:text-white/26">
+                <p className="text-[0.58rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                   {formatWeekday(date)}
                 </p>
 
@@ -1775,12 +1707,16 @@ function WeekView({
                   className={[
                     "mx-auto mt-1 flex h-8 w-8 items-center justify-center rounded-full",
                     "text-sm font-semibold tabular-nums",
+
                     today
                       ? [
-                          "bg-[#315E6C] text-white",
-                          "dark:bg-[#DEDA00] dark:text-[#303030]",
+                          "bg-brand-secondary-highlight",
+                          "text-primary-foreground",
+
+                          "dark:bg-secondary",
+                          "dark:text-secondary-foreground",
                         ].join(" ")
-                      : "text-[#435154] dark:text-white/70",
+                      : "text-foreground/75",
                   ].join(" ")}
                 >
                   {date.getDate()}
@@ -1792,27 +1728,22 @@ function WeekView({
 
         {/* ALL DAY */}
 
-        <div className="grid grid-cols-[64px_repeat(7,minmax(0,1fr))] border-b border-[#315E6C]/[0.07] dark:border-white/[0.055]">
-          <div className="px-2 py-3 text-right text-[0.58rem] font-medium text-[#788689] dark:text-white/25">
+        <div className="grid grid-cols-[64px_repeat(7,minmax(0,1fr))] border-b border-border/55 dark:border-border">
+          <div className="px-2 py-3 text-right text-[0.58rem] font-medium text-muted-foreground">
             All day
           </div>
 
-          {days.map(date => {
+          {days.map((date) => {
             const dayItems = allDayItems
-              .filter(item =>
-                isSameDay(
-                  parseCalendarDate(item.start),
-                  date,
-                ),
-              )
+              .filter((item) => isSameDay(parseCalendarDate(item.start), date))
               .sort(compareCalendarItems);
 
             return (
               <div
                 key={toDateKey(date)}
-                className="min-h-20 space-y-1 border-l border-[#315E6C]/[0.055] p-1.5 dark:border-white/[0.045]"
+                className="min-h-20 space-y-1 border-l border-border/45 p-1.5 dark:border-border"
               >
-                {dayItems.map(item => (
+                {dayItems.map((item) => (
                   <CalendarItemButton
                     key={item.id}
                     item={item}
@@ -1821,9 +1752,7 @@ function WeekView({
                       String(item.projectId) === String(currentProjectId)
                     }
                     compact
-                    onClick={() =>
-                      onItemClick(item)
-                    }
+                    onClick={() => onItemClick(item)}
                   />
                 ))}
               </div>
@@ -1835,7 +1764,7 @@ function WeekView({
 
         <div className="grid grid-cols-[64px_repeat(7,minmax(0,1fr))]">
           <div
-            className="relative"
+            className="relative bg-card dark:bg-card"
             style={{
               height: timelineHeight,
             }}
@@ -1843,26 +1772,21 @@ function WeekView({
             {WEEK_HOURS.map((hour, index) => (
               <div
                 key={hour}
-                className="absolute left-0 right-0 border-t border-[#315E6C]/[0.045] dark:border-white/[0.04]"
+                className="absolute left-0 right-0 border-t border-border/40 dark:border-border"
                 style={{
                   top: index * HOUR_HEIGHT,
                 }}
               >
-                <span className="absolute -top-2 right-2 bg-[#F8FAF8] px-1 text-[0.58rem] text-[#7C898C] dark:bg-[#0C1D22] dark:text-white/24">
+                <span className="absolute -top-2 right-2 bg-card px-1 text-[0.58rem] text-muted-foreground dark:bg-card">
                   {formatHour(hour)}
                 </span>
               </div>
             ))}
           </div>
 
-          {days.map(date => {
+          {days.map((date) => {
             const dayItems = timedItems
-              .filter(item =>
-                isSameDay(
-                  parseCalendarDate(item.start),
-                  date,
-                ),
-              )
+              .filter((item) => isSameDay(parseCalendarDate(item.start), date))
               .sort(compareCalendarItems);
 
             return (
@@ -1894,20 +1818,20 @@ function WeekDayColumn({
 }) {
   return (
     <div
-      className="relative border-l border-[#315E6C]/[0.055] dark:border-white/[0.045]"
+      className="relative border-l border-border/45 bg-card dark:border-border dark:bg-card"
       style={{ height }}
     >
       {WEEK_HOURS.map((hour, index) => (
         <div
           key={hour}
-          className="absolute left-0 right-0 border-t border-[#315E6C]/[0.045] dark:border-white/[0.04]"
+          className="absolute left-0 right-0 border-t border-border/40 dark:border-border"
           style={{
             top: index * HOUR_HEIGHT,
           }}
         />
       ))}
 
-      {items.map(item => {
+      {items.map((item) => {
         const start = parseCalendarDate(item.start);
 
         const end = item.end
@@ -1915,23 +1839,16 @@ function WeekDayColumn({
           : addMinutes(start, 50);
 
         const startMinutes =
-          (start.getHours() - WEEK_START_HOUR) * 60 +
-          start.getMinutes();
+          (start.getHours() - WEEK_START_HOUR) * 60 + start.getMinutes();
 
         const durationMinutes = Math.max(
           30,
           (end.getTime() - start.getTime()) / 60000,
         );
 
-        const top = Math.max(
-          0,
-          (startMinutes / 60) * HOUR_HEIGHT,
-        );
+        const top = Math.max(0, (startMinutes / 60) * HOUR_HEIGHT);
 
-        const itemHeight = Math.max(
-          34,
-          (durationMinutes / 60) * HOUR_HEIGHT,
-        );
+        const itemHeight = Math.max(34, (durationMinutes / 60) * HOUR_HEIGHT);
 
         return (
           <div
@@ -1939,10 +1856,7 @@ function WeekDayColumn({
             className="absolute left-1 right-1 z-10 overflow-hidden"
             style={{
               top,
-              height: Math.min(
-                itemHeight,
-                height - top,
-              ),
+              height: Math.min(itemHeight, height - top),
             }}
           >
             <CalendarItemButton
@@ -1952,9 +1866,7 @@ function WeekDayColumn({
                 String(item.projectId) === String(currentProjectId)
               }
               fill
-              onClick={() =>
-                onItemClick(item)
-              }
+              onClick={() => onItemClick(item)}
             />
           </div>
         );
@@ -1982,16 +1894,9 @@ function CalendarItemButton({
 }) {
   const timed = !item.allDay;
 
-  const taskStatus =
-    item.type === "task"
-      ? getCalendarTaskStatus(item)
-      : null;
+  const taskStatus = item.type === "task" ? getCalendarTaskStatus(item) : null;
 
-  const appearance =
-    getCalendarItemAppearance(
-      item,
-      current,
-    );
+  const appearance = getCalendarItemAppearance(item, current);
 
   const Icon =
     item.type === "plan-block"
@@ -2019,37 +1924,34 @@ function CalendarItemButton({
       title={`${item.title} · ${item.projectTitle}`}
       className={[
         "group/event block w-full min-w-0 rounded-md border text-left",
+
         "transition-[background-color,border-color] duration-150",
-        "focus-visible:outline-none focus-visible:ring-2",
-        "focus-visible:ring-[#315E6C]/20 dark:focus-visible:ring-[#DEDA00]/20",
+
+        "focus-visible:outline-none",
+        "focus-visible:ring-2",
+        "focus-visible:ring-ring/20",
+
+        "dark:focus-visible:ring-secondary/20",
+
         fill ? "h-full" : "",
-        compact
-          ? "px-2 py-1.5"
-          : "px-2.5 py-2",
+
+        compact ? "px-2 py-1.5" : "px-2.5 py-2",
+
         appearance.surface,
       ].join(" ")}
     >
       <div className="flex min-w-0 items-center gap-1.5">
-        <Icon
-          size={10}
-          className="shrink-0 opacity-75"
-        />
+        <Icon size={10} className="shrink-0 opacity-75" />
 
         <span
           className={[
             "truncate font-semibold",
-            compact
-              ? "text-[0.61rem]"
-              : "text-[0.67rem]",
+            compact ? "text-[0.61rem]" : "text-[0.67rem]",
           ].join(" ")}
         >
           {timed && (
             <span className="mr-1 opacity-65">
-              {formatTime(
-                parseCalendarDate(
-                  item.start,
-                ),
-              )}
+              {formatTime(parseCalendarDate(item.start))}
             </span>
           )}
 
@@ -2059,10 +1961,9 @@ function CalendarItemButton({
 
       {!compact && (
         <p
-          className={[
-            "mt-1 truncate text-[0.56rem]",
-            appearance.meta,
-          ].join(" ")}
+          className={["mt-1 truncate text-[0.56rem]", appearance.meta].join(
+            " ",
+          )}
         >
           {item.type === "plan-block"
             ? item.projectTitle || "My plan"
@@ -2086,12 +1987,21 @@ function getCalendarItemAppearance(
   if (item.type === "plan-block") {
     return {
       surface: [
-        "border-[#73868B]/[0.12] bg-[#E8ECEA] text-[#46575B]",
-        "hover:border-[#73868B]/[0.20] hover:bg-[#E3E8E6]",
-        "dark:border-white/[0.07] dark:bg-white/[0.035] dark:text-white/65",
-        "dark:hover:border-white/[0.12] dark:hover:bg-white/[0.05]",
+        "border-border/55",
+        "bg-surface-3/55",
+        "text-foreground/70",
+
+        "hover:border-border/75",
+        "hover:bg-surface-3/75",
+
+        "dark:border-border",
+        "dark:bg-surface-2/70",
+        "dark:text-foreground/70",
+
+        "dark:hover:bg-surface-3/70",
       ].join(" "),
-      meta: "text-[#738185] dark:text-white/28",
+
+      meta: "text-muted-foreground",
     };
   }
 
@@ -2100,99 +2010,148 @@ function getCalendarItemAppearance(
 
     if (status === "overdue") {
       return {
-        surface: current
-          ? [
-              "border-[#AD3A12]/30 bg-[#F3E5DF] text-[#863615]",
-              "hover:border-[#AD3A12]/40 hover:bg-[#EFE0D9]",
-              "dark:border-[#D27857]/25 dark:bg-[#AD3A12]/[0.14] dark:text-[#E4A088]",
-              "dark:hover:border-[#D27857]/35 dark:hover:bg-[#AD3A12]/[0.18]",
-            ].join(" ")
-          : [
-              "border-[#AD3A12]/16 bg-[#F6ECE8] text-[#91401F]",
-              "hover:border-[#AD3A12]/25 hover:bg-[#F2E6E1]",
-              "dark:border-[#AD3A12]/16 dark:bg-[#AD3A12]/[0.07] dark:text-[#D88B70]",
-              "dark:hover:border-[#D27857]/24 dark:hover:bg-[#AD3A12]/[0.10]",
-            ].join(" "),
-        meta:
-          "text-[#9F5A3C] dark:text-[#D99278]",
+        surface: [
+          "border-status-overdue/20",
+          "bg-status-overdue/[0.06]",
+          "text-status-overdue-foreground",
+
+          "hover:border-status-overdue/30",
+          "hover:bg-status-overdue/[0.09]",
+
+          "dark:border-status-overdue/20",
+          "dark:bg-status-overdue/[0.08]",
+
+          "dark:hover:border-status-overdue/30",
+          "dark:hover:bg-status-overdue/[0.11]",
+        ].join(" "),
+
+        meta: "text-status-overdue-foreground/75",
       };
     }
 
-    if (current && status === "pending") {
+    if (status === "pending") {
       return {
         surface: [
-          "border-[#B98645]/25 bg-[#F4EDE3] text-[#795427]",
-          "hover:border-[#B98645]/34 hover:bg-[#F0E8DC]",
-          "dark:border-[#F0A23A]/20 dark:bg-[#F0A23A]/[0.08] dark:text-[#F0A23A]",
-          "dark:hover:border-[#F0A23A]/30 dark:hover:bg-[#F0A23A]/[0.11]",
+          "border-status-pending/20",
+          "bg-status-pending/[0.06]",
+          "text-status-pending-foreground",
+
+          "hover:border-status-pending/30",
+          "hover:bg-status-pending/[0.09]",
+
+          "dark:border-status-pending/20",
+          "dark:bg-status-pending/[0.07]",
+
+          "dark:hover:border-status-pending/30",
+          "dark:hover:bg-status-pending/[0.10]",
         ].join(" "),
-        meta:
-          "text-[#8A6A43] dark:text-[#E8AC5D]",
+
+        meta: "text-status-pending-foreground/75",
       };
     }
 
-    if (current && status === "complete") {
+    if (status === "complete") {
       return {
         surface: [
-          "border-[#568B5E]/25 bg-[#E8F0E9] text-[#3D7047]",
-          "hover:border-[#568B5E]/34 hover:bg-[#E3EDE5]",
-          "dark:border-[#38D200]/20 dark:bg-[#38D200]/[0.07] dark:text-[#38D200]",
-          "dark:hover:border-[#38D200]/30 dark:hover:bg-[#38D200]/[0.10]",
+          "border-status-complete/20",
+          "bg-status-complete/[0.055]",
+          "text-status-complete-foreground",
+
+          "hover:border-status-complete/30",
+          "hover:bg-status-complete/[0.085]",
+
+          "dark:border-status-complete/20",
+          "dark:bg-status-complete/[0.07]",
+
+          "dark:hover:border-status-complete/30",
+          "dark:hover:bg-status-complete/[0.10]",
         ].join(" "),
-        meta:
-          "text-[#618069] dark:text-[#77DB58]",
+
+        meta: "text-status-complete-foreground/75",
       };
     }
 
-    if (current) {
-      return {
-        surface: [
-          "border-[#315E6C]/25 bg-[#E2ECE9] text-[#315E6C]",
-          "hover:border-[#315E6C]/34 hover:bg-[#DCE8E4]",
-          "dark:border-[#DEDA00]/20 dark:bg-[#DEDA00]/[0.08] dark:text-[#DEDA00]",
-          "dark:hover:border-[#DEDA00]/30 dark:hover:bg-[#DEDA00]/[0.11]",
-        ].join(" "),
-        meta:
-          "text-[#5E767C] dark:text-[#D4D058]",
-      };
-    }
+    return {
+      surface: [
+        "border-status-active/20",
+        "bg-status-active/[0.055]",
+        "text-status-active-foreground",
+
+        "hover:border-status-active/30",
+        "hover:bg-status-active/[0.085]",
+
+        "dark:border-status-active/20",
+        "dark:bg-status-active/[0.07]",
+
+        "dark:hover:border-status-active/30",
+        "dark:hover:bg-status-active/[0.10]",
+      ].join(" "),
+
+      meta: "text-status-active-foreground/75",
+    };
   }
 
   if (current) {
     return {
       surface: [
-        "border-[#315E6C]/25 bg-[#E2ECE9] text-[#315E6C]",
-        "hover:border-[#315E6C]/34 hover:bg-[#DCE8E4]",
-        "dark:border-[#DEDA00]/20 dark:bg-[#DEDA00]/[0.08] dark:text-[#DEDA00]",
-        "dark:hover:border-[#DEDA00]/30 dark:hover:bg-[#DEDA00]/[0.11]",
+        "border-brand-secondary-highlight/20",
+        "bg-brand-secondary-highlight/[0.06]",
+        "text-brand-secondary-highlight",
+
+        "hover:border-brand-secondary-highlight/30",
+        "hover:bg-brand-secondary-highlight/[0.09]",
+
+        "dark:border-secondary/15",
+        "dark:bg-secondary/[0.055]",
+        "dark:text-secondary",
+
+        "dark:hover:border-secondary/25",
+        "dark:hover:bg-secondary/[0.08]",
       ].join(" "),
-      meta:
-        "text-[#5E767C] dark:text-[#D4D058]",
+
+      meta: "text-brand-secondary-highlight/75 dark:text-secondary/65",
     };
   }
 
   if (item.relationship === "allocat") {
     return {
       surface: [
-        "border-[#315E6C]/[0.10] bg-[#EDF3F1] text-[#46575B]",
-        "hover:border-[#315E6C]/[0.18] hover:bg-[#E8F0ED]",
-        "dark:border-[#7DA6B1]/[0.10] dark:bg-[#7DA6B1]/[0.045] dark:text-white/68",
-        "dark:hover:border-[#7DA6B1]/20 dark:hover:bg-[#7DA6B1]/[0.065]",
+        "border-brand-secondary-highlight/10",
+        "bg-surface-teal/65",
+        "text-foreground/75",
+
+        "hover:border-brand-secondary-highlight/18",
+        "hover:bg-surface-teal",
+
+        "dark:border-brand-secondary-highlight/10",
+        "dark:bg-brand-secondary-highlight/[0.045]",
+        "dark:text-foreground/75",
+
+        "dark:hover:border-brand-secondary-highlight/18",
+        "dark:hover:bg-brand-secondary-highlight/[0.07]",
       ].join(" "),
-      meta:
-        "text-[#748387] dark:text-white/30",
+
+      meta: "text-muted-foreground",
     };
   }
 
   return {
     surface: [
-      "border-[#315E6C]/[0.07] bg-[#EEF2F0] text-[#4A595D]",
-      "hover:border-[#315E6C]/[0.13] hover:bg-[#E9EEEC]",
-      "dark:border-white/[0.055] dark:bg-white/[0.03] dark:text-white/65",
-      "dark:hover:border-white/[0.10] dark:hover:bg-white/[0.045]",
+      "border-border/50",
+      "bg-surface-2/55",
+      "text-foreground/75",
+
+      "hover:border-border/75",
+      "hover:bg-surface-3/60",
+
+      "dark:border-border",
+      "dark:bg-surface-2/65",
+      "dark:text-foreground/75",
+
+      "dark:hover:bg-surface-3/65",
     ].join(" "),
-    meta:
-      "text-[#788689] dark:text-white/27",
+
+    meta: "text-muted-foreground",
   };
 }
 
@@ -2200,12 +2159,8 @@ function getCalendarItemAppearance(
    TASK STATUS
 ========================================================= */
 
-function getCalendarTaskStatus(
-  item: CalendarItem,
-): CalendarTaskStatus {
-  const normalized = normalizeCalendarStatus(
-    item.status,
-  );
+function getCalendarTaskStatus(item: CalendarItem): CalendarTaskStatus {
+  const normalized = normalizeCalendarStatus(item.status);
 
   if (
     normalized === "complete" ||
@@ -2215,31 +2170,21 @@ function getCalendarTaskStatus(
     return "complete";
   }
 
-  if (
-    normalized === "overdue" ||
-    isIncompleteCalendarTaskOverdue(item)
-  ) {
+  if (normalized === "overdue" || isIncompleteCalendarTaskOverdue(item)) {
     return "overdue";
   }
 
-  if (
-    normalized === "active" ||
-    normalized === "inprogress"
-  ) {
+  if (normalized === "active" || normalized === "inprogress") {
     return "active";
   }
 
   return "pending";
 }
 
-function isIncompleteCalendarTaskOverdue(
-  item: CalendarItem,
-) {
+function isIncompleteCalendarTaskOverdue(item: CalendarItem) {
   if (item.type !== "task") return false;
 
-  const normalized = normalizeCalendarStatus(
-    item.status,
-  );
+  const normalized = normalizeCalendarStatus(item.status);
 
   if (
     normalized === "complete" ||
@@ -2249,9 +2194,7 @@ function isIncompleteCalendarTaskOverdue(
     return false;
   }
 
-  const dueDate = parseCalendarDate(
-    item.start,
-  );
+  const dueDate = parseCalendarDate(item.start);
 
   if (Number.isNaN(dueDate.getTime())) {
     return false;
@@ -2260,18 +2203,13 @@ function isIncompleteCalendarTaskOverdue(
   const now = new Date();
 
   if (item.allDay) {
-    return (
-      startOfDay(dueDate).getTime() <
-      startOfDay(now).getTime()
-    );
+    return startOfDay(dueDate).getTime() < startOfDay(now).getTime();
   }
 
   return dueDate.getTime() < now.getTime();
 }
 
-function normalizeCalendarStatus(
-  status?: string,
-) {
+function normalizeCalendarStatus(status?: string) {
   return String(status ?? "")
     .trim()
     .toLowerCase()
@@ -2303,22 +2241,16 @@ function CalendarDetailPanel({
 }) {
   const start = parseCalendarDate(item.start);
 
-  const end = item.end
-    ? parseCalendarDate(item.end)
-    : null;
+  const end = item.end ? parseCalendarDate(item.end) : null;
 
-  const appearance =
-    getCalendarItemAppearance(
-      item,
-      current,
-    );
+  const appearance = getCalendarItemAppearance(item, current);
 
   return (
     <>
       <motion.button
         type="button"
         aria-label="Close calendar details"
-        className="fixed inset-0 z-[70] bg-black/25 backdrop-blur-[1px]"
+        className="fixed inset-0 z-[70] bg-foreground/20 backdrop-blur-[1px] dark:bg-background/55"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
@@ -2344,14 +2276,14 @@ function CalendarDetailPanel({
         }}
         className={[
           "fixed inset-y-0 right-0 z-[80] w-full max-w-md overflow-y-auto",
-          "border-l border-[#315E6C]/[0.08] bg-[#F8FAF8] p-5 shadow-2xl",
-          "dark:border-white/[0.07] dark:bg-[#0C1D22]",
-          "sm:p-6",
+          "border-l p-5 sm:p-6",
+          "border-border/60 bg-card",
+          "dark:border-border dark:bg-card",
         ].join(" ")}
       >
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
-            <p className="text-[0.58rem] font-semibold uppercase tracking-[0.15em] text-[#788689] dark:text-white/27">
+            <p className="text-[0.58rem] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
               {item.type === "plan-block"
                 ? "My plan"
                 : item.relationship === "allocat"
@@ -2359,7 +2291,7 @@ function CalendarDetailPanel({
                   : "Project work"}
             </p>
 
-            <h2 className="mt-2 break-words text-xl font-semibold tracking-[-0.025em]">
+            <h2 className="mt-2 break-words text-xl font-semibold tracking-[-0.025em] text-foreground/90">
               {item.title}
             </h2>
 
@@ -2372,7 +2304,8 @@ function CalendarDetailPanel({
                 ].join(" ")}
               >
                 {getCalendarTaskStatusIcon(item)}
-                {formatStatus(item.status)}
+
+                {formatStatus(getDisplayCalendarStatus(item))}
               </span>
             )}
           </div>
@@ -2382,7 +2315,10 @@ function CalendarDetailPanel({
             variant="ghost"
             size="icon"
             onClick={onClose}
-            className="h-9 w-9 shrink-0 rounded-lg shadow-none"
+            className={[
+              "h-9 w-9 shrink-0 rounded-lg shadow-none",
+              ghostActionButton,
+            ].join(" ")}
           >
             <XIcon size={16} />
           </Button>
@@ -2391,49 +2327,37 @@ function CalendarDetailPanel({
         <div className="mt-6 space-y-5">
           <DetailRow
             label="Project"
-            value={
-              item.projectTitle ||
-              "Personal planning"
-            }
+            value={item.projectTitle || "Personal planning"}
           />
 
           <DetailRow
             label="When"
-            value={formatItemTimeRange(
-              start,
-              end,
-              item.allDay,
-            )}
+            value={formatItemTimeRange(start, end, item.allDay)}
           />
 
           {item.type !== "plan-block" && (
             <DetailRow
               label="Status"
-              value={formatStatus(
-                getDisplayCalendarStatus(item),
-              )}
+              value={formatStatus(getDisplayCalendarStatus(item))}
             />
           )}
 
-          <DetailRow
-            label="Timing"
-            value={getDeadlineIntelligence(item)}
-          />
+          <DetailRow label="Timing" value={getDeadlineIntelligence(item)} />
 
           {(item.description || item.notes) && (
             <div>
-              <p className="text-[0.58rem] font-semibold uppercase tracking-[0.14em] text-[#788689] dark:text-white/27">
+              <p className="text-[0.58rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                 Notes
               </p>
 
-              <p className="mt-2 text-sm leading-6 text-[#536266] dark:text-white/62">
+              <p className="mt-2 text-sm leading-6 text-foreground/70">
                 {item.notes || item.description}
               </p>
             </div>
           )}
         </div>
 
-        <div className="mt-8 space-y-2 border-t border-[#315E6C]/[0.07] pt-5 dark:border-white/[0.06]">
+        <div className="mt-8 space-y-2 border-t border-border/55 pt-5 dark:border-border">
           {onToggleFocus && (
             <Button
               type="button"
@@ -2441,19 +2365,13 @@ function CalendarDetailPanel({
               onClick={onToggleFocus}
               className={[
                 "h-10 w-full justify-start rounded-lg text-xs font-semibold shadow-none",
-                !isFocused
-                  ? [
-                      "bg-[#315E6C] text-white hover:bg-[#294F5B]",
-                      "dark:bg-[#DEDA00] dark:text-[#303030] dark:hover:bg-[#D4D000]",
-                    ].join(" ")
-                  : "",
+
+                isFocused ? secondaryActionButton : primaryActionButton,
               ].join(" ")}
             >
               <StarIcon size={13} />
 
-              {isFocused
-                ? "Remove from weekly focus"
-                : "Add to weekly focus"}
+              {isFocused ? "Remove from weekly focus" : "Add to weekly focus"}
             </Button>
           )}
 
@@ -2462,7 +2380,10 @@ function CalendarDetailPanel({
               type="button"
               variant="outline"
               onClick={onEdit}
-              className="h-10 w-full justify-start rounded-lg bg-transparent text-xs font-semibold shadow-none"
+              className={[
+                "h-10 w-full justify-start rounded-lg text-xs font-semibold shadow-none",
+                secondaryActionButton,
+              ].join(" ")}
             >
               <PencilIcon size={13} />
               Reschedule or edit
@@ -2474,7 +2395,10 @@ function CalendarDetailPanel({
               type="button"
               variant="outline"
               onClick={onOpenProject}
-              className="h-10 w-full justify-start rounded-lg bg-transparent text-xs font-semibold shadow-none"
+              className={[
+                "h-10 w-full justify-start rounded-lg text-xs font-semibold shadow-none",
+                secondaryActionButton,
+              ].join(" ")}
             >
               <FolderOpenIcon size={13} />
               Open project
@@ -2486,7 +2410,14 @@ function CalendarDetailPanel({
               type="button"
               variant="ghost"
               onClick={onDelete}
-              className="h-10 w-full justify-start rounded-lg text-xs font-semibold text-[#AD3A12] shadow-none hover:bg-[#AD3A12]/[0.05] hover:text-[#AD3A12] dark:text-[#D27857]"
+              className={[
+                "h-10 w-full justify-start rounded-lg text-xs font-semibold shadow-none",
+
+                "text-status-overdue-foreground",
+
+                "hover:bg-status-overdue/[0.06]",
+                "hover:text-status-overdue-foreground",
+              ].join(" ")}
             >
               <Trash2Icon size={13} />
               Delete planning block
@@ -2498,68 +2429,44 @@ function CalendarDetailPanel({
   );
 }
 
-function getCalendarTaskStatusIcon(
-  item: CalendarItem,
-) {
+function getCalendarTaskStatusIcon(item: CalendarItem) {
   if (item.type !== "task") {
     return null;
   }
 
-  const status =
-    getCalendarTaskStatus(item);
+  const status = getCalendarTaskStatus(item);
 
   if (status === "overdue") {
-    return (
-      <AlertTriangleIcon size={11} />
-    );
+    return <AlertTriangleIcon size={11} />;
   }
 
   if (status === "complete") {
-    return (
-      <CheckCircle2Icon size={11} />
-    );
+    return <CheckCircle2Icon size={11} />;
   }
 
   if (status === "active") {
-    return (
-      <CircleDotIcon size={11} />
-    );
+    return <CircleDotIcon size={11} />;
   }
 
-  return (
-    <CircleDashedIcon size={11} />
-  );
+  return <CircleDashedIcon size={11} />;
 }
 
-function getDisplayCalendarStatus(
-  item: CalendarItem,
-) {
-  if (
-    item.type === "task" &&
-    getCalendarTaskStatus(item) === "overdue"
-  ) {
+function getDisplayCalendarStatus(item: CalendarItem) {
+  if (item.type === "task" && getCalendarTaskStatus(item) === "overdue") {
     return "Overdue";
   }
 
   return item.status;
 }
 
-function DetailRow({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
+function DetailRow({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="text-[0.58rem] font-semibold uppercase tracking-[0.14em] text-[#788689] dark:text-white/27">
+      <p className="text-[0.58rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
         {label}
       </p>
 
-      <p className="mt-1.5 text-sm font-semibold text-[#425053] dark:text-white/70">
-        {value}
-      </p>
+      <p className="mt-1.5 text-sm font-semibold text-foreground/75">{value}</p>
     </div>
   );
 }
@@ -2583,41 +2490,32 @@ function PlanningBlockEditor({
   onClose: () => void;
   onSave: (payload: PlanningBlockPayload) => Promise<void>;
 }) {
-  const initialStart = block
-    ? parseCalendarDate(block.startAt)
-    : null;
+  const initialStart = block ? parseCalendarDate(block.startAt) : null;
 
-  const initialEnd = block
-    ? parseCalendarDate(block.endAt)
-    : null;
+  const initialEnd = block ? parseCalendarDate(block.endAt) : null;
 
   const [title, setTitle] = useState(block?.title ?? "");
   const [notes, setNotes] = useState(block?.notes ?? "");
-  const [selectedProjectId, setSelectedProjectId] = useState(block?.projectId ?? "");
+
+  const [selectedProjectId, setSelectedProjectId] = useState(
+    block?.projectId ?? "",
+  );
 
   const [date, setDate] = useState(
-    initialStart
-      ? toDateKey(initialStart)
-      : defaultDate,
+    initialStart ? toDateKey(initialStart) : defaultDate,
   );
 
   const [startTime, setStartTime] = useState(
-    initialStart
-      ? toTimeInput(initialStart)
-      : "09:00",
+    initialStart ? toTimeInput(initialStart) : "09:00",
   );
 
   const [endTime, setEndTime] = useState(
-    initialEnd
-      ? toTimeInput(initialEnd)
-      : "10:00",
+    initialEnd ? toTimeInput(initialEnd) : "10:00",
   );
 
   const [formError, setFormError] = useState<string | null>(null);
 
-  async function handleSubmit(
-    event: FormEvent,
-  ) {
+  async function handleSubmit(event: FormEvent) {
     event.preventDefault();
 
     setFormError(null);
@@ -2625,40 +2523,26 @@ function PlanningBlockEditor({
     const cleanTitle = title.trim();
 
     if (!cleanTitle) {
-      setFormError(
-        "Give this planning block a title.",
-      );
+      setFormError("Give this planning block a title.");
+
       return;
     }
 
-    const startAt = localDateTimeToIso(
-      date,
-      startTime,
-    );
+    const startAt = localDateTimeToIso(date, startTime);
+    const endAt = localDateTimeToIso(date, endTime);
 
-    const endAt = localDateTimeToIso(
-      date,
-      endTime,
-    );
+    if (new Date(endAt) <= new Date(startAt)) {
+      setFormError("End time must be after the start time.");
 
-    if (
-      new Date(endAt) <=
-      new Date(startAt)
-    ) {
-      setFormError(
-        "End time must be after the start time.",
-      );
       return;
     }
 
     try {
       await onSave({
-        projectId:
-          selectedProjectId || null,
+        projectId: selectedProjectId || null,
         taskId: null,
         title: cleanTitle,
-        notes:
-          notes.trim() || null,
+        notes: notes.trim() || null,
         startAt,
         endAt,
       });
@@ -2671,20 +2555,12 @@ function PlanningBlockEditor({
     }
   }
 
-  const inputClass = [
-    "w-full rounded-lg border px-3 text-sm outline-none transition-colors",
-    "border-[#315E6C]/[0.10] bg-[#F8FAF8]",
-    "focus:border-[#315E6C]/40",
-    "dark:border-white/[0.08] dark:bg-[#10262D]",
-    "dark:focus:border-[#DEDA00]/40",
-  ].join(" ");
-
   return (
     <>
       <motion.button
         type="button"
         aria-label="Close planning editor"
-        className="fixed inset-0 z-[90] bg-black/30 backdrop-blur-[1px]"
+        className="fixed inset-0 z-[90] bg-foreground/25 backdrop-blur-[1px] dark:bg-background/60"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
@@ -2713,21 +2589,20 @@ function PlanningBlockEditor({
         className={[
           "fixed left-1/2 top-1/2 z-[100]",
           "w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2",
-          "rounded-2xl border p-5 shadow-2xl sm:p-6",
-          "border-[#315E6C]/[0.09] bg-[#F8FAF8]",
-          "dark:border-white/[0.08] dark:bg-[#0C1D22]",
+          "rounded-xl border p-5 sm:p-6",
+          "border-border/60 bg-card",
+          "text-card-foreground shadow-none",
+          "dark:border-border dark:bg-card",
         ].join(" ")}
       >
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-[0.58rem] font-semibold uppercase tracking-[0.15em] text-[#788689] dark:text-white/27">
+            <p className="text-[0.58rem] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
               Personal planning
             </p>
 
-            <h2 className="mt-2 text-xl font-semibold tracking-[-0.025em]">
-              {block
-                ? "Edit planning block"
-                : "Plan time"}
+            <h2 className="mt-2 text-xl font-semibold tracking-[-0.025em] text-foreground/90">
+              {block ? "Edit planning block" : "Plan time"}
             </h2>
           </div>
 
@@ -2736,49 +2611,43 @@ function PlanningBlockEditor({
             variant="ghost"
             size="icon"
             onClick={onClose}
-            className="h-9 w-9 rounded-lg shadow-none"
+            className={[
+              "h-9 w-9 rounded-lg shadow-none",
+              ghostActionButton,
+            ].join(" ")}
           >
             <XIcon size={16} />
           </Button>
         </div>
 
-        <form
-          onSubmit={handleSubmit}
-          className="mt-6 space-y-4"
-        >
+        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           <CalendarField label="Title">
             <input
               value={title}
-              onChange={event =>
-                setTitle(
-                  event.target.value,
-                )
-              }
+              onChange={(event) => setTitle(event.target.value)}
               maxLength={180}
               placeholder="e.g. Homepage concepts"
-              className={`${inputClass} h-10 placeholder:text-[#899598] dark:placeholder:text-white/20`}
+              className={[
+                "h-10 w-full rounded-lg px-3 text-sm",
+                "placeholder:text-muted-foreground/50",
+                formControlSurface,
+              ].join(" ")}
             />
           </CalendarField>
 
           <CalendarField label="Project">
             <select
               value={selectedProjectId}
-              onChange={event =>
-                setSelectedProjectId(
-                  event.target.value,
-                )
-              }
-              className={`${inputClass} h-10`}
+              onChange={(event) => setSelectedProjectId(event.target.value)}
+              className={[
+                "h-10 w-full rounded-lg px-3 text-sm",
+                formControlSurface,
+              ].join(" ")}
             >
-              <option value="">
-                Personal / no project
-              </option>
+              <option value="">Personal / no project</option>
 
-              {projects.map(project => (
-                <option
-                  key={project.id}
-                  value={project.id}
-                >
+              {projects.map((project) => (
+                <option key={project.id} value={project.id}>
                   {project.title}
                 </option>
               ))}
@@ -2789,12 +2658,11 @@ function PlanningBlockEditor({
             <input
               type="date"
               value={date}
-              onChange={event =>
-                setDate(
-                  event.target.value,
-                )
-              }
-              className={`${inputClass} h-10`}
+              onChange={(event) => setDate(event.target.value)}
+              className={[
+                "h-10 w-full rounded-lg px-3 text-sm",
+                formControlSurface,
+              ].join(" ")}
             />
           </CalendarField>
 
@@ -2803,12 +2671,11 @@ function PlanningBlockEditor({
               <input
                 type="time"
                 value={startTime}
-                onChange={event =>
-                  setStartTime(
-                    event.target.value,
-                  )
-                }
-                className={`${inputClass} h-10`}
+                onChange={(event) => setStartTime(event.target.value)}
+                className={[
+                  "h-10 w-full rounded-lg px-3 text-sm",
+                  formControlSurface,
+                ].join(" ")}
               />
             </CalendarField>
 
@@ -2816,12 +2683,11 @@ function PlanningBlockEditor({
               <input
                 type="time"
                 value={endTime}
-                onChange={event =>
-                  setEndTime(
-                    event.target.value,
-                  )
-                }
-                className={`${inputClass} h-10`}
+                onChange={(event) => setEndTime(event.target.value)}
+                className={[
+                  "h-10 w-full rounded-lg px-3 text-sm",
+                  formControlSurface,
+                ].join(" ")}
               />
             </CalendarField>
           </div>
@@ -2829,31 +2695,34 @@ function PlanningBlockEditor({
           <CalendarField label="Notes">
             <textarea
               value={notes}
-              onChange={event =>
-                setNotes(
-                  event.target.value,
-                )
-              }
+              onChange={(event) => setNotes(event.target.value)}
               maxLength={1200}
               rows={4}
               placeholder="Optional context for yourself"
-              className={`${inputClass} resize-none py-2.5 leading-6 placeholder:text-[#899598] dark:placeholder:text-white/20`}
+              className={[
+                "w-full resize-none rounded-lg px-3 py-2.5 text-sm leading-6",
+                "placeholder:text-muted-foreground/50",
+                formControlSurface,
+              ].join(" ")}
             />
           </CalendarField>
 
           {formError && (
-            <p className="rounded-lg bg-[#AD3A12]/[0.06] px-3 py-2 text-xs font-medium text-[#9F3C1A] dark:text-[#D27857]">
+            <p className="rounded-lg bg-status-overdue/[0.06] px-3 py-2 text-xs font-medium text-status-overdue-foreground">
               {formError}
             </p>
           )}
 
-          <div className="flex justify-end gap-2 pt-2">
+          <div className="flex justify-end gap-2 border-t border-border/55 pt-4 dark:border-border">
             <Button
               type="button"
               variant="ghost"
               onClick={onClose}
               disabled={saving}
-              className="h-9 rounded-lg px-4 text-xs font-semibold shadow-none"
+              className={[
+                "h-9 rounded-lg px-4 text-xs font-semibold shadow-none",
+                ghostActionButton,
+              ].join(" ")}
             >
               Cancel
             </Button>
@@ -2863,20 +2732,14 @@ function PlanningBlockEditor({
               disabled={saving}
               className={[
                 "h-9 rounded-lg px-4 text-xs font-semibold shadow-none",
-                "bg-[#315E6C] text-white hover:bg-[#294F5B]",
-                "dark:bg-[#DEDA00] dark:text-[#303030] dark:hover:bg-[#D4D000]",
+                primaryActionButton,
               ].join(" ")}
             >
               {saving && (
-                <LoaderCircleIcon
-                  size={13}
-                  className="animate-spin"
-                />
+                <LoaderCircleIcon size={13} className="animate-spin" />
               )}
 
-              {block
-                ? "Save changes"
-                : "Add to plan"}
+              {block ? "Save changes" : "Add to plan"}
             </Button>
           </div>
         </form>
@@ -2894,7 +2757,7 @@ function CalendarField({
 }) {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-[0.6rem] font-semibold uppercase tracking-[0.12em] text-[#788689] dark:text-white/27">
+      <span className="mb-1.5 block text-[0.6rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
         {label}
       </span>
 
@@ -2907,63 +2770,38 @@ function CalendarField({
    LEGEND
 ========================================================= */
 
-function CalendarLegend({
-  showClientWork,
-}: {
-  showClientWork: boolean;
-}) {
+function CalendarLegend({ showClientWork }: { showClientWork: boolean }) {
   return (
-    <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-[0.62rem] text-[#758386] dark:text-white/27">
+    <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-[0.62rem] text-muted-foreground">
       <LegendItem
-        surface="bg-[#315E6C] dark:bg-[#DEDA00]"
+        surface="bg-brand-secondary-highlight dark:bg-secondary"
         label="Current project"
       />
 
-      <LegendItem
-        surface="bg-[#B98645] dark:bg-[#F0A23A]"
-        label="Pending task"
-      />
+      <LegendItem surface="bg-status-active" label="Active task" />
 
-      <LegendItem
-        surface="bg-[#568B5E] dark:bg-[#38D200]"
-        label="Completed task"
-      />
+      <LegendItem surface="bg-status-pending" label="Pending task" />
 
-      <LegendItem
-        surface="bg-[#AD3A12] dark:bg-[#D27857]"
-        label="Overdue task"
-      />
+      <LegendItem surface="bg-status-complete" label="Completed task" />
+
+      <LegendItem surface="bg-status-overdue" label="Overdue task" />
 
       {showClientWork && (
         <LegendItem
-          surface="bg-[#7DA6B1]"
+          surface="bg-brand-secondary-highlight/70"
           label="Client work"
         />
       )}
 
-      <LegendItem
-        surface="bg-[#A5AFAC] dark:bg-white/25"
-        label="My plan"
-      />
+      <LegendItem surface="bg-muted-foreground/50" label="My plan" />
     </div>
   );
 }
 
-function LegendItem({
-  surface,
-  label,
-}: {
-  surface: string;
-  label: string;
-}) {
+function LegendItem({ surface, label }: { surface: string; label: string }) {
   return (
     <span className="inline-flex items-center gap-2">
-      <span
-        className={[
-          "h-2.5 w-2.5 rounded-sm",
-          surface,
-        ].join(" ")}
-      />
+      <span className={["h-2.5 w-2.5 rounded-sm", surface].join(" ")} />
 
       {label}
     </span>
@@ -2976,14 +2814,19 @@ function LegendItem({
 
 function CalendarLoading() {
   return (
-    <div className="flex min-h-[520px] items-center justify-center rounded-xl border border-[#315E6C]/[0.07] dark:border-white/[0.06]">
+    <div
+      className={[
+        "flex min-h-[520px] items-center justify-center rounded-xl border",
+        calendarShell,
+      ].join(" ")}
+    >
       <div className="text-center">
         <LoaderCircleIcon
           size={20}
-          className="mx-auto animate-spin text-[#315E6C] dark:text-[#DEDA00]"
+          className="mx-auto animate-spin text-brand-secondary-highlight dark:text-secondary"
         />
 
-        <p className="mt-3 text-xs font-medium text-[#788689] dark:text-white/27">
+        <p className="mt-3 text-xs font-medium text-muted-foreground">
           Loading calendar
         </p>
       </div>
@@ -3001,17 +2844,27 @@ function CalendarError({
   onDismiss: () => void;
 }) {
   return (
-    <div className="flex min-h-[420px] items-center justify-center rounded-xl border border-[#315E6C]/[0.07] dark:border-white/[0.06]">
+    <div
+      className={[
+        "flex min-h-[420px] items-center justify-center rounded-xl border",
+        calendarShell,
+      ].join(" ")}
+    >
       <div className="max-w-sm text-center">
-        <span className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-[#E1E8E5] text-[#687B80] dark:bg-white/[0.04] dark:text-white/30">
+        <span
+          className={[
+            "mx-auto flex h-10 w-10 items-center justify-center rounded-xl",
+            calendarIconSurface,
+          ].join(" ")}
+        >
           <RefreshCwIcon size={17} />
         </span>
 
-        <h2 className="mt-4 text-base font-semibold tracking-[-0.015em]">
+        <h2 className="mt-4 text-base font-semibold tracking-[-0.015em] text-foreground/85">
           Could not load calendar
         </h2>
 
-        <p className="mt-2 text-xs leading-6 text-[#788689] dark:text-white/28">
+        <p className="mt-2 text-xs leading-6 text-muted-foreground">
           {message}
         </p>
 
@@ -3020,7 +2873,10 @@ function CalendarError({
             type="button"
             variant="ghost"
             onClick={onDismiss}
-            className="h-9 rounded-lg px-4 text-xs font-semibold shadow-none"
+            className={[
+              "h-9 rounded-lg px-4 text-xs font-semibold shadow-none",
+              ghostActionButton,
+            ].join(" ")}
           >
             Dismiss
           </Button>
@@ -3029,7 +2885,10 @@ function CalendarError({
             type="button"
             variant="outline"
             onClick={onRetry}
-            className="h-9 rounded-lg bg-transparent px-4 text-xs font-semibold shadow-none"
+            className={[
+              "h-9 rounded-lg px-4 text-xs font-semibold shadow-none",
+              secondaryActionButton,
+            ].join(" ")}
           >
             <RefreshCwIcon size={13} />
             Try again
@@ -3051,58 +2910,24 @@ function buildPlanningInsights(
   planningBlocks: CalendarPlanningBlock[],
 ): PlanningInsights {
   const blocks = planningBlocks
-    .map(block => ({
+    .map((block) => ({
       ...block,
-      startDate:
-        parseCalendarDate(
-          block.startAt,
-        ),
-      endDate:
-        parseCalendarDate(
-          block.endAt,
-        ),
+      startDate: parseCalendarDate(block.startAt),
+      endDate: parseCalendarDate(block.endAt),
     }))
-    .filter(
-      block =>
-        block.endDate > weekStart &&
-        block.startDate < weekEnd,
+    .filter((block) => block.endDate > weekStart && block.startDate < weekEnd);
+
+  const plannedHours = blocks.reduce((total, block) => {
+    const start = new Date(
+      Math.max(block.startDate.getTime(), weekStart.getTime()),
     );
 
-  const plannedHours = blocks.reduce(
-    (
-      total,
-      block,
-    ) => {
-      const start = new Date(
-        Math.max(
-          block.startDate.getTime(),
-          weekStart.getTime(),
-        ),
-      );
+    const end = new Date(Math.min(block.endDate.getTime(), weekEnd.getTime()));
 
-      const end = new Date(
-        Math.min(
-          block.endDate.getTime(),
-          weekEnd.getTime(),
-        ),
-      );
+    return total + Math.max(0, (end.getTime() - start.getTime()) / 3600000);
+  }, 0);
 
-      return (
-        total +
-        Math.max(
-          0,
-          (end.getTime() -
-            start.getTime()) /
-            3600000,
-        )
-      );
-    },
-    0,
-  );
-
-  const ratio =
-    plannedHours /
-    WEEKLY_CAPACITY_HOURS;
+  const ratio = plannedHours / WEEKLY_CAPACITY_HOURS;
 
   const workloadLabel: PlanningInsights["workloadLabel"] =
     ratio > 1
@@ -3115,120 +2940,73 @@ function buildPlanningInsights(
 
   const alerts: string[] = [];
 
-  const overlappingPairs =
-    findOverlappingBlocks(
-      blocks,
-    );
+  const overlappingPairs = findOverlappingBlocks(blocks);
 
   if (overlappingPairs > 0) {
     alerts.push(
       `${overlappingPairs} planning ${
-        overlappingPairs === 1
-          ? "overlap"
-          : "overlaps"
+        overlappingPairs === 1 ? "overlap" : "overlaps"
       }`,
     );
   }
 
-  const dayStats = Array.from(
-    { length: 7 },
-    (_, index) => {
-      const date = addDays(
-        weekStart,
-        index,
+  const dayStats = Array.from({ length: 7 }, (_, index) => {
+    const date = addDays(weekStart, index);
+
+    const hours = blocks
+      .filter((block) => isSameDay(block.startDate, date))
+      .reduce(
+        (total, block) =>
+          total +
+          Math.max(
+            0,
+            (block.endDate.getTime() - block.startDate.getTime()) / 3600000,
+          ),
+        0,
       );
 
-      const hours = blocks
-        .filter(block =>
-          isSameDay(
-            block.startDate,
-            date,
-          ),
-        )
-        .reduce(
-          (
-            total,
-            block,
-          ) =>
-            total +
-            Math.max(
-              0,
-              (block.endDate.getTime() -
-                block.startDate.getTime()) /
-                3600000,
-            ),
-          0,
-        );
+    const deadlineCount = items.filter(
+      (item) =>
+        (item.type === "task" || item.type === "project-due") &&
+        isSameDay(parseCalendarDate(item.start), date),
+    ).length;
 
-      const deadlineCount = items.filter(
-        item =>
-          (item.type === "task" ||
-            item.type === "project-due") &&
-          isSameDay(
-            parseCalendarDate(
-              item.start,
-            ),
-            date,
-          ),
-      ).length;
-
-      return {
-        date,
-        hours,
-        deadlineCount,
-      };
-    },
-  );
+    return {
+      date,
+      hours,
+      deadlineCount,
+    };
+  });
 
   const busiestDay = dayStats.find(
-    day =>
-      day.hours > 8 ||
-      day.deadlineCount >= 3,
+    (day) => day.hours > 8 || day.deadlineCount >= 3,
   );
 
   if (busiestDay) {
-    alerts.push(
-      `${formatWeekday(
-        busiestDay.date,
-      )} looks busy`,
-    );
+    alerts.push(`${formatWeekday(busiestDay.date)} looks busy`);
   }
 
-  if (
-    plannedHours >
-    WEEKLY_CAPACITY_HOURS
-  ) {
+  if (plannedHours > WEEKLY_CAPACITY_HOURS) {
     alerts.push(
       `${formatHours(
-        plannedHours -
-          WEEKLY_CAPACITY_HOURS,
+        plannedHours - WEEKLY_CAPACITY_HOURS,
       )}h over weekly capacity`,
     );
   }
 
-  const deadlineCount = items.filter(item => {
-    if (
-      item.type !== "task" &&
-      item.type !== "project-due"
-    ) {
+  const deadlineCount = items.filter((item) => {
+    if (item.type !== "task" && item.type !== "project-due") {
       return false;
     }
 
-    const start =
-      parseCalendarDate(
-        item.start,
-      );
+    const start = parseCalendarDate(item.start);
 
-    return (
-      start >= weekStart &&
-      start < weekEnd
-    );
+    return start >= weekStart && start < weekEnd;
   }).length;
 
   return {
     plannedHours,
-    capacityHours:
-      WEEKLY_CAPACITY_HOURS,
+    capacityHours: WEEKLY_CAPACITY_HOURS,
     workloadLabel,
     deadlineCount,
     alerts,
@@ -3244,42 +3022,25 @@ function findOverlappingBlocks(
   let overlaps = 0;
 
   const sorted = [...blocks].sort(
-    (
-      first,
-      second,
-    ) =>
-      first.startDate.getTime() -
-      second.startDate.getTime(),
+    (first, second) => first.startDate.getTime() - second.startDate.getTime(),
   );
 
-  for (
-    let firstIndex = 0;
-    firstIndex < sorted.length;
-    firstIndex += 1
-  ) {
+  for (let firstIndex = 0; firstIndex < sorted.length; firstIndex += 1) {
     for (
       let secondIndex = firstIndex + 1;
       secondIndex < sorted.length;
       secondIndex += 1
     ) {
-      const first =
-        sorted[firstIndex];
+      const first = sorted[firstIndex];
+      const second = sorted[secondIndex];
 
-      const second =
-        sorted[secondIndex];
-
-      if (
-        second.startDate >=
-        first.endDate
-      ) {
+      if (second.startDate >= first.endDate) {
         break;
       }
 
       if (
-        second.startDate <
-          first.endDate &&
-        second.endDate >
-          first.startDate
+        second.startDate < first.endDate &&
+        second.endDate > first.startDate
       ) {
         overlaps += 1;
       }
@@ -3294,320 +3055,173 @@ function findOverlappingBlocks(
 ========================================================= */
 
 function startOfDay(date: Date) {
-  return new Date(
-    date.getFullYear(),
-    date.getMonth(),
-    date.getDate(),
-  );
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 }
 
 function startOfMonth(date: Date) {
-  return new Date(
-    date.getFullYear(),
-    date.getMonth(),
-    1,
-  );
+  return new Date(date.getFullYear(), date.getMonth(), 1);
 }
 
 function startOfWeek(date: Date) {
-  const result =
-    startOfDay(date);
+  const result = startOfDay(date);
 
-  const day =
-    result.getDay();
+  const day = result.getDay();
 
-  const difference =
-    day === 0
-      ? -6
-      : 1 - day;
+  const difference = day === 0 ? -6 : 1 - day;
 
-  result.setDate(
-    result.getDate() +
-      difference,
-  );
+  result.setDate(result.getDate() + difference);
 
   return result;
 }
 
-function addDays(
-  date: Date,
-  amount: number,
-) {
-  const result =
-    new Date(date);
+function addDays(date: Date, amount: number) {
+  const result = new Date(date);
 
-  result.setDate(
-    result.getDate() +
-      amount,
-  );
+  result.setDate(result.getDate() + amount);
 
   return result;
 }
 
-function addMonths(
-  date: Date,
-  amount: number,
-) {
-  return new Date(
-    date.getFullYear(),
-    date.getMonth() + amount,
-    1,
-  );
+function addMonths(date: Date, amount: number) {
+  return new Date(date.getFullYear(), date.getMonth() + amount, 1);
 }
 
-function addMinutes(
-  date: Date,
-  amount: number,
-) {
-  return new Date(
-    date.getTime() +
-      amount * 60000,
-  );
+function addMinutes(date: Date, amount: number) {
+  return new Date(date.getTime() + amount * 60000);
 }
 
-function isSameDay(
-  first: Date,
-  second: Date,
-) {
+function isSameDay(first: Date, second: Date) {
   return (
-    first.getFullYear() ===
-      second.getFullYear() &&
-    first.getMonth() ===
-      second.getMonth() &&
-    first.getDate() ===
-      second.getDate()
+    first.getFullYear() === second.getFullYear() &&
+    first.getMonth() === second.getMonth() &&
+    first.getDate() === second.getDate()
   );
 }
 
-function parseCalendarDate(
-  value: string,
-) {
+function parseCalendarDate(value: string) {
   return new Date(value);
 }
 
-function toDateKey(
-  date: Date,
-) {
-  const year =
-    date.getFullYear();
+function toDateKey(date: Date) {
+  const year = date.getFullYear();
 
-  const month =
-    String(
-      date.getMonth() + 1,
-    ).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
 
-  const day =
-    String(
-      date.getDate(),
-    ).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
 
   return `${year}-${month}-${day}`;
 }
 
-function toTimeInput(
-  date: Date,
-) {
-  const hours =
-    String(
-      date.getHours(),
-    ).padStart(2, "0");
+function toTimeInput(date: Date) {
+  const hours = String(date.getHours()).padStart(2, "0");
 
-  const minutes =
-    String(
-      date.getMinutes(),
-    ).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
 
   return `${hours}:${minutes}`;
 }
 
-function localDateTimeToIso(
-  date: string,
-  time: string,
-) {
-  return new Date(
-    `${date}T${time}:00`,
-  ).toISOString();
+function localDateTimeToIso(date: string, time: string) {
+  return new Date(`${date}T${time}:00`).toISOString();
 }
 
 /* =========================================================
    FORMAT HELPERS
 ========================================================= */
 
-function formatCalendarHeading(
-  date: Date,
-  view: CalendarView,
-) {
+function formatCalendarHeading(date: Date, view: CalendarView) {
   if (view === "month") {
-    return new Intl.DateTimeFormat(
-      "en",
-      {
-        month: "long",
-        year: "numeric",
-      },
-    ).format(date);
+    return new Intl.DateTimeFormat("en", {
+      month: "long",
+      year: "numeric",
+    }).format(date);
   }
 
   const start = startOfWeek(date);
   const end = addDays(start, 6);
 
   const sameMonth =
-    start.getMonth() ===
-      end.getMonth() &&
-    start.getFullYear() ===
-      end.getFullYear();
+    start.getMonth() === end.getMonth() &&
+    start.getFullYear() === end.getFullYear();
 
   if (sameMonth) {
-    const monthYear =
-      new Intl.DateTimeFormat(
-        "en",
-        {
-          month: "long",
-          year: "numeric",
-        },
-      ).format(start);
+    const monthYear = new Intl.DateTimeFormat("en", {
+      month: "long",
+      year: "numeric",
+    }).format(start);
 
     return `${start.getDate()}-${end.getDate()} ${monthYear}`;
   }
 
-  const startLabel =
-    new Intl.DateTimeFormat(
-      "en",
-      {
-        day: "numeric",
-        month: "short",
-      },
-    ).format(start);
+  const startLabel = new Intl.DateTimeFormat("en", {
+    day: "numeric",
+    month: "short",
+  }).format(start);
 
-  const endLabel =
-    new Intl.DateTimeFormat(
-      "en",
-      {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-      },
-    ).format(end);
+  const endLabel = new Intl.DateTimeFormat("en", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  }).format(end);
 
   return `${startLabel} - ${endLabel}`;
 }
 
-function formatWeekday(
-  date: Date,
-) {
-  return new Intl.DateTimeFormat(
-    "en",
-    {
-      weekday: "short",
-    },
-  ).format(date);
+function formatWeekday(date: Date) {
+  return new Intl.DateTimeFormat("en", {
+    weekday: "short",
+  }).format(date);
 }
 
-function formatHour(
-  hour: number,
-) {
-  return new Intl.DateTimeFormat(
-    "en",
-    {
-      hour: "numeric",
-    },
-  ).format(
-    new Date(
-      2026,
-      0,
-      1,
-      hour,
-    ),
-  );
+function formatHour(hour: number) {
+  return new Intl.DateTimeFormat("en", {
+    hour: "numeric",
+  }).format(new Date(2026, 0, 1, hour));
 }
 
-function formatTime(
-  date: Date,
-) {
-  return new Intl.DateTimeFormat(
-    "en",
-    {
-      hour: "2-digit",
-      minute: "2-digit",
-    },
-  ).format(date);
+function formatTime(date: Date) {
+  return new Intl.DateTimeFormat("en", {
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
 }
 
-function formatUpcomingDate(
-  date: Date,
-) {
-  if (
-    isSameDay(
-      date,
-      new Date(),
-    )
-  ) {
+function formatUpcomingDate(date: Date) {
+  if (isSameDay(date, new Date())) {
     return "Today";
   }
 
-  if (
-    isSameDay(
-      date,
-      addDays(
-        new Date(),
-        1,
-      ),
-    )
-  ) {
+  if (isSameDay(date, addDays(new Date(), 1))) {
     return "Tomorrow";
   }
 
-  return new Intl.DateTimeFormat(
-    "en",
-    {
-      weekday: "short",
-      day: "numeric",
-      month: "short",
-    },
-  ).format(date);
+  return new Intl.DateTimeFormat("en", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+  }).format(date);
 }
 
-function formatHours(
-  value: number,
-) {
-  return Number.isInteger(value)
-    ? String(value)
-    : value.toFixed(1);
+function formatHours(value: number) {
+  return Number.isInteger(value) ? String(value) : value.toFixed(1);
 }
 
-function formatStatus(
-  status: string,
-) {
+function formatStatus(status: string) {
   if (!status) {
     return "Not set";
   }
 
   return status
-    .replace(
-      /[-_]/g,
-      " ",
-    )
-    .replace(
-      /\b\w/g,
-      letter =>
-        letter.toUpperCase(),
-    );
+    .replace(/[-_]/g, " ")
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
-function formatItemTimeRange(
-  start: Date,
-  end: Date | null,
-  allDay: boolean,
-) {
-  const date =
-    new Intl.DateTimeFormat(
-      "en",
-      {
-        weekday: "short",
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-      },
-    ).format(start);
+function formatItemTimeRange(start: Date, end: Date | null, allDay: boolean) {
+  const date = new Intl.DateTimeFormat("en", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  }).format(start);
 
   if (allDay) {
     return `${date} · All day`;
@@ -3620,31 +3234,16 @@ function formatItemTimeRange(
   return `${date} · ${formatTime(start)} - ${formatTime(end)}`;
 }
 
-function getDeadlineIntelligence(
-  item: CalendarItem,
-) {
+function getDeadlineIntelligence(item: CalendarItem) {
   if (item.type === "plan-block") {
     return "Personal time reserved on your plan.";
   }
 
-  const eventDate =
-    startOfDay(
-      parseCalendarDate(
-        item.start,
-      ),
-    );
+  const eventDate = startOfDay(parseCalendarDate(item.start));
 
-  const today =
-    startOfDay(
-      new Date(),
-    );
+  const today = startOfDay(new Date());
 
-  const days =
-    Math.round(
-      (eventDate.getTime() -
-        today.getTime()) /
-        86400000,
-    );
+  const days = Math.round((eventDate.getTime() - today.getTime()) / 86400000);
 
   if (days === 0) {
     return "Today";
@@ -3669,33 +3268,18 @@ function getDeadlineIntelligence(
    SORT / ERROR HELPERS
 ========================================================= */
 
-function compareCalendarItems(
-  first: CalendarItem,
-  second: CalendarItem,
-) {
-  if (
-    first.allDay !==
-    second.allDay
-  ) {
-    return first.allDay
-      ? -1
-      : 1;
+function compareCalendarItems(first: CalendarItem, second: CalendarItem) {
+  if (first.allDay !== second.allDay) {
+    return first.allDay ? -1 : 1;
   }
 
   return (
-    parseCalendarDate(
-      first.start,
-    ).getTime() -
-    parseCalendarDate(
-      second.start,
-    ).getTime()
+    parseCalendarDate(first.start).getTime() -
+    parseCalendarDate(second.start).getTime()
   );
 }
 
-function getAxiosMessage(
-  error: unknown,
-  fallback: string,
-) {
+function getAxiosMessage(error: unknown, fallback: string) {
   if (
     axios.isAxiosError(error) &&
     typeof error.response?.data?.message === "string"

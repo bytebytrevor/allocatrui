@@ -8,17 +8,24 @@
 @custom-variant light (&:is(.light *));
 @custom-variant dark (&:where(.dark, .dark *));
 
+
 /* =========================================================
    LIGHT THEME
 ========================================================= */
 
 :root {
-  font-family: Poppins, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, system-ui;
+  font-family:
+    Poppins,
+    "Segoe UI",
+    Roboto,
+    Helvetica,
+    Arial,
+    sans-serif,
+    system-ui;
+
   line-height: 1.5;
 
   color-scheme: light;
-  color: #303030;
-  background-color: #F7F8F4;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -27,82 +34,171 @@
 
   --radius: 0.625rem;
 
-  /* Brand */
-  --brand-charcoal: #303030;
+
+  /* =======================================================
+     BRAND
+  ======================================================= */
+
+  --brand-charcoal: #303638;
+
   --brand-primary: #DEDA00;
   --brand-secondary: #033D4F;
+
   --brand-green: #38D200;
   --brand-cyan: #00B1EA;
   --brand-amber: #F0A23A;
   --brand-red: #AD3A12;
 
-  /* Brand supporting scale */
+
+  /* =======================================================
+     BRAND SUPPORTING SCALE
+  ======================================================= */
+
   --brand-primary-soft: #F4F2C8;
   --brand-primary-muted: #A7A400;
 
   --brand-secondary-strong: #052F3B;
-  --brand-secondary-soft: #E7EFF1;
+  --brand-secondary-soft: #E6EFF0;
   --brand-secondary-muted: #AFC1C7;
   --brand-secondary-highlight: #315E6C;
 
-  /* Surfaces */
-  --surface-1: #FFFFFF;
-  --surface-2: #F7F8F5;
-  --surface-3: #EEF3F1;
-  --surface-lime: #F7F6E7;
+
+  /* =======================================================
+     SURFACES
+  ======================================================= */
+
+  --surface-1: #FBFCF9;
+  --surface-2: #F3F5F2;
+  --surface-3: #E8ECE9;
+
+  --surface-lime: #F6F5E7;
   --surface-teal: #EDF3F3;
 
-  /* Core */
-  --background: #F7F8F4;
-  --foreground: #303030;
 
-  --card: #FFFFFF;
-  --card-foreground: #303030;
+  /* =======================================================
+     CORE
+  ======================================================= */
 
-  --popover: #FFFFFF;
-  --popover-foreground: #303030;
+  --background: #F1F3F0;
+  --foreground: #303638;
 
-  /* Enterprise primary action */
+
+  /* =======================================================
+     CARDS
+  ======================================================= */
+
+  --card: #FBFCF9;
+  --card-foreground: #303638;
+
+
+  /* =======================================================
+     POPOVERS
+  ======================================================= */
+
+  --popover: #FBFCF9;
+  --popover-foreground: #303638;
+
+
+  /* =======================================================
+     ACTIONS
+  ======================================================= */
+
   --primary: #033D4F;
   --primary-foreground: #FFFFFF;
 
-  /* Allocatr brand energy */
   --secondary: #DEDA00;
-  --secondary-foreground: #303030;
+  --secondary-foreground: #303638;
 
-  --muted: #F0F3F0;
-  --muted-foreground: #626966;
 
-  --accent: #E7EFF1;
+  /* =======================================================
+     MUTED
+  ======================================================= */
+
+  --muted: #E8ECE9;
+  --muted-foreground: #667477;
+
+
+  /* =======================================================
+     ACCENT
+  ======================================================= */
+
+  --accent: #E6EFF0;
   --accent-foreground: #033D4F;
 
   --accent-2: #38D200;
   --accent-3: #00B1EA;
 
+
+  /* =======================================================
+     FEEDBACK
+  ======================================================= */
+
   --destructive: #AD3A12;
   --destructive-foreground: #FFFFFF;
 
-  --border: #DEE5E1;
-  --input: #D9E1DD;
+
+  /* =======================================================
+     WORKFLOW STATUS
+  ======================================================= */
+
+  --status-pending: #B98645;
+  --status-pending-foreground: #8A632F;
+
+  --status-active: #315E6C;
+  --status-active-foreground: #315E6C;
+
+  --status-complete: #568B5E;
+  --status-complete-foreground: #477A4F;
+
+  --status-overdue: var(--destructive);
+  --status-overdue-foreground: #9F3C1A;
+
+
+  /* =======================================================
+     BORDERS
+  ======================================================= */
+
+  --border: #D9E1DD;
+  --input: #D2DBD6;
   --ring: #315E6C;
 
-  /* Charts */
-  --chart-1: #033D4F;
-  --chart-2: #DEDA00;
-  --chart-3: #38D200;
-  --chart-4: #F0A23A;
-  --chart-5: #AD3A12;
 
-  /* Sidebar */
-  --sidebar: #F3F6F3;
-  --sidebar-foreground: #303030;
+  /* =======================================================
+     CHARTS
+  ======================================================= */
+
+  --chart-1: var(--brand-secondary);
+  --chart-2: var(--brand-primary);
+  --chart-3: var(--brand-green);
+  --chart-4: var(--brand-amber);
+  --chart-5: var(--brand-red);
+
+
+  /* =======================================================
+     SIDEBAR
+  ======================================================= */
+
+  --sidebar: #EDF1EE;
+  --sidebar-foreground: #303638;
+
   --sidebar-primary: #033D4F;
   --sidebar-primary-foreground: #FFFFFF;
+
   --sidebar-accent: #F4F2C8;
-  --sidebar-accent-foreground: #303030;
-  --sidebar-border: #DEE5E1;
+  --sidebar-accent-foreground: #303638;
+
+  --sidebar-border: #D9E1DD;
   --sidebar-ring: #315E6C;
+
+
+  /* =======================================================
+     DOCUMENT
+  ======================================================= */
+
+  color: var(--foreground);
+  background-color: var(--background);
 }
+
 
 /* =========================================================
    DARK THEME
@@ -111,106 +207,320 @@
 .dark {
   color-scheme: dark;
 
-  --background: #08171C;
-  --foreground: #F4F7F7;
 
-  --surface-1: #0C1D22;
-  --surface-2: #10262D;
-  --surface-3: #153139;
-  --surface-lime: #182B25;
-  --surface-teal: #10262D;
+  /* =======================================================
+     BASE
 
-  --card: #0C1D22;
-  --card-foreground: #F4F7F7;
+     Slightly deeper canvas to give cards and panels
+     clearer elevation.
+  ======================================================= */
 
-  --popover: #10262D;
-  --popover-foreground: #F4F7F7;
+  --background: #0E1518;
+  --foreground: #E8ECEC;
 
-  --primary: #0D566D;
+
+  /* =======================================================
+     SURFACES
+
+     Elevation:
+     background -> surface-1 -> surface-2 -> surface-3
+  ======================================================= */
+
+  --surface-1: #141D20;
+  --surface-2: #192429;
+  --surface-3: #223137;
+
+  --surface-lime: #20251A;
+  --surface-teal: #17262A;
+
+
+  /* =======================================================
+     CARDS
+  ======================================================= */
+
+  --card: #161F23;
+  --card-foreground: #E8ECEC;
+
+
+  /* =======================================================
+     POPOVERS
+  ======================================================= */
+
+  --popover: #182328;
+  --popover-foreground: #E8ECEC;
+
+
+  /* =======================================================
+     ACTIONS
+  ======================================================= */
+
+  --primary: #315E6C;
   --primary-foreground: #FFFFFF;
 
   --secondary: #DEDA00;
-  --secondary-foreground: #202020;
+  --secondary-foreground: #303030;
 
-  --muted: #14282E;
-  --muted-foreground: #9AADB3;
 
-  --accent: #12313A;
-  --accent-foreground: #EAF2F4;
+  /* =======================================================
+     MUTED
 
-  --accent-2: #38D200;
-  --accent-3: #00B1EA;
+     Brighter than before so descriptions, project codes,
+     labels and metadata remain easy to read.
+  ======================================================= */
+
+  --muted: #202B2F;
+  --muted-foreground: #A5B0B2;
+
+
+  /* =======================================================
+     ACCENT
+  ======================================================= */
+
+  --accent: #1D3035;
+  --accent-foreground: #E8ECEC;
+
+  --accent-2: var(--brand-green);
+  --accent-3: var(--brand-cyan);
+
+
+  /* =======================================================
+     FEEDBACK
+  ======================================================= */
 
   --destructive: #AD3A12;
   --destructive-foreground: #FFFFFF;
 
+
+  /* =======================================================
+     WORKFLOW STATUS
+
+     Pending     -> Amber
+     Active      -> Allocatr lime
+     Complete    -> Green
+     Overdue     -> Red
+  ======================================================= */
+
+  --status-pending: var(--brand-amber);
+
+  --status-pending-foreground:
+    color-mix(
+      in srgb,
+      var(--status-pending) 76%,
+      white
+    );
+
+
+  --status-active: var(--brand-primary);
+
+  --status-active-foreground:
+    color-mix(
+      in srgb,
+      var(--status-active) 88%,
+      white
+    );
+
+
+  --status-complete: var(--brand-green);
+
+  --status-complete-foreground:
+    color-mix(
+      in srgb,
+      var(--status-complete) 70%,
+      white
+    );
+
+
+  --status-overdue: var(--destructive);
+
+  --status-overdue-foreground:
+    color-mix(
+      in srgb,
+      var(--status-overdue) 48%,
+      white
+    );
+
+
+  /* =======================================================
+     BRAND SUPPORTING
+  ======================================================= */
+
   --brand-primary-soft: #353712;
   --brand-primary-muted: #D7D339;
 
-  --brand-secondary-strong: #061F27;
-  --brand-secondary-soft: #12313A;
-  --brand-secondary-muted: #3D6B78;
+  --brand-secondary-strong: #0B2027;
+  --brand-secondary-soft: #1A292D;
+  --brand-secondary-muted: #5A7983;
   --brand-secondary-highlight: #7DA6B1;
 
-  --border: rgb(255 255 255 / 0.08);
-  --input: rgb(255 255 255 / 0.11);
+
+  /* =======================================================
+     BORDERS
+
+     Slightly stronger because borders carry more visual
+     structure than shadows in dark mode.
+  ======================================================= */
+
+  --border: rgb(255 255 255 / 0.09);
+  --input: rgb(255 255 255 / 0.12);
   --ring: #4D7C88;
 
-  --chart-1: #7DA6B1;
-  --chart-2: #DEDA00;
-  --chart-3: #38D200;
-  --chart-4: #F0A23A;
-  --chart-5: #AD3A12;
 
-  --sidebar: #0A1B20;
-  --sidebar-foreground: #F4F7F7;
-  --sidebar-primary: #0D566D;
+  /* =======================================================
+     CHARTS
+  ======================================================= */
+
+  --chart-1: var(--brand-secondary-highlight);
+  --chart-2: var(--brand-primary);
+  --chart-3: var(--brand-green);
+  --chart-4: var(--brand-amber);
+  --chart-5: var(--brand-red);
+
+
+  /* =======================================================
+     SIDEBAR
+  ======================================================= */
+
+  --sidebar: #111A1D;
+  --sidebar-foreground: #E8ECEC;
+
+  --sidebar-primary: #315E6C;
   --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #12313A;
-  --sidebar-accent-foreground: #EAF2F4;
-  --sidebar-border: rgb(255 255 255 / 0.08);
+
+  --sidebar-accent: #1D3035;
+  --sidebar-accent-foreground: #E8ECEC;
+
+  --sidebar-border: rgb(255 255 255 / 0.09);
   --sidebar-ring: #4D7C88;
 }
+
 
 /* =========================================================
    TAILWIND THEME TOKENS
 ========================================================= */
 
 @theme inline {
+
+  /* =======================================================
+     RADII
+  ======================================================= */
+
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
 
+
+  /* =======================================================
+     CORE
+  ======================================================= */
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+
+
+  /* =======================================================
+     CARD
+  ======================================================= */
 
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
 
+
+  /* =======================================================
+     POPOVER
+  ======================================================= */
+
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
+
+
+  /* =======================================================
+     PRIMARY
+  ======================================================= */
 
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
 
+
+  /* =======================================================
+     SECONDARY
+  ======================================================= */
+
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
+
+
+  /* =======================================================
+     MUTED
+  ======================================================= */
 
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
 
+
+  /* =======================================================
+     ACCENT
+  ======================================================= */
+
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
+
   --color-accent-2: var(--accent-2);
   --color-accent-3: var(--accent-3);
+
+
+  /* =======================================================
+     FEEDBACK
+  ======================================================= */
 
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
 
+
+  /* =======================================================
+     WORKFLOW STATUS
+  ======================================================= */
+
+  --color-status-pending:
+    var(--status-pending);
+
+  --color-status-pending-foreground:
+    var(--status-pending-foreground);
+
+
+  --color-status-active:
+    var(--status-active);
+
+  --color-status-active-foreground:
+    var(--status-active-foreground);
+
+
+  --color-status-complete:
+    var(--status-complete);
+
+  --color-status-complete-foreground:
+    var(--status-complete-foreground);
+
+
+  --color-status-overdue:
+    var(--status-overdue);
+
+  --color-status-overdue-foreground:
+    var(--status-overdue-foreground);
+
+
+  /* =======================================================
+     BORDER / INPUT / RING
+  ======================================================= */
+
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+
+
+  /* =======================================================
+     CHARTS
+  ======================================================= */
 
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
@@ -218,59 +528,114 @@
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
 
+
+  /* =======================================================
+     SIDEBAR
+  ======================================================= */
+
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
+
   --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+
+  --color-sidebar-primary-foreground:
+    var(--sidebar-primary-foreground);
+
   --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+
+  --color-sidebar-accent-foreground:
+    var(--sidebar-accent-foreground);
+
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+
+
+  /* =======================================================
+     SURFACES
+  ======================================================= */
 
   --color-surface-1: var(--surface-1);
   --color-surface-2: var(--surface-2);
   --color-surface-3: var(--surface-3);
+
   --color-surface-lime: var(--surface-lime);
   --color-surface-teal: var(--surface-teal);
 
-  --color-dark-gray: #303030;
 
-  --color-brand-primary: #DEDA00;
-  --color-brand-primary-soft: var(--brand-primary-soft);
-  --color-brand-primary-muted: var(--brand-primary-muted);
+  /* =======================================================
+     BRAND
+  ======================================================= */
 
-  --color-brand-secondary: #033D4F;
-  --color-brand-secondary-strong: var(--brand-secondary-strong);
-  --color-brand-secondary-soft: var(--brand-secondary-soft);
-  --color-brand-secondary-muted: var(--brand-secondary-muted);
-  --color-brand-secondary-highlight: var(--brand-secondary-highlight);
+  --color-dark-gray:
+    var(--brand-charcoal);
 
-  --color-brand-green: #38D200;
-  --color-brand-cyan: #00B1EA;
-  --color-brand-amber: #F0A23A;
-  --color-brand-red: #AD3A12;
+
+  --color-brand-primary:
+    var(--brand-primary);
+
+  --color-brand-primary-soft:
+    var(--brand-primary-soft);
+
+  --color-brand-primary-muted:
+    var(--brand-primary-muted);
+
+
+  --color-brand-secondary:
+    var(--brand-secondary);
+
+  --color-brand-secondary-strong:
+    var(--brand-secondary-strong);
+
+  --color-brand-secondary-soft:
+    var(--brand-secondary-soft);
+
+  --color-brand-secondary-muted:
+    var(--brand-secondary-muted);
+
+  --color-brand-secondary-highlight:
+    var(--brand-secondary-highlight);
+
+
+  --color-brand-green:
+    var(--brand-green);
+
+  --color-brand-cyan:
+    var(--brand-cyan);
+
+  --color-brand-amber:
+    var(--brand-amber);
+
+  --color-brand-red:
+    var(--brand-red);
 }
+
 
 /* =========================================================
    BASE
 ========================================================= */
 
 @layer base {
+
   * {
     @apply border-border outline-ring/50;
   }
 
+
   html {
-    background: var(--background);
+    background-color: var(--background);
   }
+
 
   body {
     margin: 0;
+
     min-width: 320px;
     min-height: 100vh;
 
-    @apply bg-background text-foreground;
+    background-color: var(--background);
+    color: var(--foreground);
   }
+
 
   h1,
   h2,
@@ -279,9 +644,11 @@
     text-wrap: balance;
   }
 
+
   p {
     text-wrap: pretty;
   }
+
 
   button,
   input,
@@ -290,8 +657,15 @@
     font: inherit;
   }
 
+
   ::selection {
-    color: #303030;
-    background: rgb(222 218 0 / 0.58);
+    color: var(--secondary-foreground);
+
+    background:
+      color-mix(
+        in srgb,
+        var(--secondary) 58%,
+        transparent
+      );
   }
 }

@@ -1,4 +1,5 @@
 import { type FormEvent, useEffect, useMemo, useState } from "react";
+
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 
@@ -57,7 +58,6 @@ import {
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 
 /* =========================================================
@@ -95,6 +95,7 @@ type ProjectStatusAppearance = {
   label: string;
   dot: string;
   text: string;
+  rail: string;
 };
 
 type ProjectPriority = "standard" | "high" | "urgent";
@@ -152,21 +153,128 @@ type ProjectRatingsResponse =
     };
 
 /* =========================================================
-   CARD THEME
+   THEME
 ========================================================= */
 
 const projectCardSurface = [
-  "border-[#0D566D]/[0.10] bg-[#F3F7F6]",
-  "hover:border-[#0D566D]/[0.19] hover:bg-[#EFF5F3]",
-  "hover:shadow-[0_18px_44px_-34px_rgba(13,86,109,0.34)]",
-  "dark:border-white/[0.07] dark:bg-[#10262D]",
-  "dark:hover:border-[#7DA6B1]/20 dark:hover:bg-[#123039]",
-  "dark:hover:shadow-[0_20px_50px_-35px_rgba(0,0,0,0.60)]",
+  "border-border/55",
+  "bg-card",
+
+  "transition-[background-color,border-color] duration-200",
+
+  "hover:border-border/75",
+  "hover:bg-surface-2/55",
+
+  "dark:border-border",
+  "dark:bg-card",
+
+  "dark:hover:border-border",
+  "dark:hover:bg-surface-2/60",
 ].join(" ");
 
 const projectIconSurface = [
-  "bg-[#E1ECE9] text-[#0D566D]",
-  "dark:bg-[#DEDA00]/[0.08] dark:text-[#DEDA00]",
+  "bg-surface-3/65",
+  "text-foreground/55",
+
+  "ring-1 ring-inset ring-border/35",
+
+  "dark:bg-surface-2/80",
+  "dark:text-brand-secondary-highlight",
+  "dark:ring-border",
+].join(" ");
+
+const primaryActionButton = [
+  "border border-brand-secondary-highlight/15",
+  "bg-brand-secondary-highlight",
+  "text-primary-foreground",
+
+  "hover:border-brand-secondary-highlight/20",
+  "hover:bg-brand-secondary-highlight/90",
+  "hover:text-primary-foreground",
+
+  "focus-visible:ring-1",
+  "focus-visible:ring-brand-secondary-highlight/20",
+
+  "dark:border-secondary/10",
+  "dark:bg-secondary",
+  "dark:text-secondary-foreground",
+
+  "dark:hover:border-secondary/15",
+  "dark:hover:bg-secondary/90",
+  "dark:hover:text-secondary-foreground",
+
+  "dark:focus-visible:ring-secondary/20",
+].join(" ");
+
+const secondaryActionButton = [
+  "border-border/65",
+  "bg-surface-2/40",
+  "text-foreground/70",
+
+  "hover:border-border/85",
+  "hover:bg-surface-3/60",
+  "hover:text-foreground/90",
+
+  "dark:border-border",
+  "dark:bg-surface-2/65",
+  "dark:text-foreground/75",
+
+  "dark:hover:bg-surface-3/70",
+  "dark:hover:text-foreground",
+].join(" ");
+
+const ghostActionButton = [
+  "text-muted-foreground",
+
+  "hover:bg-surface-3/55",
+  "hover:text-foreground/90",
+
+  "dark:hover:bg-surface-3/65",
+  "dark:hover:text-foreground",
+].join(" ");
+
+const dialogSurface = [
+  "border-border/60",
+  "bg-card",
+  "text-card-foreground",
+  "shadow-none",
+
+  "dark:border-border",
+  "dark:bg-card",
+].join(" ");
+
+const dialogFooterSurface = [
+  "border-t border-border/55",
+  "bg-surface-2/30",
+
+  "dark:border-border",
+  "dark:bg-surface-2/55",
+].join(" ");
+
+const formControlSurface = [
+  "border-border/65",
+  "bg-surface-2/40",
+  "text-foreground/85",
+  "shadow-none",
+
+  "transition-[background-color,border-color,box-shadow] duration-150",
+
+  "hover:border-border/80",
+  "hover:bg-surface-2/55",
+
+  "focus-visible:border-ring/25",
+  "focus-visible:bg-surface-1",
+  "focus-visible:ring-1",
+  "focus-visible:ring-ring/10",
+
+  "dark:border-border",
+  "dark:bg-surface-2/65",
+
+  "dark:hover:bg-surface-3/60",
+
+  "dark:focus-visible:border-secondary/20",
+  "dark:focus-visible:bg-surface-2",
+  "dark:focus-visible:ring-secondary/[0.08]",
 ].join(" ");
 
 /* =========================================================
@@ -176,69 +284,79 @@ const projectIconSurface = [
 const statusAppearance: Record<string, ProjectStatusAppearance> = {
   pending: {
     label: "Pending",
-    dot: "bg-[#F0A23A]",
-    text: "text-[#976018] dark:text-[#F0A23A]",
+    dot: "bg-status-pending",
+    text: "text-status-pending-foreground",
+    rail: "bg-status-pending/75",
   },
 
   active: {
     label: "Active",
-    dot: "bg-[#0D566D] dark:bg-[#DEDA00]",
-    text: "text-[#0D566D] dark:text-[#DEDA00]",
+    dot: "bg-status-active",
+    text: "text-status-active-foreground",
+    rail: "bg-status-active/80",
   },
 
   completionrequested: {
     label: "Awaiting confirmation",
-    dot: "bg-[#F0A23A]",
-    text: "text-[#976018] dark:text-[#F0A23A]",
+    dot: "bg-status-pending",
+    text: "text-status-pending-foreground",
+    rail: "bg-status-pending/75",
   },
 
   onhold: {
     label: "On hold",
-    dot: "bg-[#78939A]",
-    text: "text-[#647D83] dark:text-[#9ABAC2]",
+    dot: "bg-muted-foreground/60",
+    text: "text-muted-foreground",
+    rail: "bg-muted-foreground/45",
   },
 
   paused: {
     label: "Paused",
-    dot: "bg-[#78939A]",
-    text: "text-[#647D83] dark:text-[#9ABAC2]",
+    dot: "bg-muted-foreground/60",
+    text: "text-muted-foreground",
+    rail: "bg-muted-foreground/45",
   },
 
   complete: {
     label: "Complete",
-    dot: "bg-[#38D200]",
-    text: "text-[#267F0D] dark:text-[#38D200]",
+    dot: "bg-status-complete",
+    text: "text-status-complete-foreground",
+    rail: "bg-status-complete/75",
   },
 
   completed: {
     label: "Complete",
-    dot: "bg-[#38D200]",
-    text: "text-[#267F0D] dark:text-[#38D200]",
+    dot: "bg-status-complete",
+    text: "text-status-complete-foreground",
+    rail: "bg-status-complete/75",
   },
 
   closed: {
     label: "Closed",
-    dot: "bg-[#7D8789]",
-    text: "text-muted-foreground",
+    dot: "bg-status-complete",
+    text: "text-status-complete-foreground",
+    rail: "bg-status-complete/65",
   },
 
   cancelled: {
     label: "Cancelled",
-    dot: "bg-[#AD3A12]",
-    text: "text-[#AD3A12] dark:text-[#D27857]",
+    dot: "bg-status-overdue",
+    text: "text-status-overdue-foreground",
+    rail: "bg-status-overdue/70",
   },
 
   canceled: {
     label: "Cancelled",
-    dot: "bg-[#AD3A12]",
-    text: "text-[#AD3A12] dark:text-[#D27857]",
+    dot: "bg-status-overdue",
+    text: "text-status-overdue-foreground",
+    rail: "bg-status-overdue/70",
   },
 };
 
 const priorityAppearance: Record<string, string> = {
   standard: "text-muted-foreground",
-  high: "text-[#976018] dark:text-[#F0A23A]",
-  urgent: "text-destructive",
+  high: "text-status-pending-foreground",
+  urgent: "text-status-overdue-foreground",
 };
 
 /* =========================================================
@@ -252,7 +370,9 @@ function normalizeStatus(status?: string) {
 }
 
 function normalizeMemberStatus(status?: string | null) {
-  return String(status ?? "").trim().toLowerCase();
+  return String(status ?? "")
+    .trim()
+    .toLowerCase();
 }
 
 function formatStatusLabel(status?: string) {
@@ -261,7 +381,7 @@ function formatStatusLabel(status?: string) {
   return status
     .trim()
     .replace(/[_-]+/g, " ")
-    .replace(/\b\w/g, letter => letter.toUpperCase());
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
 function getStatusAppearance(status?: string) {
@@ -270,8 +390,9 @@ function getStatusAppearance(status?: string) {
   return (
     statusAppearance[normalizedStatus] ?? {
       label: formatStatusLabel(status),
-      dot: "bg-[#78939A]",
+      dot: "bg-muted-foreground/60",
       text: "text-muted-foreground",
+      rail: "bg-muted-foreground/45",
     }
   );
 }
@@ -326,7 +447,7 @@ function getInitials(name?: string | null) {
   return normalizedName
     .split(/\s+/)
     .slice(0, 2)
-    .map(part => part.charAt(0).toUpperCase())
+    .map((part) => part.charAt(0).toUpperCase())
     .join("");
 }
 
@@ -351,7 +472,11 @@ function isClientWorkProject(project: Project) {
 function isAcceptedClientWorkProject(project: Project) {
   const workProject = project as ProjectWithWorkContext;
 
-  return String(workProject.projectAllocatStatus ?? "").trim().toLowerCase() === "accepted";
+  return (
+    String(workProject.projectAllocatStatus ?? "")
+      .trim()
+      .toLowerCase() === "accepted"
+  );
 }
 
 function isTerminalProject(project: Project) {
@@ -361,7 +486,9 @@ function isTerminalProject(project: Project) {
 }
 
 function isCompletedProject(project: Project) {
-  return ["complete", "completed", "closed"].includes(normalizeStatus(project.status));
+  return ["complete", "completed", "closed"].includes(
+    normalizeStatus(project.status),
+  );
 }
 
 function isCompletionRequested(project: Project) {
@@ -381,7 +508,10 @@ function canCancelProject(project: Project) {
 }
 
 function canMarkProjectComplete(project: Project) {
-  return isAcceptedClientWorkProject(project) && normalizeStatus(project.status) === "active";
+  return (
+    isAcceptedClientWorkProject(project) &&
+    normalizeStatus(project.status) === "active"
+  );
 }
 
 function canReviewCompletion(project: Project) {
@@ -392,7 +522,9 @@ function canManageProjectRatings(project: Project) {
   return !isClientWorkProject(project) && isCompletedProject(project);
 }
 
-function normalizeProjectRatings(response: ProjectRatingsResponse): ProjectRatingRecord[] {
+function normalizeProjectRatings(
+  response: ProjectRatingsResponse,
+): ProjectRatingRecord[] {
   if (Array.isArray(response)) return response;
 
   return Array.isArray(response.ratings) ? response.ratings : [];
@@ -432,7 +564,7 @@ function getProjectSkillIds(project: Project) {
   }
 
   if (Array.isArray(projectWithSkills.skills)) {
-    return projectWithSkills.skills.map(skill => skill.id).filter(Boolean);
+    return projectWithSkills.skills.map((skill) => skill.id).filter(Boolean);
   }
 
   return [];
@@ -444,8 +576,8 @@ function getEmbeddedProjectSkills(project: Project): SkillOption[] {
   if (!Array.isArray(projectWithSkills.skills)) return [];
 
   return projectWithSkills.skills
-    .filter(skill => Boolean(skill?.id && skill?.name))
-    .map(skill => ({
+    .filter((skill) => Boolean(skill?.id && skill?.name))
+    .map((skill) => ({
       id: skill.id,
       name: skill.name!,
       categoryId: skill.categoryId ?? "",
@@ -474,7 +606,7 @@ function resolveProjectSkills(project: Project, catalogue: SkillOption[]) {
   );
 
   return skillIds
-    .map(id => availableSkills.find(skill => skill.id === id))
+    .map((id) => availableSkills.find((skill) => skill.id === id))
     .filter((skill): skill is SkillOption => Boolean(skill));
 }
 
@@ -501,6 +633,7 @@ export function GridView({ project, onProjectUpdated }: ViewProps) {
 
   const progress = clampProgress(currentProject.progress);
   const category = getProjectCategoryContext(currentProject);
+  const status = getStatusAppearance(currentProject.status);
 
   function handleProjectUpdated(updatedProject: Project) {
     setCurrentProject(updatedProject);
@@ -510,38 +643,34 @@ export function GridView({ project, onProjectUpdated }: ViewProps) {
   return (
     <motion.article
       layout="position"
-      initial={{ opacity: 0, y: 8 }}
+      initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -4 }}
       transition={{
-        opacity: { duration: 0.2, ease: "easeOut" },
-        y: { type: "spring", stiffness: 300, damping: 24, mass: 0.5 },
+        opacity: { duration: 0.18, ease: "easeOut" },
+        y: { duration: 0.2, ease: "easeOut" },
         layout: { type: "spring", stiffness: 420, damping: 34, mass: 0.8 },
       }}
       className={[
-        "group relative flex min-h-[276px] min-w-0 flex-col overflow-hidden rounded-xl border p-5",
-        "transition-[background-color,border-color,box-shadow] duration-200",
+        "group relative flex min-h-[270px] min-w-0 flex-col overflow-hidden rounded-xl border p-5",
         projectCardSurface,
-        "sm:min-h-[286px] sm:p-6",
+        "sm:min-h-[278px]",
       ].join(" ")}
     >
       <span
         className={[
           "absolute left-5 top-0 h-[2px] w-10 rounded-full",
-          "bg-[#0D566D]/80",
-          "dark:bg-[#DEDA00]",
-          "sm:left-6",
+          status.rail,
         ].join(" ")}
       />
 
       <div className="flex items-start justify-between gap-4">
         <span
           className={[
-            "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg",
+            "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
             projectIconSurface,
           ].join(" ")}
         >
-          {getProjectIcon(category.iconCategory, 16)}
+          {getProjectIcon(category.iconCategory, 15)}
         </span>
 
         <div className="flex shrink-0 items-center gap-0.5">
@@ -549,7 +678,7 @@ export function GridView({ project, onProjectUpdated }: ViewProps) {
 
           <div
             className={[
-              "transition-opacity duration-200",
+              "transition-opacity duration-150",
               "opacity-100 sm:opacity-0",
               "sm:group-hover:opacity-100 sm:group-focus-within:opacity-100",
             ].join(" ")}
@@ -563,17 +692,17 @@ export function GridView({ project, onProjectUpdated }: ViewProps) {
         </div>
       </div>
 
-      <div className="mt-7 min-w-0">
+      <div className="mt-6 min-w-0">
         <div className="flex min-w-0 items-center gap-2">
-          <p className="truncate text-[0.5rem] font-semibold uppercase tracking-[0.15em] text-[#527177] dark:text-white/30">
+          <p className="truncate text-[0.52rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
             {category.label}
           </p>
 
           {currentProject.projectCode && (
             <>
-              <span className="h-0.5 w-0.5 shrink-0 rounded-full bg-[#0D566D]/25 dark:bg-white/20" />
+              <span className="h-0.5 w-0.5 shrink-0 rounded-full bg-muted-foreground/30" />
 
-              <span className="truncate text-[0.5rem] text-[#718589] dark:text-white/22">
+              <span className="truncate text-[0.52rem] text-muted-foreground/65">
                 {currentProject.projectCode}
               </span>
             </>
@@ -588,32 +717,33 @@ export function GridView({ project, onProjectUpdated }: ViewProps) {
           <h3
             className={[
               "line-clamp-2 break-words",
-              "text-base font-semibold leading-[1.3] tracking-[-0.015em]",
-              "text-[#243A3F] transition-opacity duration-200",
-              "group-hover:opacity-75 dark:text-white",
-              "sm:text-lg",
+              "text-sm font-semibold leading-[1.35] tracking-[-0.015em]",
+              "text-foreground/85",
+              "transition-colors duration-150",
+              "group-hover:text-foreground",
+              "sm:text-base",
             ].join(" ")}
           >
             {currentProject.title}
           </h3>
         </MotionLink>
 
-        <p className="mt-2 min-h-10 line-clamp-2 text-[0.62rem] leading-5 text-[#617579] dark:text-white/34 sm:text-[0.64rem]">
+        <p className="mt-2 min-h-10 line-clamp-2 text-[0.64rem] leading-5 text-muted-foreground/90">
           {currentProject.description || "No project description was provided."}
         </p>
 
         <ProjectCompletionNotice project={currentProject} compact />
       </div>
 
-      <div className="mt-auto flex items-center justify-between gap-4 border-t border-[#0D566D]/[0.08] pt-4 dark:border-white/[0.06]">
+      <div className="mt-auto flex items-center justify-between gap-4 border-t border-border/50 pt-4 dark:border-border">
         <div className="flex min-w-0 items-center gap-3">
-          <span className="shrink-0 text-xs font-semibold tabular-nums text-[#243A3F] dark:text-white/65">
+          <span className="shrink-0 text-xs font-semibold tabular-nums text-foreground/75">
             {progress}%
           </span>
 
-          <span className="h-0.5 w-0.5 shrink-0 rounded-full bg-[#0D566D]/20 dark:bg-white/15" />
+          <span className="h-0.5 w-0.5 shrink-0 rounded-full bg-muted-foreground/30" />
 
-          <span className="flex min-w-0 items-center gap-1.5 text-[0.5rem] text-[#74878A] dark:text-white/24">
+          <span className="flex min-w-0 items-center gap-1.5 text-[0.54rem] text-muted-foreground/75">
             <CalendarDaysIcon size={10} className="shrink-0" />
 
             <span className="truncate">
@@ -627,10 +757,17 @@ export function GridView({ project, onProjectUpdated }: ViewProps) {
           aria-label={`Open ${currentProject.title}`}
           className={[
             "flex h-7 w-7 shrink-0 items-center justify-center rounded-md",
-            "text-[#0D566D]",
-            "transition-[background-color,color,transform] duration-200",
-            "hover:translate-x-0.5 hover:bg-[#0D566D]/[0.07]",
-            "dark:text-[#DEDA00] dark:hover:bg-[#DEDA00]/[0.07]",
+
+            "text-muted-foreground",
+
+            "transition-[background-color,color,transform] duration-150",
+
+            "hover:translate-x-0.5",
+            "hover:bg-surface-3/60",
+            "hover:text-foreground/85",
+
+            "dark:hover:bg-surface-3/70",
+            "dark:hover:text-secondary",
           ].join(" ")}
         >
           <ArrowRightIcon size={12} />
@@ -649,6 +786,7 @@ export function ListView({ project, onProjectUpdated }: ViewProps) {
 
   const progress = clampProgress(currentProject.progress);
   const category = getProjectCategoryContext(currentProject);
+  const status = getStatusAppearance(currentProject.status);
 
   function handleProjectUpdated(updatedProject: Project) {
     setCurrentProject(updatedProject);
@@ -667,15 +805,13 @@ export function ListView({ project, onProjectUpdated }: ViewProps) {
       }}
       className={[
         "group relative min-w-0 overflow-hidden rounded-xl border",
-        "transition-[background-color,border-color,box-shadow] duration-200",
         projectCardSurface,
       ].join(" ")}
     >
       <span
         className={[
           "absolute inset-y-4 left-0 w-[2px] rounded-full",
-          "bg-[#0D566D]/80",
-          "dark:bg-[#DEDA00]",
+          status.rail,
         ].join(" ")}
       />
 
@@ -693,15 +829,15 @@ export function ListView({ project, onProjectUpdated }: ViewProps) {
 
         <div className="min-w-0">
           <div className="flex min-w-0 items-center gap-2">
-            <p className="truncate text-[0.48rem] font-semibold uppercase tracking-[0.13em] text-[#527177] dark:text-white/28">
+            <p className="truncate text-[0.5rem] font-semibold uppercase tracking-[0.13em] text-muted-foreground">
               {category.label}
             </p>
 
             {currentProject.projectCode && (
               <>
-                <span className="hidden h-0.5 w-0.5 shrink-0 rounded-full bg-[#0D566D]/20 sm:block dark:bg-white/15" />
+                <span className="hidden h-0.5 w-0.5 shrink-0 rounded-full bg-muted-foreground/30 sm:block" />
 
-                <span className="hidden truncate text-[0.48rem] text-[#74878A] sm:block dark:text-white/20">
+                <span className="hidden truncate text-[0.5rem] text-muted-foreground/65 sm:block">
                   {currentProject.projectCode}
                 </span>
               </>
@@ -713,19 +849,19 @@ export function ListView({ project, onProjectUpdated }: ViewProps) {
             className="mt-1.5 block min-w-0"
             whileTap={{ scale: 0.99 }}
           >
-            <h3 className="truncate text-sm font-semibold tracking-[-0.015em] text-[#243A3F] transition-opacity duration-200 group-hover:opacity-75 dark:text-white sm:text-base">
+            <h3 className="truncate text-sm font-semibold tracking-[-0.015em] text-foreground/85 transition-colors group-hover:text-foreground">
               {currentProject.title}
             </h3>
           </MotionLink>
 
           <div className="mt-2 flex min-w-0 items-center gap-2.5">
-            <span className="shrink-0 text-[0.6rem] font-semibold tabular-nums text-[#405B61] dark:text-white/55">
+            <span className="shrink-0 text-[0.62rem] font-semibold tabular-nums text-foreground/70">
               {progress}%
             </span>
 
-            <span className="h-0.5 w-0.5 shrink-0 rounded-full bg-[#0D566D]/20 dark:bg-white/15" />
+            <span className="h-0.5 w-0.5 shrink-0 rounded-full bg-muted-foreground/30" />
 
-            <span className="truncate text-[0.54rem] text-[#74878A] dark:text-white/23">
+            <span className="truncate text-[0.56rem] text-muted-foreground/70">
               {formatDate(currentProject.createdAt)}
             </span>
           </div>
@@ -739,7 +875,20 @@ export function ListView({ project, onProjectUpdated }: ViewProps) {
           <Link
             to={`/projects/${currentProject.id}`}
             aria-label={`Open ${currentProject.title}`}
-            className="flex h-7 w-7 items-center justify-center rounded-md text-[#0D566D] transition-all hover:translate-x-0.5 hover:bg-[#0D566D]/[0.07] dark:text-[#DEDA00] dark:hover:bg-[#DEDA00]/[0.07]"
+            className={[
+              "flex h-7 w-7 items-center justify-center rounded-md",
+
+              "text-muted-foreground",
+
+              "transition-[background-color,color,transform] duration-150",
+
+              "hover:translate-x-0.5",
+              "hover:bg-surface-3/60",
+              "hover:text-foreground/85",
+
+              "dark:hover:bg-surface-3/70",
+              "dark:hover:text-secondary",
+            ].join(" ")}
           >
             <ArrowRightIcon size={11} />
           </Link>
@@ -764,24 +913,24 @@ export function ListView({ project, onProjectUpdated }: ViewProps) {
         <div className="flex min-w-0 items-start gap-4">
           <span
             className={[
-              "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg",
+              "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
               projectIconSurface,
             ].join(" ")}
           >
-            {getProjectIcon(category.iconCategory, 15)}
+            {getProjectIcon(category.iconCategory, 14)}
           </span>
 
           <div className="min-w-0">
             <div className="flex min-w-0 items-center gap-2">
-              <p className="truncate text-[0.5rem] font-semibold uppercase tracking-[0.14em] text-[#527177] dark:text-white/28">
+              <p className="truncate text-[0.5rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                 {category.label}
               </p>
 
               {currentProject.projectCode && (
                 <>
-                  <span className="h-0.5 w-0.5 shrink-0 rounded-full bg-[#0D566D]/20 dark:bg-white/15" />
+                  <span className="h-0.5 w-0.5 shrink-0 rounded-full bg-muted-foreground/30" />
 
-                  <p className="truncate text-[0.5rem] text-[#74878A] dark:text-white/20">
+                  <p className="truncate text-[0.5rem] text-muted-foreground/65">
                     {currentProject.projectCode}
                   </p>
                 </>
@@ -793,13 +942,13 @@ export function ListView({ project, onProjectUpdated }: ViewProps) {
               className="mt-2 block min-w-0"
               whileTap={{ scale: 0.99 }}
             >
-              <h3 className="truncate text-base font-semibold tracking-[-0.015em] text-[#243A3F] transition-opacity duration-200 group-hover:opacity-75 dark:text-white">
+              <h3 className="truncate text-sm font-semibold tracking-[-0.015em] text-foreground/85 transition-colors group-hover:text-foreground">
                 {currentProject.title}
               </h3>
             </MotionLink>
 
             {currentProject.description && (
-              <p className="mt-1.5 line-clamp-1 max-w-xl text-[0.62rem] leading-5 text-[#617579] dark:text-white/30">
+              <p className="mt-1.5 line-clamp-1 max-w-xl text-[0.62rem] leading-5 text-muted-foreground/90">
                 {currentProject.description}
               </p>
             )}
@@ -809,22 +958,23 @@ export function ListView({ project, onProjectUpdated }: ViewProps) {
         </div>
 
         <div>
-          <p className="text-[0.46rem] font-semibold uppercase tracking-[0.12em] text-[#74878A] dark:text-white/22">
+          <p className="text-[0.48rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground/70">
             Progress
           </p>
 
-          <p className="mt-1.5 text-sm font-semibold tabular-nums text-[#243A3F] dark:text-white/65">
+          <p className="mt-1.5 text-sm font-semibold tabular-nums text-foreground/70">
             {progress}%
           </p>
         </div>
 
         <div>
-          <p className="text-[0.46rem] font-semibold uppercase tracking-[0.12em] text-[#74878A] dark:text-white/22">
+          <p className="text-[0.48rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground/70">
             Created
           </p>
 
-          <p className="mt-1.5 flex items-center gap-1.5 text-[0.6rem] text-[#617579] dark:text-white/30">
+          <p className="mt-1.5 flex items-center gap-1.5 text-[0.62rem] text-muted-foreground">
             <CalendarDaysIcon size={10} />
+
             {formatDate(currentProject.createdAt)}
           </p>
         </div>
@@ -837,10 +987,17 @@ export function ListView({ project, onProjectUpdated }: ViewProps) {
             aria-label={`Open ${currentProject.title}`}
             className={[
               "flex h-8 w-8 items-center justify-center rounded-md",
-              "text-[#0D566D]",
-              "transition-[background-color,transform] duration-200",
-              "hover:translate-x-0.5 hover:bg-[#0D566D]/[0.07]",
-              "dark:text-[#DEDA00] dark:hover:bg-[#DEDA00]/[0.07]",
+
+              "text-muted-foreground",
+
+              "transition-[background-color,color,transform] duration-150",
+
+              "hover:translate-x-0.5",
+              "hover:bg-surface-3/60",
+              "hover:text-foreground/85",
+
+              "dark:hover:bg-surface-3/70",
+              "dark:hover:text-secondary",
             ].join(" ")}
           >
             <ArrowRightIcon size={12} />
@@ -887,7 +1044,7 @@ function ProjectIdentity({
         </p>
 
         {project.projectCode && (
-          <p className="mt-0.5 truncate text-[0.58rem] text-muted-foreground/55">
+          <p className="mt-0.5 truncate text-[0.58rem] text-muted-foreground/60">
             {project.projectCode}
           </p>
         )}
@@ -911,7 +1068,10 @@ function StatusIndicator({ status }: { status?: string }) {
         appearance.text,
       ].join(" ")}
     >
-      <span className={["h-1.5 w-1.5 rounded-full", appearance.dot].join(" ")} />
+      <span
+        className={["h-1.5 w-1.5 rounded-full", appearance.dot].join(" ")}
+      />
+
       {appearance.label}
     </span>
   );
@@ -930,8 +1090,9 @@ function ProjectStatusDot({ status }: { status?: string }) {
         className={[
           "h-2 w-2 rounded-full",
           appearance.dot,
+
           normalizeStatus(status) === "active"
-            ? "shadow-[0_0_0_3px_rgba(13,86,109,0.06)] dark:shadow-[0_0_0_3px_rgba(222,218,0,0.05)]"
+            ? "ring-4 ring-status-active/[0.08]"
             : "",
         ].join(" ")}
       />
@@ -958,18 +1119,18 @@ function ProjectCompletionNotice({
     <div
       className={[
         compact ? "mt-3" : "mt-4",
-        "flex items-center gap-2 border-l-2 border-[#F0A23A]/65 pl-3",
+        "flex items-center gap-2 border-l-2 border-status-pending/45 pl-3",
       ].join(" ")}
     >
       <span className="relative flex h-1.5 w-1.5 shrink-0">
         {!isClientWork && (
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#F0A23A] opacity-25" />
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-status-pending opacity-20" />
         )}
 
-        <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[#F0A23A]" />
+        <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-status-pending" />
       </span>
 
-      <p className="min-w-0 text-[0.6rem] font-semibold text-[#976018] dark:text-[#F0A23A]">
+      <p className="min-w-0 text-[0.6rem] font-semibold text-status-pending-foreground">
         {isClientWork
           ? "Awaiting client confirmation"
           : "Action required · Completion requested"}
@@ -1001,6 +1162,21 @@ function ProjectMenu({
   const showReviewCompletion = canReviewCompletion(project);
   const showManageRatings = canManageProjectRatings(project);
 
+  const menuItemClass = [
+    "min-h-8 rounded-md px-2.5 py-1.5",
+    "gap-2 text-[0.7rem] font-medium",
+    "text-foreground/75",
+
+    "focus:bg-surface-3/60",
+    "focus:text-foreground",
+
+    "data-[highlighted]:bg-surface-3/60",
+    "data-[highlighted]:text-foreground",
+
+    "dark:focus:bg-surface-2",
+    "dark:data-[highlighted]:bg-surface-2",
+  ].join(" ");
+
   return (
     <>
       <DropdownMenu>
@@ -1011,49 +1187,75 @@ function ProjectMenu({
             size="icon"
             className={[
               "h-7 w-7 rounded-md shadow-none",
+
               header
                 ? [
-                    "text-[#668084]",
-                    "hover:bg-[#0D566D]/[0.06] hover:text-[#243A3F]",
-                    "dark:text-white/25",
-                    "dark:hover:bg-white/[0.05] dark:hover:text-white/70",
+                    "text-muted-foreground/70",
+
+                    "hover:bg-surface-3/55",
+                    "hover:text-foreground/85",
+
+                    "data-[state=open]:bg-surface-3/60",
+                    "data-[state=open]:text-foreground/85",
+
+                    "dark:hover:bg-surface-3/65",
+                    "dark:data-[state=open]:bg-surface-3/65",
                   ].join(" ")
-                : "text-muted-foreground hover:bg-muted/50 hover:text-foreground",
+                : ghostActionButton,
             ].join(" ")}
             aria-label={`Open menu for ${project.title}`}
           >
-            <EllipsisVerticalIcon size={15} />
+            <EllipsisVerticalIcon size={14} />
           </Button>
         </DropdownMenuTrigger>
 
         <DropdownMenuContent
           align="end"
-          className="w-56 rounded-xl border-border bg-popover p-1.5 text-popover-foreground shadow-lg"
+          sideOffset={7}
+          className={[
+            "w-48 rounded-lg p-1 shadow-none",
+
+            "border-border/60",
+            "bg-popover",
+            "text-popover-foreground",
+
+            "dark:border-border",
+          ].join(" ")}
         >
-          <DropdownMenuItem asChild className="rounded-lg">
+          <DropdownMenuItem asChild className={menuItemClass}>
             <Link to={`/projects/${project.id}`}>
-              <FolderOpenIcon size={14} />
+              <FolderOpenIcon size={13} />
               Open project
             </Link>
           </DropdownMenuItem>
 
           <DropdownMenuItem
-            className="rounded-lg"
+            className={menuItemClass}
             onSelect={() => setDetailsOpen(true)}
           >
-            <EyeIcon size={14} />
+            <EyeIcon size={13} />
             View details
           </DropdownMenuItem>
 
           {showReviewCompletion && (
             <>
-              <DropdownMenuSeparator />
+              <DropdownMenuSeparator className="my-1 bg-border/60 dark:bg-border" />
 
               <DropdownMenuItem
-                className="rounded-lg text-[#976018] focus:bg-[#F0A23A]/[0.08] focus:text-[#976018] dark:text-[#F0A23A]"
+                className={[
+                  menuItemClass,
+
+                  "text-status-pending-foreground",
+
+                  "focus:bg-status-pending/[0.07]",
+                  "focus:text-status-pending-foreground",
+
+                  "data-[highlighted]:bg-status-pending/[0.07]",
+                  "data-[highlighted]:text-status-pending-foreground",
+                ].join(" ")}
                 onSelect={() => setReviewCompletionOpen(true)}
               >
-                <Clock3Icon size={14} />
+                <Clock3Icon size={13} />
                 Review completion
               </DropdownMenuItem>
             </>
@@ -1061,13 +1263,13 @@ function ProjectMenu({
 
           {showManageRatings && (
             <>
-              <DropdownMenuSeparator />
+              <DropdownMenuSeparator className="my-1 bg-border/60 dark:bg-border" />
 
               <DropdownMenuItem
-                className="rounded-lg"
+                className={menuItemClass}
                 onSelect={() => setRatingsOpen(true)}
               >
-                <StarIcon size={14} />
+                <StarIcon size={13} />
                 Rate Allocats
               </DropdownMenuItem>
             </>
@@ -1075,29 +1277,41 @@ function ProjectMenu({
 
           {canModifyOwned && (
             <>
-              <DropdownMenuSeparator />
+              <DropdownMenuSeparator className="my-1 bg-border/60 dark:bg-border" />
 
-              <DropdownMenuItem asChild className="rounded-lg">
+              <DropdownMenuItem asChild className={menuItemClass}>
                 <Link to={`/projects/${project.id}/allocats/find`}>
-                  <UserPlusIcon size={14} />
+                  <UserPlusIcon size={13} />
                   Find Allocats
                 </Link>
               </DropdownMenuItem>
 
               <DropdownMenuItem
-                className="rounded-lg"
+                className={menuItemClass}
                 onSelect={() => setEditOpen(true)}
               >
-                <Edit3Icon size={14} />
+                <Edit3Icon size={13} />
                 Edit project
               </DropdownMenuItem>
 
               {showCancel && (
                 <>
-                  <DropdownMenuSeparator />
+                  <DropdownMenuSeparator className="my-1 bg-border/60 dark:bg-border" />
 
-                  <DropdownMenuItem className="rounded-lg text-destructive focus:bg-destructive/[0.07] focus:text-destructive">
-                    <BanIcon size={14} />
+                  <DropdownMenuItem
+                    className={[
+                      menuItemClass,
+
+                      "text-status-overdue-foreground",
+
+                      "focus:bg-status-overdue/[0.07]",
+                      "focus:text-status-overdue-foreground",
+
+                      "data-[highlighted]:bg-status-overdue/[0.07]",
+                      "data-[highlighted]:text-status-overdue-foreground",
+                    ].join(" ")}
+                  >
+                    <BanIcon size={13} />
                     Cancel project
                   </DropdownMenuItem>
                 </>
@@ -1107,13 +1321,23 @@ function ProjectMenu({
 
           {showMarkComplete && (
             <>
-              <DropdownMenuSeparator />
+              <DropdownMenuSeparator className="my-1 bg-border/60 dark:bg-border" />
 
               <DropdownMenuItem
-                className="rounded-lg text-[#267F0D] focus:bg-[#38D200]/[0.08] focus:text-[#267F0D] dark:text-[#38D200]"
+                className={[
+                  menuItemClass,
+
+                  "text-status-complete-foreground",
+
+                  "focus:bg-status-complete/[0.07]",
+                  "focus:text-status-complete-foreground",
+
+                  "data-[highlighted]:bg-status-complete/[0.07]",
+                  "data-[highlighted]:text-status-complete-foreground",
+                ].join(" ")}
                 onSelect={() => setCompleteOpen(true)}
               >
-                <CircleCheckBigIcon size={14} />
+                <CircleCheckBigIcon size={13} />
                 Mark complete
               </DropdownMenuItem>
             </>
@@ -1203,9 +1427,12 @@ function RequestCompletionDialog({
         if (cancelled) return;
 
         console.error("Could not load project tasks:", error);
+
         setLoadError(true);
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     }
 
@@ -1217,7 +1444,8 @@ function RequestCompletionDialog({
   }, [open, project.id, reloadKey]);
 
   const incompleteTasks = useMemo(
-    () => tasks.filter(task => task.status?.trim().toLowerCase() !== "complete"),
+    () =>
+      tasks.filter((task) => task.status?.trim().toLowerCase() !== "complete"),
     [tasks],
   );
 
@@ -1239,6 +1467,7 @@ function RequestCompletionDialog({
       });
 
       toast.success("Completion request sent to the client.");
+
       onOpenChange(false);
     } catch (error) {
       console.error("Could not request project completion:", error);
@@ -1252,22 +1481,25 @@ function RequestCompletionDialog({
   return (
     <Dialog
       open={open}
-      onOpenChange={nextOpen => {
+      onOpenChange={(nextOpen) => {
         if (submitting) return;
+
         onOpenChange(nextOpen);
       }}
     >
-      <DialogContent className="rounded-[1.5rem] border-border bg-background p-0 sm:max-w-lg">
-        <DialogHeader className="border-b border-border px-6 pb-6 pt-7 text-left">
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#38D200]/[0.10] text-[#267F0D] dark:text-[#38D200]">
-            <CircleCheckBigIcon size={18} />
+      <DialogContent
+        className={["rounded-xl p-0 sm:max-w-lg", dialogSurface].join(" ")}
+      >
+        <DialogHeader className="border-b border-border/55 px-6 pb-5 pt-6 text-left dark:border-border">
+          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-status-complete/[0.08] text-status-complete-foreground">
+            <CircleCheckBigIcon size={17} />
           </span>
 
-          <DialogTitle className="mt-4 text-2xl font-black tracking-[-0.03em]">
+          <DialogTitle className="mt-4 text-xl font-semibold tracking-[-0.025em]">
             Mark project complete?
           </DialogTitle>
 
-          <DialogDescription className="mt-2 leading-7">
+          <DialogDescription className="mt-2 text-sm leading-7 text-muted-foreground">
             This will send the project to the client for final completion
             confirmation.
           </DialogDescription>
@@ -1280,8 +1512,8 @@ function RequestCompletionDialog({
               Checking project tasks
             </div>
           ) : loadError ? (
-            <div className="rounded-xl border border-destructive/20 bg-destructive/[0.06] p-4">
-              <p className="text-sm font-semibold text-destructive">
+            <div className="rounded-lg border border-status-overdue/15 bg-status-overdue/[0.045] p-4">
+              <p className="text-sm font-semibold text-status-overdue-foreground">
                 We couldn't check the project tasks.
               </p>
 
@@ -1293,28 +1525,31 @@ function RequestCompletionDialog({
                 type="button"
                 variant="outline"
                 size="sm"
-                className="mt-4 rounded-lg bg-transparent shadow-none"
-                onClick={() => setReloadKey(value => value + 1)}
+                className={[
+                  "mt-4 h-8 rounded-lg text-xs shadow-none",
+                  secondaryActionButton,
+                ].join(" ")}
+                onClick={() => setReloadKey((value) => value + 1)}
               >
                 Try again
               </Button>
             </div>
           ) : incompleteTasks.length > 0 ? (
-            <div className="rounded-xl border border-[#F0A23A]/25 bg-[#F0A23A]/[0.08] p-4">
+            <div className="rounded-lg border border-status-pending/15 bg-status-pending/[0.045] p-4">
               <div className="flex gap-3">
                 <AlertTriangleIcon
-                  size={17}
-                  className="mt-0.5 shrink-0 text-[#976018] dark:text-[#F0A23A]"
+                  size={16}
+                  className="mt-0.5 shrink-0 text-status-pending-foreground"
                 />
 
                 <div>
-                  <p className="text-sm font-bold text-[#976018] dark:text-[#F0A23A]">
+                  <p className="text-sm font-semibold text-status-pending-foreground">
                     {incompleteTasks.length}{" "}
                     {incompleteTasks.length === 1 ? "task is" : "tasks are"}{" "}
                     still incomplete.
                   </p>
 
-                  <p className="mt-1 text-xs leading-6 text-foreground/70">
+                  <p className="mt-1 text-xs leading-6 text-foreground/65 dark:text-foreground/75">
                     Continuing will automatically mark{" "}
                     {incompleteTasks.length === 1 ? "this task" : "these tasks"}{" "}
                     as complete before the project is sent to the client.
@@ -1322,31 +1557,32 @@ function RequestCompletionDialog({
                 </div>
               </div>
 
-              <div className="mt-4 max-h-32 space-y-2 overflow-y-auto border-t border-[#F0A23A]/20 pt-3">
-                {incompleteTasks.map(task => (
-                  <div key={task.id} className="flex items-center gap-2 text-xs">
-                    <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#F0A23A]" />
+              <div className="mt-4 max-h-32 space-y-2 overflow-y-auto border-t border-status-pending/10 pt-3">
+                {incompleteTasks.map((task) => (
+                  <div
+                    key={task.id}
+                    className="flex items-center gap-2 text-xs"
+                  >
+                    <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-status-pending" />
 
-                    <span className="truncate font-medium">
-                      {task.title}
-                    </span>
+                    <span className="truncate font-medium">{task.title}</span>
                   </div>
                 ))}
               </div>
             </div>
           ) : tasks.length > 0 ? (
-            <div className="rounded-xl border border-[#38D200]/20 bg-[#38D200]/[0.07] p-4">
-              <p className="text-sm font-semibold text-[#267F0D] dark:text-[#38D200]">
+            <div className="rounded-lg border border-status-complete/15 bg-status-complete/[0.045] p-4">
+              <p className="text-sm font-semibold text-status-complete-foreground">
                 All project tasks are complete.
               </p>
 
-              <p className="mt-1 text-xs leading-6 text-foreground/70">
+              <p className="mt-1 text-xs leading-6 text-foreground/65 dark:text-foreground/75">
                 The project is ready to be sent to the client for confirmation.
               </p>
             </div>
           ) : (
-            <div className="rounded-xl bg-muted/50 p-4">
-              <p className="text-sm font-semibold">
+            <div className="rounded-lg border border-border/50 bg-surface-2/45 p-4 dark:border-border dark:bg-surface-2/60">
+              <p className="text-sm font-semibold text-foreground/85">
                 No tasks were created for this project.
               </p>
 
@@ -1358,13 +1594,16 @@ function RequestCompletionDialog({
           )}
         </div>
 
-        <DialogFooter className="border-t border-border px-6 py-5">
+        <DialogFooter className={["px-6 py-4", dialogFooterSurface].join(" ")}>
           <Button
             type="button"
             variant="ghost"
             disabled={submitting}
             onClick={() => onOpenChange(false)}
-            className="rounded-lg px-5 text-muted-foreground shadow-none"
+            className={[
+              "h-9 rounded-lg px-4 text-xs shadow-none",
+              ghostActionButton,
+            ].join(" ")}
           >
             Cancel
           </Button>
@@ -1373,7 +1612,10 @@ function RequestCompletionDialog({
             type="button"
             disabled={submitting || loading || loadError}
             onClick={() => void requestCompletion()}
-            className="rounded-lg px-6 shadow-none"
+            className={[
+              "h-9 rounded-lg px-5 text-xs font-semibold shadow-none",
+              primaryActionButton,
+            ].join(" ")}
           >
             {submitting ? (
               <LoaderCircleIcon size={14} className="animate-spin" />
@@ -1423,7 +1665,7 @@ function ReviewCompletionDialog({
         const acceptedMembers = (
           Array.isArray(response.data) ? response.data : []
         ).filter(
-          member => normalizeMemberStatus(member.status) === "accepted",
+          (member) => normalizeMemberStatus(member.status) === "accepted",
         );
 
         setMembers(acceptedMembers);
@@ -1442,9 +1684,12 @@ function ReviewCompletionDialog({
         if (cancelled) return;
 
         console.error("Could not load project Allocats:", error);
+
         toast.error("The project team could not be loaded.");
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     }
 
@@ -1456,9 +1701,8 @@ function ReviewCompletionDialog({
   }, [open, project.id]);
 
   function setMemberRating(allocatId: string, rating: number) {
-    setRatings(current => ({
+    setRatings((current) => ({
       ...current,
-
       [allocatId]: {
         rating,
         comment: current[allocatId]?.comment ?? "",
@@ -1467,9 +1711,8 @@ function ReviewCompletionDialog({
   }
 
   function clearMemberRating(allocatId: string) {
-    setRatings(current => ({
+    setRatings((current) => ({
       ...current,
-
       [allocatId]: {
         rating: 0,
         comment: "",
@@ -1478,9 +1721,8 @@ function ReviewCompletionDialog({
   }
 
   function setMemberComment(allocatId: string, comment: string) {
-    setRatings(current => ({
+    setRatings((current) => ({
       ...current,
-
       [allocatId]: {
         rating: current[allocatId]?.rating ?? 0,
         comment,
@@ -1506,6 +1748,7 @@ function ReviewCompletionDialog({
       });
 
       toast.success("The project has been returned for more work.");
+
       onOpenChange(false);
     } catch (error) {
       console.error("Could not return project for more work:", error);
@@ -1528,7 +1771,7 @@ function ReviewCompletionDialog({
         { withCredentials: true },
       );
 
-      const submittedRatings = members.flatMap(member => {
+      const submittedRatings = members.flatMap((member) => {
         const draft = ratings[member.allocatProfileId];
 
         if (!draft || draft.rating < 1) return [];
@@ -1567,9 +1810,7 @@ function ReviewCompletionDialog({
       });
 
       if (!ratingsSaved) {
-        toast.warning(
-          "Project completed, but the ratings could not be saved.",
-        );
+        toast.warning("Project completed, but the ratings could not be saved.");
       } else if (submittedRatings.length > 0) {
         toast.success("Project completed and ratings submitted.");
       } else {
@@ -1589,30 +1830,36 @@ function ReviewCompletionDialog({
   return (
     <Dialog
       open={open}
-      onOpenChange={nextOpen => {
+      onOpenChange={(nextOpen) => {
         if (acting) return;
+
         onOpenChange(nextOpen);
       }}
     >
-      <DialogContent className="flex max-h-[90vh] flex-col overflow-hidden rounded-[1.5rem] border-border bg-background p-0 sm:max-w-2xl">
-        <DialogHeader className="shrink-0 border-b border-border px-6 pb-6 pt-7 text-left sm:px-8">
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#F0A23A]/[0.10] text-[#976018] dark:text-[#F0A23A]">
-            <Clock3Icon size={18} />
+      <DialogContent
+        className={[
+          "flex max-h-[90vh] flex-col overflow-hidden rounded-xl p-0 sm:max-w-2xl",
+          dialogSurface,
+        ].join(" ")}
+      >
+        <DialogHeader className="shrink-0 border-b border-border/55 px-6 pb-5 pt-6 text-left sm:px-7 dark:border-border">
+          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-status-pending/[0.07] text-status-pending-foreground">
+            <Clock3Icon size={17} />
           </span>
 
-          <DialogTitle className="mt-4 text-2xl font-black tracking-[-0.03em]">
+          <DialogTitle className="mt-4 text-xl font-semibold tracking-[-0.025em]">
             Confirm project completion
           </DialogTitle>
 
-          <DialogDescription className="mt-2 max-w-xl leading-7">
+          <DialogDescription className="mt-2 max-w-xl text-sm leading-7 text-muted-foreground">
             The project team has marked this job as complete. Confirm the work
             or send it back if more work is needed.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-6 py-6 sm:px-8">
-          <div className="rounded-xl bg-muted/50 p-4">
-            <p className="text-sm font-bold">
+        <div className="min-h-0 flex-1 overflow-y-auto px-6 py-6 sm:px-7">
+          <div className="rounded-lg border border-border/50 bg-surface-2/45 p-4 dark:border-border dark:bg-surface-2/60">
+            <p className="text-sm font-semibold text-foreground/85">
               {project.title}
             </p>
 
@@ -1623,11 +1870,11 @@ function ReviewCompletionDialog({
           </div>
 
           <section className="mt-7">
-            <p className="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            <p className="text-[0.58rem] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
               Rate your Allocats
             </p>
 
-            <h3 className="mt-1 text-lg font-black tracking-[-0.02em]">
+            <h3 className="mt-1.5 text-base font-semibold tracking-[-0.015em] text-foreground/90">
               How was the experience?
             </h3>
 
@@ -1643,8 +1890,8 @@ function ReviewCompletionDialog({
                 Loading project team
               </div>
             ) : members.length === 0 ? (
-              <div className="mt-5 rounded-xl bg-muted/50 p-4">
-                <p className="text-sm font-semibold">
+              <div className="mt-5 rounded-lg border border-border/50 bg-surface-2/45 p-4 dark:border-border dark:bg-surface-2/60">
+                <p className="text-sm font-semibold text-foreground/85">
                   No accepted Allocats were found.
                 </p>
 
@@ -1653,8 +1900,8 @@ function ReviewCompletionDialog({
                 </p>
               </div>
             ) : (
-              <div className="mt-5 divide-y divide-border border-y border-border">
-                {members.map(member => {
+              <div className="mt-5 divide-y divide-border/55 border-y border-border/55 dark:divide-border dark:border-border">
+                {members.map((member) => {
                   const draft = ratings[member.allocatProfileId] ?? {
                     rating: 0,
                     comment: "",
@@ -1663,31 +1910,31 @@ function ReviewCompletionDialog({
                   return (
                     <div key={member.allocatProfileId} className="py-5">
                       <div className="flex items-center gap-3">
-                        <Avatar className="h-10 w-10 border border-border">
+                        <Avatar className="h-9 w-9 border border-border/60">
                           <AvatarImage
                             src={member.avatarUrl}
                             alt={member.fullName}
                             className="object-cover"
                           />
 
-                          <AvatarFallback className="bg-muted text-xs font-bold text-foreground">
+                          <AvatarFallback className="bg-surface-3 text-[0.65rem] font-semibold text-foreground/80">
                             {getInitials(member.fullName)}
                           </AvatarFallback>
                         </Avatar>
 
                         <div className="min-w-0">
-                          <p className="truncate text-sm font-bold">
+                          <p className="truncate text-sm font-semibold text-foreground/85">
                             {member.fullName}
                           </p>
 
-                          <p className="text-xs text-muted-foreground">
+                          <p className="mt-0.5 text-[0.68rem] text-muted-foreground">
                             {member.title || "Allocat professional"}
                           </p>
                         </div>
                       </div>
 
                       <div className="mt-4 flex flex-wrap items-center gap-1">
-                        {[1, 2, 3, 4, 5].map(value => {
+                        {[1, 2, 3, 4, 5].map((value) => {
                           const selected = value <= draft.rating;
 
                           return (
@@ -1696,20 +1943,17 @@ function ReviewCompletionDialog({
                               type="button"
                               disabled={acting !== null}
                               onClick={() =>
-                                setMemberRating(
-                                  member.allocatProfileId,
-                                  value,
-                                )
+                                setMemberRating(member.allocatProfileId, value)
                               }
-                              className="rounded-md p-1 transition-transform hover:scale-110 disabled:pointer-events-none"
+                              className="rounded-md p-1 transition-transform hover:scale-105 disabled:pointer-events-none"
                               aria-label={`Rate ${member.fullName} ${value} out of 5`}
                             >
                               <StarIcon
-                                size={21}
+                                size={19}
                                 className={
                                   selected
-                                    ? "fill-[#F0A23A] text-[#F0A23A]"
-                                    : "text-muted-foreground/35"
+                                    ? "fill-status-pending text-status-pending"
+                                    : "text-muted-foreground/25"
                                 }
                               />
                             </button>
@@ -1718,7 +1962,7 @@ function ReviewCompletionDialog({
 
                         {draft.rating > 0 && (
                           <>
-                            <span className="ml-2 text-xs font-semibold text-muted-foreground">
+                            <span className="ml-2 text-[0.68rem] font-semibold text-muted-foreground">
                               {draft.rating}/5
                             </span>
 
@@ -1728,7 +1972,7 @@ function ReviewCompletionDialog({
                               onClick={() =>
                                 clearMemberRating(member.allocatProfileId)
                               }
-                              className="ml-2 text-[0.65rem] font-semibold text-muted-foreground transition-colors hover:text-foreground"
+                              className="ml-2 text-[0.64rem] font-medium text-muted-foreground transition-colors hover:text-foreground"
                             >
                               Clear
                             </button>
@@ -1742,14 +1986,17 @@ function ReviewCompletionDialog({
                           disabled={acting !== null}
                           maxLength={1000}
                           rows={3}
-                          onChange={event =>
+                          onChange={(event) =>
                             setMemberComment(
                               member.allocatProfileId,
                               event.target.value,
                             )
                           }
                           placeholder="Add a comment (optional)"
-                          className="mt-3 min-h-20 resize-none rounded-lg border-border bg-background text-sm shadow-none"
+                          className={[
+                            "mt-3 min-h-20 resize-none rounded-lg text-sm",
+                            formControlSurface,
+                          ].join(" ")}
                         />
                       )}
                     </div>
@@ -1760,18 +2007,24 @@ function ReviewCompletionDialog({
           </section>
         </div>
 
-        <DialogFooter className="shrink-0 border-t border-border bg-background px-6 py-5 sm:px-8">
+        <DialogFooter
+          className={["shrink-0 px-6 py-4 sm:px-7", dialogFooterSurface].join(
+            " ",
+          )}
+        >
           <Button
             type="button"
             variant="ghost"
             disabled={acting !== null}
             onClick={() => void needsMoreWork()}
-            className="rounded-lg px-5 text-muted-foreground shadow-none"
+            className={[
+              "h-9 rounded-lg px-4 text-xs shadow-none",
+              ghostActionButton,
+            ].join(" ")}
           >
             {acting === "reject" && (
               <LoaderCircleIcon size={14} className="animate-spin" />
             )}
-
             Needs more work
           </Button>
 
@@ -1779,7 +2032,10 @@ function ReviewCompletionDialog({
             type="button"
             disabled={acting !== null || loading}
             onClick={() => void confirmCompletion()}
-            className="rounded-lg px-6 shadow-none"
+            className={[
+              "h-9 rounded-lg px-5 text-xs font-semibold shadow-none",
+              primaryActionButton,
+            ].join(" ")}
           >
             {acting === "confirm" ? (
               <LoaderCircleIcon size={14} className="animate-spin" />
@@ -1832,7 +2088,7 @@ function ManageRatingsDialog({
         const accepted = (
           Array.isArray(response.data) ? response.data : []
         ).filter(
-          member => normalizeMemberStatus(member.status) === "accepted",
+          (member) => normalizeMemberStatus(member.status) === "accepted",
         );
 
         setMembers(accepted);
@@ -1848,7 +2104,9 @@ function ManageRatingsDialog({
 
         return [];
       } finally {
-        if (!cancelled) setLoadingMembers(false);
+        if (!cancelled) {
+          setLoadingMembers(false);
+        }
       }
     }
 
@@ -1867,17 +2125,16 @@ function ManageRatingsDialog({
         return normalizeProjectRatings(response.data);
       } catch (error) {
         if (!cancelled) {
-          console.error(
-            "Could not load existing project ratings:",
-            error,
-          );
+          console.error("Could not load existing project ratings:", error);
 
           setRatingsError("Existing ratings could not be loaded.");
         }
 
         return [];
       } finally {
-        if (!cancelled) setLoadingRatings(false);
+        if (!cancelled) {
+          setLoadingRatings(false);
+        }
       }
     }
 
@@ -1896,8 +2153,7 @@ function ManageRatingsDialog({
 
       for (const member of acceptedMembers) {
         const existing = existingRatings.find(
-          rating =>
-            getRatingAllocatId(rating) === member.allocatProfileId,
+          (rating) => getRatingAllocatId(rating) === member.allocatProfileId,
         );
 
         nextRatings[member.allocatProfileId] = {
@@ -1905,7 +2161,6 @@ function ManageRatingsDialog({
             typeof existing?.rating === "number"
               ? Math.min(5, Math.max(0, existing.rating))
               : 0,
-
           comment: existing?.comment ?? "",
         };
       }
@@ -1921,9 +2176,8 @@ function ManageRatingsDialog({
   }, [open, project.id]);
 
   function setMemberRating(allocatId: string, rating: number) {
-    setRatings(current => ({
+    setRatings((current) => ({
       ...current,
-
       [allocatId]: {
         rating,
         comment: current[allocatId]?.comment ?? "",
@@ -1932,9 +2186,8 @@ function ManageRatingsDialog({
   }
 
   function setMemberComment(allocatId: string, comment: string) {
-    setRatings(current => ({
+    setRatings((current) => ({
       ...current,
-
       [allocatId]: {
         rating: current[allocatId]?.rating ?? 0,
         comment,
@@ -1953,7 +2206,7 @@ function ManageRatingsDialog({
       return;
     }
 
-    const submittedRatings = members.flatMap(member => {
+    const submittedRatings = members.flatMap((member) => {
       const draft = ratings[member.allocatProfileId];
 
       if (!draft || draft.rating < 1) return [];
@@ -1969,6 +2222,7 @@ function ManageRatingsDialog({
 
     if (submittedRatings.length === 0) {
       toast.error("Rate at least one Allocat before saving.");
+
       return;
     }
 
@@ -1982,6 +2236,7 @@ function ManageRatingsDialog({
       );
 
       toast.success("Ratings saved.");
+
       onOpenChange(false);
     } catch (error) {
       console.error("Could not save project ratings:", error);
@@ -1997,36 +2252,36 @@ function ManageRatingsDialog({
   return (
     <Dialog
       open={open}
-      onOpenChange={nextOpen => {
+      onOpenChange={(nextOpen) => {
         if (saving) return;
+
         onOpenChange(nextOpen);
       }}
     >
       <DialogContent
         className={[
-          "flex max-h-[90vh] flex-col overflow-hidden",
-          "rounded-[1.5rem] border-border bg-background p-0",
-          "text-foreground sm:max-w-2xl",
+          "flex max-h-[90vh] flex-col overflow-hidden rounded-xl p-0 sm:max-w-2xl",
+          dialogSurface,
         ].join(" ")}
       >
-        <DialogHeader className="shrink-0 border-b border-border px-6 pb-6 pt-7 text-left sm:px-8">
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#F0A23A]/[0.10] text-[#976018] dark:text-[#F0A23A]">
-            <StarIcon size={18} />
+        <DialogHeader className="shrink-0 border-b border-border/55 px-6 pb-5 pt-6 text-left sm:px-7 dark:border-border">
+          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-status-pending/[0.07] text-status-pending-foreground">
+            <StarIcon size={17} />
           </span>
 
-          <DialogTitle className="mt-4 text-2xl font-black tracking-[-0.03em]">
+          <DialogTitle className="mt-4 text-xl font-semibold tracking-[-0.025em]">
             Rate your Allocats
           </DialogTitle>
 
-          <DialogDescription className="mt-2 max-w-xl leading-7">
-            Add feedback for Allocats you skipped when the project was completed,
-            or update a rating you have already submitted.
+          <DialogDescription className="mt-2 max-w-xl text-sm leading-7 text-muted-foreground">
+            Add feedback for Allocats you skipped when the project was
+            completed, or update a rating you have already submitted.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-6 py-6 sm:px-8">
-          <div className="rounded-xl bg-muted/50 p-4">
-            <p className="text-sm font-bold">
+        <div className="min-h-0 flex-1 overflow-y-auto px-6 py-6 sm:px-7">
+          <div className="rounded-lg border border-border/50 bg-surface-2/45 p-4 dark:border-border dark:bg-surface-2/60">
+            <p className="text-sm font-semibold text-foreground/85">
               {project.title}
             </p>
 
@@ -2044,8 +2299,8 @@ function ManageRatingsDialog({
               </div>
             </div>
           ) : membersError ? (
-            <div className="mt-6 rounded-xl border border-destructive/20 bg-destructive/[0.05] p-4">
-              <p className="text-sm font-semibold text-destructive">
+            <div className="mt-6 rounded-lg border border-status-overdue/15 bg-status-overdue/[0.04] p-4">
+              <p className="text-sm font-semibold text-status-overdue-foreground">
                 Project team unavailable
               </p>
 
@@ -2054,8 +2309,8 @@ function ManageRatingsDialog({
               </p>
             </div>
           ) : ratingsError ? (
-            <div className="mt-6 rounded-xl border border-destructive/20 bg-destructive/[0.05] p-4">
-              <p className="text-sm font-semibold text-destructive">
+            <div className="mt-6 rounded-lg border border-status-overdue/15 bg-status-overdue/[0.04] p-4">
+              <p className="text-sm font-semibold text-status-overdue-foreground">
                 Ratings unavailable
               </p>
 
@@ -2069,8 +2324,8 @@ function ManageRatingsDialog({
               </p>
             </div>
           ) : members.length === 0 ? (
-            <div className="mt-6 rounded-xl bg-muted/50 p-4">
-              <p className="text-sm font-semibold">
+            <div className="mt-6 rounded-lg border border-border/50 bg-surface-2/45 p-4 dark:border-border dark:bg-surface-2/60">
+              <p className="text-sm font-semibold text-foreground/85">
                 No accepted Allocats were found.
               </p>
 
@@ -2079,8 +2334,8 @@ function ManageRatingsDialog({
               </p>
             </div>
           ) : (
-            <div className="mt-7 divide-y divide-border border-y border-border">
-              {members.map(member => {
+            <div className="mt-7 divide-y divide-border/55 border-y border-border/55 dark:divide-border dark:border-border">
+              {members.map((member) => {
                 const draft = ratings[member.allocatProfileId] ?? {
                   rating: 0,
                   comment: "",
@@ -2089,31 +2344,32 @@ function ManageRatingsDialog({
                 const hasRating = draft.rating > 0;
 
                 return (
-                  <div key={member.allocatProfileId} className="py-6">
+                  <div key={member.allocatProfileId} className="py-5">
                     <div className="flex items-start gap-3">
-                      <Avatar className="h-11 w-11 shrink-0 border border-border">
+                      <Avatar className="h-10 w-10 shrink-0 border border-border/60">
                         <AvatarImage
                           src={member.avatarUrl}
                           alt={member.fullName}
                           className="object-cover"
                         />
 
-                        <AvatarFallback className="bg-muted text-xs font-bold text-foreground">
+                        <AvatarFallback className="bg-surface-3 text-[0.65rem] font-semibold text-foreground/80">
                           {getInitials(member.fullName)}
                         </AvatarFallback>
                       </Avatar>
 
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                          <p className="truncate text-sm font-bold">
+                          <p className="truncate text-sm font-semibold text-foreground/85">
                             {member.fullName}
                           </p>
 
                           <span
                             className={[
-                              "text-[0.6rem] font-semibold",
+                              "text-[0.6rem] font-medium",
+
                               hasRating
-                                ? "text-foreground/55"
+                                ? "text-foreground/50"
                                 : "text-muted-foreground/60",
                             ].join(" ")}
                           >
@@ -2121,14 +2377,14 @@ function ManageRatingsDialog({
                           </span>
                         </div>
 
-                        <p className="mt-1 truncate text-xs text-muted-foreground">
+                        <p className="mt-1 truncate text-[0.68rem] text-muted-foreground">
                           {member.title || "Allocat professional"}
                         </p>
                       </div>
                     </div>
 
                     <div className="mt-4 flex flex-wrap items-center gap-1">
-                      {[1, 2, 3, 4, 5].map(value => {
+                      {[1, 2, 3, 4, 5].map((value) => {
                         const selected = value <= draft.rating;
 
                         return (
@@ -2137,25 +2393,17 @@ function ManageRatingsDialog({
                             type="button"
                             disabled={saving}
                             onClick={() =>
-                              setMemberRating(
-                                member.allocatProfileId,
-                                value,
-                              )
+                              setMemberRating(member.allocatProfileId, value)
                             }
-                            className={[
-                              "rounded-md p-1",
-                              "transition-transform duration-150",
-                              "hover:scale-110",
-                              "disabled:pointer-events-none",
-                            ].join(" ")}
+                            className="rounded-md p-1 transition-transform duration-150 hover:scale-105 disabled:pointer-events-none"
                             aria-label={`Rate ${member.fullName} ${value} out of 5`}
                           >
                             <StarIcon
-                              size={22}
+                              size={20}
                               className={
                                 selected
-                                  ? "fill-[#F0A23A] text-[#F0A23A]"
-                                  : "text-muted-foreground/30"
+                                  ? "fill-status-pending text-status-pending"
+                                  : "text-muted-foreground/25"
                               }
                             />
                           </button>
@@ -2163,7 +2411,7 @@ function ManageRatingsDialog({
                       })}
 
                       {hasRating && (
-                        <span className="ml-2 text-xs font-semibold text-muted-foreground">
+                        <span className="ml-2 text-[0.68rem] font-semibold text-muted-foreground">
                           {draft.rating}/5
                         </span>
                       )}
@@ -2176,14 +2424,17 @@ function ManageRatingsDialog({
                           disabled={saving}
                           maxLength={1000}
                           rows={3}
-                          onChange={event =>
+                          onChange={(event) =>
                             setMemberComment(
                               member.allocatProfileId,
                               event.target.value,
                             )
                           }
                           placeholder="Add or update your comment (optional)"
-                          className="min-h-20 resize-none rounded-lg border-border bg-background text-sm shadow-none"
+                          className={[
+                            "min-h-20 resize-none rounded-lg text-sm",
+                            formControlSurface,
+                          ].join(" ")}
                         />
 
                         <div className="mt-1.5 flex justify-end">
@@ -2200,13 +2451,20 @@ function ManageRatingsDialog({
           )}
         </div>
 
-        <DialogFooter className="shrink-0 border-t border-border bg-background px-6 py-5 sm:px-8">
+        <DialogFooter
+          className={["shrink-0 px-6 py-4 sm:px-7", dialogFooterSurface].join(
+            " ",
+          )}
+        >
           <Button
             type="button"
             variant="ghost"
             disabled={saving}
             onClick={() => onOpenChange(false)}
-            className="rounded-lg px-5 text-muted-foreground shadow-none"
+            className={[
+              "h-9 rounded-lg px-4 text-xs shadow-none",
+              ghostActionButton,
+            ].join(" ")}
           >
             Cancel
           </Button>
@@ -2221,7 +2479,10 @@ function ManageRatingsDialog({
               members.length === 0
             }
             onClick={() => void saveRatings()}
-            className="rounded-lg px-6 shadow-none"
+            className={[
+              "h-9 rounded-lg px-5 text-xs font-semibold shadow-none",
+              primaryActionButton,
+            ].join(" ")}
           >
             {saving ? (
               <LoaderCircleIcon size={14} className="animate-spin" />
@@ -2259,10 +2520,8 @@ function ProjectDetailsDialog({
 
   const progress = clampProgress(project.progress);
 
-  const {
-    label: categoryLabel,
-    isClientWork,
-  } = getProjectCategoryContext(project);
+  const { label: categoryLabel, isClientWork } =
+    getProjectCategoryContext(project);
 
   const priority = project.priority?.toLowerCase() || "standard";
 
@@ -2294,9 +2553,12 @@ function ProjectDetailsDialog({
         if (cancelled) return;
 
         console.error("Could not load project members:", error);
+
         setMembersError("Could not load the project team.");
       } finally {
-        if (!cancelled) setMembersLoading(false);
+        if (!cancelled) {
+          setMembersLoading(false);
+        }
       }
     }
 
@@ -2321,25 +2583,25 @@ function ProjectDetailsDialog({
 
         setSkillCatalogue(embeddedSkills);
 
-        const response = await api.get<SkillOption[]>(
-          "/skills",
-          { withCredentials: true },
-        );
+        const response = await api.get<SkillOption[]>("/skills", {
+          withCredentials: true,
+        });
 
         if (cancelled) return;
 
         const catalogue = Array.isArray(response.data) ? response.data : [];
 
-        setSkillCatalogue(
-          mergeSkillOptions(catalogue, embeddedSkills),
-        );
+        setSkillCatalogue(mergeSkillOptions(catalogue, embeddedSkills));
       } catch (error) {
         if (cancelled) return;
 
         console.error("Could not load project skills:", error);
+
         setSkillsError("Could not load the project skills.");
       } finally {
-        if (!cancelled) setSkillsLoading(false);
+        if (!cancelled) {
+          setSkillsLoading(false);
+        }
       }
     }
 
@@ -2353,7 +2615,7 @@ function ProjectDetailsDialog({
   const acceptedMembers = useMemo(
     () =>
       members.filter(
-        member => normalizeMemberStatus(member.status) === "accepted",
+        (member) => normalizeMemberStatus(member.status) === "accepted",
       ),
     [members],
   );
@@ -2362,30 +2624,28 @@ function ProjectDetailsDialog({
     if (isClientWork) return [];
 
     return members.filter(
-      member => normalizeMemberStatus(member.status) === "invited",
+      (member) => normalizeMemberStatus(member.status) === "invited",
     );
   }, [members, isClientWork]);
 
-  const visibleMemberCount =
-    acceptedMembers.length + invitedMembers.length;
+  const visibleMemberCount = acceptedMembers.length + invitedMembers.length;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         className={[
-          "flex max-h-[90vh] flex-col overflow-hidden",
-          "rounded-[1.5rem] border-border bg-background p-0",
-          "text-foreground sm:max-w-2xl",
+          "flex max-h-[90vh] flex-col overflow-hidden rounded-xl p-0 sm:max-w-2xl",
+          dialogSurface,
         ].join(" ")}
       >
-        <DialogHeader className="shrink-0 border-b border-border px-6 pb-6 pt-7 text-left sm:px-8">
+        <DialogHeader className="shrink-0 border-b border-border/55 px-6 pb-5 pt-6 text-left sm:px-7 dark:border-border">
           <ProjectIdentity project={project} />
 
           {project.priority && (
-            <div className="mt-5">
+            <div className="mt-4">
               <span
                 className={[
-                  "text-xs font-semibold capitalize",
+                  "text-[0.68rem] font-semibold capitalize",
                   priorityAppearance[priority] ?? priorityAppearance.standard,
                 ].join(" ")}
               >
@@ -2394,26 +2654,28 @@ function ProjectDetailsDialog({
             </div>
           )}
 
-          <DialogTitle className="mt-4 break-words text-2xl font-black leading-[1.08] tracking-[-0.03em] sm:text-3xl">
+          <DialogTitle className="mt-3 break-words text-xl font-semibold leading-[1.15] tracking-[-0.025em] text-foreground/90 sm:text-2xl">
             {project.title}
           </DialogTitle>
 
-          <DialogDescription className="mt-3 max-w-xl text-sm leading-7 text-muted-foreground">
+          <DialogDescription className="mt-2 max-w-xl text-sm leading-7 text-muted-foreground">
             {project.description || "No project description was provided."}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="min-h-0 flex-1 space-y-8 overflow-y-auto px-6 py-7 sm:px-8">
-          <div className="grid gap-6 border-b border-border pb-7 sm:grid-cols-3">
+        <div className="min-h-0 flex-1 space-y-7 overflow-y-auto px-6 py-6 sm:px-7">
+          <div className="grid gap-5 border-b border-border/55 pb-6 sm:grid-cols-3 dark:border-border">
             <DateDetail label="Created" value={project.createdAt} />
+
             <DateDetail label="Start date" value={project.startDate} />
+
             <DateDetail label="Due date" value={project.dueDate} />
           </div>
 
           <section>
             <div className="flex items-end justify-between gap-5">
               <div>
-                <p className="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                <p className="text-[0.58rem] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
                   Project progress
                 </p>
 
@@ -2422,19 +2684,29 @@ function ProjectDetailsDialog({
                 </div>
               </div>
 
-              <p className="text-4xl font-black tracking-[-0.045em] tabular-nums">
+              <p className="text-2xl font-semibold tracking-[-0.035em] tabular-nums text-foreground/85">
                 {progress}
 
-                <span className="text-lg text-muted-foreground">
-                  %
-                </span>
+                <span className="ml-0.5 text-sm text-muted-foreground">%</span>
               </p>
             </div>
 
-            <Progress value={progress} className="mt-5 h-1.5" />
+            <div
+              className="mt-4 h-1.5 overflow-hidden rounded-full bg-muted/80 dark:bg-surface-3"
+              role="progressbar"
+              aria-label="Project progress"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={progress}
+            >
+              <div
+                className="h-full rounded-full bg-brand-secondary-highlight/85 transition-[width] duration-500 dark:bg-secondary"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
           </section>
 
-          <div className="grid gap-6 border-y border-border py-7 sm:grid-cols-2">
+          <div className="grid gap-6 border-y border-border/55 py-6 sm:grid-cols-2 dark:border-border">
             <DetailRow label="Category" value={categoryLabel} />
 
             <DetailRow
@@ -2446,17 +2718,17 @@ function ProjectDetailsDialog({
           <section>
             <div className="flex items-end justify-between gap-4">
               <div>
-                <p className="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                <p className="text-[0.58rem] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
                   Requirements
                 </p>
 
-                <h3 className="mt-1 text-lg font-black tracking-[-0.02em]">
+                <h3 className="mt-1.5 text-base font-semibold tracking-[-0.015em] text-foreground/90">
                   Required skills
                 </h3>
               </div>
 
               {!skillsLoading && selectedSkills.length > 0 && (
-                <span className="text-xs font-semibold text-muted-foreground">
+                <span className="text-[0.68rem] font-medium text-muted-foreground">
                   {selectedSkills.length}{" "}
                   {selectedSkills.length === 1 ? "skill" : "skills"}
                 </span>
@@ -2470,19 +2742,28 @@ function ProjectDetailsDialog({
               </div>
             ) : selectedSkills.length > 0 ? (
               <div className="mt-4 flex flex-wrap gap-2">
-                {selectedSkills.map(skill => (
+                {selectedSkills.map((skill) => (
                   <span
                     key={skill.id}
-                    className="inline-flex items-center rounded-lg bg-muted/60 px-3 py-1.5 text-[0.68rem] font-semibold text-foreground"
+                    className={[
+                      "inline-flex items-center rounded-md border px-2.5 py-1.5",
+
+                      "border-border/55",
+                      "bg-surface-2/50",
+
+                      "text-[0.66rem] font-medium",
+                      "text-foreground/75",
+
+                      "dark:border-border",
+                      "dark:bg-surface-2/70",
+                    ].join(" ")}
                   >
                     {skill.name}
                   </span>
                 ))}
               </div>
             ) : skillsError ? (
-              <p className="mt-4 text-xs text-destructive">
-                {skillsError}
-              </p>
+              <p className="mt-4 text-xs text-destructive">{skillsError}</p>
             ) : (
               <p className="mt-4 text-xs leading-6 text-muted-foreground">
                 No required skills are currently attached to this project.
@@ -2490,20 +2771,20 @@ function ProjectDetailsDialog({
             )}
           </section>
 
-          <section className="border-t border-border pt-7">
+          <section className="border-t border-border/55 pt-6 dark:border-border">
             <div className="flex items-end justify-between gap-4">
               <div>
-                <p className="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                <p className="text-[0.58rem] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
                   {isClientWork ? "People" : "Project team"}
                 </p>
 
-                <h3 className="mt-1 text-lg font-black tracking-[-0.02em]">
+                <h3 className="mt-1.5 text-base font-semibold tracking-[-0.015em] text-foreground/90">
                   {isClientWork ? "Project team" : "Allocats"}
                 </h3>
               </div>
 
               {!membersLoading && !membersError && (
-                <span className="text-xs font-semibold text-muted-foreground">
+                <span className="text-[0.68rem] font-medium text-muted-foreground">
                   {visibleMemberCount}{" "}
                   {visibleMemberCount === 1 ? "member" : "members"}
                 </span>
@@ -2518,8 +2799,8 @@ function ProjectDetailsDialog({
                 </div>
               </div>
             ) : membersError ? (
-              <div className="mt-5 border-l-2 border-destructive pl-4">
-                <p className="text-sm font-semibold text-destructive">
+              <div className="mt-5 border-l-2 border-status-overdue/60 pl-4">
+                <p className="text-sm font-semibold text-status-overdue-foreground">
                   Project team unavailable
                 </p>
 
@@ -2528,10 +2809,10 @@ function ProjectDetailsDialog({
                 </p>
               </div>
             ) : visibleMemberCount === 0 ? (
-              <div className="mt-6 border-y border-border py-8">
-                <UsersIcon size={21} className="text-muted-foreground" />
+              <div className="mt-6 border-y border-border/55 py-7 dark:border-border">
+                <UsersIcon size={20} className="text-muted-foreground/75" />
 
-                <p className="mt-4 text-sm font-semibold">
+                <p className="mt-4 text-sm font-semibold text-foreground/85">
                   {isClientWork
                     ? "No other team members are currently shown."
                     : "No Allocats yet."}
@@ -2548,17 +2829,20 @@ function ProjectDetailsDialog({
                     asChild
                     variant="ghost"
                     size="sm"
-                    className="mt-4 -ml-3 rounded-lg text-foreground shadow-none"
+                    className={[
+                      "mt-4 -ml-3 h-8 rounded-lg px-3 text-xs shadow-none",
+                      ghostActionButton,
+                    ].join(" ")}
                   >
                     <Link to={`/projects/${project.id}/allocats/find`}>
-                      <UserPlusIcon size={14} />
+                      <UserPlusIcon size={13} />
                       Find Allocats
                     </Link>
                   </Button>
                 )}
               </div>
             ) : (
-              <div className="mt-6 space-y-8">
+              <div className="mt-6 space-y-7">
                 {acceptedMembers.length > 0 && (
                   <MemberSection
                     title={isClientWork ? "Team" : "Accepted"}
@@ -2583,22 +2867,34 @@ function ProjectDetailsDialog({
           </section>
         </div>
 
-        <DialogFooter className="shrink-0 border-t border-border bg-background px-6 py-5 sm:px-8">
+        <DialogFooter
+          className={["shrink-0 px-6 py-4 sm:px-7", dialogFooterSurface].join(
+            " ",
+          )}
+        >
           <DialogClose asChild>
             <Button
               variant="ghost"
-              className="rounded-lg px-5 text-muted-foreground shadow-none"
+              className={[
+                "h-9 rounded-lg px-4 text-xs shadow-none",
+                ghostActionButton,
+              ].join(" ")}
             >
               Close
             </Button>
           </DialogClose>
 
-          <Button asChild className="group rounded-lg px-6 shadow-none">
+          <Button
+            asChild
+            className={[
+              "group h-9 rounded-lg px-5 text-xs font-semibold shadow-none",
+              primaryActionButton,
+            ].join(" ")}
+          >
             <Link to={`/projects/${project.id}`}>
               Open project
-
               <ArrowRightIcon
-                size={15}
+                size={13}
                 className="transition-transform group-hover:translate-x-0.5"
               />
             </Link>
@@ -2625,21 +2921,16 @@ function MemberSection({
   return (
     <div>
       <div className="mb-3">
-        <h4 className="text-sm font-bold">
-          {title}
-        </h4>
+        <h4 className="text-sm font-semibold text-foreground/85">{title}</h4>
 
         <p className="mt-1 text-xs leading-5 text-muted-foreground">
           {description}
         </p>
       </div>
 
-      <div className="divide-y divide-border border-y border-border">
-        {members.map(member => (
-          <ProjectMemberRow
-            key={member.allocatProfileId}
-            member={member}
-          />
+      <div className="divide-y divide-border/55 border-y border-border/55 dark:divide-border dark:border-border">
+        {members.map((member) => (
+          <ProjectMemberRow key={member.allocatProfileId} member={member} />
         ))}
       </div>
     </div>
@@ -2652,36 +2943,38 @@ function ProjectMemberRow({ member }: { member: ProjectAllocatMember }) {
   return (
     <div className="flex items-center justify-between gap-4 py-4">
       <div className="flex min-w-0 items-center gap-3">
-        <Avatar className="h-10 w-10 shrink-0 border border-border">
+        <Avatar className="h-9 w-9 shrink-0 border border-border/60">
           <AvatarImage
             src={member.avatarUrl}
             alt={member.fullName}
             className="object-cover"
           />
 
-          <AvatarFallback className="bg-muted text-xs font-bold text-foreground">
+          <AvatarFallback className="bg-surface-3 text-[0.65rem] font-semibold text-foreground/80">
             {getInitials(member.fullName)}
           </AvatarFallback>
         </Avatar>
 
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <p className="truncate text-sm font-bold">
+            <p className="truncate text-sm font-semibold text-foreground/85">
               {member.fullName}
             </p>
 
             <span
               className={[
-                "inline-flex items-center gap-1.5 text-[0.62rem] font-semibold",
+                "inline-flex items-center gap-1.5 text-[0.6rem] font-medium",
+
                 accepted
-                  ? "text-[#267F0D] dark:text-[#38D200]"
-                  : "text-[#976018] dark:text-[#F0A23A]",
+                  ? "text-status-complete-foreground"
+                  : "text-status-pending-foreground",
               ].join(" ")}
             >
               <span
                 className={[
                   "h-1.5 w-1.5 rounded-full",
-                  accepted ? "bg-[#38D200]" : "bg-[#F0A23A]",
+
+                  accepted ? "bg-status-complete" : "bg-status-pending",
                 ].join(" ")}
               />
 
@@ -2689,7 +2982,7 @@ function ProjectMemberRow({ member }: { member: ProjectAllocatMember }) {
             </span>
           </div>
 
-          <p className="mt-1 truncate text-xs text-muted-foreground">
+          <p className="mt-1 truncate text-[0.68rem] text-muted-foreground">
             {member.title || "Allocat professional"}
           </p>
         </div>
@@ -2699,10 +2992,13 @@ function ProjectMemberRow({ member }: { member: ProjectAllocatMember }) {
         type="button"
         variant="ghost"
         size="sm"
-        className="shrink-0 rounded-lg px-3 text-xs shadow-none"
+        className={[
+          "h-8 shrink-0 rounded-lg px-3 text-[0.68rem] font-medium shadow-none",
+          ghostActionButton,
+        ].join(" ")}
       >
         Profile
-        <ArrowRightIcon size={13} />
+        <ArrowRightIcon size={12} />
       </Button>
     </div>
   );
@@ -2720,33 +3016,31 @@ function DateDetail({
   value?: string | Date | null;
 }) {
   return (
-    <div>
-      <p className="text-[0.6rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+    <div className="min-w-0">
+      <p className="text-[0.56rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
         {label}
       </p>
 
-      <p className="mt-2 flex items-center gap-2 text-sm font-semibold">
-        <CalendarDaysIcon size={14} className="text-muted-foreground" />
-        {formatDate(value)}
+      <p className="mt-2 flex min-w-0 items-center gap-2 text-sm font-medium text-foreground/80">
+        <CalendarDaysIcon
+          size={13}
+          className="shrink-0 text-muted-foreground/80"
+        />
+
+        <span className="min-w-0 break-words">{formatDate(value)}</span>
       </p>
     </div>
   );
 }
 
-function DetailRow({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
+function DetailRow({ label, value }: { label: string; value: string }) {
   return (
-    <div>
-      <p className="text-[0.6rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+    <div className="min-w-0">
+      <p className="text-[0.56rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
         {label}
       </p>
 
-      <p className="mt-2 break-words text-sm font-semibold">
+      <p className="mt-2 break-words text-sm font-medium text-foreground/80">
         {value}
       </p>
     </div>
@@ -2823,18 +3117,15 @@ function EditProjectDialog({
 
         const embeddedSkills = getEmbeddedProjectSkills(project);
 
-        const response = await api.get<SkillOption[]>(
-          "/skills",
-          { withCredentials: true },
-        );
+        const response = await api.get<SkillOption[]>("/skills", {
+          withCredentials: true,
+        });
 
         if (cancelled) return;
 
         const catalogue = Array.isArray(response.data) ? response.data : [];
 
-        setSkillOptions(
-          mergeSkillOptions(catalogue, embeddedSkills),
-        );
+        setSkillOptions(mergeSkillOptions(catalogue, embeddedSkills));
       } catch (error) {
         if (cancelled) return;
 
@@ -2842,7 +3133,9 @@ function EditProjectDialog({
 
         setSkillsError("The skills catalogue could not be loaded.");
       } finally {
-        if (!cancelled) setSkillsLoading(false);
+        if (!cancelled) {
+          setSkillsLoading(false);
+        }
       }
     }
 
@@ -2868,25 +3161,25 @@ function EditProjectDialog({
 
     if (!cleanTitle) {
       toast.error("Add a project title before saving.");
+
       return;
     }
 
     if (skillsChanged && skillIds.length === 0) {
       toast.error("Select at least one skill for this project.");
+
       return;
     }
 
     if (skillsChanged && skillIds.length > 15) {
       toast.error("Choose no more than 15 skills.");
+
       return;
     }
 
-    if (
-      startDate &&
-      dueDate &&
-      dueDate.getTime() < startDate.getTime()
-    ) {
+    if (startDate && dueDate && dueDate.getTime() < startDate.getTime()) {
       toast.error("The due date must be after the start date.");
+
       return;
     }
 
@@ -2911,6 +3204,7 @@ function EditProjectDialog({
       onProjectUpdated(response.data);
 
       toast.success("Project updated.");
+
       onOpenChange(false);
     } catch (error) {
       console.error("Could not update project:", error);
@@ -2924,47 +3218,47 @@ function EditProjectDialog({
   return (
     <Dialog
       open={open}
-      onOpenChange={nextOpen => {
+      onOpenChange={(nextOpen) => {
         if (saving) return;
+
         onOpenChange(nextOpen);
       }}
     >
       <DialogContent
         className={[
-          "max-h-[90vh] overflow-y-auto p-0",
-          "rounded-[1.5rem] border-border bg-background",
-          "text-foreground sm:max-w-2xl",
+          "max-h-[90vh] overflow-y-auto rounded-xl p-0 sm:max-w-2xl",
+          dialogSurface,
         ].join(" ")}
       >
         <form onSubmit={handleSubmit} noValidate>
-          <DialogHeader className="border-b border-border px-6 pb-6 pt-7 text-left sm:px-8">
+          <DialogHeader className="border-b border-border/55 px-6 pb-5 pt-6 text-left sm:px-7 dark:border-border">
             <div className="flex items-start gap-3">
               <span
                 className={[
-                  "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl",
+                  "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
                   projectIconSurface,
                 ].join(" ")}
               >
-                <Edit3Icon size={17} />
+                <Edit3Icon size={16} />
               </span>
 
               <div className="min-w-0">
-                <p className="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                <p className="text-[0.58rem] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
                   Project settings
                 </p>
 
-                <DialogTitle className="mt-1.5 text-2xl font-black tracking-[-0.03em]">
+                <DialogTitle className="mt-1.5 text-xl font-semibold tracking-[-0.025em] text-foreground/90">
                   Edit project
                 </DialogTitle>
               </div>
             </div>
 
-            <DialogDescription className="mt-4 max-w-xl text-sm leading-7">
+            <DialogDescription className="mt-4 max-w-xl text-sm leading-7 text-muted-foreground">
               Update the project information, schedule and required skills.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-7 px-6 py-7 sm:px-8">
+          <div className="space-y-7 px-6 py-6 sm:px-7">
             <section>
               <FormSectionHeading
                 title="Project information"
@@ -2975,7 +3269,7 @@ function EditProjectDialog({
                 <div className="grid gap-2">
                   <Label
                     htmlFor={`edit-title-${project.id}`}
-                    className="text-sm font-semibold"
+                    className="text-xs font-semibold text-foreground/80"
                   >
                     Project title
                   </Label>
@@ -2983,31 +3277,44 @@ function EditProjectDialog({
                   <Input
                     id={`edit-title-${project.id}`}
                     value={title}
-                    onChange={event => setTitle(event.target.value)}
+                    onChange={(event) => setTitle(event.target.value)}
                     maxLength={160}
                     autoFocus
                     disabled={saving}
-                    className="h-11 rounded-lg border-border bg-background shadow-none"
+                    className={[
+                      "h-10 rounded-lg px-3.5",
+                      formControlSurface,
+                    ].join(" ")}
                   />
                 </div>
 
                 <div className="grid gap-2">
-                  <Label className="text-sm font-semibold">
+                  <Label className="text-xs font-semibold text-foreground/80">
                     Category
                   </Label>
 
-                  <div className="flex h-11 items-center justify-between gap-3 rounded-lg bg-muted/45 px-3.5">
-                    <span className="truncate text-sm font-medium">
+                  <div
+                    className={[
+                      "flex h-10 items-center justify-between gap-3 rounded-lg border px-3.5",
+
+                      "border-border/55",
+                      "bg-surface-2/45",
+
+                      "dark:border-border",
+                      "dark:bg-surface-2/65",
+                    ].join(" ")}
+                  >
+                    <span className="truncate text-sm font-medium text-foreground/75">
                       {categoryLabel}
                     </span>
 
                     <LockKeyholeIcon
-                      size={14}
+                      size={13}
                       className="shrink-0 text-muted-foreground"
                     />
                   </div>
 
-                  <p className="text-[0.68rem] leading-5 text-muted-foreground">
+                  <p className="text-[0.66rem] leading-5 text-muted-foreground">
                     Category is fixed after the project is created. You can
                     still update the required skills within this category.
                   </p>
@@ -3015,13 +3322,14 @@ function EditProjectDialog({
 
                 <div className="grid gap-2">
                   <div className="flex items-center justify-between gap-3">
-                    <Label className="text-sm font-semibold">
+                    <Label className="text-xs font-semibold text-foreground/80">
                       Skills needed
                     </Label>
 
                     <span
                       className={[
                         "text-[0.62rem] font-medium tabular-nums",
+
                         skillsChanged && skillIds.length === 0
                           ? "text-destructive"
                           : "text-muted-foreground",
@@ -3042,11 +3350,11 @@ function EditProjectDialog({
                   />
 
                   {skillsChanged && skillIds.length === 0 ? (
-                    <p className="text-[0.68rem] leading-5 text-destructive">
+                    <p className="text-[0.66rem] leading-5 text-destructive">
                       Select at least one skill before saving the project.
                     </p>
                   ) : (
-                    <p className="text-[0.68rem] leading-5 text-muted-foreground">
+                    <p className="text-[0.66rem] leading-5 text-muted-foreground">
                       Skills help Allocatr match this project with suitable
                       professionals.
                     </p>
@@ -3057,7 +3365,7 @@ function EditProjectDialog({
                   <div className="flex items-center justify-between gap-3">
                     <Label
                       htmlFor={`edit-description-${project.id}`}
-                      className="text-sm font-semibold"
+                      className="text-xs font-semibold text-foreground/80"
                     >
                       Description
                     </Label>
@@ -3070,17 +3378,20 @@ function EditProjectDialog({
                   <Textarea
                     id={`edit-description-${project.id}`}
                     value={description}
-                    onChange={event => setDescription(event.target.value)}
+                    onChange={(event) => setDescription(event.target.value)}
                     maxLength={2000}
                     rows={5}
                     disabled={saving}
-                    className="min-h-32 resize-none rounded-lg border-border bg-background leading-6 shadow-none"
+                    className={[
+                      "min-h-32 resize-none rounded-lg text-sm leading-6",
+                      formControlSurface,
+                    ].join(" ")}
                   />
                 </div>
               </div>
             </section>
 
-            <div className="h-px bg-border" />
+            <div className="h-px bg-border/55 dark:bg-border" />
 
             <section>
               <FormSectionHeading
@@ -3094,7 +3405,7 @@ function EditProjectDialog({
                   label="Start date"
                   value={startDate}
                   onChange={setStartDate}
-                  className="h-11 rounded-lg border-border bg-background shadow-none"
+                  className={["h-10 rounded-lg", formControlSurface].join(" ")}
                 />
 
                 <Calendar28
@@ -3102,12 +3413,12 @@ function EditProjectDialog({
                   label="Due date"
                   value={dueDate}
                   onChange={setDueDate}
-                  className="h-11 rounded-lg border-border bg-background shadow-none"
+                  className={["h-10 rounded-lg", formControlSurface].join(" ")}
                 />
               </div>
             </section>
 
-            <div className="h-px bg-border" />
+            <div className="h-px bg-border/55 dark:bg-border" />
 
             <section>
               <FormSectionHeading
@@ -3146,13 +3457,18 @@ function EditProjectDialog({
             </section>
           </div>
 
-          <DialogFooter className="border-t border-border bg-background px-6 py-5 sm:px-8">
+          <DialogFooter
+            className={["px-6 py-4 sm:px-7", dialogFooterSurface].join(" ")}
+          >
             <Button
               type="button"
               variant="ghost"
               disabled={saving}
               onClick={() => onOpenChange(false)}
-              className="rounded-lg px-5 text-muted-foreground shadow-none"
+              className={[
+                "h-9 rounded-lg px-4 text-xs shadow-none",
+                ghostActionButton,
+              ].join(" ")}
             >
               Cancel
             </Button>
@@ -3160,7 +3476,10 @@ function EditProjectDialog({
             <Button
               type="submit"
               disabled={saving || !title.trim()}
-              className="min-w-32 rounded-lg px-6 shadow-none"
+              className={[
+                "h-9 min-w-28 rounded-lg px-5 text-xs font-semibold shadow-none",
+                primaryActionButton,
+              ].join(" ")}
             >
               {saving && (
                 <LoaderCircleIcon size={14} className="animate-spin" />
@@ -3203,7 +3522,7 @@ function EditSkillsPicker({
   const selectedSkills = useMemo(
     () =>
       value
-        .map(id => skills.find(skill => skill.id === id))
+        .map((id) => skills.find((skill) => skill.id === id))
         .filter((skill): skill is SkillOption => Boolean(skill)),
     [skills, value],
   );
@@ -3212,7 +3531,7 @@ function EditSkillsPicker({
     const search = query.trim().toLowerCase();
 
     return skills
-      .filter(skill => {
+      .filter((skill) => {
         const skillCategory = String(skill.category ?? "")
           .trim()
           .toLowerCase();
@@ -3228,58 +3547,68 @@ function EditSkillsPicker({
           skillCategoryId === normalizedCategory
         );
       })
-      .filter(skill => !value.includes(skill.id))
-      .filter(
-        skill =>
-          !search ||
-          skill.name.toLowerCase().includes(search),
-      )
+      .filter((skill) => !value.includes(skill.id))
+      .filter((skill) => !search || skill.name.toLowerCase().includes(search))
       .sort((first, second) => first.name.localeCompare(second.name));
   }, [skills, value, query, normalizedCategory]);
 
   function addSkill(skillId: string) {
-    if (
-      disabled ||
-      value.includes(skillId) ||
-      value.length >= 15
-    ) {
-      return;
-    }
+    if (disabled || value.includes(skillId) || value.length >= 15) return;
 
     onChange([...value, skillId]);
+
     setQuery("");
   }
 
   function removeSkill(skillId: string) {
     if (disabled) return;
 
-    onChange(value.filter(id => id !== skillId));
+    onChange(value.filter((id) => id !== skillId));
   }
 
   return (
     <div
       className={[
-        "overflow-hidden rounded-xl",
-        "border border-border/70 bg-muted/20",
-        "transition-colors",
-        "focus-within:bg-background",
-        "focus-within:ring-1 focus-within:ring-[#0D566D]/20",
-        "dark:focus-within:ring-[#DEDA00]/20",
+        "overflow-hidden rounded-lg border",
+
+        "border-border/60",
+        "bg-surface-2/40",
+
+        "transition-[background-color,border-color,box-shadow]",
+
+        "focus-within:border-ring/25",
+        "focus-within:bg-surface-1",
+        "focus-within:ring-1",
+        "focus-within:ring-ring/10",
+
+        "dark:border-border",
+        "dark:bg-surface-2/65",
+
+        "dark:focus-within:border-secondary/20",
+        "dark:focus-within:bg-surface-2",
+        "dark:focus-within:ring-secondary/[0.08]",
+
         disabled ? "opacity-60" : "",
       ].join(" ")}
     >
-      <div className="flex min-h-11 items-center gap-2 px-3.5">
-        <SearchIcon
-          size={14}
-          className="shrink-0 text-muted-foreground"
-        />
+      <div className="flex min-h-10 items-center gap-2 px-3.5">
+        <SearchIcon size={13} className="shrink-0 text-muted-foreground" />
 
         <input
           value={query}
           disabled={disabled || loading}
-          onChange={event => setQuery(event.target.value)}
+          onChange={(event) => setQuery(event.target.value)}
           placeholder={loading ? "Loading skills..." : "Search skills"}
-          className="h-10 min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground/55"
+          className={[
+            "h-9 min-w-0 flex-1 bg-transparent text-sm outline-none",
+
+            "text-foreground/85",
+
+            "caret-brand-secondary-highlight",
+            "placeholder:text-muted-foreground/55",
+
+            "dark:caret-secondary",
+          ].join(" ")}
         />
 
         {loading && (
@@ -3291,16 +3620,27 @@ function EditSkillsPicker({
       </div>
 
       {selectedSkills.length > 0 && (
-        <div className="border-t border-border/60 px-3.5 pb-3 pt-3">
-          <p className="mb-2 text-[0.58rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+        <div className="border-t border-border/55 px-3.5 pb-3 pt-3 dark:border-border">
+          <p className="mb-2 text-[0.56rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
             Selected
           </p>
 
           <div className="flex flex-wrap gap-2">
-            {selectedSkills.map(skill => (
+            {selectedSkills.map((skill) => (
               <span
                 key={skill.id}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-background px-2.5 py-1.5 text-[0.68rem] font-semibold ring-1 ring-inset ring-border/60"
+                className={[
+                  "inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1.5",
+
+                  "border-border/55",
+                  "bg-surface-1",
+
+                  "text-[0.66rem] font-medium",
+                  "text-foreground/80",
+
+                  "dark:border-border",
+                  "dark:bg-surface-3/45",
+                ].join(" ")}
               >
                 {skill.name}
 
@@ -3308,7 +3648,18 @@ function EditSkillsPicker({
                   type="button"
                   disabled={disabled}
                   onClick={() => removeSkill(skill.id)}
-                  className="flex h-4 w-4 items-center justify-center rounded-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                  className={[
+                    "flex h-4 w-4 items-center justify-center rounded-sm",
+
+                    "text-muted-foreground",
+
+                    "transition-colors",
+
+                    "hover:bg-surface-3",
+                    "hover:text-foreground",
+
+                    "dark:hover:bg-surface-2",
+                  ].join(" ")}
                   aria-label={`Remove ${skill.name}`}
                 >
                   <XIcon size={10} />
@@ -3320,25 +3671,36 @@ function EditSkillsPicker({
       )}
 
       {!loading && !disabled && (
-        <div className="border-t border-border/60 px-2 py-2">
+        <div className="border-t border-border/55 px-2 py-2 dark:border-border">
           {error ? (
             <div className="px-2 py-3">
-              <p className="text-xs text-destructive">
-                {error}
-              </p>
+              <p className="text-xs text-destructive">{error}</p>
             </div>
           ) : availableSkills.length > 0 ? (
             <div className="max-h-48 overflow-y-auto">
-              {availableSkills.map(skill => (
+              {availableSkills.map((skill) => (
                 <button
                   key={skill.id}
                   type="button"
                   disabled={value.length >= 15}
                   onClick={() => addSkill(skill.id)}
-                  className="flex w-full items-center justify-between gap-4 rounded-lg px-3 py-2.5 text-left transition-colors hover:bg-muted/60 disabled:pointer-events-none disabled:opacity-45"
+                  className={[
+                    "flex w-full items-center justify-between gap-4",
+
+                    "rounded-md px-3 py-2 text-left",
+
+                    "transition-colors",
+
+                    "hover:bg-surface-3/60",
+
+                    "dark:hover:bg-surface-3/70",
+
+                    "disabled:pointer-events-none",
+                    "disabled:opacity-45",
+                  ].join(" ")}
                 >
                   <div className="min-w-0">
-                    <p className="truncate text-xs font-semibold">
+                    <p className="truncate text-xs font-medium text-foreground/80">
                       {skill.name}
                     </p>
 
@@ -3350,7 +3712,12 @@ function EditSkillsPicker({
                   <span
                     className={[
                       "flex h-6 w-6 shrink-0 items-center justify-center rounded-md",
-                      projectIconSurface,
+
+                      "bg-surface-3/65",
+                      "text-foreground/55",
+
+                      "dark:bg-secondary/[0.07]",
+                      "dark:text-secondary",
                     ].join(" ")}
                   >
                     <CheckIcon size={11} />
@@ -3386,9 +3753,7 @@ function FormSectionHeading({
 }) {
   return (
     <div>
-      <h3 className="text-sm font-bold">
-        {title}
-      </h3>
+      <h3 className="text-sm font-semibold text-foreground/85">{title}</h3>
 
       <p className="mt-1 max-w-xl text-xs leading-6 text-muted-foreground">
         {description}
@@ -3418,24 +3783,41 @@ function PriorityOption({
       disabled={disabled}
       onClick={() => onSelect(value)}
       className={[
-        "flex min-h-24 items-start justify-between gap-3",
-        "rounded-xl border p-4 text-left",
-        "transition-colors duration-200",
-        "disabled:cursor-not-allowed disabled:opacity-60",
+        "flex min-h-20 items-start justify-between gap-3",
+
+        "rounded-lg border p-4 text-left",
+
+        "transition-[background-color,border-color] duration-150",
+
+        "disabled:cursor-not-allowed",
+        "disabled:opacity-60",
+
         selected
           ? [
-              "border-[#0D566D]/20 bg-[#EAF2F0]",
-              "dark:border-[#DEDA00]/15 dark:bg-[#DEDA00]/[0.045]",
+              "border-foreground/[0.09]",
+              "bg-foreground/[0.035]",
+
+              "dark:border-secondary/15",
+              "dark:bg-secondary/[0.035]",
             ].join(" ")
-          : "border-border bg-background hover:bg-muted/25",
+          : [
+              "border-border/55",
+              "bg-surface-2/35",
+
+              "hover:border-border/75",
+              "hover:bg-surface-2/55",
+
+              "dark:border-border",
+              "dark:bg-surface-2/60",
+
+              "dark:hover:bg-surface-3/60",
+            ].join(" "),
       ].join(" ")}
     >
       <div>
-        <p className="text-sm font-semibold">
-          {label}
-        </p>
+        <p className="text-xs font-semibold text-foreground/85">{label}</p>
 
-        <p className="mt-1 text-xs leading-5 text-muted-foreground">
+        <p className="mt-1 text-[0.66rem] leading-5 text-muted-foreground">
           {description}
         </p>
       </div>
@@ -3443,13 +3825,20 @@ function PriorityOption({
       <span
         className={[
           "mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border",
+
           selected
-            ? "border-[#0D566D] bg-[#0D566D] dark:border-[#DEDA00] dark:bg-[#DEDA00]"
-            : "border-border",
+            ? [
+                "border-brand-secondary-highlight",
+                "bg-brand-secondary-highlight",
+
+                "dark:border-secondary",
+                "dark:bg-secondary",
+              ].join(" ")
+            : "border-border bg-transparent",
         ].join(" ")}
       >
         {selected && (
-          <span className="h-1.5 w-1.5 rounded-full bg-white dark:bg-[#303030]" />
+          <span className="h-1.5 w-1.5 rounded-full bg-primary-foreground dark:bg-secondary-foreground" />
         )}
       </span>
     </button>

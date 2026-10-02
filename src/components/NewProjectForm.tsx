@@ -93,9 +93,7 @@ const formSchema = z
       .min(5, "Use at least 5 characters.")
       .max(64, "Keep the title below 64 characters."),
 
-    category: z
-      .string()
-      .min(1, "Choose a category."),
+    category: z.string().min(1, "Choose a category."),
 
     skillIds: z
       .array(z.string().uuid())
@@ -110,17 +108,14 @@ const formSchema = z
       .min(20, "Describe the project in at least 20 characters.")
       .max(2000, "Keep the description below 2,000 characters."),
 
-    priority: z.enum([
-      "standard",
-      "high",
-      "urgent",
-    ]),
+    priority: z.enum(["standard", "high", "urgent"]),
 
     budget: z.string().optional(),
   })
   .refine(
-    values => {
+    (values) => {
       if (!values.startDate || !values.endDate) return true;
+
       return values.endDate >= values.startDate;
     },
     {
@@ -146,43 +141,115 @@ const stepFields: Record<Step, (keyof FormValues)[]> = {
 };
 
 /* =========================================================
-   STYLE
+   SHARED STYLE
 ========================================================= */
 
 const inputSurface = [
-  "border-[#0D566D]/[0.09] bg-[#F1F6F4] shadow-none",
-  "text-[#33484D] placeholder:text-[#8A989B]",
-  "caret-[#0D566D]",
-  "hover:border-[#0D566D]/[0.14] hover:bg-[#EDF4F1]",
-  "focus-visible:border-[#0D566D]/30 focus-visible:bg-[#F1F6F4]",
-  "focus-visible:text-[#33484D]",
-  "focus-visible:ring-1 focus-visible:ring-[#0D566D]/20",
+  "border-border/65",
+  "bg-surface-2/45",
+  "text-foreground/80",
+  "placeholder:text-muted-foreground/55",
+  "shadow-none",
 
-  "dark:border-white/[0.075] dark:bg-[#10262D]",
-  "dark:text-[#E6EEF0] dark:placeholder:text-[#6F838A]",
-  "dark:caret-[#DEDA00]",
-  "dark:hover:border-white/[0.11] dark:hover:bg-[#123039]",
-  "dark:focus-visible:border-[#DEDA00]/30",
-  "dark:focus-visible:bg-[#10262D]",
-  "dark:focus-visible:text-[#F1F5F9]",
-  "dark:focus-visible:ring-[#DEDA00]/15",
+  "transition-[background-color,border-color,box-shadow,color] duration-150",
+
+  "hover:border-border/85",
+  "hover:bg-surface-2/60",
+
+  "focus-visible:border-brand-secondary-highlight/30",
+  "focus-visible:bg-surface-1",
+  "focus-visible:ring-1",
+  "focus-visible:ring-brand-secondary-highlight/10",
+
+  "dark:border-border",
+  "dark:bg-surface-2/85",
+  "dark:text-foreground/90",
+  "dark:placeholder:text-muted-foreground/60",
+
+  "dark:hover:border-border",
+  "dark:hover:bg-surface-3/70",
+
+  "dark:focus-visible:border-secondary/25",
+  "dark:focus-visible:bg-surface-2",
+  "dark:focus-visible:ring-secondary/10",
 ].join(" ");
 
-const fieldDescriptionClass =
-  "text-[0.67rem] text-[#748286] dark:text-[#94A3B8]";
+const calendarSurface = [
+  "border-border/65",
+  "bg-surface-2/45",
+  "text-foreground/80",
+  "shadow-none",
+
+  "hover:border-border/85",
+  "hover:bg-surface-2/60",
+
+  "focus-within:border-brand-secondary-highlight/30",
+  "focus-within:bg-surface-1",
+  "focus-within:ring-1",
+  "focus-within:ring-brand-secondary-highlight/10",
+
+  "dark:border-border",
+  "dark:bg-surface-2/85",
+  "dark:text-foreground/90",
+
+  "dark:hover:border-border",
+  "dark:hover:bg-surface-3/70",
+
+  "dark:focus-within:border-secondary/25",
+  "dark:focus-within:bg-surface-2",
+  "dark:focus-within:ring-secondary/10",
+].join(" ");
+
+const fieldDescriptionClass = [
+  "text-[0.67rem] leading-5",
+  "text-muted-foreground/85",
+  "dark:text-muted-foreground",
+].join(" ");
 
 const primaryButton = [
-  "bg-[#0D566D] text-white",
-  "hover:bg-[#0A4B5F] hover:text-white",
-  "dark:bg-[#DEDA00] dark:text-[#303030]",
-  "dark:hover:bg-[#D4D000] dark:hover:text-[#303030]",
+  "border border-brand-secondary-highlight/15",
+  "bg-brand-secondary-highlight",
+  "text-primary-foreground",
+
+  "hover:border-brand-secondary-highlight/20",
+  "hover:bg-brand-secondary-highlight/90",
+  "hover:text-primary-foreground",
+
+  "dark:border-secondary",
+  "dark:bg-secondary",
+  "dark:text-secondary-foreground",
+
+  "dark:hover:border-secondary/90",
+  "dark:hover:bg-secondary/90",
+  "dark:hover:text-secondary-foreground",
 ].join(" ");
 
 const secondaryButton = [
-  "border-[#0D566D]/[0.11] bg-[#F3F7F5] text-[#31545D]",
-  "hover:border-[#0D566D]/20 hover:bg-[#E9F1EE] hover:text-[#153F49]",
-  "dark:border-white/[0.09] dark:bg-white/[0.025] dark:text-[#CBD5E1]",
-  "dark:hover:border-white/[0.14] dark:hover:bg-white/[0.05] dark:hover:text-white",
+  "border-border/65",
+  "bg-surface-2/45",
+  "text-foreground/70",
+
+  "hover:border-border/85",
+  "hover:bg-surface-3/60",
+  "hover:text-foreground/90",
+
+  "dark:border-border",
+  "dark:bg-surface-2/80",
+  "dark:text-foreground/80",
+
+  "dark:hover:border-border",
+  "dark:hover:bg-surface-3/80",
+  "dark:hover:text-foreground",
+].join(" ");
+
+const helperIconSurface = [
+  "bg-brand-secondary-highlight/[0.08]",
+  "text-brand-secondary-highlight",
+  "ring-1 ring-inset ring-brand-secondary-highlight/10",
+
+  "dark:bg-secondary/[0.08]",
+  "dark:text-secondary",
+  "dark:ring-secondary/12",
 ].join(" ");
 
 /* =========================================================
@@ -196,7 +263,9 @@ function NewProjectForm({
   const navigate = useNavigate();
 
   const [step, setStep] = useState<Step>(1);
+
   const [submitIntent, setSubmitIntent] = useState<SubmitIntent>("post");
+
   const submitIntentRef = useRef<SubmitIntent>("post");
 
   const hasSelectedAllocat = Boolean(selectedAllocatId);
@@ -225,7 +294,9 @@ function NewProjectForm({
 
   const tomorrow = useMemo(() => {
     const date = new Date(today);
+
     date.setDate(today.getDate() + 1);
+
     return date;
   }, [today]);
 
@@ -249,6 +320,7 @@ function NewProjectForm({
   });
 
   const { isSubmitting } = form.formState;
+
   const selectedCategory = form.watch("category");
 
   /* =======================================================
@@ -262,14 +334,12 @@ function NewProjectForm({
 
       const response = await api.get<SkillCategoryOption[]>(
         "/skill-categories",
-        { withCredentials: true },
+        {
+          withCredentials: true,
+        },
       );
 
-      setCategories(
-        Array.isArray(response.data)
-          ? response.data
-          : [],
-      );
+      setCategories(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error("Could not load skill categories:", error);
 
@@ -289,16 +359,11 @@ function NewProjectForm({
       setLoadingSkills(true);
       setSkillsError(null);
 
-      const response = await api.get<SkillOption[]>(
-        "/skills",
-        { withCredentials: true },
-      );
+      const response = await api.get<SkillOption[]>("/skills", {
+        withCredentials: true,
+      });
 
-      setSkills(
-        Array.isArray(response.data)
-          ? response.data
-          : [],
-      );
+      setSkills(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error("Could not load skills:", error);
 
@@ -310,10 +375,7 @@ function NewProjectForm({
   }, []);
 
   useEffect(() => {
-    void Promise.all([
-      loadCategories(),
-      loadSkills(),
-    ]);
+    void Promise.all([loadCategories(), loadSkills()]);
   }, [loadCategories, loadSkills]);
 
   /* =======================================================
@@ -321,21 +383,20 @@ function NewProjectForm({
   ======================================================= */
 
   async function handleNext() {
-    const isValid = await form.trigger(
-      stepFields[step],
-      { shouldFocus: true },
-    );
+    const isValid = await form.trigger(stepFields[step], {
+      shouldFocus: true,
+    });
 
     if (!isValid) return;
 
     if (step < 3) {
-      setStep(current => (current + 1) as Step);
+      setStep((current) => (current + 1) as Step);
     }
   }
 
   function handleBack() {
     if (step > 1) {
-      setStep(current => (current - 1) as Step);
+      setStep((current) => (current - 1) as Step);
     }
   }
 
@@ -376,13 +437,9 @@ function NewProjectForm({
       category: values.category,
       skillIds: values.skillIds,
 
-      startDate: toLocalDateOnly(
-        values.startDate ?? new Date(),
-      ),
+      startDate: toLocalDateOnly(values.startDate ?? new Date()),
 
-      dueDate: toLocalDateOnly(
-        values.endDate ?? new Date(),
-      ),
+      dueDate: toLocalDateOnly(values.endDate ?? new Date()),
 
       priority: values.priority,
 
@@ -394,24 +451,20 @@ function NewProjectForm({
     };
 
     try {
-      const response = await api.post<Project>(
-        "/projects",
-        payload,
-        { withCredentials: true },
-      );
+      const response = await api.post<Project>("/projects", payload, {
+        withCredentials: true,
+      });
 
       const project = response.data;
-
-      /* ===================================================
-         CREATE + INVITE
-      =================================================== */
 
       if (selectedAllocatId) {
         try {
           await api.put(
             `/projects/${project.id}/allocats/${selectedAllocatId}/invite`,
             {},
-            { withCredentials: true },
+            {
+              withCredentials: true,
+            },
           );
 
           toast.success(
@@ -421,6 +474,7 @@ function NewProjectForm({
           );
 
           navigate(`/projects/${project.id}`);
+
           return;
         } catch (inviteError) {
           console.error(
@@ -433,18 +487,16 @@ function NewProjectForm({
           );
 
           navigate(`/projects/${project.id}/allocats/find`);
+
           return;
         }
       }
-
-      /* ===================================================
-         NORMAL CREATE
-      =================================================== */
 
       toast.success("Project created successfully.");
 
       if (intent === "find") {
         navigate(`/projects/${project.id}/allocats/find`);
+
         return;
       }
 
@@ -452,9 +504,7 @@ function NewProjectForm({
     } catch (error) {
       console.error("Could not create project:", error);
 
-      toast.error(
-        "We could not create the project. Please try again.",
-      );
+      toast.error("We could not create the project. Please try again.");
     }
   }
 
@@ -467,18 +517,29 @@ function NewProjectForm({
   return (
     <div
       className={[
-        "overflow-hidden rounded-[1.3rem] border",
-        "border-[#0D566D]/[0.085] bg-[#F8FAF8]",
-        "shadow-[0_18px_48px_-42px_rgba(13,86,109,0.26)]",
-        "dark:border-white/[0.065] dark:bg-[#0C1D22]",
-        "dark:shadow-[0_18px_48px_-34px_rgba(0,0,0,0.48)]",
+        "overflow-hidden rounded-xl border",
+
+        "border-border/60",
+        "bg-card",
+
+        "dark:border-border",
+        "dark:bg-card",
       ].join(" ")}
     >
       {/* =================================================
           STEP INDICATOR
       ================================================= */}
 
-      <div className="border-b border-[#0D566D]/[0.07] bg-[#EAF2EF] px-4 py-4 sm:px-6 dark:border-white/[0.06] dark:bg-[#10262D]">
+      <div
+        className={[
+          "border-b border-border/55",
+          "bg-surface-2/35",
+          "px-4 py-4 sm:px-6",
+
+          "dark:border-border",
+          "dark:bg-surface-2/70",
+        ].join(" ")}
+      >
         <div className="flex items-center justify-between gap-5">
           <div className="flex min-w-0 items-center">
             {steps.map((item, index) => {
@@ -497,38 +558,52 @@ function NewProjectForm({
                     }}
                     className={cn(
                       "group flex shrink-0 items-center gap-2",
-                      item.number < step
-                        ? "cursor-pointer"
-                        : "cursor-default",
+                      item.number < step ? "cursor-pointer" : "cursor-default",
                     )}
                   >
                     <span
                       className={cn(
                         "flex h-8 w-8 items-center justify-center rounded-lg border",
-                        "text-[0.64rem] font-semibold transition-colors duration-200",
+                        "text-[0.64rem] font-semibold",
+                        "transition-[background-color,border-color,color] duration-150",
 
                         isActive &&
                           [
-                            "border-[#0D566D] bg-[#0D566D] text-white",
-                            "dark:border-[#DEDA00] dark:bg-[#DEDA00] dark:text-[#303030]",
+                            "border-brand-secondary-highlight/25",
+                            "bg-brand-secondary-highlight/[0.10]",
+                            "text-brand-secondary-highlight",
+
+                            "dark:border-secondary/25",
+                            "dark:bg-secondary/[0.10]",
+                            "dark:text-secondary",
                           ].join(" "),
 
                         isComplete &&
                           [
-                            "border-[#0D566D]/20 bg-[#DCE8E4] text-[#0D566D]",
-                            "dark:border-[#DEDA00]/15 dark:bg-[#DEDA00]/[0.08] dark:text-[#DEDA00]",
+                            "border-brand-secondary-highlight/15",
+                            "bg-brand-secondary-highlight/[0.06]",
+                            "text-brand-secondary-highlight/80",
+
+                            "dark:border-secondary/15",
+                            "dark:bg-secondary/[0.055]",
+                            "dark:text-secondary/85",
                           ].join(" "),
 
                         !isActive &&
                           !isComplete &&
                           [
-                            "border-[#0D566D]/[0.08] bg-[#F3F7F5] text-[#7A888B]",
-                            "dark:border-white/[0.07] dark:bg-white/[0.025] dark:text-[#7F9198]",
+                            "border-border/60",
+                            "bg-surface-1/70",
+                            "text-muted-foreground/75",
+
+                            "dark:border-border",
+                            "dark:bg-surface-1",
+                            "dark:text-muted-foreground",
                           ].join(" "),
                       )}
                     >
                       {isComplete ? (
-                        <CheckIcon size={12} strokeWidth={2.7} />
+                        <CheckIcon size={12} strokeWidth={2.6} />
                       ) : (
                         item.number
                       )}
@@ -537,9 +612,12 @@ function NewProjectForm({
                     <span
                       className={cn(
                         "hidden text-xs font-semibold sm:block",
+
                         isActive
-                          ? "text-[#283B40] dark:text-white"
-                          : "text-[#758386] dark:text-[#94A3B8]",
+                          ? "text-foreground/90 dark:text-foreground"
+                          : isComplete
+                            ? "text-foreground/70 dark:text-foreground/80"
+                            : "text-muted-foreground",
                       )}
                     >
                       {item.label}
@@ -547,14 +625,15 @@ function NewProjectForm({
                   </button>
 
                   {index < steps.length - 1 && (
-                    <div className="mx-3 h-px w-5 overflow-hidden bg-[#0D566D]/[0.10] sm:w-12 dark:bg-white/[0.07]">
+                    <div className="mx-3 h-px w-5 overflow-hidden bg-border/70 sm:w-12 dark:bg-border">
                       <div
                         className={cn(
-                          "h-full origin-left bg-[#0D566D] transition-transform duration-300",
-                          "dark:bg-[#DEDA00]",
-                          step > item.number
-                            ? "scale-x-100"
-                            : "scale-x-0",
+                          "h-full origin-left transition-transform duration-300",
+
+                          "bg-brand-secondary-highlight/65",
+                          "dark:bg-secondary/70",
+
+                          step > item.number ? "scale-x-100" : "scale-x-0",
                         )}
                       />
                     </div>
@@ -564,7 +643,7 @@ function NewProjectForm({
             })}
           </div>
 
-          <span className="shrink-0 text-[0.6rem] font-semibold uppercase tracking-[0.13em] text-[#748286] dark:text-[#94A3B8]">
+          <span className="shrink-0 text-[0.6rem] font-semibold uppercase tracking-[0.13em] text-muted-foreground/75 dark:text-muted-foreground">
             {step} of {steps.length}
           </span>
         </div>
@@ -599,7 +678,7 @@ function NewProjectForm({
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel className="text-sm font-semibold">
+                    <FieldLabel className="text-sm font-semibold text-foreground/80 dark:text-foreground/90">
                       Project title
                     </FieldLabel>
 
@@ -629,18 +708,15 @@ function NewProjectForm({
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel className="text-sm font-semibold">
+                    <FieldLabel className="text-sm font-semibold text-foreground/80 dark:text-foreground/90">
                       Category
                     </FieldLabel>
 
                     <Select
                       value={field.value}
                       disabled={loadingCategories}
-                      onValueChange={value =>
-                        handleCategoryChange(
-                          value,
-                          field.onChange,
-                        )
+                      onValueChange={(value) =>
+                        handleCategoryChange(value, field.onChange)
                       }
                     >
                       <SelectTrigger
@@ -661,22 +737,41 @@ function NewProjectForm({
 
                       <SelectContent
                         className={[
-                          "border-[#0D566D]/[0.09] bg-[#F8FAF8] text-[#30383A]",
-                          "dark:border-white/[0.08] dark:bg-[#10262D] dark:text-[#E6EEF0]",
+                          "rounded-xl border p-1 shadow-none",
+
+                          "border-border/65",
+                          "bg-popover",
+                          "text-popover-foreground",
+
+                          "dark:border-border",
+                          "dark:bg-popover",
                         ].join(" ")}
                       >
                         <SelectGroup>
-                          {categories.map(category => (
+                          {categories.map((category) => (
                             <SelectItem
                               key={category.id}
                               value={category.name}
                               className={[
-                                "cursor-pointer",
-                                "focus:bg-[#E7EFEC] focus:text-[#30383A]",
-                                "data-[state=checked]:bg-[#E7EFEC] data-[state=checked]:text-[#0D566D]",
-                                "dark:focus:bg-white/[0.05] dark:focus:text-white",
-                                "dark:data-[state=checked]:bg-[#DEDA00]/[0.07]",
-                                "dark:data-[state=checked]:text-[#DEDA00]",
+                                "cursor-pointer rounded-lg text-xs",
+
+                                "focus:bg-surface-3/55",
+                                "focus:text-foreground",
+
+                                "data-[highlighted]:bg-surface-3/55",
+                                "data-[highlighted]:text-foreground",
+
+                                "data-[state=checked]:bg-brand-secondary-highlight/[0.07]",
+                                "data-[state=checked]:text-brand-secondary-highlight",
+
+                                "dark:focus:bg-surface-3/75",
+                                "dark:focus:text-foreground",
+
+                                "dark:data-[highlighted]:bg-surface-3/75",
+                                "dark:data-[highlighted]:text-foreground",
+
+                                "dark:data-[state=checked]:bg-secondary/[0.07]",
+                                "dark:data-[state=checked]:text-secondary",
                               ].join(" ")}
                             >
                               {category.name}
@@ -687,7 +782,7 @@ function NewProjectForm({
                     </Select>
 
                     {categoriesError && (
-                      <p className="text-xs text-destructive">
+                      <p className="text-xs text-destructive dark:text-status-overdue-foreground">
                         {categoriesError}
                       </p>
                     )}
@@ -704,7 +799,7 @@ function NewProjectForm({
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel className="text-sm font-semibold">
+                    <FieldLabel className="text-sm font-semibold text-foreground/80 dark:text-foreground/90">
                       Skills needed
                     </FieldLabel>
 
@@ -754,10 +849,7 @@ function NewProjectForm({
                       label="Start date"
                       value={field.value}
                       onChange={field.onChange}
-                      className={cn(
-                        "h-12 rounded-xl",
-                        inputSurface,
-                      )}
+                      className={cn("h-12 rounded-xl", calendarSurface)}
                     />
                   )}
                 />
@@ -774,7 +866,7 @@ function NewProjectForm({
                         onChange={field.onChange}
                         className={cn(
                           "h-12 rounded-xl",
-                          inputSurface,
+                          calendarSurface,
                           fieldState.invalid && "border-destructive",
                         )}
                       />
@@ -792,7 +884,7 @@ function NewProjectForm({
                 control={form.control}
                 render={({ field }) => (
                   <Field>
-                    <FieldLabel className="text-sm font-semibold">
+                    <FieldLabel className="text-sm font-semibold text-foreground/80 dark:text-foreground/90">
                       Priority
                     </FieldLabel>
 
@@ -813,7 +905,7 @@ function NewProjectForm({
                           label: "Urgent",
                           description: "Time-sensitive work",
                         },
-                      ].map(option => {
+                      ].map((option) => {
                         const isSelected = field.value === option.value;
 
                         return (
@@ -821,18 +913,28 @@ function NewProjectForm({
                             key={option.value}
                             className={cn(
                               "group relative cursor-pointer rounded-xl border px-4 py-3.5",
-                              "transition-colors duration-200",
+                              "transition-[background-color,border-color] duration-150",
 
                               isSelected
                                 ? [
-                                    "border-[#0D566D]/20 bg-[#E7F0ED]",
-                                    "dark:border-[#DEDA00]/18 dark:bg-[#DEDA00]/[0.045]",
+                                    "border-brand-secondary-highlight/20",
+                                    "bg-brand-secondary-highlight/[0.05]",
+
+                                    "dark:border-secondary/20",
+                                    "dark:bg-secondary/[0.055]",
                                   ].join(" ")
                                 : [
-                                    "border-[#0D566D]/[0.08] bg-[#F1F6F4]",
-                                    "hover:border-[#0D566D]/15 hover:bg-[#EDF4F1]",
-                                    "dark:border-white/[0.075] dark:bg-[#10262D]",
-                                    "dark:hover:border-white/[0.11] dark:hover:bg-[#123039]",
+                                    "border-border/60",
+                                    "bg-surface-2/35",
+
+                                    "hover:border-border/80",
+                                    "hover:bg-surface-2/55",
+
+                                    "dark:border-border",
+                                    "dark:bg-surface-2/75",
+
+                                    "dark:hover:border-border",
+                                    "dark:hover:bg-surface-3/70",
                                   ].join(" "),
                             )}
                           >
@@ -849,28 +951,41 @@ function NewProjectForm({
                                 <p
                                   className={cn(
                                     "text-xs font-semibold",
-                                    isSelected &&
-                                      "text-[#0D566D] dark:text-[#F1F5F9]",
+
+                                    isSelected
+                                      ? "text-foreground/90 dark:text-foreground"
+                                      : "text-foreground/75 dark:text-foreground/85",
                                   )}
                                 >
                                   {option.label}
                                 </p>
 
-                                <p className="mt-1 text-[0.64rem] text-[#758386] dark:text-[#94A3B8]">
+                                <p className="mt-1 text-[0.64rem] text-muted-foreground/85 dark:text-muted-foreground">
                                   {option.description}
                                 </p>
                               </div>
 
                               <span
                                 className={cn(
-                                  "flex h-4 w-4 items-center justify-center rounded-full border transition-colors",
+                                  "flex h-4 w-4 items-center justify-center rounded-full border",
+                                  "transition-[background-color,border-color,color]",
 
                                   isSelected
                                     ? [
-                                        "border-[#0D566D] bg-[#0D566D] text-white",
-                                        "dark:border-[#DEDA00] dark:bg-[#DEDA00] dark:text-[#303030]",
+                                        "border-brand-secondary-highlight/40",
+                                        "bg-brand-secondary-highlight/[0.12]",
+                                        "text-brand-secondary-highlight",
+
+                                        "dark:border-secondary/45",
+                                        "dark:bg-secondary/[0.12]",
+                                        "dark:text-secondary",
                                       ].join(" ")
-                                    : "border-[#879699]/40 bg-transparent dark:border-white/15",
+                                    : [
+                                        "border-border",
+                                        "bg-transparent",
+
+                                        "dark:border-border",
+                                      ].join(" "),
                                 )}
                               >
                                 {isSelected && (
@@ -893,29 +1008,51 @@ function NewProjectForm({
                 control={form.control}
                 render={({ field }) => (
                   <Field>
-                    <FieldLabel className="text-sm font-semibold">
+                    <FieldLabel className="text-sm font-semibold text-foreground/80 dark:text-foreground/90">
                       Estimated budget
                     </FieldLabel>
 
                     <div
                       className={[
                         "group flex h-12 items-center overflow-hidden rounded-xl border",
-                        "border-[#0D566D]/[0.09] bg-[#F1F6F4]",
-                        "text-[#33484D]",
-                        "transition-colors",
-                        "hover:border-[#0D566D]/[0.14] hover:bg-[#EDF4F1]",
-                        "focus-within:border-[#0D566D]/30",
-                        "focus-within:ring-1 focus-within:ring-[#0D566D]/20",
 
-                        "dark:border-white/[0.075] dark:bg-[#10262D]",
-                        "dark:text-[#E6EEF0]",
-                        "dark:hover:border-white/[0.11] dark:hover:bg-[#123039]",
-                        "dark:focus-within:border-[#DEDA00]/30",
-                        "dark:focus-within:bg-[#10262D]",
-                        "dark:focus-within:ring-[#DEDA00]/15",
+                        "border-border/65",
+                        "bg-surface-2/45",
+                        "text-foreground/80",
+
+                        "transition-[background-color,border-color,box-shadow] duration-150",
+
+                        "hover:border-border/85",
+                        "hover:bg-surface-2/60",
+
+                        "focus-within:border-brand-secondary-highlight/30",
+                        "focus-within:bg-surface-1",
+                        "focus-within:ring-1",
+                        "focus-within:ring-brand-secondary-highlight/10",
+
+                        "dark:border-border",
+                        "dark:bg-surface-2/85",
+                        "dark:text-foreground/90",
+
+                        "dark:hover:border-border",
+                        "dark:hover:bg-surface-3/70",
+
+                        "dark:focus-within:border-secondary/25",
+                        "dark:focus-within:bg-surface-2",
+                        "dark:focus-within:ring-secondary/10",
                       ].join(" ")}
                     >
-                      <div className="flex h-full items-center gap-2 border-r border-[#0D566D]/[0.07] px-4 text-[#65797E] dark:border-white/[0.06] dark:text-[#94A3B8]">
+                      <div
+                        className={[
+                          "flex h-full items-center gap-2 border-r px-4",
+
+                          "border-border/55",
+                          "text-muted-foreground/85",
+
+                          "dark:border-border",
+                          "dark:text-muted-foreground",
+                        ].join(" ")}
+                      >
                         <CircleDollarSignIcon size={15} />
 
                         <span className="text-[0.66rem] font-semibold uppercase tracking-[0.08em]">
@@ -928,25 +1065,27 @@ function NewProjectForm({
                         type="text"
                         inputMode="decimal"
                         placeholder="0.00"
-                        onChange={event => {
+                        onChange={(event) => {
                           const value = event.target.value;
 
-                          if (
-                            value === "" ||
-                            /^\d*\.?\d{0,2}$/.test(value)
-                          ) {
+                          if (value === "" || /^\d*\.?\d{0,2}$/.test(value)) {
                             field.onChange(value);
                           }
                         }}
                         className={[
                           "h-full min-w-0 flex-1 bg-transparent px-4 outline-none",
-                          "text-sm font-semibold text-[#33484D]",
-                          "caret-[#0D566D]",
-                          "placeholder:font-normal placeholder:text-[#8A989B]",
-                          "focus:bg-transparent",
-                          "dark:text-[#E6EEF0] dark:caret-[#DEDA00]",
-                          "dark:placeholder:text-[#6F838A]",
-                          "dark:focus:bg-transparent",
+
+                          "text-sm font-semibold",
+                          "text-foreground/80",
+
+                          "caret-brand-secondary-highlight",
+
+                          "placeholder:font-normal",
+                          "placeholder:text-muted-foreground/55",
+
+                          "dark:text-foreground/90",
+                          "dark:caret-secondary",
+                          "dark:placeholder:text-muted-foreground/60",
                         ].join(" ")}
                       />
                     </div>
@@ -983,23 +1122,30 @@ function NewProjectForm({
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel className="text-sm font-semibold">
+                    <FieldLabel className="text-sm font-semibold text-foreground/80 dark:text-foreground/90">
                       Project brief
                     </FieldLabel>
 
                     <InputGroup
                       className={cn(
                         "overflow-hidden rounded-xl shadow-none",
-                        "border-[#0D566D]/[0.09] bg-[#F1F6F4]",
-                        "transition-colors",
-                        "focus-within:border-[#0D566D]/30",
-                        "focus-within:bg-[#F1F6F4]",
-                        "focus-within:ring-1 focus-within:ring-[#0D566D]/20",
 
-                        "dark:border-white/[0.075] dark:bg-[#10262D]",
-                        "dark:focus-within:border-[#DEDA00]/30",
-                        "dark:focus-within:bg-[#10262D]",
-                        "dark:focus-within:ring-[#DEDA00]/15",
+                        "border-border/65",
+                        "bg-surface-2/45",
+
+                        "transition-[background-color,border-color,box-shadow] duration-150",
+
+                        "focus-within:border-brand-secondary-highlight/30",
+                        "focus-within:bg-surface-1",
+                        "focus-within:ring-1",
+                        "focus-within:ring-brand-secondary-highlight/10",
+
+                        "dark:border-border",
+                        "dark:bg-surface-2/85",
+
+                        "dark:focus-within:border-secondary/25",
+                        "dark:focus-within:bg-surface-2",
+                        "dark:focus-within:ring-secondary/10",
 
                         fieldState.invalid && "border-destructive",
                       )}
@@ -1010,23 +1156,35 @@ function NewProjectForm({
                         placeholder="What needs to be delivered? What matters most? Are there requirements, references or constraints?"
                         className={[
                           "min-h-[190px] resize-none bg-transparent px-4 py-4",
-                          "text-sm leading-7 text-[#33484D]",
-                          "caret-[#0D566D]",
-                          "placeholder:text-[#8A989B]",
-                          "focus-visible:bg-transparent focus-visible:ring-0",
 
-                          "dark:bg-transparent dark:text-[#E6EEF0]",
-                          "dark:caret-[#DEDA00]",
-                          "dark:placeholder:text-[#6F838A]",
-                          "dark:focus-visible:bg-transparent",
+                          "text-sm leading-7",
+                          "text-foreground/80",
+
+                          "caret-brand-secondary-highlight",
+                          "placeholder:text-muted-foreground/55",
+
+                          "focus-visible:bg-transparent",
+                          "focus-visible:ring-0",
+
+                          "dark:text-foreground/90",
+                          "dark:caret-secondary",
+                          "dark:placeholder:text-muted-foreground/60",
                         ].join(" ")}
                       />
 
                       <InputGroupAddon
                         align="block-end"
-                        className="border-t border-[#0D566D]/[0.07] bg-[#E8F0ED]/70 px-4 py-2.5 dark:border-white/[0.06] dark:bg-white/[0.025]"
+                        className={[
+                          "border-t px-4 py-2.5",
+
+                          "border-border/55",
+                          "bg-surface-3/25",
+
+                          "dark:border-border",
+                          "dark:bg-surface-3/45",
+                        ].join(" ")}
                       >
-                        <InputGroupText className="ml-auto text-[0.62rem] text-[#748286] dark:text-[#94A3B8]">
+                        <InputGroupText className="ml-auto text-[0.62rem] text-muted-foreground/75 dark:text-muted-foreground">
                           {field.value.length}/2000
                         </InputGroupText>
                       </InputGroupAddon>
@@ -1042,16 +1200,27 @@ function NewProjectForm({
               <Field>
                 <div className="flex items-center justify-between gap-3">
                   <div>
-                    <FieldLabel className="text-sm font-semibold">
+                    <FieldLabel className="text-sm font-semibold text-foreground/80 dark:text-foreground/90">
                       Supporting files
                     </FieldLabel>
 
-                    <p className="mt-1 text-[0.67rem] text-[#748286] dark:text-[#94A3B8]">
+                    <p className="mt-1 text-[0.67rem] text-muted-foreground/85 dark:text-muted-foreground">
                       References can make the brief clearer.
                     </p>
                   </div>
 
-                  <span className="rounded-md bg-[#E4ECE9] px-2 py-1 text-[0.58rem] font-semibold text-[#667A7F] dark:bg-white/[0.045] dark:text-[#94A3B8]">
+                  <span
+                    className={[
+                      "rounded-md px-2 py-1",
+                      "text-[0.58rem] font-semibold",
+
+                      "bg-surface-3/60",
+                      "text-muted-foreground",
+
+                      "dark:bg-surface-3/70",
+                      "dark:text-muted-foreground",
+                    ].join(" ")}
+                  >
                     Optional
                   </span>
                 </div>
@@ -1059,10 +1228,20 @@ function NewProjectForm({
                 <div
                   className={[
                     "mt-3 overflow-hidden rounded-xl border border-dashed p-3",
-                    "border-[#0D566D]/[0.13] bg-[#F1F6F4]",
-                    "transition-colors hover:bg-[#EDF4F1]",
-                    "dark:border-white/[0.09] dark:bg-[#10262D]",
-                    "dark:hover:bg-[#123039]",
+
+                    "border-border/65",
+                    "bg-surface-2/35",
+
+                    "transition-[background-color,border-color] duration-150",
+
+                    "hover:border-border/85",
+                    "hover:bg-surface-2/55",
+
+                    "dark:border-border",
+                    "dark:bg-surface-2/75",
+
+                    "dark:hover:border-border",
+                    "dark:hover:bg-surface-3/65",
                   ].join(" ")}
                 >
                   <MultiFileUpload autoUpload={false} />
@@ -1076,7 +1255,7 @@ function NewProjectForm({
             ACTIONS
         ================================================= */}
 
-        <div className="mt-9 border-t border-[#0D566D]/[0.07] pt-6 dark:border-white/[0.06]">
+        <div className="mt-9 border-t border-border/55 pt-6 dark:border-border">
           {step < 3 ? (
             <div className="flex items-center justify-between gap-3">
               <div>
@@ -1085,7 +1264,17 @@ function NewProjectForm({
                     type="button"
                     variant="ghost"
                     onClick={handleBack}
-                    className="h-10 rounded-lg px-3 text-xs text-[#718084] shadow-none hover:bg-[#EAF1EF] hover:text-[#31545D] dark:text-[#94A3B8] dark:hover:bg-white/[0.04] dark:hover:text-white"
+                    className={[
+                      "h-10 rounded-lg px-3 text-xs shadow-none",
+
+                      "text-muted-foreground",
+
+                      "hover:bg-surface-3/50",
+                      "hover:text-foreground/85",
+
+                      "dark:hover:bg-surface-3/70",
+                      "dark:hover:text-foreground",
+                    ].join(" ")}
                   >
                     <ArrowLeftIcon size={14} />
                     Previous
@@ -1102,7 +1291,6 @@ function NewProjectForm({
                 )}
               >
                 Continue
-
                 <ArrowRightIcon
                   size={14}
                   className="transition-transform group-hover:translate-x-0.5"
@@ -1112,19 +1300,24 @@ function NewProjectForm({
           ) : hasSelectedAllocat ? (
             <div>
               <div className="mb-5 flex items-start gap-3">
-                <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#DCE8E4] text-[#0D566D] dark:bg-[#DEDA00]/[0.08] dark:text-[#DEDA00]">
+                <span
+                  className={[
+                    "mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
+                    helperIconSurface,
+                  ].join(" ")}
+                >
                   <UserPlusIcon size={14} />
                 </span>
 
                 <div>
-                  <p className="text-sm font-semibold">
+                  <p className="text-sm font-semibold text-foreground/80 dark:text-foreground/90">
                     Ready to start working together.
                   </p>
 
-                  <p className="mt-1 text-xs leading-5 text-[#718084] dark:text-[#94A3B8]">
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">
                     The project will be created first, then{" "}
-                    {selectedAllocatName || "the selected Allocat"}{" "}
-                    will receive an invitation.
+                    {selectedAllocatName || "the selected Allocat"} will receive
+                    an invitation.
                   </p>
                 </div>
               </div>
@@ -1135,7 +1328,17 @@ function NewProjectForm({
                   variant="ghost"
                   onClick={handleBack}
                   disabled={isSubmitting}
-                  className="h-10 rounded-lg px-3 text-xs text-[#718084] shadow-none hover:bg-[#EAF1EF] dark:text-[#94A3B8] dark:hover:bg-white/[0.04]"
+                  className={[
+                    "h-10 rounded-lg px-3 text-xs shadow-none",
+
+                    "text-muted-foreground",
+
+                    "hover:bg-surface-3/50",
+                    "hover:text-foreground/85",
+
+                    "dark:hover:bg-surface-3/70",
+                    "dark:hover:text-foreground",
+                  ].join(" ")}
                 >
                   <ArrowLeftIcon size={14} />
                   Previous
@@ -1175,16 +1378,21 @@ function NewProjectForm({
           ) : (
             <div>
               <div className="mb-5 flex items-start gap-3">
-                <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#DCE8E4] text-[#0D566D] dark:bg-[#DEDA00]/[0.08] dark:text-[#DEDA00]">
+                <span
+                  className={[
+                    "mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
+                    helperIconSurface,
+                  ].join(" ")}
+                >
                   <SparklesIcon size={14} />
                 </span>
 
                 <div>
-                  <p className="text-sm font-semibold">
+                  <p className="text-sm font-semibold text-foreground/80 dark:text-foreground/90">
                     Ready to create it.
                   </p>
 
-                  <p className="mt-1 text-xs leading-5 text-[#718084] dark:text-[#94A3B8]">
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">
                     Save the project now, or continue directly into finding the
                     right Allocats.
                   </p>
@@ -1197,7 +1405,17 @@ function NewProjectForm({
                   variant="ghost"
                   onClick={handleBack}
                   disabled={isSubmitting}
-                  className="h-10 rounded-lg px-3 text-xs text-[#718084] shadow-none hover:bg-[#EAF1EF] dark:text-[#94A3B8] dark:hover:bg-white/[0.04]"
+                  className={[
+                    "h-10 rounded-lg px-3 text-xs shadow-none",
+
+                    "text-muted-foreground",
+
+                    "hover:bg-surface-3/50",
+                    "hover:text-foreground/85",
+
+                    "dark:hover:bg-surface-3/70",
+                    "dark:hover:text-foreground",
+                  ].join(" ")}
                 >
                   <ArrowLeftIcon size={14} />
                   Previous
@@ -1245,7 +1463,6 @@ function NewProjectForm({
                       <>
                         <SearchIcon size={14} />
                         Create & find Allocats
-
                         <ArrowRightIcon
                           size={13}
                           className="transition-transform group-hover:translate-x-0.5"
@@ -1279,18 +1496,18 @@ function StepHeading({
   return (
     <div className="mb-1 max-w-2xl">
       <div className="mb-3 flex items-center gap-2">
-        <span className="h-1.5 w-1.5 rounded-full bg-[#0D566D] dark:bg-[#DEDA00]" />
+        <span className="h-1.5 w-1.5 rounded-full bg-brand-secondary-highlight/75 dark:bg-secondary/80" />
 
-        <p className="text-[0.58rem] font-semibold uppercase tracking-[0.16em] text-[#0D566D] dark:text-[#DEDA00]">
+        <p className="text-[0.58rem] font-semibold uppercase tracking-[0.16em] text-brand-secondary-highlight/85 dark:text-secondary/90">
           {eyebrow}
         </p>
       </div>
 
-      <h3 className="text-xl font-semibold leading-tight tracking-[-0.025em] sm:text-2xl">
+      <h3 className="text-xl font-semibold leading-tight tracking-[-0.025em] text-foreground/85 sm:text-2xl dark:text-foreground">
         {title}
       </h3>
 
-      <p className="mt-2 max-w-xl text-sm leading-6 text-[#718084] dark:text-[#94A3B8]">
+      <p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">
         {description}
       </p>
     </div>
@@ -1327,7 +1544,7 @@ function SkillsPicker({
   const selectedSkills = useMemo(
     () =>
       value
-        .map(id => skills.find(skill => skill.id === id))
+        .map((id) => skills.find((skill) => skill.id === id))
         .filter((skill): skill is SkillOption => Boolean(skill)),
     [skills, value],
   );
@@ -1338,52 +1555,48 @@ function SkillsPicker({
     const search = query.trim().toLowerCase();
 
     return skills
-      .filter(skill => skill.category === category)
-      .filter(skill => !value.includes(skill.id))
-      .filter(
-        skill =>
-          !search ||
-          skill.name
-            .toLowerCase()
-            .includes(search),
-      )
-      .sort((a, b) => a.name.localeCompare(b.name));
+      .filter((skill) => skill.category === category)
+      .filter((skill) => !value.includes(skill.id))
+      .filter((skill) => !search || skill.name.toLowerCase().includes(search))
+      .sort((first, second) => first.name.localeCompare(second.name));
   }, [category, query, skills, value]);
 
   const categorySkillCount = skills.filter(
-    skill => skill.category === category,
+    (skill) => skill.category === category,
   ).length;
 
   function addSkill(skillId: string) {
-    if (value.includes(skillId)) return;
+    if (value.includes(skillId) || value.length >= 15) return;
 
     onChange([...value, skillId]);
     setQuery("");
   }
 
   function removeSkill(skillId: string) {
-    onChange(
-      value.filter(id => id !== skillId),
-    );
+    onChange(value.filter((id) => id !== skillId));
   }
 
   return (
     <div
       className={cn(
-        "overflow-hidden rounded-xl border transition-colors",
-        "bg-[#F1F6F4]",
-        "focus-within:border-[#0D566D]/30",
-        "focus-within:bg-[#F1F6F4]",
-        "focus-within:ring-1 focus-within:ring-[#0D566D]/20",
+        "overflow-hidden rounded-xl border",
 
-        "dark:bg-[#10262D]",
-        "dark:focus-within:border-[#DEDA00]/30",
-        "dark:focus-within:bg-[#10262D]",
-        "dark:focus-within:ring-[#DEDA00]/15",
+        "bg-surface-2/45",
 
-        invalid
-          ? "border-destructive"
-          : "border-[#0D566D]/[0.09] dark:border-white/[0.075]",
+        "transition-[background-color,border-color,box-shadow] duration-150",
+
+        "focus-within:border-brand-secondary-highlight/30",
+        "focus-within:bg-surface-1",
+        "focus-within:ring-1",
+        "focus-within:ring-brand-secondary-highlight/10",
+
+        "dark:bg-surface-2/85",
+
+        "dark:focus-within:border-secondary/25",
+        "dark:focus-within:bg-surface-2",
+        "dark:focus-within:ring-secondary/10",
+
+        invalid ? "border-destructive" : "border-border/65 dark:border-border",
 
         disabled && "opacity-60",
       )}
@@ -1391,15 +1604,12 @@ function SkillsPicker({
       {/* SEARCH */}
 
       <div className="relative flex min-h-12 items-center gap-2 px-3">
-        <SearchIcon
-          size={14}
-          className="shrink-0 text-[#718084] dark:text-[#94A3B8]"
-        />
+        <SearchIcon size={14} className="shrink-0 text-muted-foreground/80" />
 
         <input
           value={query}
           disabled={disabled || loading}
-          onChange={event => setQuery(event.target.value)}
+          onChange={(event) => setQuery(event.target.value)}
           placeholder={
             !category
               ? "Choose a category first"
@@ -1409,24 +1619,28 @@ function SkillsPicker({
           }
           className={[
             "h-11 min-w-0 flex-1 bg-transparent text-sm outline-none",
-            "text-[#33484D] caret-[#0D566D]",
-            "placeholder:text-[#8A989B]",
-            "focus:bg-transparent",
-            "dark:text-[#E6EEF0] dark:caret-[#DEDA00]",
-            "dark:placeholder:text-[#6F838A]",
-            "dark:focus:bg-transparent",
+
+            "text-foreground/80",
+
+            "caret-brand-secondary-highlight",
+
+            "placeholder:text-muted-foreground/55",
+
+            "dark:text-foreground/90",
+            "dark:caret-secondary",
+            "dark:placeholder:text-muted-foreground/60",
           ].join(" ")}
         />
 
         {loading && (
           <LoaderCircleIcon
             size={14}
-            className="animate-spin text-[#718084] dark:text-[#94A3B8]"
+            className="animate-spin text-muted-foreground"
           />
         )}
 
         {!loading && category && (
-          <span className="shrink-0 text-[0.6rem] font-medium text-[#718084] dark:text-[#94A3B8]">
+          <span className="shrink-0 text-[0.6rem] font-medium text-muted-foreground/75 dark:text-muted-foreground">
             {value.length}/{Math.min(15, categorySkillCount || 15)}
           </span>
         )}
@@ -1435,30 +1649,49 @@ function SkillsPicker({
       {/* SELECTED */}
 
       {selectedSkills.length > 0 && (
-        <div className="border-t border-[#0D566D]/[0.07] px-3 py-3 dark:border-white/[0.06]">
-          <p className="mb-2 text-[0.55rem] font-semibold uppercase tracking-[0.13em] text-[#748286] dark:text-[#94A3B8]">
+        <div className="border-t border-border/55 px-3 py-3 dark:border-border">
+          <p className="mb-2 text-[0.55rem] font-semibold uppercase tracking-[0.13em] text-muted-foreground/75">
             Selected
           </p>
 
           <div className="flex flex-wrap gap-2">
-            {selectedSkills.map(skill => (
+            {selectedSkills.map((skill) => (
               <span
                 key={skill.id}
                 className={[
                   "group inline-flex items-center gap-2 rounded-lg border px-2.5 py-1.5",
-                  "border-[#0D566D]/[0.10] bg-[#E3EEEB]",
-                  "text-[0.67rem] font-semibold text-[#31545D]",
-                  "dark:border-[#DEDA00]/[0.10] dark:bg-[#DEDA00]/[0.055] dark:text-[#DEDA00]",
+
+                  "border-brand-secondary-highlight/10",
+                  "bg-brand-secondary-highlight/[0.055]",
+
+                  "text-[0.67rem] font-semibold",
+                  "text-foreground/70",
+
+                  "dark:border-border",
+                  "dark:bg-surface-3/55",
+                  "dark:text-foreground/85",
                 ].join(" ")}
               >
-                <span className="h-1.5 w-1.5 rounded-full bg-[#0D566D] dark:bg-[#DEDA00]" />
+                <span className="h-1.5 w-1.5 rounded-full bg-brand-secondary-highlight/70 dark:bg-secondary/80" />
 
                 {skill.name}
 
                 <button
                   type="button"
                   onClick={() => removeSkill(skill.id)}
-                  className="ml-0.5 flex h-4 w-4 items-center justify-center rounded-sm text-[#718084] transition-colors hover:bg-[#0D566D]/10 hover:text-[#0D566D] dark:text-[#94A3B8] dark:hover:bg-[#DEDA00]/10 dark:hover:text-[#DEDA00]"
+                  className={[
+                    "ml-0.5 flex h-4 w-4 items-center justify-center rounded-sm",
+
+                    "text-muted-foreground",
+
+                    "transition-colors",
+
+                    "hover:bg-brand-secondary-highlight/[0.08]",
+                    "hover:text-brand-secondary-highlight",
+
+                    "dark:hover:bg-secondary/[0.08]",
+                    "dark:hover:text-secondary",
+                  ].join(" ")}
                   aria-label={`Remove ${skill.name}`}
                 >
                   <XIcon size={10} />
@@ -1472,33 +1705,52 @@ function SkillsPicker({
       {/* AVAILABLE */}
 
       {!disabled && !loading && (
-        <div className="border-t border-[#0D566D]/[0.07] px-2 py-2 dark:border-white/[0.06]">
+        <div className="border-t border-border/55 px-2 py-2 dark:border-border">
           {error ? (
             <div className="px-2 py-3">
-              <p className="text-xs text-destructive">
+              <p className="text-xs text-destructive dark:text-status-overdue-foreground">
                 {error}
               </p>
             </div>
           ) : availableSkills.length > 0 ? (
             <div className="max-h-56 overflow-y-auto">
-              {availableSkills.map(skill => (
+              {availableSkills.map((skill) => (
                 <button
                   key={skill.id}
                   type="button"
+                  disabled={value.length >= 15}
                   onClick={() => addSkill(skill.id)}
-                  className="flex w-full items-center justify-between gap-4 rounded-lg px-3 py-2.5 text-left transition-colors hover:bg-[#E7EFEC] dark:hover:bg-white/[0.045]"
+                  className={[
+                    "flex w-full items-center justify-between gap-4",
+
+                    "rounded-lg px-3 py-2.5 text-left",
+
+                    "transition-colors duration-150",
+
+                    "hover:bg-surface-3/55",
+
+                    "disabled:pointer-events-none",
+                    "disabled:opacity-45",
+
+                    "dark:hover:bg-surface-3/75",
+                  ].join(" ")}
                 >
                   <div className="min-w-0">
-                    <p className="truncate text-xs font-semibold">
+                    <p className="truncate text-xs font-semibold text-foreground/80 dark:text-foreground/90">
                       {skill.name}
                     </p>
 
-                    <p className="mt-0.5 text-[0.57rem] text-[#758386] dark:text-[#94A3B8]">
+                    <p className="mt-0.5 text-[0.57rem] text-muted-foreground/80 dark:text-muted-foreground">
                       {skill.category}
                     </p>
                   </div>
 
-                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-[#DCE8E4] text-[#0D566D] dark:bg-[#DEDA00]/[0.08] dark:text-[#DEDA00]">
+                  <span
+                    className={[
+                      "flex h-6 w-6 shrink-0 items-center justify-center rounded-md",
+                      helperIconSurface,
+                    ].join(" ")}
+                  >
                     <CheckIcon size={11} />
                   </span>
                 </button>
@@ -1506,7 +1758,7 @@ function SkillsPicker({
             </div>
           ) : (
             <div className="px-3 py-3">
-              <p className="text-xs text-[#718084] dark:text-[#94A3B8]">
+              <p className="text-xs text-muted-foreground">
                 {query.trim()
                   ? "No matching skills found."
                   : "No skills are available for this category yet."}

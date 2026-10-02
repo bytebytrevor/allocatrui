@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useState } from "react";
+
 import { useNavigate } from "react-router-dom";
 
 import {
@@ -37,11 +38,7 @@ import { Slider } from "@/components/ui/slider";
    TYPES
 ========================================================= */
 
-type SortOption =
-  | "rating"
-  | "experience"
-  | "rate-low"
-  | "recent";
+type SortOption = "rating" | "experience" | "rate-low" | "recent";
 
 type ViewMode = "grid" | "list";
 
@@ -84,6 +81,11 @@ type AllocatsResponse = {
   pageSize: number;
   totalCount: number;
   totalPages: number;
+};
+
+type SkillSearchResult = {
+  skill: SkillSummary;
+  score: number;
 };
 
 /* =========================================================
@@ -129,6 +131,147 @@ const experienceOptions = [
 ];
 
 /* =========================================================
+   THEME
+========================================================= */
+
+const discoverIconSurface = [
+  "bg-surface-3/70",
+  "text-foreground/55",
+  "ring-1 ring-inset ring-border/40",
+
+  "dark:bg-surface-2/80",
+  "dark:text-secondary/85",
+  "dark:ring-border",
+].join(" ");
+
+const filterIconSurface = [
+  "bg-surface-3/65",
+  "text-muted-foreground",
+
+  "ring-1 ring-inset ring-border/35",
+
+  "dark:bg-surface-2/80",
+  "dark:text-secondary/80",
+  "dark:ring-border",
+].join(" ");
+
+const inputSurface = [
+  "border-border/60",
+  "bg-surface-2/35",
+
+  "text-foreground/85",
+  "placeholder:text-muted-foreground/50",
+
+  "shadow-none",
+
+  "transition-[background-color,border-color,box-shadow,color] duration-150",
+
+  "hover:border-border/80",
+  "hover:bg-surface-2/55",
+
+  "focus-visible:border-ring/25",
+  "focus-visible:bg-surface-1",
+  "focus-visible:ring-1",
+  "focus-visible:ring-ring/10",
+
+  "dark:border-border",
+  "dark:bg-surface-2/65",
+
+  "dark:hover:bg-surface-3/60",
+
+  "dark:focus-visible:border-secondary/20",
+  "dark:focus-visible:bg-surface-2",
+  "dark:focus-visible:ring-secondary/[0.08]",
+].join(" ");
+
+const primaryActionButton = [
+  "border border-brand-secondary-highlight/15",
+
+  "bg-brand-secondary-highlight",
+  "text-primary-foreground",
+
+  "hover:border-brand-secondary-highlight/20",
+  "hover:bg-brand-secondary-highlight/90",
+  "hover:text-primary-foreground",
+
+  "dark:border-secondary/10",
+  "dark:bg-secondary",
+  "dark:text-secondary-foreground",
+
+  "dark:hover:border-secondary/15",
+  "dark:hover:bg-secondary/90",
+  "dark:hover:text-secondary-foreground",
+].join(" ");
+
+const secondaryActionButton = [
+  "border-border/65",
+  "bg-surface-2/35",
+  "text-foreground/70",
+
+  "hover:border-border/85",
+  "hover:bg-surface-3/60",
+  "hover:text-foreground/90",
+
+  "dark:border-border",
+  "dark:bg-surface-2/65",
+  "dark:text-foreground/75",
+
+  "dark:hover:bg-surface-3/70",
+  "dark:hover:text-foreground",
+].join(" ");
+
+const selectedFilterSurface = [
+  "border-foreground/[0.09]",
+  "bg-foreground/[0.045]",
+  "text-foreground/85",
+
+  "dark:border-secondary/15",
+  "dark:bg-secondary/[0.055]",
+  "dark:text-secondary",
+].join(" ");
+
+const unselectedFilterSurface = [
+  "border-border/60",
+  "bg-surface-2/30",
+  "text-muted-foreground",
+
+  "hover:border-border/80",
+  "hover:bg-surface-3/55",
+  "hover:text-foreground/85",
+
+  "dark:border-border",
+  "dark:bg-surface-2/55",
+
+  "dark:hover:bg-surface-3/65",
+  "dark:hover:text-foreground",
+].join(" ");
+
+const rateSliderClass = [
+  "[&_[data-slot=slider-track]]:!bg-surface-3",
+  "[&_[data-slot=slider-range]]:!bg-brand-secondary-highlight",
+
+  "[&_[data-slot=slider-thumb]]:!border-brand-secondary-highlight",
+  "[&_[data-slot=slider-thumb]]:!bg-surface-1",
+  "[&_[data-slot=slider-thumb]]:!ring-brand-secondary-highlight/10",
+
+  "dark:[&_[data-slot=slider-track]]:!bg-surface-3",
+  "dark:[&_[data-slot=slider-range]]:!bg-secondary",
+
+  "dark:[&_[data-slot=slider-thumb]]:!border-secondary",
+  "dark:[&_[data-slot=slider-thumb]]:!bg-surface-1",
+  "dark:[&_[data-slot=slider-thumb]]:!ring-secondary/10",
+
+  "[&>span:first-child]:!bg-surface-3",
+  "[&>span:first-child>span]:!bg-brand-secondary-highlight",
+
+  "dark:[&>span:first-child]:!bg-surface-3",
+  "dark:[&>span:first-child>span]:!bg-secondary",
+
+  "[&_[role=slider]]:!border-brand-secondary-highlight",
+  "dark:[&_[role=slider]]:!border-secondary",
+].join(" ");
+
+/* =========================================================
    PAGE
 ========================================================= */
 
@@ -140,6 +283,8 @@ export default function Discover() {
   const [search, setSearch] = useState(DEFAULT_SEARCH);
   const [category, setCategory] = useState(DEFAULT_CATEGORY);
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
+  const [skillSearch, setSkillSearch] = useState("");
+
   const [location, setLocation] = useState(DEFAULT_LOCATION);
   const [maxHourlyRate, setMaxHourlyRate] = useState<number | null>(null);
   const [minExperience, setMinExperience] = useState(DEFAULT_MIN_EXPERIENCE);
@@ -173,9 +318,7 @@ export default function Discover() {
       const firstPage = firstResponse.data;
 
       if (firstPage.totalPages <= 1) {
-        return Array.isArray(firstPage.items)
-          ? firstPage.items
-          : [];
+        return Array.isArray(firstPage.items) ? firstPage.items : [];
       }
 
       const remainingPages = await Promise.all(
@@ -184,21 +327,18 @@ export default function Discover() {
             length: firstPage.totalPages - 1,
           },
           (_, index) =>
-            api.get<AllocatsResponse>(
-              "/allocats/profiles",
-              {
-                params: {
-                  page: index + 2,
-                  pageSize: firstPage.pageSize,
-                },
+            api.get<AllocatsResponse>("/allocats/profiles", {
+              params: {
+                page: index + 2,
+                pageSize: firstPage.pageSize,
               },
-            ),
+            }),
         ),
       );
 
       return [
         ...(firstPage.items ?? []),
-        ...remainingPages.flatMap(response => response.data.items ?? []),
+        ...remainingPages.flatMap((response) => response.data.items ?? []),
       ];
     }
 
@@ -215,10 +355,7 @@ export default function Discover() {
       } catch (requestError) {
         if (cancelled) return;
 
-        console.error(
-          "Could not load discoverable Allocats:",
-          requestError,
-        );
+        console.error("Could not load discoverable Allocats:", requestError);
 
         setError(
           "We could not load professionals right now. Please try again.",
@@ -244,22 +381,17 @@ export default function Discover() {
   const categories = useMemo(() => {
     const categoryMap = new Map<string, string>();
 
-    allocats.forEach(allocat => {
-      allocat.skills?.forEach(skill => {
+    allocats.forEach((allocat) => {
+      allocat.skills?.forEach((skill) => {
         const value = skill.category?.trim();
 
         if (!value) return;
 
-        categoryMap.set(
-          value.toLowerCase(),
-          value,
-        );
+        categoryMap.set(value.toLowerCase(), value);
       });
     });
 
-    return [...categoryMap.values()].sort(
-      (a, b) => a.localeCompare(b),
-    );
+    return [...categoryMap.values()].sort((a, b) => a.localeCompare(b));
   }, [allocats]);
 
   /* =======================================================
@@ -269,8 +401,8 @@ export default function Discover() {
   const skills = useMemo(() => {
     const skillMap = new Map<string, SkillSummary>();
 
-    allocats.forEach(allocat => {
-      allocat.skills?.forEach(skill => {
+    allocats.forEach((allocat) => {
+      allocat.skills?.forEach((skill) => {
         if (!skill.id || !skill.name?.trim()) return;
 
         if (!skillMap.has(skill.id)) {
@@ -279,16 +411,19 @@ export default function Discover() {
       });
     });
 
-    return [...skillMap.values()].sort(
-      (a, b) => a.name.localeCompare(b.name),
-    );
+    return [...skillMap.values()].sort((a, b) => a.name.localeCompare(b.name));
   }, [allocats]);
 
   const visibleSkills = useMemo(() => {
-    if (!category) return skills;
+    if (!category) return [];
+
+    const normalizedCategory = category.trim().toLowerCase();
 
     return skills.filter(
-      skill => skill.category === category,
+      (skill) =>
+        String(skill.category ?? "")
+          .trim()
+          .toLowerCase() === normalizedCategory,
     );
   }, [skills, category]);
 
@@ -298,9 +433,7 @@ export default function Discover() {
 
   const rateCeiling = useMemo(() => {
     const highestRate = Math.max(
-      ...allocats.map(
-        allocat => allocat.hourlyRate ?? 0,
-      ),
+      ...allocats.map((allocat) => allocat.hourlyRate ?? 0),
       100,
     );
 
@@ -314,8 +447,9 @@ export default function Discover() {
   const filteredAllocats = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
     const normalizedLocation = location.trim().toLowerCase();
+    const normalizedCategory = category.trim().toLowerCase();
 
-    const results = allocats.filter(allocat => {
+    const results = allocats.filter((allocat) => {
       const allocatSkills = allocat.skills ?? [];
       const yearsExperience = allocat.yearsExperience ?? 0;
       const allocatLocation = getAllocatLocation(allocat);
@@ -328,40 +462,36 @@ export default function Discover() {
         allocat.location,
         allocat.city,
         allocat.country,
-        ...allocatSkills.map(skill => skill.name),
-        ...allocatSkills.map(skill => skill.category),
+        ...allocatSkills.map((skill) => skill.name),
+        ...allocatSkills.map((skill) => skill.category),
       ]
         .filter(Boolean)
         .join(" ")
         .toLowerCase();
 
       const matchesSearch =
-        !normalizedSearch ||
-        searchableText.includes(normalizedSearch);
+        !normalizedSearch || searchableText.includes(normalizedSearch);
 
       const matchesCategory =
-        !category ||
+        !normalizedCategory ||
         allocatSkills.some(
-          skill => skill.category === category,
+          (skill) =>
+            String(skill.category ?? "")
+              .trim()
+              .toLowerCase() === normalizedCategory,
         );
 
       const matchesSkills =
         selectedSkills.length === 0 ||
-        selectedSkills.every(skillId =>
-          allocatSkills.some(
-            skill => skill.id === skillId,
-          ),
+        selectedSkills.every((skillId) =>
+          allocatSkills.some((skill) => skill.id === skillId),
         );
 
       const matchesLocation =
         !normalizedLocation ||
-        (
-          Boolean(allocatLocation) &&
-          (
-            allocatLocation.includes(normalizedLocation) ||
-            normalizedLocation.includes(allocatLocation)
-          )
-        );
+        (Boolean(allocatLocation) &&
+          (allocatLocation.includes(normalizedLocation) ||
+            normalizedLocation.includes(allocatLocation)));
 
       const matchesRate =
         maxHourlyRate === null ||
@@ -369,12 +499,9 @@ export default function Discover() {
         allocat.hourlyRate === undefined ||
         allocat.hourlyRate <= maxHourlyRate;
 
-      const matchesExperience =
-        yearsExperience >= minExperience;
+      const matchesExperience = yearsExperience >= minExperience;
 
-      const matchesVerified =
-        !verifiedOnly ||
-        getIsVerified(allocat);
+      const matchesVerified = !verifiedOnly || getIsVerified(allocat);
 
       return (
         matchesSearch &&
@@ -390,10 +517,7 @@ export default function Discover() {
     return [...results].sort((a, b) => {
       switch (sortBy) {
         case "experience":
-          return (
-            (b.yearsExperience ?? 0) -
-            (a.yearsExperience ?? 0)
-          );
+          return (b.yearsExperience ?? 0) - (a.yearsExperience ?? 0);
 
         case "rate-low":
           return (
@@ -403,16 +527,8 @@ export default function Discover() {
 
         case "recent":
           return (
-            getDateValue(
-              b.updatedAt ??
-              b.createdAt ??
-              b.joinedAt,
-            ) -
-            getDateValue(
-              a.updatedAt ??
-              a.createdAt ??
-              a.joinedAt,
-            )
+            getDateValue(b.updatedAt ?? b.createdAt ?? b.joinedAt) -
+            getDateValue(a.updatedAt ?? a.createdAt ?? a.joinedAt)
           );
 
         case "rating":
@@ -461,30 +577,32 @@ export default function Discover() {
   ======================================================= */
 
   function toggleFilter(filter: OpenFilter) {
-    setOpenFilter(current =>
-      current === filter
-        ? null
-        : filter,
-    );
+    setOpenFilter((current) => (current === filter ? null : filter));
   }
 
   function selectCategory(nextCategory: string) {
     setCategory(nextCategory);
     setSelectedSkills([]);
+    setSkillSearch("");
   }
 
   function toggleSkill(skillId: string) {
-    setSelectedSkills(current =>
+    setSelectedSkills((current) =>
       current.includes(skillId)
-        ? current.filter(id => id !== skillId)
+        ? current.filter((id) => id !== skillId)
         : [...current, skillId],
     );
+  }
+
+  function handleRateChange(value: number) {
+    setMaxHourlyRate(value >= rateCeiling ? null : value);
   }
 
   function resetFilters() {
     setSearch(DEFAULT_SEARCH);
     setCategory(DEFAULT_CATEGORY);
     setSelectedSkills([]);
+    setSkillSearch("");
     setLocation(DEFAULT_LOCATION);
     setMaxHourlyRate(null);
     setMinExperience(DEFAULT_MIN_EXPERIENCE);
@@ -494,9 +612,7 @@ export default function Discover() {
   }
 
   function handleStartProject(allocatId: string) {
-    navigate(
-      `/projects/new?allocat=${encodeURIComponent(allocatId)}`,
-    );
+    navigate(`/projects/new?allocat=${encodeURIComponent(allocatId)}`);
   }
 
   /* =======================================================
@@ -505,19 +621,17 @@ export default function Discover() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-
       {/* =====================================================
           HEADER
       ===================================================== */}
 
-      <header className="sticky top-0 z-40 border-b border-border/60 bg-background/90 backdrop-blur-xl">
+      <header className="sticky top-0 z-40 border-b border-border/60 bg-background/95 backdrop-blur-xl">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <MinimalNavMenu />
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-7 sm:px-5 md:px-8 lg:py-12">
-
+      <main className="container mx-auto px-4 py-7 sm:px-5 md:px-8 lg:py-10">
         {/* =====================================================
             INTRO
         ===================================================== */}
@@ -526,20 +640,25 @@ export default function Discover() {
           <div className="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-end">
             <div className="min-w-0 max-w-4xl">
               <div className="flex items-center gap-2.5">
-                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-secondary shadow-sm shadow-primary/10">
+                <span
+                  className={[
+                    "flex h-9 w-9 items-center justify-center rounded-lg",
+                    discoverIconSurface,
+                  ].join(" ")}
+                >
                   <UsersIcon size={15} />
                 </span>
 
-                <p className="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                <p className="text-[0.58rem] font-semibold uppercase tracking-[0.17em] text-muted-foreground">
                   Discover
                 </p>
               </div>
 
-              <h1 className="mt-5 max-w-4xl text-3xl font-black leading-[1.02] tracking-[-0.035em] sm:text-4xl lg:text-5xl">
+              <h1 className="mt-4 max-w-4xl text-3xl font-semibold leading-[1.05] tracking-[-0.035em] text-foreground/90 sm:text-4xl lg:text-[2.7rem]">
                 Find the right people for what comes next.
               </h1>
 
-              <p className="mt-4 max-w-2xl text-sm leading-7 text-muted-foreground sm:text-base">
+              <p className="mt-3 max-w-2xl text-sm leading-7 text-muted-foreground sm:text-[0.93rem]">
                 Explore skilled Allocats across categories, experience levels
                 and locations, then start a project when you find the right fit.
               </p>
@@ -548,19 +667,17 @@ export default function Discover() {
 
               <div className="relative mt-6 max-w-2xl">
                 <SearchIcon
-                  size={16}
-                  className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground"
+                  size={15}
+                  className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/80"
                 />
 
                 <Input
                   value={search}
-                  onChange={event => setSearch(event.target.value)}
+                  onChange={(event) => setSearch(event.target.value)}
                   placeholder="Search by name, skill or profession"
-                  className={[
-                    "h-12 rounded-xl bg-background",
-                    "pl-11 pr-11 shadow-none",
-                    "focus-visible:ring-1 focus-visible:ring-primary/40",
-                  ].join(" ")}
+                  className={["h-12 rounded-xl pl-11 pr-11", inputSurface].join(
+                    " ",
+                  )}
                 />
 
                 {search && (
@@ -571,8 +688,10 @@ export default function Discover() {
                     className={[
                       "absolute right-3 top-1/2 flex h-7 w-7 -translate-y-1/2",
                       "items-center justify-center rounded-md",
-                      "text-muted-foreground transition-colors",
-                      "hover:bg-muted hover:text-foreground",
+                      "text-muted-foreground",
+                      "transition-colors",
+                      "hover:bg-surface-3/70",
+                      "hover:text-foreground/90",
                     ].join(" ")}
                   >
                     <XIcon size={13} />
@@ -582,19 +701,17 @@ export default function Discover() {
             </div>
 
             {!loading && !error && (
-              <div className="hidden items-center gap-3 border-l border-border pl-5 sm:flex">
-                <span className="text-3xl font-black tracking-[-0.04em]">
+              <div className="hidden items-center gap-3 border-l border-border/55 pl-5 sm:flex">
+                <span className="text-3xl font-semibold tracking-[-0.04em] text-foreground/80">
                   {filteredAllocats.length}
                 </span>
 
                 <div>
-                  <p className="text-xs font-semibold">
-                    {filteredAllocats.length === 1
-                      ? "Allocat"
-                      : "Allocats"}
+                  <p className="text-xs font-semibold text-foreground/75">
+                    {filteredAllocats.length === 1 ? "Allocat" : "Allocats"}
                   </p>
 
-                  <p className="text-[0.68rem] text-muted-foreground">
+                  <p className="text-[0.66rem] text-muted-foreground">
                     available
                   </p>
                 </div>
@@ -610,33 +727,41 @@ export default function Discover() {
         ) : (
           <div
             className={[
-              "border-t border-border/70",
-              "lg:grid lg:grid-cols-[245px_minmax(0,1fr)]",
-              "lg:gap-8 xl:grid-cols-[265px_minmax(0,1fr)] xl:gap-10",
+              "border-t border-border/55",
+
+              "lg:grid",
+              "lg:grid-cols-[245px_minmax(0,1fr)]",
+              "lg:gap-8",
+
+              "xl:grid-cols-[265px_minmax(0,1fr)]",
+              "xl:gap-10",
             ].join(" ")}
           >
-
             {/* =================================================
                 DESKTOP FILTERS
             ================================================= */}
 
-            <aside className="hidden lg:block">
-              <div className="sticky top-24 py-7">
-
+            <aside className="hidden lg:sticky lg:top-24 lg:block lg:self-start">
+              <div className="py-7">
                 {/* FILTER HEADER */}
 
                 <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2">
-                    <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/[0.08] text-primary">
+                  <div className="flex items-center gap-2.5">
+                    <span
+                      className={[
+                        "flex h-8 w-8 items-center justify-center rounded-lg",
+                        filterIconSurface,
+                      ].join(" ")}
+                    >
                       <SlidersHorizontalIcon size={14} />
                     </span>
 
-                    <h2 className="text-sm font-bold">
+                    <h2 className="text-sm font-semibold text-foreground/85">
                       Refine
                     </h2>
 
                     {activeFilterCount > 0 && (
-                      <span className="flex h-5 min-w-5 items-center justify-center rounded-md bg-primary px-1.5 text-[0.6rem] font-black text-secondary">
+                      <span className="text-[0.62rem] font-semibold tabular-nums text-brand-secondary-highlight dark:text-secondary">
                         {activeFilterCount}
                       </span>
                     )}
@@ -657,68 +782,45 @@ export default function Discover() {
                   Narrow the community to the professionals you're looking for.
                 </p>
 
-                <div className="mt-6 divide-y divide-border">
-
+                <div className="mt-6 divide-y divide-border/55">
                   {/* CATEGORY */}
 
                   <DesktopFilterSection title="Category">
-                    <div className="grid gap-1">
-                      <FilterOption
-                        selected={!category}
-                        label="All categories"
-                        onClick={() => selectCategory("")}
-                      />
-
-                      {categories.map(item => (
-                        <FilterOption
-                          key={item}
-                          selected={category === item}
-                          label={item}
-                          onClick={() => selectCategory(item)}
-                        />
-                      ))}
-                    </div>
+                    <CategoryDropdown
+                      categories={categories}
+                      value={category}
+                      onChange={selectCategory}
+                    />
                   </DesktopFilterSection>
 
                   {/* SKILLS */}
 
                   <DesktopFilterSection title="Skills">
-                    {visibleSkills.length > 0 ? (
-                      <div className="flex max-h-56 flex-wrap gap-1.5 overflow-y-auto pr-1">
-                        {visibleSkills.map(skill => {
-                          const selected =
-                            selectedSkills.includes(skill.id);
-
-                          return (
-                            <button
+                    {category ? (
+                      visibleSkills.length > 0 ? (
+                        <div className="flex max-h-56 flex-wrap gap-1.5 overflow-y-auto pr-1">
+                          {visibleSkills.map((skill) => (
+                            <SkillFilterChip
                               key={skill.id}
-                              type="button"
+                              skill={skill}
+                              selected={selectedSkills.includes(skill.id)}
                               onClick={() => toggleSkill(skill.id)}
-                              className={[
-                                "max-w-full truncate rounded-md border",
-                                "px-2 py-1.5 text-[0.65rem] font-semibold",
-                                "transition-colors",
-
-                                selected
-                                  ? "border-primary bg-primary text-secondary"
-                                  : [
-                                      "border-border",
-                                      "bg-background",
-                                      "text-muted-foreground",
-                                      "hover:bg-muted/40",
-                                      "hover:text-foreground",
-                                    ].join(" "),
-                              ].join(" ")}
-                            >
-                              {skill.name}
-                            </button>
-                          );
-                        })}
-                      </div>
+                            />
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-xs leading-5 text-muted-foreground">
+                          No skills are available for this category yet.
+                        </p>
+                      )
                     ) : (
-                      <p className="text-xs leading-5 text-muted-foreground">
-                        No skills are available for this category yet.
-                      </p>
+                      <SkillSearchFilter
+                        skills={skills}
+                        selectedSkills={selectedSkills}
+                        query={skillSearch}
+                        onQueryChange={setSkillSearch}
+                        onToggleSkill={toggleSkill}
+                      />
                     )}
                   </DesktopFilterSection>
 
@@ -728,18 +830,16 @@ export default function Discover() {
                     <div className="relative">
                       <MapPinIcon
                         size={14}
-                        className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                        className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/80"
                       />
 
                       <Input
                         value={location}
-                        onChange={event => setLocation(event.target.value)}
+                        onChange={(event) => setLocation(event.target.value)}
                         placeholder="City or area"
                         className={[
-                          "h-10 rounded-lg bg-background",
-                          "pl-9 text-xs shadow-none",
-                          "focus-visible:bg-background",
-                          "focus-visible:ring-1 focus-visible:ring-primary/40",
+                          "h-10 rounded-lg pl-9 text-xs",
+                          inputSurface,
                         ].join(" ")}
                       />
                     </div>
@@ -749,11 +849,11 @@ export default function Discover() {
 
                   <DesktopFilterSection title="Hourly rate">
                     <div className="mb-4 flex items-center justify-between">
-                      <span className="text-[0.68rem] text-muted-foreground">
+                      <span className="text-[0.67rem] text-muted-foreground">
                         Maximum
                       </span>
 
-                      <span className="text-xs font-bold">
+                      <span className="text-xs font-semibold text-foreground/80">
                         {maxHourlyRate === null
                           ? "Any"
                           : `US$${maxHourlyRate}/hr`}
@@ -765,7 +865,8 @@ export default function Discover() {
                       min={0}
                       max={rateCeiling}
                       step={1}
-                      onValueChange={([value]) => setMaxHourlyRate(value)}
+                      onValueChange={([value]) => handleRateChange(value)}
+                      className={rateSliderClass}
                     />
 
                     <div className="mt-3 flex items-center justify-between">
@@ -777,7 +878,7 @@ export default function Discover() {
                         <button
                           type="button"
                           onClick={() => setMaxHourlyRate(null)}
-                          className="text-[0.62rem] font-semibold text-foreground underline decoration-primary/50 underline-offset-4"
+                          className="text-[0.62rem] font-semibold text-foreground/70 transition-colors hover:text-foreground"
                         >
                           Any rate
                         </button>
@@ -797,7 +898,7 @@ export default function Discover() {
                         Minimum experience
                       </span>
 
-                      <span className="text-[0.65rem] font-bold">
+                      <span className="text-[0.65rem] font-semibold text-foreground/80">
                         {minExperience === 0
                           ? "Any"
                           : `${minExperience}+ years`}
@@ -805,47 +906,38 @@ export default function Discover() {
                     </div>
 
                     <div className="grid grid-cols-5 gap-1.5">
-                      {experienceOptions.map(option => {
-                        const selected =
-                          minExperience === option.value;
+                      {experienceOptions.map((option) => {
+                        const selected = minExperience === option.value;
 
                         return (
                           <button
                             key={option.value}
                             type="button"
                             title={option.label}
+                            aria-pressed={selected}
                             onClick={() => setMinExperience(option.value)}
                             className={[
                               "flex h-12 min-w-0 flex-col items-center justify-center rounded-lg border",
-                              "transition-all duration-200",
+
+                              "transition-[background-color,border-color,color] duration-150",
 
                               selected
-                                ? [
-                                    "border-primary",
-                                    "bg-primary",
-                                    "text-secondary",
-                                    "shadow-sm shadow-primary/10",
-                                  ].join(" ")
-                                : [
-                                    "border-border",
-                                    "bg-background",
-                                    "text-muted-foreground",
-                                    "hover:border-foreground/15",
-                                    "hover:bg-muted/40",
-                                    "hover:text-foreground",
-                                  ].join(" "),
+                                ? selectedFilterSurface
+                                : unselectedFilterSurface,
                             ].join(" ")}
                           >
-                            <span className="text-[0.68rem] font-black leading-none">
+                            <span className="text-[0.68rem] font-semibold leading-none">
                               {option.shortLabel}
                             </span>
 
                             {option.suffix && (
                               <span
                                 className={[
-                                  "mt-1 text-[0.5rem] font-semibold uppercase tracking-[0.08em]",
+                                  "mt-1",
+                                  "text-[0.5rem] font-semibold uppercase tracking-[0.08em]",
+
                                   selected
-                                    ? "text-secondary/75"
+                                    ? "text-foreground/55 dark:text-secondary/60"
                                     : "text-muted-foreground/70",
                                 ].join(" ")}
                               >
@@ -865,33 +957,64 @@ export default function Discover() {
                       type="button"
                       role="switch"
                       aria-checked={verifiedOnly}
-                      onClick={() => setVerifiedOnly(current => !current)}
+                      onClick={() => setVerifiedOnly((current) => !current)}
                       className={[
                         "flex w-full items-center gap-3 rounded-lg border px-3 py-3",
-                        "text-left transition-colors",
+                        "text-left",
+                        "transition-[background-color,border-color] duration-150",
 
                         verifiedOnly
                           ? [
-                              "border-primary/30",
-                              "bg-primary/[0.055]",
-                              "shadow-sm shadow-primary/[0.04]",
+                              "border-foreground/[0.09]",
+                              "bg-foreground/[0.035]",
+
+                              "dark:border-secondary/15",
+                              "dark:bg-secondary/[0.04]",
                             ].join(" ")
-                          : "border-border hover:bg-muted/30",
+                          : [
+                              "border-border/60",
+                              "bg-surface-2/30",
+
+                              "hover:border-border/80",
+                              "hover:bg-surface-3/50",
+
+                              "dark:border-border",
+                              "dark:bg-surface-2/55",
+
+                              "dark:hover:bg-surface-3/60",
+                            ].join(" "),
                       ].join(" ")}
                     >
                       <span
                         className={[
                           "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
+                          "ring-1 ring-inset",
+
                           verifiedOnly
-                            ? "bg-primary text-secondary"
-                            : "bg-muted text-muted-foreground",
+                            ? [
+                                "bg-brand-secondary-highlight/[0.08]",
+                                "text-brand-secondary-highlight",
+                                "ring-brand-secondary-highlight/10",
+
+                                "dark:bg-secondary/[0.07]",
+                                "dark:text-secondary",
+                                "dark:ring-secondary/10",
+                              ].join(" ")
+                            : [
+                                "bg-surface-3/70",
+                                "text-muted-foreground",
+                                "ring-border/40",
+
+                                "dark:bg-surface-3/60",
+                                "dark:ring-border",
+                              ].join(" "),
                         ].join(" ")}
                       >
                         <BadgeCheckIcon size={15} />
                       </span>
 
                       <span className="min-w-0 flex-1">
-                        <span className="block text-xs font-bold">
+                        <span className="block text-xs font-semibold text-foreground/80">
                           Verified only
                         </span>
 
@@ -902,20 +1025,27 @@ export default function Discover() {
 
                       <span
                         className={[
-                          "relative h-5 w-9 shrink-0 rounded-full transition-colors",
+                          "relative h-5 w-9 shrink-0 rounded-full",
+                          "transition-colors duration-150",
+
                           verifiedOnly
-                            ? "bg-primary"
-                            : "bg-muted-foreground/25",
+                            ? [
+                                "bg-brand-secondary-highlight/70",
+                                "dark:bg-secondary/80",
+                              ].join(" ")
+                            : "bg-surface-3 dark:bg-surface-3",
                         ].join(" ")}
                       >
                         <span
                           className={[
-                            "absolute top-0.5 h-4 w-4 rounded-full shadow-sm",
-                            "transition-transform",
+                            "absolute top-0.5 h-4 w-4 rounded-full",
+                            "bg-surface-1",
+                            "ring-1 ring-border/50",
+                            "transition-transform duration-150",
 
                             verifiedOnly
-                              ? "translate-x-[18px] bg-secondary"
-                              : "translate-x-0.5 bg-background",
+                              ? "translate-x-[18px]"
+                              : "translate-x-0.5",
                           ].join(" ")}
                         />
                       </span>
@@ -930,25 +1060,28 @@ export default function Discover() {
             ================================================= */}
 
             <div className="min-w-0">
-
               {/* =================================================
                   MOBILE / TABLET FILTERS
               ================================================= */}
 
               <section className="py-4 lg:hidden">
-                <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:gap-2">
-
+                <div className="flex items-center gap-1.5 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:gap-2">
                   <div className="mr-auto flex shrink-0 items-center gap-2">
-                    <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/[0.08] text-primary">
+                    <span
+                      className={[
+                        "flex h-8 w-8 items-center justify-center rounded-lg",
+                        filterIconSurface,
+                      ].join(" ")}
+                    >
                       <SlidersHorizontalIcon size={14} />
                     </span>
 
-                    <span className="hidden text-xs font-semibold sm:inline">
+                    <span className="hidden text-xs font-semibold text-foreground/80 sm:inline">
                       Refine
                     </span>
 
                     {activeFilterCount > 0 && (
-                      <span className="flex h-5 min-w-5 items-center justify-center rounded-md bg-primary px-1 text-[0.58rem] font-black text-secondary">
+                      <span className="text-[0.6rem] font-semibold tabular-nums text-brand-secondary-highlight dark:text-secondary">
                         {activeFilterCount}
                       </span>
                     )}
@@ -988,9 +1121,7 @@ export default function Discover() {
                   <ResponsiveFilterChip
                     icon={<CircleDollarSignIcon size={13} />}
                     label={
-                      maxHourlyRate === null
-                        ? "Rate"
-                        : `US$${maxHourlyRate}`
+                      maxHourlyRate === null ? "Rate" : `US$${maxHourlyRate}`
                     }
                     title="Hourly rate"
                     active={maxHourlyRate !== null}
@@ -1015,28 +1146,22 @@ export default function Discover() {
                     type="button"
                     title="Verified only"
                     aria-label="Verified only"
-                    onClick={() => setVerifiedOnly(current => !current)}
+                    aria-pressed={verifiedOnly}
+                    onClick={() => setVerifiedOnly((current) => !current)}
                     className={[
                       "flex h-9 shrink-0 items-center justify-center rounded-lg border",
-                      "px-2.5 text-xs font-semibold transition-colors",
+                      "px-2.5 text-xs font-semibold",
+                      "transition-[background-color,border-color,color] duration-150",
                       "sm:gap-2 sm:px-3",
 
                       verifiedOnly
-                        ? "border-primary bg-primary text-secondary"
-                        : [
-                            "border-border",
-                            "bg-background",
-                            "text-muted-foreground",
-                            "hover:bg-muted/40",
-                            "hover:text-foreground",
-                          ].join(" "),
+                        ? selectedFilterSurface
+                        : unselectedFilterSurface,
                     ].join(" ")}
                   >
                     <BadgeCheckIcon size={13} />
 
-                    <span className="hidden sm:inline">
-                      Verified
-                    </span>
+                    <span className="hidden sm:inline">Verified</span>
                   </button>
 
                   {activeFilterCount > 0 && (
@@ -1047,16 +1172,22 @@ export default function Discover() {
                       onClick={resetFilters}
                       className={[
                         "flex h-9 shrink-0 items-center justify-center rounded-lg",
-                        "px-2.5 text-muted-foreground transition-colors",
-                        "hover:bg-muted hover:text-foreground",
-                        "sm:gap-1.5 sm:text-xs",
+                        "px-2.5",
+
+                        "text-muted-foreground",
+
+                        "transition-colors",
+
+                        "hover:bg-surface-3/55",
+                        "hover:text-foreground/85",
+
+                        "sm:gap-1.5",
+                        "sm:text-xs",
                       ].join(" ")}
                     >
                       <XIcon size={13} />
 
-                      <span className="hidden sm:inline">
-                        Clear
-                      </span>
+                      <span className="hidden sm:inline">Clear</span>
                     </button>
                   )}
                 </div>
@@ -1065,14 +1196,14 @@ export default function Discover() {
 
                 {openFilter === "category" && (
                   <MobileFilterPanel>
-                    <div className="flex flex-wrap gap-1.5">
+                    <div className="flex max-h-64 flex-wrap gap-1.5 overflow-y-auto pr-1">
                       <FilterChip
                         selected={!category}
                         label="All categories"
                         onClick={() => selectCategory("")}
                       />
 
-                      {categories.map(item => (
+                      {categories.map((item) => (
                         <FilterChip
                           key={item}
                           selected={category === item}
@@ -1088,21 +1219,31 @@ export default function Discover() {
 
                 {openFilter === "skills" && (
                   <MobileFilterPanel>
-                    {visibleSkills.length > 0 ? (
-                      <div className="flex flex-wrap gap-1.5">
-                        {visibleSkills.map(skill => (
-                          <FilterChip
-                            key={skill.id}
-                            selected={selectedSkills.includes(skill.id)}
-                            label={skill.name}
-                            onClick={() => toggleSkill(skill.id)}
-                          />
-                        ))}
-                      </div>
+                    {category ? (
+                      visibleSkills.length > 0 ? (
+                        <div className="flex max-h-64 flex-wrap gap-1.5 overflow-y-auto pr-1">
+                          {visibleSkills.map((skill) => (
+                            <FilterChip
+                              key={skill.id}
+                              selected={selectedSkills.includes(skill.id)}
+                              label={skill.name}
+                              onClick={() => toggleSkill(skill.id)}
+                            />
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-xs leading-5 text-muted-foreground">
+                          No skills are available for this category yet.
+                        </p>
+                      )
                     ) : (
-                      <p className="text-xs text-muted-foreground">
-                        No skills are available for this category yet.
-                      </p>
+                      <SkillSearchFilter
+                        skills={skills}
+                        selectedSkills={selectedSkills}
+                        query={skillSearch}
+                        onQueryChange={setSkillSearch}
+                        onToggleSkill={toggleSkill}
+                      />
                     )}
                   </MobileFilterPanel>
                 )}
@@ -1114,14 +1255,16 @@ export default function Discover() {
                     <div className="relative">
                       <MapPinIcon
                         size={14}
-                        className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground"
+                        className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/80"
                       />
 
                       <Input
                         value={location}
-                        onChange={event => setLocation(event.target.value)}
+                        onChange={(event) => setLocation(event.target.value)}
                         placeholder="City or area"
-                        className="h-10 rounded-lg bg-background pl-9 shadow-none"
+                        className={["h-10 rounded-lg pl-9", inputSurface].join(
+                          " ",
+                        )}
                       />
                     </div>
                   </MobileFilterPanel>
@@ -1133,7 +1276,7 @@ export default function Discover() {
                   <MobileFilterPanel>
                     <div className="mb-4 flex items-center justify-between gap-4">
                       <div>
-                        <p className="text-xs font-bold">
+                        <p className="text-xs font-semibold text-foreground/80">
                           Maximum hourly rate
                         </p>
 
@@ -1148,7 +1291,7 @@ export default function Discover() {
                         <button
                           type="button"
                           onClick={() => setMaxHourlyRate(null)}
-                          className="text-[0.65rem] font-semibold text-foreground underline decoration-primary/50 underline-offset-4"
+                          className="text-[0.65rem] font-semibold text-foreground/70 transition-colors hover:text-foreground"
                         >
                           Any rate
                         </button>
@@ -1160,17 +1303,14 @@ export default function Discover() {
                       min={0}
                       max={rateCeiling}
                       step={1}
-                      onValueChange={([value]) => setMaxHourlyRate(value)}
+                      onValueChange={([value]) => handleRateChange(value)}
+                      className={rateSliderClass}
                     />
 
                     <div className="mt-3 flex justify-between text-[0.62rem] text-muted-foreground">
-                      <span>
-                        US$0
-                      </span>
+                      <span>US$0</span>
 
-                      <span>
-                        US${rateCeiling}+
-                      </span>
+                      <span>US${rateCeiling}+</span>
                     </div>
                   </MobileFilterPanel>
                 )}
@@ -1180,31 +1320,27 @@ export default function Discover() {
                 {openFilter === "experience" && (
                   <MobileFilterPanel>
                     <div className="grid grid-cols-5 gap-1.5">
-                      {experienceOptions.map(option => {
-                        const selected =
-                          minExperience === option.value;
+                      {experienceOptions.map((option) => {
+                        const selected = minExperience === option.value;
 
                         return (
                           <button
                             key={option.value}
                             type="button"
+                            title={option.label}
+                            aria-pressed={selected}
                             onClick={() => setMinExperience(option.value)}
                             className={[
                               "flex min-h-10 flex-col items-center justify-center rounded-lg border px-1.5",
-                              "transition-colors",
+
+                              "transition-[background-color,border-color,color] duration-150",
 
                               selected
-                                ? "border-primary bg-primary text-secondary"
-                                : [
-                                    "border-border",
-                                    "bg-background",
-                                    "text-muted-foreground",
-                                    "hover:bg-muted/50",
-                                    "hover:text-foreground",
-                                  ].join(" "),
+                                ? selectedFilterSurface
+                                : unselectedFilterSurface,
                             ].join(" ")}
                           >
-                            <span className="text-[0.65rem] font-black">
+                            <span className="text-[0.65rem] font-semibold">
                               {option.shortLabel}
                             </span>
 
@@ -1212,8 +1348,9 @@ export default function Discover() {
                               <span
                                 className={[
                                   "text-[0.48rem] font-semibold uppercase",
+
                                   selected
-                                    ? "text-secondary/75"
+                                    ? "text-foreground/55 dark:text-secondary/60"
                                     : "text-muted-foreground/70",
                                 ].join(" ")}
                               >
@@ -1232,33 +1369,27 @@ export default function Discover() {
                   RESULTS HEADER
               ================================================= */}
 
-              <section className="relative flex items-center justify-between gap-3 border-t border-border/70 py-5 lg:border-t-0 lg:py-7">
+              <section className="relative flex items-center justify-between gap-3 border-t border-border/55 py-5 lg:border-t-0 lg:py-7">
                 <div className="min-w-0">
-                  <p className="hidden text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground sm:block">
+                  <p className="hidden text-[0.58rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground sm:block">
                     Professionals
                   </p>
 
-                  <div className="flex min-w-0 items-center gap-2 sm:mt-1">
-                    <h2 className="truncate text-sm font-bold tracking-[-0.02em] sm:text-lg">
+                  <div className="flex min-w-0 items-center gap-2 sm:mt-1.5">
+                    <h2 className="truncate text-sm font-semibold tracking-[-0.02em] text-foreground/85 sm:text-lg">
                       Explore Allocats
                     </h2>
 
-                    <span className="shrink-0 rounded-full bg-primary px-2 py-0.5 text-[0.58rem] font-black text-secondary sm:hidden">
+                    <span className="shrink-0 text-[0.6rem] font-semibold tabular-nums text-muted-foreground sm:hidden">
                       {filteredAllocats.length}
                     </span>
                   </div>
                 </div>
 
                 <div className="flex shrink-0 items-center gap-2">
-                  <SortDropdown
-                    value={sortBy}
-                    onChange={setSortBy}
-                  />
+                  <SortDropdown value={sortBy} onChange={setSortBy} />
 
-                  <ViewToggle
-                    value={viewMode}
-                    onChange={setViewMode}
-                  />
+                  <ViewToggle value={viewMode} onChange={setViewMode} />
                 </div>
               </section>
 
@@ -1266,28 +1397,23 @@ export default function Discover() {
                   RESULTS
               ================================================= */}
 
-              <section>
+              <section className="pb-10">
                 {filteredAllocats.length > 0 ? (
                   <div
                     className={
                       viewMode === "grid"
-                        ? "grid gap-5 sm:grid-cols-2 xl:grid-cols-3"
-                        : "grid grid-cols-1 gap-3 sm:gap-4"
+                        ? "grid gap-4 sm:grid-cols-2 xl:grid-cols-3"
+                        : "grid grid-cols-1 gap-3"
                     }
                   >
-                    {filteredAllocats.map(allocat => (
-                      <div
-                        key={allocat.allocatrUserId}
-                        className="min-w-0"
-                      >
+                    {filteredAllocats.map((allocat) => (
+                      <div key={allocat.allocatrUserId} className="min-w-0">
                         <AllocatCardGrid
                           allocat={allocat}
                           viewMode={viewMode}
                           mode="discovery"
                           onStartProject={() =>
-                            handleStartProject(
-                              allocat.allocatrUserId,
-                            )
+                            handleStartProject(allocat.allocatrUserId)
                           }
                         />
                       </div>
@@ -1314,13 +1440,11 @@ function DesktopFilterSection({
   children,
 }: {
   title: string;
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <section className="py-5">
-      <p className="mb-3 text-xs font-bold">
-        {title}
-      </p>
+      <p className="mb-3 text-xs font-semibold text-foreground/80">{title}</p>
 
       {children}
     </section>
@@ -1328,10 +1452,252 @@ function DesktopFilterSection({
 }
 
 /* =========================================================
-   FILTER OPTION
+   CATEGORY DROPDOWN
 ========================================================= */
 
-function FilterOption({
+function CategoryDropdown({
+  categories,
+  value,
+  onChange,
+}: {
+  categories: string[];
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+
+  const selectedLabel = value || "All categories";
+
+  const filteredCategories = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase();
+
+    if (!normalizedQuery) {
+      return categories;
+    }
+
+    return categories.filter((item) =>
+      item.toLowerCase().includes(normalizedQuery),
+    );
+  }, [categories, query]);
+
+  function selectCategory(nextValue: string) {
+    onChange(nextValue);
+    setOpen(false);
+    setQuery("");
+  }
+
+  function closeDropdown() {
+    setOpen(false);
+    setQuery("");
+  }
+
+  return (
+    <div
+      className="relative"
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) {
+          closeDropdown();
+        }
+      }}
+    >
+      {/* TRIGGER */}
+
+      <button
+        type="button"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        onClick={() => {
+          setOpen((current) => {
+            if (current) {
+              setQuery("");
+            }
+
+            return !current;
+          });
+        }}
+        className={[
+          "flex h-10 w-full items-center justify-between gap-3 rounded-lg border px-3",
+
+          "text-left text-xs font-semibold",
+
+          "transition-[background-color,border-color,color] duration-150",
+
+          open || value
+            ? [
+                "border-foreground/[0.09]",
+                "bg-foreground/[0.035]",
+                "text-foreground/85",
+
+                "dark:border-secondary/15",
+                "dark:bg-secondary/[0.04]",
+                "dark:text-foreground/85",
+              ].join(" ")
+            : secondaryActionButton,
+        ].join(" ")}
+      >
+        <span className="flex min-w-0 items-center gap-2.5">
+          <Layers3Icon
+            size={13}
+            className={[
+              "shrink-0",
+
+              value
+                ? "text-brand-secondary-highlight dark:text-secondary"
+                : "text-muted-foreground",
+            ].join(" ")}
+          />
+
+          <span className="truncate">{selectedLabel}</span>
+        </span>
+
+        <ChevronDownIcon
+          size={12}
+          className={[
+            "shrink-0 text-muted-foreground",
+            "transition-transform duration-150",
+
+            open ? "rotate-180" : "",
+          ].join(" ")}
+        />
+      </button>
+
+      {/* DROPDOWN */}
+
+      {open && (
+        <div
+          role="listbox"
+          className={[
+            "absolute left-0 right-0 top-full z-50 mt-2",
+
+            "overflow-hidden rounded-xl border",
+
+            "border-border/60",
+            "bg-popover",
+            "text-popover-foreground",
+
+            "shadow-none",
+
+            "dark:border-border",
+          ].join(" ")}
+        >
+          {/* SEARCH */}
+
+          <div className="border-b border-border/55 p-2">
+            <div className="relative">
+              <SearchIcon
+                size={13}
+                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/75"
+              />
+
+              <Input
+                autoFocus
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Search categories"
+                className={[
+                  "h-9 rounded-lg pl-8 pr-8 text-xs",
+                  inputSurface,
+                ].join(" ")}
+              />
+
+              {query && (
+                <button
+                  type="button"
+                  onClick={() => setQuery("")}
+                  aria-label="Clear category search"
+                  className={[
+                    "absolute right-2 top-1/2",
+                    "flex h-6 w-6 -translate-y-1/2 items-center justify-center",
+                    "rounded-md",
+
+                    "text-muted-foreground",
+
+                    "transition-colors",
+
+                    "hover:bg-surface-3/70",
+                    "hover:text-foreground/85",
+                  ].join(" ")}
+                >
+                  <XIcon size={10} />
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* OPTIONS */}
+
+          <div
+            className={[
+              "max-h-64 overflow-y-auto overscroll-contain p-1.5",
+              "[scrollbar-width:thin]",
+            ].join(" ")}
+          >
+            <CategoryDropdownOption
+              selected={!value}
+              label="All categories"
+              onClick={() => selectCategory("")}
+            />
+
+            {filteredCategories.length > 0 && (
+              <div className="my-1 h-px bg-border/55" />
+            )}
+
+            {filteredCategories.map((item) => (
+              <CategoryDropdownOption
+                key={item}
+                selected={value === item}
+                label={item}
+                onClick={() => selectCategory(item)}
+              />
+            ))}
+
+            {filteredCategories.length === 0 && (
+              <div className="px-3 py-5 text-center">
+                <SearchIcon
+                  size={15}
+                  className="mx-auto text-muted-foreground/60"
+                />
+
+                <p className="mt-2 text-xs font-medium text-foreground/70">
+                  No categories found
+                </p>
+
+                <p className="mt-1 text-[0.6rem] text-muted-foreground">
+                  Try a different search.
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* COUNT */}
+
+          {categories.length > 0 && (
+            <div className="border-t border-border/55 px-3 py-2">
+              <p className="text-[0.58rem] text-muted-foreground">
+                {query
+                  ? `${filteredCategories.length} ${
+                      filteredCategories.length === 1
+                        ? "category"
+                        : "categories"
+                    } found`
+                  : `${categories.length} ${
+                      categories.length === 1 ? "category" : "categories"
+                    } available`}
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* =========================================================
+   CATEGORY DROPDOWN OPTION
+========================================================= */
+
+function CategoryDropdownOption({
   selected,
   label,
   onClick,
@@ -1343,31 +1709,333 @@ function FilterOption({
   return (
     <button
       type="button"
+      role="option"
+      aria-selected={selected}
+      title={label}
       onClick={onClick}
       className={[
-        "flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2",
-        "text-left text-xs font-semibold transition-colors",
+        "flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2.5",
+
+        "text-left text-xs font-semibold",
+
+        "transition-colors duration-150",
 
         selected
-          ? "bg-primary/[0.08] text-primary"
+          ? [
+              "bg-foreground/[0.045]",
+              "text-foreground/85",
+
+              "dark:bg-secondary/[0.055]",
+              "dark:text-secondary",
+            ].join(" ")
           : [
               "text-muted-foreground",
-              "hover:bg-muted/40",
-              "hover:text-foreground",
+
+              "hover:bg-surface-3/55",
+              "hover:text-foreground/85",
+
+              "dark:hover:bg-surface-3/60",
+              "dark:hover:text-foreground",
             ].join(" "),
       ].join(" ")}
     >
-      <span className="truncate">
-        {label}
-      </span>
+      <span className="truncate">{label}</span>
 
       {selected && (
         <CheckIcon
           size={12}
           strokeWidth={3}
-          className="shrink-0"
+          className="shrink-0 text-brand-secondary-highlight dark:text-secondary"
         />
       )}
+    </button>
+  );
+}
+
+/* =========================================================
+   SKILL SEARCH
+========================================================= */
+
+function SkillSearchFilter({
+  skills,
+  selectedSkills,
+  query,
+  onQueryChange,
+  onToggleSkill,
+}: {
+  skills: SkillSummary[];
+  selectedSkills: string[];
+  query: string;
+  onQueryChange: (value: string) => void;
+  onToggleSkill: (skillId: string) => void;
+}) {
+  const normalizedQuery = query.trim().toLowerCase();
+
+  const selectedSkillItems = useMemo(
+    () =>
+      selectedSkills
+        .map((skillId) => skills.find((skill) => skill.id === skillId))
+        .filter((skill): skill is SkillSummary => Boolean(skill)),
+    [skills, selectedSkills],
+  );
+
+  const searchResults = useMemo(() => {
+    if (normalizedQuery.length < 1) {
+      return [];
+    }
+
+    return skills
+      .filter((skill) => !selectedSkills.includes(skill.id))
+      .map((skill): SkillSearchResult => {
+        const normalizedName = skill.name.trim().toLowerCase();
+
+        const normalizedCategory = String(skill.category ?? "")
+          .trim()
+          .toLowerCase();
+
+        let score = 0;
+
+        if (normalizedName === normalizedQuery) {
+          score = 5;
+        } else if (normalizedName.startsWith(normalizedQuery)) {
+          score = 4;
+        } else if (normalizedName.includes(normalizedQuery)) {
+          score = 3;
+        } else if (normalizedCategory === normalizedQuery) {
+          score = 2;
+        } else if (normalizedCategory.includes(normalizedQuery)) {
+          score = 1;
+        }
+
+        return {
+          skill,
+          score,
+        };
+      })
+      .filter((result) => result.score > 0)
+      .sort((a, b) => {
+        if (b.score !== a.score) {
+          return b.score - a.score;
+        }
+
+        return a.skill.name.localeCompare(b.skill.name);
+      })
+      .map((result) => result.skill);
+  }, [skills, selectedSkills, normalizedQuery]);
+
+  return (
+    <div>
+      {/* SELECTED */}
+
+      {selectedSkillItems.length > 0 && (
+        <div className="mb-3">
+          <div className="mb-2 flex items-center justify-between gap-3">
+            <p className="text-[0.58rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+              Selected
+            </p>
+
+            <span className="text-[0.58rem] font-medium tabular-nums text-muted-foreground/70">
+              {selectedSkillItems.length}
+            </span>
+          </div>
+
+          <div className="flex flex-wrap gap-1.5">
+            {selectedSkillItems.map((skill) => (
+              <span
+                key={skill.id}
+                className={[
+                  "inline-flex max-w-full items-center gap-1.5 rounded-md border",
+                  "px-2.5 py-1.5",
+                  "text-[0.64rem] font-semibold",
+
+                  selectedFilterSurface,
+                ].join(" ")}
+              >
+                <span className="truncate">{skill.name}</span>
+
+                <button
+                  type="button"
+                  onClick={() => onToggleSkill(skill.id)}
+                  aria-label={`Remove ${skill.name}`}
+                  className={[
+                    "flex h-4 w-4 shrink-0 items-center justify-center rounded-sm",
+
+                    "text-muted-foreground",
+
+                    "transition-colors",
+
+                    "hover:bg-surface-3",
+                    "hover:text-foreground",
+
+                    "dark:hover:bg-secondary/[0.08]",
+                    "dark:hover:text-secondary",
+                  ].join(" ")}
+                >
+                  <XIcon size={9} />
+                </button>
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* SEARCH */}
+
+      <div className="relative">
+        <SearchIcon
+          size={13}
+          className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/75"
+        />
+
+        <Input
+          value={query}
+          onChange={(event) => onQueryChange(event.target.value)}
+          placeholder="Search skills or categories"
+          className={["h-10 rounded-lg pl-9 pr-9 text-xs", inputSurface].join(
+            " ",
+          )}
+        />
+
+        {query && (
+          <button
+            type="button"
+            onClick={() => onQueryChange("")}
+            aria-label="Clear skill search"
+            className={[
+              "absolute right-2.5 top-1/2 flex h-6 w-6 -translate-y-1/2",
+              "items-center justify-center rounded-md",
+
+              "text-muted-foreground",
+
+              "transition-colors",
+
+              "hover:bg-surface-3/70",
+              "hover:text-foreground/85",
+            ].join(" ")}
+          >
+            <XIcon size={11} />
+          </button>
+        )}
+      </div>
+
+      {/* SEARCH RESULTS */}
+
+      {normalizedQuery.length === 0 ? (
+        <p className="mt-2 text-[0.62rem] leading-5 text-muted-foreground">
+          Search by skill or category.
+        </p>
+      ) : searchResults.length > 0 ? (
+        <div
+          className={[
+            "mt-2 max-h-52 overflow-y-auto overscroll-contain rounded-lg border p-1",
+
+            "border-border/55",
+            "bg-surface-2/30",
+
+            "dark:border-border",
+            "dark:bg-surface-2/55",
+          ].join(" ")}
+        >
+          {searchResults.map((skill) => (
+            <button
+              key={skill.id}
+              type="button"
+              onClick={() => onToggleSkill(skill.id)}
+              className={[
+                "flex w-full items-center justify-between gap-3 rounded-md px-2.5 py-2",
+
+                "text-left",
+
+                "transition-colors",
+
+                "hover:bg-surface-3/60",
+
+                "dark:hover:bg-surface-3/65",
+              ].join(" ")}
+            >
+              <span className="min-w-0">
+                <span className="block truncate text-xs font-semibold text-foreground/80">
+                  {skill.name}
+                </span>
+
+                {skill.category && (
+                  <span className="mt-0.5 block truncate text-[0.58rem] text-muted-foreground">
+                    {skill.category}
+                  </span>
+                )}
+              </span>
+
+              <span
+                className={[
+                  "flex h-6 w-6 shrink-0 items-center justify-center rounded-md",
+
+                  "bg-brand-secondary-highlight/[0.07]",
+                  "text-brand-secondary-highlight",
+
+                  "dark:bg-secondary/[0.07]",
+                  "dark:text-secondary",
+                ].join(" ")}
+              >
+                <PlusSkillIcon />
+              </span>
+            </button>
+          ))}
+        </div>
+      ) : (
+        <p className="mt-2 text-[0.62rem] leading-5 text-muted-foreground">
+          No matching skills or categories found.
+        </p>
+      )}
+    </div>
+  );
+}
+
+/* =========================================================
+   PLUS SKILL ICON
+========================================================= */
+
+function PlusSkillIcon() {
+  return (
+    <span className="relative block h-2.5 w-2.5">
+      <span className="absolute left-0 top-1/2 h-px w-2.5 -translate-y-1/2 bg-current" />
+
+      <span className="absolute left-1/2 top-0 h-2.5 w-px -translate-x-1/2 bg-current" />
+    </span>
+  );
+}
+
+/* =========================================================
+   SKILL FILTER CHIP
+========================================================= */
+
+function SkillFilterChip({
+  skill,
+  selected,
+  onClick,
+}: {
+  skill: SkillSummary;
+  selected: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      title={skill.name}
+      aria-pressed={selected}
+      className={[
+        "max-w-full truncate rounded-md border",
+
+        "px-2.5 py-1.5",
+
+        "text-[0.65rem] font-semibold",
+
+        "transition-[background-color,border-color,color] duration-150",
+
+        selected ? selectedFilterSurface : unselectedFilterSurface,
+      ].join(" ")}
+    >
+      {skill.name}
     </button>
   );
 }
@@ -1376,13 +2044,19 @@ function FilterOption({
    MOBILE FILTER PANEL
 ========================================================= */
 
-function MobileFilterPanel({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+function MobileFilterPanel({ children }: { children: ReactNode }) {
   return (
-    <div className="mt-3 rounded-xl border border-border bg-muted/[0.12] p-3">
+    <div
+      className={[
+        "mt-3 rounded-xl border p-3",
+
+        "border-border/60",
+        "bg-surface-2/40",
+
+        "dark:border-border",
+        "dark:bg-surface-2/60",
+      ].join(" ")}
+    >
       {children}
     </div>
   );
@@ -1405,19 +2079,15 @@ function FilterChip({
     <button
       type="button"
       onClick={onClick}
+      aria-pressed={selected}
       className={[
         "max-w-full truncate rounded-lg border px-3 py-2",
-        "text-xs font-semibold transition-colors",
 
-        selected
-          ? "border-primary bg-primary text-secondary"
-          : [
-              "border-border",
-              "bg-background",
-              "text-muted-foreground",
-              "hover:bg-muted/40",
-              "hover:text-foreground",
-            ].join(" "),
+        "text-xs font-semibold",
+
+        "transition-[background-color,border-color,color] duration-150",
+
+        selected ? selectedFilterSurface : unselectedFilterSurface,
       ].join(" ")}
     >
       {label}
@@ -1437,7 +2107,7 @@ function ResponsiveFilterChip({
   open,
   onClick,
 }: {
-  icon: React.ReactNode;
+  icon: ReactNode;
   label: string;
   title: string;
   active: boolean;
@@ -1449,28 +2119,24 @@ function ResponsiveFilterChip({
       type="button"
       title={title}
       aria-label={title}
+      aria-expanded={open}
       onClick={onClick}
       className={[
         "flex h-9 shrink-0 items-center justify-center rounded-lg border",
-        "px-2.5 text-xs font-semibold transition-all",
-        "sm:gap-2 sm:px-3",
 
-        active || open
-          ? "border-primary bg-primary text-secondary"
-          : [
-              "border-border",
-              "bg-background",
-              "text-muted-foreground",
-              "hover:bg-muted/40",
-              "hover:text-foreground",
-            ].join(" "),
+        "px-2.5 text-xs font-semibold",
+
+        "transition-[background-color,border-color,color] duration-150",
+
+        "sm:gap-2",
+        "sm:px-3",
+
+        active || open ? selectedFilterSurface : unselectedFilterSurface,
       ].join(" ")}
     >
       {icon}
 
-      <span className="hidden max-w-32 truncate sm:inline">
-        {label}
-      </span>
+      <span className="hidden max-w-32 truncate sm:inline">{label}</span>
 
       <ChevronDownIcon
         size={10}
@@ -1528,10 +2194,7 @@ function SortDropdown({
   const [open, setOpen] = useState(false);
 
   const selected =
-    sortOptions.find(
-      option => option.value === value,
-    ) ??
-    sortOptions[0];
+    sortOptions.find((option) => option.value === value) ?? sortOptions[0];
 
   function selectOption(option: SortOption) {
     onChange(option);
@@ -1539,30 +2202,58 @@ function SortDropdown({
   }
 
   return (
-    <div className="static sm:relative">
+    <div
+      className="static sm:relative"
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) {
+          setOpen(false);
+        }
+      }}
+    >
       <button
         type="button"
         title={`Sort: ${selected.label}`}
         aria-label={`Sort results: ${selected.label}`}
         aria-expanded={open}
-        onClick={() => setOpen(current => !current)}
+        onClick={() => setOpen((current) => !current)}
         className={[
           "flex h-10 w-10 items-center justify-center rounded-lg border",
-          "border-border bg-background transition-all",
-          "sm:w-auto sm:min-w-[170px] sm:justify-between sm:gap-3 sm:px-3",
-          "hover:bg-muted/40",
+
+          "transition-[background-color,border-color,color] duration-150",
+
+          "sm:w-auto",
+          "sm:min-w-[170px]",
+          "sm:justify-between",
+          "sm:gap-3",
+          "sm:px-3",
 
           open
-            ? "border-primary/30 bg-primary/[0.04] ring-1 ring-primary/20"
-            : "",
+            ? [
+                "border-foreground/[0.09]",
+                "bg-foreground/[0.035]",
+
+                "dark:border-secondary/15",
+                "dark:bg-secondary/[0.04]",
+              ].join(" ")
+            : secondaryActionButton,
         ].join(" ")}
       >
         <span className="flex min-w-0 items-center gap-2.5">
-          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-primary text-secondary">
+          <span
+            className={[
+              "flex h-7 w-7 shrink-0 items-center justify-center rounded-md",
+
+              "bg-surface-3/70",
+              "text-brand-secondary-highlight",
+
+              "dark:bg-secondary/[0.07]",
+              "dark:text-secondary",
+            ].join(" ")}
+          >
             <StarIcon size={12} />
           </span>
 
-          <span className="hidden truncate text-xs font-semibold sm:block">
+          <span className="hidden truncate text-xs font-semibold text-foreground/75 sm:block">
             {selected.label}
           </span>
         </span>
@@ -1570,7 +2261,9 @@ function SortDropdown({
         <ChevronDownIcon
           size={12}
           className={[
-            "hidden shrink-0 text-muted-foreground transition-transform sm:block",
+            "hidden shrink-0 text-muted-foreground",
+            "transition-transform sm:block",
+
             open ? "rotate-180" : "",
           ].join(" ")}
         />
@@ -1580,15 +2273,21 @@ function SortDropdown({
         <div
           className={[
             "absolute right-0 top-full z-50 mt-2",
+
             "w-[min(16rem,calc(100vw-2rem))]",
-            "overflow-hidden rounded-xl",
-            "border border-border bg-popover p-1.5",
-            "text-popover-foreground shadow-xl",
+
+            "overflow-hidden rounded-xl border p-1.5",
+
+            "border-border/60",
+            "bg-popover",
+            "text-popover-foreground",
+            "shadow-none",
+
+            "dark:border-border",
           ].join(" ")}
         >
-          {sortOptions.map(option => {
-            const isSelected =
-              option.value === value;
+          {sortOptions.map((option) => {
+            const isSelected = option.value === value;
 
             return (
               <button
@@ -1597,33 +2296,50 @@ function SortDropdown({
                 onClick={() => selectOption(option.value)}
                 className={[
                   "flex w-full items-center gap-3 rounded-lg px-3 py-2.5",
-                  "text-left text-popover-foreground transition-colors",
+
+                  "text-left",
+
+                  "transition-colors",
 
                   isSelected
-                    ? "bg-primary/[0.07]"
-                    : "hover:bg-muted/60",
+                    ? [
+                        "bg-foreground/[0.045]",
+                        "dark:bg-secondary/[0.055]",
+                      ].join(" ")
+                    : ["hover:bg-surface-3/55", "dark:hover:bg-surface-2"].join(
+                        " ",
+                      ),
                 ].join(" ")}
               >
                 <span
                   className={[
                     "flex h-7 w-7 shrink-0 items-center justify-center rounded-md",
+
                     isSelected
-                      ? "bg-primary text-secondary"
-                      : "bg-muted text-muted-foreground",
+                      ? [
+                          "bg-brand-secondary-highlight/[0.08]",
+                          "text-brand-secondary-highlight",
+
+                          "dark:bg-secondary/[0.07]",
+                          "dark:text-secondary",
+                        ].join(" ")
+                      : [
+                          "bg-surface-3/65",
+                          "text-muted-foreground",
+
+                          "dark:bg-surface-2",
+                        ].join(" "),
                   ].join(" ")}
                 >
                   {isSelected ? (
-                    <CheckIcon
-                      size={12}
-                      strokeWidth={3}
-                    />
+                    <CheckIcon size={12} strokeWidth={3} />
                   ) : (
                     <StarIcon size={12} />
                   )}
                 </span>
 
                 <span className="min-w-0 flex-1">
-                  <span className="block text-xs font-semibold text-foreground">
+                  <span className="block text-xs font-semibold text-foreground/80">
                     {option.label}
                   </span>
 
@@ -1652,21 +2368,43 @@ function ViewToggle({
   onChange: (value: ViewMode) => void;
 }) {
   return (
-    <div className="flex h-10 shrink-0 items-center rounded-lg border border-border bg-muted/30 p-1">
+    <div
+      className={[
+        "flex h-10 shrink-0 items-center rounded-lg border p-1",
+
+        "border-border/60",
+        "bg-surface-3/55",
+
+        "dark:border-border",
+        "dark:bg-surface-2/70",
+      ].join(" ")}
+    >
       <button
         type="button"
         title="Grid view"
         aria-label="Grid view"
+        aria-pressed={value === "grid"}
         onClick={() => onChange("grid")}
         className={[
-          "flex h-8 w-8 items-center justify-center rounded-md transition-all",
+          "flex h-8 w-8 items-center justify-center rounded-md",
+
+          "transition-colors duration-150",
 
           value === "grid"
-            ? "bg-primary text-secondary shadow-sm"
+            ? [
+                "bg-brand-secondary-highlight",
+                "text-primary-foreground",
+
+                "dark:bg-secondary",
+                "dark:text-secondary-foreground",
+              ].join(" ")
             : [
                 "text-muted-foreground",
-                "hover:bg-background",
-                "hover:text-foreground",
+
+                "hover:bg-surface-1/75",
+                "hover:text-foreground/85",
+
+                "dark:hover:bg-surface-3",
               ].join(" "),
         ].join(" ")}
       >
@@ -1677,16 +2415,28 @@ function ViewToggle({
         type="button"
         title="List view"
         aria-label="List view"
+        aria-pressed={value === "list"}
         onClick={() => onChange("list")}
         className={[
-          "flex h-8 w-8 items-center justify-center rounded-md transition-all",
+          "flex h-8 w-8 items-center justify-center rounded-md",
+
+          "transition-colors duration-150",
 
           value === "list"
-            ? "bg-primary text-secondary shadow-sm"
+            ? [
+                "bg-brand-secondary-highlight",
+                "text-primary-foreground",
+
+                "dark:bg-secondary",
+                "dark:text-secondary-foreground",
+              ].join(" ")
             : [
                 "text-muted-foreground",
-                "hover:bg-background",
-                "hover:text-foreground",
+
+                "hover:bg-surface-1/75",
+                "hover:text-foreground/85",
+
+                "dark:hover:bg-surface-3",
               ].join(" "),
         ].join(" ")}
       >
@@ -1708,35 +2458,46 @@ function AllocatLoadingState() {
       className="flex min-h-[250px] items-center justify-center px-6 py-10 text-center"
     >
       <div>
-        <div className="relative mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-primary text-secondary shadow-lg shadow-primary/10">
-          <CatIcon
-            size={28}
-            strokeWidth={1.8}
-          />
+        <div
+          className={[
+            "relative mx-auto flex h-14 w-14 items-center justify-center rounded-xl",
+            discoverIconSurface,
+          ].join(" ")}
+        >
+          <CatIcon size={24} strokeWidth={1.8} />
 
-          <span className="absolute -right-2 -top-2 flex h-7 w-7 animate-bounce items-center justify-center rounded-full border-2 border-background bg-background text-foreground shadow-sm">
-            <SparklesIcon size={12} />
+          <span
+            className={[
+              "absolute -right-1.5 -top-1.5",
+              "flex h-6 w-6 items-center justify-center rounded-full",
+
+              "border border-border/60",
+              "bg-surface-1",
+              "text-brand-secondary-highlight",
+
+              "dark:bg-surface-2",
+              "dark:text-secondary",
+            ].join(" ")}
+          >
+            <SparklesIcon size={10} />
           </span>
         </div>
 
-        <div className="mt-4 flex justify-center gap-2 text-muted-foreground">
-          <PawPrintIcon
-            size={13}
-            className="animate-pulse"
-          />
+        <div className="mt-4 flex justify-center gap-2 text-muted-foreground/60">
+          <PawPrintIcon size={12} className="animate-pulse" />
 
           <PawPrintIcon
-            size={13}
+            size={12}
             className="animate-pulse [animation-delay:150ms]"
           />
 
           <PawPrintIcon
-            size={13}
+            size={12}
             className="animate-pulse [animation-delay:300ms]"
           />
         </div>
 
-        <p className="mt-4 text-sm font-semibold text-foreground">
+        <p className="mt-4 text-sm font-semibold text-foreground/80">
           Paws at work — exploring the community...
         </p>
       </div>
@@ -1748,68 +2509,41 @@ function AllocatLoadingState() {
    HELPERS
 ========================================================= */
 
-function getAllocatLocation(
-  allocat: FilterableAllocat,
-): string {
-  return [
-    allocat.location,
-    allocat.city,
-    allocat.country,
-  ]
+function getAllocatLocation(allocat: FilterableAllocat): string {
+  return [allocat.location, allocat.city, allocat.country]
     .filter(Boolean)
     .join(", ")
     .toLowerCase();
 }
 
-function getIsVerified(
-  allocat: FilterableAllocat,
-): boolean {
-  return Boolean(
-    allocat.isVerified ??
-    allocat.verified ??
-    false,
-  );
+function getIsVerified(allocat: FilterableAllocat): boolean {
+  return Boolean(allocat.isVerified ?? allocat.verified ?? false);
 }
 
-function getRating(
-  allocat: FilterableAllocat,
-): number {
-  return (
-    allocat.averageRating ??
-    allocat.rating ??
-    0
-  );
+function getRating(allocat: FilterableAllocat): number {
+  return allocat.averageRating ?? allocat.rating ?? 0;
 }
 
-function getDateValue(
-  date?: string,
-): number {
+function getDateValue(date?: string): number {
   if (!date) return 0;
 
-  const parsedDate =
-    new Date(date).getTime();
+  const parsedDate = new Date(date).getTime();
 
-  return Number.isNaN(parsedDate)
-    ? 0
-    : parsedDate;
+  return Number.isNaN(parsedDate) ? 0 : parsedDate;
 }
 
 /* =========================================================
    STATES
 ========================================================= */
 
-function ErrorState({
-  message,
-}: {
-  message: string;
-}) {
+function ErrorState({ message }: { message: string }) {
   return (
-    <div className="mt-8 border-y border-destructive/20 py-16 text-center">
-      <span className="mx-auto flex h-11 w-11 items-center justify-center rounded-lg bg-destructive/10 text-destructive">
-        <UsersIcon size={20} />
+    <div className="mt-8 border-y border-border/55 py-16 text-center">
+      <span className="mx-auto flex h-11 w-11 items-center justify-center rounded-lg bg-destructive/[0.07] text-destructive">
+        <UsersIcon size={19} />
       </span>
 
-      <h2 className="mt-5 text-xl font-bold">
+      <h2 className="mt-5 text-xl font-semibold tracking-[-0.02em] text-foreground/85">
         We could not load Allocats
       </h2>
 
@@ -1820,7 +2554,10 @@ function ErrorState({
       <Button
         type="button"
         onClick={() => window.location.reload()}
-        className="mt-6 h-10 rounded-lg px-5 shadow-none"
+        className={[
+          "mt-6 h-10 rounded-lg px-5 text-xs font-semibold shadow-none",
+          primaryActionButton,
+        ].join(" ")}
       >
         Try again
       </Button>
@@ -1828,18 +2565,19 @@ function ErrorState({
   );
 }
 
-function EmptyState({
-  onReset,
-}: {
-  onReset: () => void;
-}) {
+function EmptyState({ onReset }: { onReset: () => void }) {
   return (
-    <div className="flex min-h-[320px] flex-col items-center justify-center border-y border-border px-6 text-center">
-      <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary text-secondary">
-        <SearchIcon size={21} />
+    <div className="flex min-h-[320px] flex-col items-center justify-center border-y border-border/55 px-6 text-center">
+      <span
+        className={[
+          "flex h-11 w-11 items-center justify-center rounded-lg",
+          discoverIconSurface,
+        ].join(" ")}
+      >
+        <SearchIcon size={18} />
       </span>
 
-      <h2 className="mt-5 text-xl font-bold">
+      <h2 className="mt-5 text-xl font-semibold tracking-[-0.02em] text-foreground/85">
         No Allocats found
       </h2>
 
@@ -1850,7 +2588,10 @@ function EmptyState({
       <Button
         type="button"
         onClick={onReset}
-        className="mt-6 h-10 rounded-lg px-5 shadow-none"
+        className={[
+          "mt-6 h-10 rounded-lg px-5 text-xs font-semibold shadow-none",
+          primaryActionButton,
+        ].join(" ")}
       >
         Reset filters
       </Button>

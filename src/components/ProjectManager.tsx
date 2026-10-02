@@ -1,10 +1,4 @@
-import {
-  useEffect,
-  useMemo,
-  useState,
-  type ComponentType,
-} from "react";
-
+import { useEffect, useMemo, useState, type ComponentType } from "react";
 import { Link, useParams } from "react-router-dom";
 
 import {
@@ -34,9 +28,9 @@ import api from "@/api/axios";
 import type { Project } from "@/Types/project";
 import type { Task } from "@/Types/task";
 
-import TaskStatusBoard from "./TaskStatusBoard";
-import TaskCard from "./TaskCard";
 import LoadingState from "./LoadingState";
+import TaskCard from "./TaskCard";
+import TaskStatusBoard from "./TaskStatusBoard";
 
 import { Button } from "./ui/button";
 
@@ -44,11 +38,7 @@ import { Button } from "./ui/button";
    TYPES
 ========================================================= */
 
-const WORKFLOW_STATUSES = [
-  "pending",
-  "active",
-  "complete",
-] as const;
+const WORKFLOW_STATUSES = ["pending", "active", "complete"] as const;
 
 type WorkflowStatus = (typeof WORKFLOW_STATUSES)[number];
 
@@ -61,6 +51,89 @@ type ProjectPermissions = {
 type UpdateTaskStatusResult = {
   task: Task;
   project: Project;
+};
+
+type ProjectStatusAppearance = {
+  label: string;
+  dot: string;
+  text: string;
+  surface: string;
+};
+
+/* =========================================================
+   PROJECT STATUS
+========================================================= */
+
+const projectStatusAppearance: Record<string, ProjectStatusAppearance> = {
+  pending: {
+    label: "Pending",
+    dot: "bg-status-pending",
+    text: "text-status-pending-foreground",
+    surface: "bg-status-pending/[0.08] dark:bg-status-pending/[0.11]",
+  },
+
+  active: {
+    label: "Active",
+    dot: "bg-status-active",
+    text: "text-status-active-foreground",
+    surface: "bg-status-active/[0.07] dark:bg-status-active/[0.09]",
+  },
+
+  completionrequested: {
+    label: "Awaiting confirmation",
+    dot: "bg-status-pending",
+    text: "text-status-pending-foreground",
+    surface: "bg-status-pending/[0.08] dark:bg-status-pending/[0.11]",
+  },
+
+  paused: {
+    label: "Paused",
+    dot: "bg-muted-foreground/65",
+    text: "text-muted-foreground",
+    surface: "bg-muted/60 dark:bg-surface-3/55",
+  },
+
+  onhold: {
+    label: "On hold",
+    dot: "bg-muted-foreground/65",
+    text: "text-muted-foreground",
+    surface: "bg-muted/60 dark:bg-surface-3/55",
+  },
+
+  complete: {
+    label: "Completed",
+    dot: "bg-status-complete",
+    text: "text-status-complete-foreground",
+    surface: "bg-status-complete/[0.07] dark:bg-status-complete/[0.10]",
+  },
+
+  completed: {
+    label: "Completed",
+    dot: "bg-status-complete",
+    text: "text-status-complete-foreground",
+    surface: "bg-status-complete/[0.07] dark:bg-status-complete/[0.10]",
+  },
+
+  closed: {
+    label: "Completed",
+    dot: "bg-status-complete",
+    text: "text-status-complete-foreground",
+    surface: "bg-status-complete/[0.07] dark:bg-status-complete/[0.10]",
+  },
+
+  cancelled: {
+    label: "Cancelled",
+    dot: "bg-status-overdue",
+    text: "text-status-overdue-foreground",
+    surface: "bg-status-overdue/[0.06] dark:bg-status-overdue/[0.10]",
+  },
+
+  canceled: {
+    label: "Cancelled",
+    dot: "bg-status-overdue",
+    text: "text-status-overdue-foreground",
+    surface: "bg-status-overdue/[0.06] dark:bg-status-overdue/[0.10]",
+  },
 };
 
 /* =========================================================
@@ -102,18 +175,27 @@ function ProjectManager() {
       .toLowerCase()
       .replace(/[\s_-]/g, "");
 
-    if (status === "complete" || status === "completed") return "complete";
-    if (status === "active") return "active";
+    if (status === "complete" || status === "completed") {
+      return "complete";
+    }
+
+    if (status === "active") {
+      return "active";
+    }
 
     return "pending";
   }
 
   function isTaskOverdue(task: Task) {
-    if (getWorkflowStatus(task) === "complete" || !task.dueDate) return false;
+    if (getWorkflowStatus(task) === "complete" || !task.dueDate) {
+      return false;
+    }
 
     const dueDate = new Date(task.dueDate);
 
-    if (Number.isNaN(dueDate.getTime())) return false;
+    if (Number.isNaN(dueDate.getTime())) {
+      return false;
+    }
 
     return dueDate.getTime() < Date.now();
   }
@@ -125,10 +207,9 @@ function ProjectManager() {
   async function refreshProject() {
     if (!projectId) return;
 
-    const response = await api.get<Project>(
-      `/projects/${projectId}`,
-      { withCredentials: true },
-    );
+    const response = await api.get<Project>(`/projects/${projectId}`, {
+      withCredentials: true,
+    });
 
     setProject(response.data);
   }
@@ -136,25 +217,18 @@ function ProjectManager() {
   async function refreshTasks() {
     if (!projectId) return;
 
-    const response = await api.get<Task[]>(
-      `/projects/tasks/${projectId}`,
-      { withCredentials: true },
-    );
+    const response = await api.get<Task[]>(`/projects/tasks/${projectId}`, {
+      withCredentials: true,
+    });
 
     setTasks(Array.isArray(response.data) ? response.data : []);
   }
 
   async function handleTaskCreated() {
     try {
-      await Promise.all([
-        refreshTasks(),
-        refreshProject(),
-      ]);
+      await Promise.all([refreshTasks(), refreshProject()]);
     } catch (error) {
-      console.error(
-        "Could not refresh workspace after creating task:",
-        error,
-      );
+      console.error("Could not refresh workspace after creating task:", error);
 
       toast.error(
         "The task was created, but the workspace could not be refreshed.",
@@ -176,37 +250,23 @@ function ProjectManager() {
         setLoading(true);
         setError(null);
 
-        const [
-          projectResponse,
-          tasksResponse,
-          permissionsResponse,
-        ] = await Promise.all([
-          api.get<Project>(
-            `/projects/${projectId}`,
-            { withCredentials: true },
-          ),
-
-          api.get<Task[]>(
-            `/projects/tasks/${projectId}`,
-            { withCredentials: true },
-          ),
-
-          api.get<ProjectPermissions>(
-            `/projects/${projectId}/permissions`,
-            { withCredentials: true },
-          ),
-        ]);
+        const [projectResponse, tasksResponse, permissionsResponse] =
+          await Promise.all([
+            api.get<Project>(`/projects/${projectId}`, {
+              withCredentials: true,
+            }),
+            api.get<Task[]>(`/projects/tasks/${projectId}`, {
+              withCredentials: true,
+            }),
+            api.get<ProjectPermissions>(`/projects/${projectId}/permissions`, {
+              withCredentials: true,
+            }),
+          ]);
 
         if (cancelled) return;
 
         setProject(projectResponse.data);
-
-        setTasks(
-          Array.isArray(tasksResponse.data)
-            ? tasksResponse.data
-            : [],
-        );
-
+        setTasks(Array.isArray(tasksResponse.data) ? tasksResponse.data : []);
         setPermissions(permissionsResponse.data);
       } catch (err: unknown) {
         if (cancelled) return;
@@ -217,7 +277,9 @@ function ProjectManager() {
             : new Error("Could not load project workspace."),
         );
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     }
 
@@ -232,10 +294,7 @@ function ProjectManager() {
      UPDATE TASK STATUS
   ======================================================= */
 
-  async function updateTaskStatus(
-    taskId: string,
-    status: WorkflowStatus,
-  ) {
+  async function updateTaskStatus(taskId: string, status: WorkflowStatus) {
     const response = await api.patch<UpdateTaskStatusResult>(
       `/projects/tasks/task/${taskId}/status`,
       { status },
@@ -249,13 +308,10 @@ function ProjectManager() {
      MOVE TASK
   ======================================================= */
 
-  async function moveTask(
-    taskId: string,
-    newStatus: WorkflowStatus,
-  ) {
+  async function moveTask(taskId: string, newStatus: WorkflowStatus) {
     if (!canManageTasks) return;
 
-    const currentTask = tasks.find(task => task.id === taskId);
+    const currentTask = tasks.find((task) => task.id === taskId);
 
     if (!currentTask) return;
 
@@ -265,22 +321,18 @@ function ProjectManager() {
 
     const previousTasks = tasks;
 
-    setTasks(currentTasks =>
-      currentTasks.map(task =>
-        task.id === taskId
-          ? { ...task, status: newStatus }
-          : task,
+    setTasks((currentTasks) =>
+      currentTasks.map((task) =>
+        task.id === taskId ? { ...task, status: newStatus } : task,
       ),
     );
 
     try {
       const result = await updateTaskStatus(taskId, newStatus);
 
-      setTasks(currentTasks =>
-        currentTasks.map(task =>
-          task.id === taskId
-            ? { ...task, ...result.task }
-            : task,
+      setTasks((currentTasks) =>
+        currentTasks.map((task) =>
+          task.id === taskId ? { ...task, ...result.task } : task,
         ),
       );
 
@@ -306,15 +358,14 @@ function ProjectManager() {
 
     const previousTasks = tasks;
 
-    setTasks(currentTasks =>
-      currentTasks.filter(currentTask => currentTask.id !== task.id),
+    setTasks((currentTasks) =>
+      currentTasks.filter((currentTask) => currentTask.id !== task.id),
     );
 
     try {
-      await api.delete(
-        `/projects/tasks/task/${task.id}`,
-        { withCredentials: true },
-      );
+      await api.delete(`/projects/tasks/task/${task.id}`, {
+        withCredentials: true,
+      });
 
       toast.success("Task deleted.", {
         id: `task-delete-${task.id}`,
@@ -359,7 +410,7 @@ function ProjectManager() {
   const activeTask = useMemo(() => {
     if (!activeTaskId || !canManageTasks) return null;
 
-    return tasks.find(task => task.id === activeTaskId) ?? null;
+    return tasks.find((task) => task.id === activeTaskId) ?? null;
   }, [activeTaskId, canManageTasks, tasks]);
 
   /* =======================================================
@@ -382,10 +433,7 @@ function ProjectManager() {
     if (!canManageTasks || !event.over) return;
     if (!isWorkflowStatus(event.over.id)) return;
 
-    await moveTask(
-      String(event.active.id),
-      event.over.id,
-    );
+    await moveTask(String(event.active.id), event.over.id);
   }
 
   /* =======================================================
@@ -394,10 +442,7 @@ function ProjectManager() {
 
   if (loading) {
     return (
-      <LoadingState
-        label="Loading your workspace"
-        className="min-h-[420px]"
-      />
+      <LoadingState label="Loading your workspace" className="min-h-[420px]" />
     );
   }
 
@@ -410,15 +455,15 @@ function ProjectManager() {
   ======================================================= */
 
   const pendingTaskList = tasks.filter(
-    task => getWorkflowStatus(task) === "pending",
+    (task) => getWorkflowStatus(task) === "pending",
   );
 
   const activeTaskList = tasks.filter(
-    task => getWorkflowStatus(task) === "active",
+    (task) => getWorkflowStatus(task) === "active",
   );
 
   const completedTaskList = tasks.filter(
-    task => getWorkflowStatus(task) === "complete",
+    (task) => getWorkflowStatus(task) === "complete",
   );
 
   const overdueTaskCount = tasks.filter(isTaskOverdue).length;
@@ -438,22 +483,30 @@ function ProjectManager() {
           PROJECT HEADER
       =================================================== */}
 
-      <section className="border-b border-[#315E6C]/[0.07] pb-6 dark:border-white/[0.06]">
-        <div className="flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
+      <section className="border-b border-border/50 pb-5 dark:border-border">
+        <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
           <div className="min-w-0">
             <div className="flex items-start gap-4">
               <span
                 className={[
                   "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl",
-                  "bg-[#DCE7E3] text-[#315E6C]",
-                  "dark:bg-[#DEDA00]/[0.08] dark:text-[#DEDA00]",
+
+                  "bg-surface-3/80",
+                  "text-brand-secondary-highlight",
+
+                  "dark:bg-surface-2",
+                  "dark:text-brand-secondary-highlight",
+
+                  "dark:ring-1",
+                  "dark:ring-inset",
+                  "dark:ring-border",
                 ].join(" ")}
               >
                 <FolderOpenIcon size={18} />
               </span>
 
               <div className="min-w-0 pt-0.5">
-                <p className="text-[0.56rem] font-semibold uppercase tracking-[0.17em] text-[#758386] dark:text-[#94A3B8]">
+                <p className="text-[0.56rem] font-semibold uppercase tracking-[0.17em] text-muted-foreground">
                   Project workspace
                 </p>
 
@@ -461,8 +514,8 @@ function ProjectManager() {
                   className={[
                     "mt-1.5 max-w-4xl break-words",
                     "text-2xl font-semibold leading-[1.08] tracking-[-0.03em]",
-                    "text-[#30383A] sm:text-3xl lg:text-[2rem]",
-                    "dark:text-white",
+                    "text-foreground/90 sm:text-3xl lg:text-[2rem]",
+                    "dark:text-foreground",
                   ].join(" ")}
                 >
                   {project.title}
@@ -474,19 +527,22 @@ function ProjectManager() {
                     onClick={() => void copyProjectCode()}
                     className={[
                       "group mt-2 inline-flex items-center gap-1.5 rounded-md",
-                      "text-[0.64rem] font-medium text-[#718084]",
-                      "transition-colors hover:text-[#315E6C]",
-                      "dark:text-[#94A3B8] dark:hover:text-[#DEDA00]",
+
+                      "text-[0.64rem] font-medium",
+                      "text-muted-foreground",
+
+                      "transition-colors",
+
+                      "hover:text-foreground/80",
+                      "dark:hover:text-foreground",
                     ].join(" ")}
                     title={`Copy ${project.projectCode}`}
                   >
-                    <span>
-                      {getProjectDisplayCode(project.projectCode)}
-                    </span>
+                    <span>{getProjectDisplayCode(project.projectCode)}</span>
 
                     <CopyIcon
                       size={11}
-                      className="opacity-50 transition-opacity group-hover:opacity-100"
+                      className="opacity-50 transition-opacity group-hover:opacity-90"
                     />
                   </button>
                 )}
@@ -494,16 +550,29 @@ function ProjectManager() {
             </div>
           </div>
 
+          {/* ACTIONS */}
+
           <div className="flex shrink-0 flex-wrap gap-2">
             <Button
               type="button"
               variant="outline"
               className={[
                 "h-10 rounded-lg px-4 text-xs font-semibold shadow-none",
-                "border-[#315E6C]/[0.10] bg-transparent text-[#566A6F]",
-                "hover:border-[#315E6C]/[0.16] hover:bg-[#E7ECE9] hover:text-[#315E6C]",
-                "dark:border-white/[0.09] dark:text-[#CBD5E1]",
-                "dark:hover:border-white/[0.14] dark:hover:bg-white/[0.04] dark:hover:text-white",
+
+                "border-border/70",
+                "bg-surface-2/35",
+                "text-muted-foreground",
+
+                "hover:border-border",
+                "hover:bg-surface-3/70",
+                "hover:text-foreground/85",
+
+                "dark:border-border",
+                "dark:bg-surface-2",
+                "dark:text-foreground/80",
+
+                "dark:hover:bg-surface-3",
+                "dark:hover:text-foreground",
               ].join(" ")}
             >
               <EyeIcon size={14} />
@@ -514,9 +583,17 @@ function ProjectManager() {
               asChild
               className={[
                 "h-10 rounded-lg px-4 text-xs font-semibold shadow-none",
-                "bg-[#315E6C] text-white hover:bg-[#294F5B] hover:text-white",
-                "dark:bg-[#DEDA00] dark:text-[#303030]",
-                "dark:hover:bg-[#D4D000] dark:hover:text-[#303030]",
+
+                "bg-brand-secondary-highlight",
+                "text-primary-foreground",
+
+                "hover:bg-brand-secondary-highlight/90",
+
+                "dark:bg-secondary",
+                "dark:text-secondary-foreground",
+
+                "dark:hover:bg-secondary/90",
+                "dark:hover:text-secondary-foreground",
               ].join(" ")}
             >
               <Link to="/projects/new">
@@ -533,66 +610,51 @@ function ProjectManager() {
 
         <div
           className={[
-            "relative mt-6 overflow-hidden rounded-[1.25rem] border",
-            "border-[#0D566D]/[0.10] bg-[#E6EEEB]",
-            "shadow-[0_18px_48px_-40px_rgba(13,86,109,0.38)]",
-            "dark:border-white/[0.065] dark:bg-[#0C1D22]",
-            "dark:shadow-[0_18px_48px_-34px_rgba(0,0,0,0.50)]",
+            "mt-6 overflow-hidden rounded-xl border",
+
+            "border-border/55",
+            "bg-surface-2/65",
+
+            "dark:border-border",
+            "dark:bg-card",
           ].join(" ")}
         >
-          {/* TOP HIGHLIGHT */}
-
-          <span className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#0D566D]/35 to-transparent dark:via-[#DEDA00]/45" />
-
-          {/* AMBIENT DEPTH */}
-
-          <span className="pointer-events-none absolute -right-20 -top-28 h-64 w-64 rounded-full bg-[#7DA6B1]/[0.10] blur-3xl dark:bg-[#0D566D]/20" />
-
-          <div className="relative flex flex-col lg:flex-row lg:items-stretch">
+          <div className="grid lg:grid-cols-[minmax(0,1fr)_minmax(430px,0.78fr)] xl:grid-cols-[minmax(0,1fr)_470px]">
             {/* =============================================
                 PROGRESS
             ============================================= */}
 
-            <div className="min-w-0 flex-1 px-4 py-4 sm:px-5 sm:py-5 lg:px-6">
-              <div className="flex max-w-[390px] items-end justify-between gap-4">
-                <div className="min-w-0">
-                  <p className="text-[0.56rem] font-semibold uppercase tracking-[0.16em] text-[#607579] dark:text-[#94A3B8]">
-                    Project progress
-                  </p>
+            <div className="min-w-0 px-5 py-5 sm:px-6">
+              <div className="max-w-[420px]">
+                <div className="flex items-end justify-between gap-5">
+                  <div className="min-w-0">
+                    <p className="text-[0.55rem] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
+                      Project progress
+                    </p>
 
-                  <div className="mt-1.5 flex items-center gap-2">
-                    <p className="text-sm font-semibold tracking-[-0.01em] text-[#33484D] dark:text-[#F1F5F9]">
+                    <p className="mt-1.5 text-sm font-semibold tracking-[-0.015em] text-foreground/80 dark:text-foreground/90">
                       {completedTaskList.length}/{tasks.length} tasks complete
                     </p>
                   </div>
+
+                  <span className="shrink-0 text-lg font-semibold tabular-nums tracking-[-0.03em] text-brand-secondary-highlight/90 dark:text-secondary">
+                    {progress}%
+                  </span>
                 </div>
 
-                <span className="shrink-0 text-lg font-semibold tabular-nums tracking-[-0.02em] text-[#0D566D] dark:text-[#DEDA00]">
-                  {progress}%
-                </span>
-              </div>
-
-              <div
-                className={[
-                  "mt-3 h-1.5 max-w-[390px] overflow-hidden rounded-full",
-                  "bg-[#0D566D]/[0.11]",
-                  "dark:bg-white/[0.075]",
-                ].join(" ")}
-                role="progressbar"
-                aria-label="Project progress"
-                aria-valuemin={0}
-                aria-valuemax={100}
-                aria-valuenow={progress}
-              >
                 <div
-                  className={[
-                    "h-full rounded-full transition-[width] duration-500 ease-out",
-                    "bg-gradient-to-r from-[#0A4658] via-[#0D566D] to-[#477785]",
-                    "dark:from-[#A8A500] dark:via-[#DEDA00] dark:to-[#F0EC3C]",
-                    "dark:shadow-[0_0_8px_rgba(222,218,0,0.18)]",
-                  ].join(" ")}
-                  style={{ width: `${progress}%` }}
-                />
+                  className="mt-3 h-1.5 overflow-hidden rounded-full bg-muted/80 dark:bg-surface-3"
+                  role="progressbar"
+                  aria-label="Project progress"
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-valuenow={progress}
+                >
+                  <div
+                    className="h-full rounded-full bg-brand-secondary-highlight/85 transition-[width] duration-500 ease-out dark:bg-secondary"
+                    style={{ width: `${progress}%` }}
+                  />
+                </div>
               </div>
             </div>
 
@@ -602,28 +664,34 @@ function ProjectManager() {
 
             <div
               className={[
-                "relative grid grid-cols-2 gap-y-4 border-t px-4 py-4",
-                "border-[#0D566D]/[0.075]",
-                "sm:grid-cols-3 sm:px-5",
-                "lg:w-auto lg:min-w-[390px] lg:border-l lg:border-t-0 lg:px-5 lg:py-5",
-                "dark:border-white/[0.06]",
+                "grid grid-cols-1 border-t border-border/55",
+
+                "bg-surface-3/30",
+
+                "sm:grid-cols-3",
+
+                "lg:border-l lg:border-t-0",
+
+                "dark:border-border",
+                "dark:bg-surface-2",
               ].join(" ")}
             >
-              <ProjectMeta
+              <ProjectSummaryItem
                 label="Status"
                 value={project.status || "Pending"}
                 tone="status"
               />
 
-              <ProjectMeta
+              <ProjectSummaryItem
                 label="Priority"
                 value={project.priority || "Standard"}
               />
 
-              <ProjectMeta
+              <ProjectSummaryItem
                 label="Due"
                 value={formatDate(project.dueDate)}
                 icon={CalendarDaysIcon}
+                preserveValue
               />
             </div>
           </div>
@@ -634,44 +702,44 @@ function ProjectManager() {
           TASK BOARD HEADER
       =================================================== */}
 
-      <section className="flex flex-col gap-4 pb-5 pt-7 sm:flex-row sm:items-end sm:justify-between">
+      <section className="flex flex-col gap-4 pb-4 pt-6 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <div className="flex items-center gap-2.5">
-            <p className="text-[0.56rem] font-semibold uppercase tracking-[0.17em] text-[#315E6C] dark:text-[#DEDA00]">
+            <p className="text-[0.56rem] font-semibold uppercase tracking-[0.17em] text-brand-secondary-highlight dark:text-secondary/90">
               Task board
             </p>
 
             {!canManageTasks && (
-              <span className="flex items-center gap-1 text-[0.6rem] font-medium text-[#7D898C] dark:text-[#94A3B8]">
+              <span className="flex items-center gap-1 text-[0.6rem] font-medium text-muted-foreground">
                 <EyeIcon size={10} />
                 Client view
               </span>
             )}
           </div>
 
-          <h2 className="mt-1.5 text-xl font-semibold tracking-[-0.025em] text-[#30383A] dark:text-white">
+          <h2 className="mt-1.5 text-xl font-semibold tracking-[-0.025em] text-foreground/90 dark:text-foreground">
             Work in motion
           </h2>
 
-          <p className="mt-1 text-[0.68rem] leading-5 text-[#758386] dark:text-[#94A3B8]">
+          <p className="mt-1 text-[0.68rem] leading-5 text-muted-foreground">
             {canManageTasks
               ? "Move work from pending through completion."
               : "Track progress and comment on tasks."}
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 text-[0.65rem] text-[#718084] dark:text-[#94A3B8]">
+        <div className="flex flex-wrap items-center gap-2 text-[0.65rem] text-muted-foreground">
           <span>{tasks.length} tasks</span>
 
-          <span className="h-0.5 w-0.5 rounded-full bg-[#839093] dark:bg-white/25" />
+          <SummaryDivider />
 
           <span>{activeTaskList.length} in progress</span>
 
           {overdueTaskCount > 0 && (
             <>
-              <span className="h-0.5 w-0.5 rounded-full bg-[#839093] dark:bg-white/25" />
+              <SummaryDivider />
 
-              <span className="inline-flex items-center gap-1 font-semibold text-[#9F3C1A] dark:text-[#D27857]">
+              <span className="inline-flex items-center gap-1 font-semibold text-destructive dark:text-status-overdue-foreground">
                 <TriangleAlertIcon size={11} />
                 {overdueTaskCount} overdue
               </span>
@@ -707,7 +775,7 @@ function ProjectManager() {
             canManageTasks={canManageTasks}
             onTaskMove={moveTask}
             onTaskDelete={deleteTask}
-            className="min-w-0"
+            className={getTaskBoardClassName(pendingTaskList.length)}
           />
 
           <TaskStatusBoard
@@ -720,7 +788,7 @@ function ProjectManager() {
             canManageTasks={canManageTasks}
             onTaskMove={moveTask}
             onTaskDelete={deleteTask}
-            className="min-w-0"
+            className={getTaskBoardClassName(activeTaskList.length)}
           />
 
           <TaskStatusBoard
@@ -733,7 +801,7 @@ function ProjectManager() {
             canManageTasks={canManageTasks}
             onTaskMove={moveTask}
             onTaskDelete={deleteTask}
-            className="min-w-0"
+            className={getTaskBoardClassName(completedTaskList.length)}
           />
         </section>
 
@@ -741,10 +809,7 @@ function ProjectManager() {
           <DragOverlay>
             {activeTask ? (
               <div className="w-[280px] rotate-[1deg] opacity-95">
-                <TaskCard
-                  task={activeTask}
-                  isOverlay
-                />
+                <TaskCard task={activeTask} isOverlay />
               </div>
             ) : null}
           </DragOverlay>
@@ -755,14 +820,15 @@ function ProjectManager() {
 }
 
 /* =========================================================
-   PROJECT META
+   PROJECT SUMMARY ITEM
 ========================================================= */
 
-function ProjectMeta({
+function ProjectSummaryItem({
   label,
   value,
   icon: Icon,
   tone,
+  preserveValue = false,
 }: {
   label: string;
   value: string;
@@ -771,39 +837,81 @@ function ProjectMeta({
     className?: string;
   }>;
   tone?: "status";
+  preserveValue?: boolean;
 }) {
+  const statusAppearance =
+    tone === "status" ? getProjectStatusAppearance(value) : null;
+
   return (
-    <div className="flex min-w-[92px] items-start gap-2 px-2 first:pl-0 last:pr-0 lg:px-4">
-      {Icon && (
-        <Icon
-          size={12}
-          className="mt-0.5 shrink-0 text-[#647A7F] dark:text-[#94A3B8]"
-        />
-      )}
+    <div
+      className={[
+        "min-w-0 px-4 py-4 sm:px-4 sm:py-5",
 
-      <div className="min-w-0">
-        <p className="text-[0.54rem] font-semibold uppercase tracking-[0.13em] text-[#687C81] dark:text-[#94A3B8]">
-          {label}
-        </p>
+        "border-t border-border/50 first:border-t-0",
 
-        <div className="mt-1 flex min-w-0 items-center gap-1.5">
-          {tone === "status" && (
-            <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#0D566D] dark:bg-[#DEDA00]" />
+        "sm:border-l sm:border-t-0 sm:first:border-l-0",
+
+        "dark:border-border",
+      ].join(" ")}
+    >
+      <p className="text-[0.53rem] font-semibold uppercase tracking-[0.13em] text-muted-foreground">
+        {label}
+      </p>
+
+      {statusAppearance ? (
+        <div
+          className={[
+            "mt-1.5 inline-flex max-w-full items-center gap-1.5 rounded-md",
+            "px-2 py-1",
+
+            statusAppearance.surface,
+          ].join(" ")}
+        >
+          <span
+            className={[
+              "h-1.5 w-1.5 shrink-0 rounded-full",
+              statusAppearance.dot,
+            ].join(" ")}
+          />
+
+          <span
+            className={[
+              "min-w-0 text-[0.68rem] font-semibold leading-4",
+              statusAppearance.text,
+            ].join(" ")}
+          >
+            {statusAppearance.label}
+          </span>
+        </div>
+      ) : (
+        <div className="mt-1.5 flex min-w-0 items-start gap-1.5">
+          {Icon && (
+            <Icon size={11} className="mt-0.5 shrink-0 text-muted-foreground" />
           )}
 
           <p
             className={[
-              "truncate text-xs font-semibold capitalize",
-              tone === "status"
-                ? "text-[#0D566D] dark:text-[#DEDA00]"
-                : "text-[#33484D] dark:text-[#E2E8F0]",
+              "min-w-0 text-xs font-semibold capitalize leading-5",
+              "text-foreground/75 dark:text-foreground/90",
+
+              preserveValue ? "whitespace-nowrap" : "break-words",
             ].join(" ")}
           >
             {value}
           </p>
         </div>
-      </div>
+      )}
     </div>
+  );
+}
+
+/* =========================================================
+   SUMMARY DIVIDER
+========================================================= */
+
+function SummaryDivider() {
+  return (
+    <span className="h-0.5 w-0.5 rounded-full bg-muted-foreground/40 dark:bg-muted-foreground/65" />
   );
 }
 
@@ -818,18 +926,26 @@ function ProjectManagerError() {
         <span
           className={[
             "mx-auto flex h-11 w-11 items-center justify-center rounded-xl",
-            "bg-[#E1E8E5] text-[#687B80]",
-            "dark:bg-white/[0.04] dark:text-[#DEDA00]",
+
+            "bg-surface-3/80",
+            "text-muted-foreground",
+
+            "dark:bg-surface-2",
+            "dark:text-brand-secondary-highlight",
+
+            "dark:ring-1",
+            "dark:ring-inset",
+            "dark:ring-border",
           ].join(" ")}
         >
           <FolderOpenIcon size={18} />
         </span>
 
-        <h2 className="mt-5 text-lg font-semibold tracking-[-0.02em]">
+        <h2 className="mt-5 text-lg font-semibold tracking-[-0.02em] text-foreground/90 dark:text-foreground">
           Could not load project
         </h2>
 
-        <p className="mt-2 text-sm leading-7 text-[#748185] dark:text-[#94A3B8]">
+        <p className="mt-2 text-sm leading-7 text-muted-foreground">
           Something interrupted the project workspace while it was loading.
         </p>
 
@@ -838,10 +954,20 @@ function ProjectManagerError() {
           variant="outline"
           className={[
             "mt-6 h-10 rounded-lg px-5 text-xs font-semibold shadow-none",
-            "border-[#315E6C]/[0.11] bg-transparent text-[#315E6C]",
-            "hover:bg-[#E7ECE9]",
-            "dark:border-white/[0.09] dark:text-[#CBD5E1]",
-            "dark:hover:bg-white/[0.04] dark:hover:text-white",
+
+            "border-border/70",
+            "bg-surface-2/30",
+            "text-foreground/75",
+
+            "hover:bg-surface-3/60",
+            "hover:text-foreground",
+
+            "dark:border-border",
+            "dark:bg-surface-2",
+            "dark:text-foreground/85",
+
+            "dark:hover:bg-surface-3",
+            "dark:hover:text-foreground",
           ].join(" ")}
         >
           <Link to="/projects">
@@ -858,14 +984,46 @@ function ProjectManagerError() {
    HELPERS
 ========================================================= */
 
+function getProjectStatusAppearance(status?: string) {
+  const normalized = normalizeProjectStatus(status);
+
+  return (
+    projectStatusAppearance[normalized] ?? {
+      label: formatProjectStatus(status),
+      dot: "bg-muted-foreground/65",
+      text: "text-muted-foreground",
+      surface: "bg-muted/60 dark:bg-surface-3/55",
+    }
+  );
+}
+
+function normalizeProjectStatus(status?: string) {
+  return String(status ?? "")
+    .toLowerCase()
+    .replace(/[\s_-]/g, "");
+}
+
+function formatProjectStatus(status?: string) {
+  if (!status?.trim()) return "Unknown";
+
+  return status
+    .trim()
+    .replace(/[_-]+/g, " ")
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+function getTaskBoardClassName(taskCount: number) {
+  return ["min-w-0", taskCount === 0 ? "h-auto! min-h-0! self-start" : ""].join(
+    " ",
+  );
+}
+
 function getProjectDisplayCode(value: string) {
   const code = value.trim();
 
   if (!code) return "";
 
-  const cleanCode = code.startsWith("#")
-    ? code.slice(1)
-    : code;
+  const cleanCode = code.startsWith("#") ? code.slice(1) : code;
 
   if (cleanCode.length <= 10) {
     return `#${cleanCode}`;
@@ -883,7 +1041,9 @@ function formatDate(value?: string | Date | null) {
 
   const date = new Date(value);
 
-  if (Number.isNaN(date.getTime())) return "Not set";
+  if (Number.isNaN(date.getTime())) {
+    return "Not set";
+  }
 
   return new Intl.DateTimeFormat("en", {
     day: "numeric",

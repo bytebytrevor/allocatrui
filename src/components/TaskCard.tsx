@@ -42,17 +42,17 @@ type Props = {
   task: Task;
   isOverlay?: boolean;
   canManageTasks?: boolean;
-  onMoveTask?: (
-    taskId: string,
-    status: WorkflowStatus,
-  ) => void | Promise<void>;
+  onMoveTask?: (taskId: string, status: WorkflowStatus) => void | Promise<void>;
   onEditTask?: (task: Task) => void;
   onDeleteTask?: (task: Task) => void | Promise<void>;
 };
 
 type TaskStatusAppearance = {
   label: string;
-  icon: ComponentType<{ size?: number; className?: string }>;
+  icon: ComponentType<{
+    size?: number;
+    className?: string;
+  }>;
   iconClass: string;
   badgeClass: string;
   stroke: string;
@@ -62,7 +62,10 @@ type TaskStatusAppearance = {
 type TaskStatusOption = {
   value: WorkflowStatus;
   label: string;
-  icon: ComponentType<{ size?: number; className?: string }>;
+  icon: ComponentType<{
+    size?: number;
+    className?: string;
+  }>;
 };
 
 /* =========================================================
@@ -70,10 +73,31 @@ type TaskStatusOption = {
 ========================================================= */
 
 const taskCardSurface = [
-  "border-[#315E6C]/[0.09] bg-[#EDF3F1]",
-  "hover:border-[#315E6C]/[0.13] hover:bg-[#EAF1EF]",
-  "dark:border-white/[0.065] dark:bg-[#10262D]",
-  "dark:hover:border-white/[0.095] dark:hover:bg-[#122A31]",
+  "border-border/45",
+  "bg-surface-3/40",
+
+  "hover:border-border/65",
+  "hover:bg-surface-3/60",
+
+  "dark:border-border",
+  "dark:bg-card",
+
+  "dark:hover:border-border",
+  "dark:hover:bg-surface-2",
+].join(" ");
+
+const taskMenuItemClass = [
+  "rounded-lg px-2.5 py-2",
+
+  "text-[0.7rem] font-medium",
+
+  "focus:bg-surface-3/65",
+  "focus:text-foreground",
+
+  "dark:text-foreground/85",
+
+  "dark:focus:bg-surface-3",
+  "dark:focus:text-foreground",
 ].join(" ");
 
 /* =========================================================
@@ -84,38 +108,89 @@ const taskStatusAppearance: Record<WorkflowStatus, TaskStatusAppearance> = {
   pending: {
     label: "Pending",
     icon: CircleDashedIcon,
-    iconClass: "text-[#956A34] dark:text-[#F0A23A]",
-    badgeClass:
-      "bg-[#E9DFD1] text-[#815C2E] dark:bg-[#F0A23A]/[0.10] dark:text-[#F0A23A]",
-    stroke: "bg-[#B98645] dark:bg-[#F0A23A]",
-    divider: "border-[#B98645]/[0.10] dark:border-[#F0A23A]/[0.08]",
+
+    iconClass: "text-status-pending-foreground",
+
+    badgeClass: [
+      "bg-status-pending/[0.07]",
+      "text-status-pending-foreground",
+
+      "dark:bg-status-pending/[0.14]",
+      "dark:text-status-pending-foreground",
+
+      "dark:ring-1",
+      "dark:ring-inset",
+      "dark:ring-status-pending/15",
+    ].join(" "),
+
+    stroke: "bg-status-pending",
+
+    divider: "border-status-pending/10 dark:border-status-pending/15",
   },
 
   active: {
     label: "In progress",
     icon: CircleDotIcon,
-    iconClass: "text-[#315E6C] dark:text-[#DEDA00]",
-    badgeClass:
-      "bg-[#D7E5E1] text-[#315E6C] dark:bg-[#DEDA00]/[0.10] dark:text-[#DEDA00]",
-    stroke: "bg-[#315E6C] dark:bg-[#DEDA00]",
-    divider: "border-[#315E6C]/[0.09] dark:border-[#DEDA00]/[0.075]",
+
+    iconClass: "text-status-active-foreground",
+
+    badgeClass: [
+      "bg-status-active/[0.06]",
+      "text-status-active-foreground",
+
+      "dark:bg-status-active/[0.14]",
+      "dark:text-status-active-foreground",
+
+      "dark:ring-1",
+      "dark:ring-inset",
+      "dark:ring-status-active/15",
+    ].join(" "),
+
+    stroke: "bg-status-active",
+
+    divider: "border-status-active/10 dark:border-status-active/15",
   },
 
   complete: {
     label: "Complete",
     icon: CircleCheckBigIcon,
-    iconClass: "text-[#477A4F] dark:text-[#38D200]",
-    badgeClass:
-      "bg-[#DCE9DE] text-[#477A4F] dark:bg-[#38D200]/[0.10] dark:text-[#38D200]",
-    stroke: "bg-[#568B5E] dark:bg-[#38D200]",
-    divider: "border-[#568B5E]/[0.10] dark:border-[#38D200]/[0.075]",
+
+    iconClass: "text-status-complete-foreground",
+
+    badgeClass: [
+      "bg-status-complete/[0.07]",
+      "text-status-complete-foreground",
+
+      "dark:bg-status-complete/[0.14]",
+      "dark:text-status-complete-foreground",
+
+      "dark:ring-1",
+      "dark:ring-inset",
+      "dark:ring-status-complete/15",
+    ].join(" "),
+
+    stroke: "bg-status-complete",
+
+    divider: "border-status-complete/10 dark:border-status-complete/15",
   },
 };
 
 const taskStatusOptions: TaskStatusOption[] = [
-  { value: "pending", label: "Pending", icon: CircleDashedIcon },
-  { value: "active", label: "In progress", icon: CircleDotIcon },
-  { value: "complete", label: "Complete", icon: CircleCheckBigIcon },
+  {
+    value: "pending",
+    label: "Pending",
+    icon: CircleDashedIcon,
+  },
+  {
+    value: "active",
+    label: "In progress",
+    icon: CircleDotIcon,
+  },
+  {
+    value: "complete",
+    label: "Complete",
+    icon: CircleCheckBigIcon,
+  },
 ];
 
 /* =========================================================
@@ -134,7 +209,9 @@ function TaskCard({
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const currentStatus = getWorkflowStatus(task);
+
   const overdue = currentStatus !== "complete" && isTaskPastDue(task);
+
   const appearance = taskStatusAppearance[currentStatus];
 
   const displayTask: Task = {
@@ -143,7 +220,9 @@ function TaskCard({
   };
 
   function openTask() {
-    if (!isOverlay) setDialogOpen(true);
+    if (!isOverlay) {
+      setDialogOpen(true);
+    }
   }
 
   function handleCardClick(event: MouseEvent<HTMLElement>) {
@@ -152,9 +231,7 @@ function TaskCard({
     const target = event.target as HTMLElement;
 
     if (
-      target.closest(
-        "button, a, input, textarea, select, [role='menuitem']",
-      )
+      target.closest("button, a, input, textarea, select, [role='menuitem']")
     ) {
       return;
     }
@@ -181,27 +258,37 @@ function TaskCard({
         aria-label={isOverlay ? undefined : `Open task ${task.title}`}
         className={[
           "group relative overflow-hidden rounded-xl border px-3.5 pb-3.5 pt-4",
-          "transition-[background-color,border-color,opacity,box-shadow] duration-200",
+
+          "transition-[background-color,border-color,opacity] duration-200",
+
           taskCardSurface,
 
           !isOverlay
             ? [
                 "cursor-pointer",
-                "hover:shadow-[0_12px_30px_-28px_rgba(25,54,61,0.28)]",
+
                 "focus-visible:outline-none",
-                "focus-visible:ring-2 focus-visible:ring-[#315E6C]/20",
-                "dark:hover:shadow-[0_14px_34px_-28px_rgba(0,0,0,0.65)]",
-                "dark:focus-visible:ring-[#DEDA00]/20",
+
+                "focus-visible:ring-2",
+                "focus-visible:ring-ring/20",
+
+                "focus-visible:ring-offset-2",
+                "focus-visible:ring-offset-background",
               ].join(" ")
             : "",
 
           isOverlay
             ? [
                 "rotate-[1deg]",
-                "border-[#315E6C]/20",
-                "shadow-[0_20px_46px_-24px_rgba(19,44,51,0.38)]",
-                "dark:border-[#DEDA00]/15",
-                "dark:shadow-[0_20px_46px_-22px_rgba(0,0,0,0.72)]",
+
+                "border-ring/20",
+                "bg-surface-2",
+
+                "ring-1",
+                "ring-ring/10",
+
+                "dark:border-border",
+                "dark:bg-surface-2",
               ].join(" ")
             : "",
         ]
@@ -213,6 +300,11 @@ function TaskCard({
         <span
           className={[
             "absolute left-3.5 top-0 h-[2px] w-8 rounded-full",
+
+            "opacity-80",
+
+            "dark:opacity-100",
+
             appearance.stroke,
           ].join(" ")}
         />
@@ -221,12 +313,12 @@ function TaskCard({
 
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
-            <h4 className="line-clamp-2 text-sm font-semibold leading-5 tracking-[-0.012em] text-[#30383A] dark:text-[#F8FAFC]">
+            <h4 className="line-clamp-2 text-sm font-semibold leading-5 tracking-[-0.012em] text-foreground/85 dark:text-foreground">
               {task.title}
             </h4>
 
             {task.description && (
-              <p className="mt-1.5 line-clamp-2 text-[0.69rem] leading-5 text-[#647579] dark:text-[#94A3B8]">
+              <p className="mt-1.5 line-clamp-2 text-[0.69rem] leading-5 text-muted-foreground/90 dark:text-muted-foreground">
                 {task.description}
               </p>
             )}
@@ -241,9 +333,7 @@ function TaskCard({
               onMoveTask={onMoveTask}
               onEditTask={onEditTask}
               onRequestDelete={
-                onDeleteTask
-                  ? () => setDeleteDialogOpen(true)
-                  : undefined
+                onDeleteTask ? () => setDeleteDialogOpen(true) : undefined
               }
             />
           )}
@@ -257,10 +347,7 @@ function TaskCard({
             appearance.divider,
           ].join(" ")}
         >
-          <DueDate
-            dueDate={task.dueDate}
-            isOverdue={overdue}
-          />
+          <DueDate dueDate={task.dueDate} isOverdue={overdue} />
 
           <div className="flex shrink-0 items-center gap-1.5">
             {overdue && <OverdueBadge />}
@@ -307,22 +394,19 @@ function TaskMenu({
   currentStatus: WorkflowStatus;
   canManageTasks: boolean;
   onOpenTask: () => void;
-  onMoveTask?: (
-    taskId: string,
-    status: WorkflowStatus,
-  ) => void | Promise<void>;
+  onMoveTask?: (taskId: string, status: WorkflowStatus) => void | Promise<void>;
   onEditTask?: (task: Task) => void;
   onRequestDelete?: () => void;
 }) {
   const availableMoveStatuses = getAvailableMoveStatuses(currentStatus);
 
   const canMove =
-    canManageTasks &&
-    Boolean(onMoveTask) &&
-    availableMoveStatuses.length > 0;
+    canManageTasks && Boolean(onMoveTask) && availableMoveStatuses.length > 0;
 
   const canEdit = canManageTasks && Boolean(onEditTask);
+
   const canDelete = canManageTasks && Boolean(onRequestDelete);
+
   const hasManagementActions = canMove || canEdit || canDelete;
 
   function stopPointer(event: PointerEvent<HTMLElement>) {
@@ -345,15 +429,34 @@ function TaskMenu({
             type="button"
             className={[
               "flex h-7 w-7 items-center justify-center rounded-md",
-              "text-[#748286] opacity-55",
+
+              "text-muted-foreground/55",
+              "opacity-60",
+
               "transition-[background-color,color,opacity] duration-150",
-              "hover:bg-[#315E6C]/[0.07] hover:text-[#315E6C] hover:opacity-100",
+
+              "hover:bg-surface-3/75",
+              "hover:text-foreground/75",
+              "hover:opacity-100",
+
               "group-hover:opacity-100",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#315E6C]/20",
-              "data-[state=open]:bg-[#315E6C]/[0.07] data-[state=open]:text-[#315E6C] data-[state=open]:opacity-100",
-              "dark:text-[#94A3B8]/70 dark:hover:bg-white/[0.055] dark:hover:text-[#E2E8F0]",
-              "dark:data-[state=open]:bg-white/[0.055] dark:data-[state=open]:text-white",
-              "dark:focus-visible:ring-[#DEDA00]/20",
+
+              "focus-visible:outline-none",
+              "focus-visible:ring-2",
+              "focus-visible:ring-ring/20",
+
+              "data-[state=open]:bg-surface-3/75",
+              "data-[state=open]:text-foreground/80",
+              "data-[state=open]:opacity-100",
+
+              "dark:text-muted-foreground",
+              "dark:opacity-80",
+
+              "dark:hover:bg-surface-3",
+              "dark:hover:text-foreground",
+
+              "dark:data-[state=open]:bg-surface-3",
+              "dark:data-[state=open]:text-foreground",
             ].join(" ")}
             aria-label={`Task options for ${task.title}`}
           >
@@ -366,57 +469,59 @@ function TaskMenu({
           sideOffset={6}
           collisionPadding={12}
           className={[
-            "w-52 rounded-xl p-1.5",
-            "border-[#315E6C]/[0.09] bg-[#F7F9F7] text-[#30383A]",
-            "shadow-[0_16px_40px_-24px_rgba(25,52,59,0.30)]",
-            "dark:border-white/[0.08] dark:bg-[#10262D] dark:text-[#E2E8F0]",
-            "dark:shadow-[0_16px_40px_-22px_rgba(0,0,0,0.68)]",
+            "w-48 rounded-xl",
+
+            "border-border/60",
+            "bg-popover",
+            "p-1.5",
+
+            "text-popover-foreground",
+
+            "shadow-none",
+
+            "dark:border-border",
           ].join(" ")}
         >
           <DropdownMenuItem
-            className="rounded-lg focus:bg-[#E4ECE9] dark:focus:bg-white/[0.05]"
+            className={taskMenuItemClass}
             onSelect={() => requestAnimationFrame(onOpenTask)}
           >
-            <EyeIcon size={14} />
+            <EyeIcon size={13} className="text-muted-foreground" />
             View task
           </DropdownMenuItem>
 
           {hasManagementActions && (
-            <DropdownMenuSeparator className="bg-[#315E6C]/[0.07] dark:bg-white/[0.07]" />
+            <DropdownMenuSeparator className="bg-border/60 dark:bg-border" />
           )}
 
           {canEdit && (
             <DropdownMenuItem
-              className="rounded-lg focus:bg-[#E4ECE9] dark:focus:bg-white/[0.05]"
+              className={taskMenuItemClass}
               onSelect={() => onEditTask?.(task)}
             >
-              <PencilIcon size={14} />
+              <PencilIcon size={13} className="text-muted-foreground" />
               Edit task
             </DropdownMenuItem>
           )}
 
           {canMove && (
             <>
-              <DropdownMenuLabel className="px-2 py-1.5 text-[0.58rem] font-semibold uppercase tracking-[0.14em] text-[#748286] dark:text-[#94A3B8]">
+              <DropdownMenuLabel className="px-2.5 pb-1 pt-2 text-[0.52rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                 Move task
               </DropdownMenuLabel>
 
-              {availableMoveStatuses.map(option => {
+              {availableMoveStatuses.map((option) => {
                 const Icon = option.icon;
+
                 const optionAppearance = taskStatusAppearance[option.value];
 
                 return (
                   <DropdownMenuItem
                     key={option.value}
-                    className="rounded-lg focus:bg-[#E4ECE9] dark:focus:bg-white/[0.05]"
-                    onSelect={() =>
-                      void onMoveTask?.(task.id, option.value)
-                    }
+                    className={taskMenuItemClass}
+                    onSelect={() => void onMoveTask?.(task.id, option.value)}
                   >
-                    <Icon
-                      size={14}
-                      className={optionAppearance.iconClass}
-                    />
+                    <Icon size={13} className={optionAppearance.iconClass} />
 
                     {option.label}
                   </DropdownMenuItem>
@@ -427,20 +532,29 @@ function TaskMenu({
 
           {canDelete && (
             <>
-              <DropdownMenuSeparator className="bg-[#315E6C]/[0.07] dark:bg-white/[0.07]" />
+              <DropdownMenuSeparator className="bg-border/60 dark:bg-border" />
 
               <DropdownMenuItem
                 className={[
-                  "rounded-lg text-[#9F3C1A]",
-                  "focus:bg-[#AD3A12]/[0.07] focus:text-[#9F3C1A]",
-                  "dark:text-[#D98A6D]",
-                  "dark:focus:bg-[#AD3A12]/[0.12] dark:focus:text-[#E69B80]",
+                  "rounded-lg px-2.5 py-2",
+
+                  "text-[0.7rem] font-medium",
+
+                  "text-destructive/85",
+
+                  "focus:bg-destructive/[0.055]",
+                  "focus:text-destructive",
+
+                  "dark:text-status-overdue-foreground",
+
+                  "dark:focus:bg-status-overdue/12",
+                  "dark:focus:text-status-overdue-foreground",
                 ].join(" ")}
                 onSelect={() =>
                   requestAnimationFrame(() => onRequestDelete?.())
                 }
               >
-                <Trash2Icon size={14} />
+                <Trash2Icon size={13} />
                 Delete task
               </DropdownMenuItem>
             </>
@@ -465,10 +579,17 @@ function DueDate({
   return (
     <span
       className={[
-        "flex min-w-0 items-center gap-1.5 text-[0.61rem] font-medium",
+        "flex min-w-0 items-center gap-1.5",
+
+        "text-[0.61rem] font-medium",
+
         isOverdue
-          ? "text-[#9F3C1A] dark:text-[#D98A6D]"
-          : "text-[#748286] dark:text-[#94A3B8]",
+          ? ["text-destructive/75", "dark:text-status-overdue-foreground"].join(
+              " ",
+            )
+          : ["text-muted-foreground/85", "dark:text-muted-foreground"].join(
+              " ",
+            ),
       ].join(" ")}
     >
       <CalendarDaysIcon size={11} className="shrink-0" />
@@ -484,22 +605,21 @@ function DueDate({
    STATUS
 ========================================================= */
 
-function TaskStatus({
-  appearance,
-}: {
-  appearance: TaskStatusAppearance;
-}) {
+function TaskStatus({ appearance }: { appearance: TaskStatusAppearance }) {
   const Icon = appearance.icon;
 
   return (
     <span
       className={[
         "inline-flex shrink-0 items-center gap-1.5 rounded-md px-2 py-1",
+
         "text-[0.57rem] font-semibold",
+
         appearance.badgeClass,
       ].join(" ")}
     >
       <Icon size={10} className={appearance.iconClass} />
+
       {appearance.label}
     </span>
   );
@@ -514,8 +634,18 @@ function OverdueBadge() {
     <span
       className={[
         "inline-flex shrink-0 items-center gap-1 rounded-md px-2 py-1",
-        "bg-[#EFE0DA] text-[0.57rem] font-semibold text-[#9F3C1A]",
-        "dark:bg-[#AD3A12]/[0.14] dark:text-[#D98A6D]",
+
+        "bg-destructive/[0.05]",
+
+        "text-[0.57rem] font-semibold",
+        "text-destructive/80",
+
+        "dark:bg-status-overdue/[0.14]",
+        "dark:text-status-overdue-foreground",
+
+        "dark:ring-1",
+        "dark:ring-inset",
+        "dark:ring-status-overdue/15",
       ].join(" ")}
     >
       <TriangleAlertIcon size={10} />
@@ -529,9 +659,7 @@ function OverdueBadge() {
 ========================================================= */
 
 function getAvailableMoveStatuses(currentStatus: WorkflowStatus) {
-  return taskStatusOptions.filter(
-    option => option.value !== currentStatus,
-  );
+  return taskStatusOptions.filter((option) => option.value !== currentStatus);
 }
 
 function getWorkflowStatus(task: Task): WorkflowStatus {
@@ -540,7 +668,9 @@ function getWorkflowStatus(task: Task): WorkflowStatus {
     .toLowerCase()
     .replace(/[\s_-]/g, "");
 
-  if (normalized === "active") return "active";
+  if (normalized === "active") {
+    return "active";
+  }
 
   if (normalized === "complete" || normalized === "completed") {
     return "complete";
@@ -554,7 +684,9 @@ function isTaskPastDue(task: Task) {
 
   const dueDate = new Date(task.dueDate);
 
-  if (Number.isNaN(dueDate.getTime())) return false;
+  if (Number.isNaN(dueDate.getTime())) {
+    return false;
+  }
 
   return dueDate.getTime() < Date.now();
 }
@@ -562,7 +694,9 @@ function isTaskPastDue(task: Task) {
 function formatTaskDate(value: string | Date) {
   const date = new Date(value);
 
-  if (Number.isNaN(date.getTime())) return "No due date";
+  if (Number.isNaN(date.getTime())) {
+    return "No due date";
+  }
 
   return new Intl.DateTimeFormat("en", {
     day: "numeric",

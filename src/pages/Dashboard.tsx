@@ -60,70 +60,100 @@ const managerLinks = [
 type ProjectStatusAppearance = {
   label: string;
   dot: string;
-  text: string;
 };
 
 const projectStatusAppearance: Record<string, ProjectStatusAppearance> = {
   pending: {
     label: "Pending",
-    dot: "bg-[#B98645] dark:bg-[#F0A23A]",
-    text: "text-[#8A632F] dark:text-[#F0A23A]",
+    dot: "bg-brand-amber/65 dark:bg-status-pending",
   },
 
   active: {
     label: "Active",
-    dot: "bg-[#315E6C] dark:bg-[#DEDA00]",
-    text: "text-[#315E6C] dark:text-[#DEDA00]",
+    dot: "bg-brand-secondary-highlight/70 dark:bg-status-active",
   },
 
   completionrequested: {
     label: "Awaiting confirmation",
-    dot: "bg-[#B98645] dark:bg-[#F0A23A]",
-    text: "text-[#8A632F] dark:text-[#F0A23A]",
+    dot: "bg-brand-amber/65 dark:bg-status-pending",
   },
 
   paused: {
     label: "Paused",
-    dot: "bg-[#7B9095]",
-    text: "text-[#687C81] dark:text-[#9ABAC2]",
+    dot: "bg-muted-foreground/45 dark:bg-muted-foreground/70",
   },
 
   onhold: {
     label: "On hold",
-    dot: "bg-[#7B9095]",
-    text: "text-[#687C81] dark:text-[#9ABAC2]",
+    dot: "bg-muted-foreground/45 dark:bg-muted-foreground/70",
   },
 
   complete: {
     label: "Completed",
-    dot: "bg-[#568B5E] dark:bg-[#38D200]",
-    text: "text-[#477A4F] dark:text-[#38D200]",
+    dot: "bg-brand-green/60 dark:bg-status-complete",
   },
 
   completed: {
     label: "Completed",
-    dot: "bg-[#568B5E] dark:bg-[#38D200]",
-    text: "text-[#477A4F] dark:text-[#38D200]",
+    dot: "bg-brand-green/60 dark:bg-status-complete",
   },
 
   closed: {
     label: "Completed",
-    dot: "bg-[#568B5E] dark:bg-[#38D200]",
-    text: "text-[#477A4F] dark:text-[#38D200]",
+    dot: "bg-brand-green/60 dark:bg-status-complete",
   },
 
   cancelled: {
     label: "Cancelled",
-    dot: "bg-[#AD3A12]",
-    text: "text-[#9F3C1A] dark:text-[#D27857]",
+    dot: "bg-destructive/60 dark:bg-status-overdue",
   },
 
   canceled: {
     label: "Cancelled",
-    dot: "bg-[#AD3A12]",
-    text: "text-[#9F3C1A] dark:text-[#D27857]",
+    dot: "bg-destructive/60 dark:bg-status-overdue",
   },
 };
+
+/* =========================================================
+   SWITCHER VISIBILITY
+========================================================= */
+
+const HIDDEN_SWITCHER_STATUSES = new Set([
+  "complete",
+  "completed",
+  "closed",
+  "cancelled",
+  "canceled",
+]);
+
+/* =========================================================
+   SHARED THEME
+========================================================= */
+
+const workspaceIconSurface = [
+  "bg-surface-3/60 text-brand-secondary-highlight",
+  "ring-1 ring-inset ring-border/30",
+
+  "dark:bg-surface-2",
+  "dark:text-brand-secondary-highlight",
+  "dark:ring-border",
+].join(" ");
+
+const secondaryActionButton = [
+  "border-border/60 bg-surface-2/30 text-foreground/70",
+
+  "hover:border-border/80",
+  "hover:bg-surface-3/55",
+  "hover:text-foreground/90",
+
+  "dark:border-border",
+  "dark:bg-surface-2",
+  "dark:text-foreground/80",
+
+  "dark:hover:border-border",
+  "dark:hover:bg-surface-3",
+  "dark:hover:text-foreground",
+].join(" ");
 
 /* =========================================================
    DASHBOARD
@@ -179,10 +209,24 @@ function Dashboard() {
   const currentProject = useMemo(() => {
     if (!projectId) return undefined;
 
-    return projects.find(project => String(project.id) === String(projectId));
+    return projects.find((project) => String(project.id) === String(projectId));
   }, [projects, projectId]);
 
+  /* =======================================================
+     SWITCHER PROJECTS
+  ======================================================= */
+
+  const switcherProjects = useMemo(
+    () =>
+      projects.filter(
+        (project) =>
+          !HIDDEN_SWITCHER_STATUSES.has(normalizeProjectStatus(project.status)),
+      ),
+    [projects],
+  );
+
   const projectBasePath = projectId ? `/projects/${projectId}` : "/projects";
+
   const hasProjectAccess = Boolean(currentProject && projectId);
 
   /* =======================================================
@@ -190,12 +234,12 @@ function Dashboard() {
   ======================================================= */
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#F3F5F2] text-[#30383A] dark:bg-[#08171C] dark:text-white">
+    <div className="flex min-h-screen flex-col bg-background text-foreground">
       {/* ===================================================
           GLOBAL HEADER
       =================================================== */}
 
-      <header className="sticky top-0 z-50 border-b border-[#315E6C]/[0.06] bg-[#F7F9F7]/95 backdrop-blur-xl dark:border-white/[0.055] dark:bg-[#08171C]/95">
+      <header className="sticky top-0 z-50 border-b border-border/55 bg-background/95 backdrop-blur-xl dark:border-border">
         <div className="container mx-auto px-4 sm:px-5 md:px-8">
           <DashboardMainNav />
         </div>
@@ -205,26 +249,32 @@ function Dashboard() {
           MOBILE PROJECT BAR
       =================================================== */}
 
-      <div className="sticky top-16 z-40 border-b border-[#315E6C]/[0.07] bg-[#F3F5F2]/95 backdrop-blur-xl dark:border-white/[0.055] dark:bg-[#0C1D22]/95 sm:top-[4.25rem] lg:hidden">
+      <div
+        className={[
+          "sticky top-16 z-40 border-b border-border/55",
+          "bg-background/95 backdrop-blur-xl",
+          "dark:border-border",
+          "sm:top-[4.25rem] lg:hidden",
+        ].join(" ")}
+      >
         <div className="container mx-auto flex min-h-[3.75rem] items-center justify-between gap-4 px-4 py-2.5 sm:px-5 md:px-8">
           <div className="flex min-w-0 items-center gap-3">
             <span
               className={[
                 "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
-                "bg-[#E0E9E6] text-[#315E6C]",
-                "dark:bg-[#DEDA00]/[0.08] dark:text-[#DEDA00]",
+                workspaceIconSurface,
               ].join(" ")}
             >
               <LayoutDashboardIcon size={14} />
             </span>
 
             <div className="min-w-0">
-              <p className="text-[0.52rem] font-semibold uppercase tracking-[0.16em] text-[#778588] dark:text-white/27">
+              <p className="text-[0.52rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground/80">
                 Project workspace
               </p>
 
               <div className="mt-0.5 flex min-w-0 items-center gap-2">
-                <h1 className="truncate text-sm font-semibold tracking-[-0.015em]">
+                <h1 className="truncate text-sm font-semibold tracking-[-0.015em] text-foreground/85 dark:text-foreground">
                   {currentProject?.title || "Project workspace"}
                 </h1>
 
@@ -250,19 +300,34 @@ function Dashboard() {
             variant="ghost"
             size="icon"
             className={[
-              "h-8 w-8 shrink-0 rounded-lg shadow-none transition-colors",
+              "h-8 w-8 shrink-0 rounded-lg shadow-none",
+              "transition-[background-color,color] duration-150",
+
               mobileMenuOpen
                 ? [
-                    "bg-[#315E6C] text-white hover:bg-[#294F5B] hover:text-white",
-                    "dark:bg-[#DEDA00] dark:text-[#303030]",
-                    "dark:hover:bg-[#D4D000] dark:hover:text-[#303030]",
+                    "bg-brand-secondary-highlight/[0.09]",
+                    "text-brand-secondary-highlight",
+
+                    "hover:bg-brand-secondary-highlight/[0.13]",
+                    "hover:text-brand-secondary-highlight",
+
+                    "dark:bg-secondary/[0.08]",
+                    "dark:text-secondary",
+
+                    "dark:hover:bg-secondary/[0.12]",
+                    "dark:hover:text-secondary",
                   ].join(" ")
                 : [
-                    "text-[#6C7D81] hover:bg-[#E3E9E6] hover:text-[#315E6C]",
-                    "dark:text-white/34 dark:hover:bg-white/[0.05] dark:hover:text-white",
+                    "text-muted-foreground",
+
+                    "hover:bg-surface-3/55",
+                    "hover:text-foreground/85",
+
+                    "dark:hover:bg-surface-2",
+                    "dark:hover:text-foreground",
                   ].join(" "),
             ].join(" ")}
-            onClick={() => setMobileMenuOpen(current => !current)}
+            onClick={() => setMobileMenuOpen((current) => !current)}
             aria-label={
               mobileMenuOpen
                 ? "Close project navigation"
@@ -278,7 +343,7 @@ function Dashboard() {
         {mobileMenuOpen && (
           <div
             id="mobile-project-navigation"
-            className="border-t border-[#315E6C]/[0.06] dark:border-white/[0.055]"
+            className="border-t border-border/55 dark:border-border"
           >
             <div className="container mx-auto max-h-[calc(100vh-8rem)] overflow-y-auto px-4 py-4 sm:px-5 md:px-8">
               <div className="space-y-5">
@@ -293,12 +358,12 @@ function Dashboard() {
                   <div
                     className={
                       hasProjectAccess
-                        ? "border-t border-[#315E6C]/[0.07] pt-4 dark:border-white/[0.06]"
+                        ? "border-t border-border/55 pt-4 dark:border-border"
                         : ""
                     }
                   >
                     <ProjectSwitcher
-                      projects={projects}
+                      projects={switcherProjects}
                       projectId={projectId}
                       error={projectsError}
                       currentProject={currentProject}
@@ -331,27 +396,27 @@ function Dashboard() {
               DESKTOP SIDEBAR
           ================================================= */}
 
-          <aside className="hidden min-h-0 border-r border-[#315E6C]/[0.075] lg:block dark:border-white/[0.06]">
+          <aside className="hidden min-h-0 border-r border-border/55 lg:block dark:border-border">
             <div className="sticky top-[5.75rem] flex max-h-[calc(100vh-6rem)] flex-col py-7 pr-6 xl:pr-7">
-              {/* =============================================
-                  CURRENT PROJECT
-              ============================================= */}
-
               <div className="pb-7">
                 <Link
                   to="/projects"
                   className={[
                     "group inline-flex items-center gap-2",
-                    "text-[0.68rem] font-medium text-[#728185]",
-                    "transition-colors hover:text-[#315E6C]",
-                    "dark:text-white/31 dark:hover:text-white",
+
+                    "text-[0.68rem] font-medium",
+                    "text-muted-foreground/90",
+
+                    "transition-colors duration-150",
+
+                    "hover:text-foreground/80",
+                    "dark:hover:text-foreground",
                   ].join(" ")}
                 >
                   <ArrowLeftIcon
                     size={12}
                     className="transition-transform duration-200 group-hover:-translate-x-0.5"
                   />
-
                   All projects
                 </Link>
 
@@ -359,30 +424,23 @@ function Dashboard() {
                   <span
                     className={[
                       "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl",
-                      "bg-[#DCE7E3] text-[#315E6C]",
-                      "dark:bg-[#DEDA00]/[0.08] dark:text-[#DEDA00]",
+                      workspaceIconSurface,
                     ].join(" ")}
                   >
                     <LayoutDashboardIcon size={17} />
                   </span>
 
                   <div className="min-w-0 pt-0.5">
-                    <p className="text-[0.52rem] font-semibold uppercase tracking-[0.16em] text-[#7B898C] dark:text-white/25">
+                    <p className="text-[0.52rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground/80">
                       Current project
                     </p>
 
-                    <h1 className="mt-1.5 line-clamp-2 break-words text-[0.94rem] font-semibold leading-[1.2] tracking-[-0.018em]">
+                    <h1 className="mt-1.5 line-clamp-2 break-words text-[0.94rem] font-semibold leading-[1.2] tracking-[-0.018em] text-foreground/85 dark:text-foreground">
                       {currentProject?.title || "Project workspace"}
                     </h1>
 
-                    {/* {currentProject?.projectCode && (
-                      <p className="mt-1.5 truncate text-[0.58rem] text-[#849194] dark:text-white/21">
-                        {currentProject.projectCode}
-                      </p>
-                    )} */}
-
                     {currentProject?.projectCode && (
-                      <p className="mt-1.5 truncate text-[0.58rem] text-[#849194] dark:text-[#94A3B8]">
+                      <p className="mt-1.5 truncate text-[0.58rem] text-muted-foreground/65 dark:text-muted-foreground">
                         {getProjectDisplayCode(currentProject.projectCode)}
                       </p>
                     )}
@@ -397,14 +455,10 @@ function Dashboard() {
                 </div>
               </div>
 
-              {/* =============================================
-                  PROJECT NAVIGATION
-              ============================================= */}
-
-              <div className="min-h-0 flex-1 overflow-y-auto border-t border-[#315E6C]/[0.07] py-5 dark:border-white/[0.055]">
+              <div className="min-h-0 flex-1 overflow-y-auto border-t border-border/55 py-5 dark:border-border">
                 {!loadingProjects && hasProjectAccess ? (
                   <>
-                    <p className="mb-2 px-2 text-[0.5rem] font-semibold uppercase tracking-[0.17em] text-[#7A888B] dark:text-white/23">
+                    <p className="mb-2 px-2 text-[0.5rem] font-semibold uppercase tracking-[0.17em] text-muted-foreground/70">
                       Workspace
                     </p>
 
@@ -415,14 +469,10 @@ function Dashboard() {
                 ) : null}
               </div>
 
-              {/* =============================================
-                  PROJECT SWITCHER
-              ============================================= */}
-
-              <div className="border-t border-[#315E6C]/[0.07] pt-4 dark:border-white/[0.055]">
+              <div className="border-t border-border/55 pt-4 dark:border-border">
                 {!loadingProjects && (
                   <ProjectSwitcher
-                    projects={projects}
+                    projects={switcherProjects}
                     projectId={projectId}
                     error={projectsError}
                     currentProject={currentProject}
@@ -451,12 +501,14 @@ function Dashboard() {
                 <ProjectWorkspaceError onRetry={fetchProjects} />
               ) : currentProject && projectId ? (
                 <Outlet
-                  context={{
-                    projects,
-                    currentProject,
-                    projectId,
-                    isAllocat: Boolean(user?.isAllocat),
-                  } satisfies ProjectWorkspaceContext}
+                  context={
+                    {
+                      projects,
+                      currentProject,
+                      projectId,
+                      isAllocat: Boolean(user?.isAllocat),
+                    } satisfies ProjectWorkspaceContext
+                  }
                 />
               ) : (
                 <ProjectUnavailable />
@@ -482,20 +534,20 @@ function ProjectStatus({
 }) {
   const normalized = normalizeProjectStatus(status);
 
-  const appearance =
-    projectStatusAppearance[normalized] ?? {
-      label: formatProjectStatus(status),
-      dot: "bg-[#7B9095]",
-      text: "text-[#687C81] dark:text-[#9ABAC2]",
-    };
+  const appearance = projectStatusAppearance[normalized] ?? {
+    label: formatProjectStatus(status),
+    dot: "bg-muted-foreground/45 dark:bg-muted-foreground/70",
+  };
 
   const needsAttention = normalized === "completionrequested";
 
   return (
     <span
       className={[
-        "inline-flex w-fit items-center gap-1.5 text-[0.58rem] font-semibold",
-        appearance.text,
+        "inline-flex w-fit items-center gap-1.5",
+        "text-[0.55rem] font-medium",
+        "text-muted-foreground/70",
+        "dark:text-muted-foreground",
         className,
       ].join(" ")}
     >
@@ -503,7 +555,7 @@ function ProjectStatus({
         {needsAttention && (
           <span
             className={[
-              "absolute inline-flex h-full w-full animate-ping rounded-full opacity-25",
+              "absolute inline-flex h-full w-full animate-ping rounded-full opacity-20",
               appearance.dot,
             ].join(" ")}
           />
@@ -535,7 +587,7 @@ function ProjectNavigation({
 }) {
   return (
     <nav className="space-y-1" aria-label="Project workspace">
-      {managerLinks.map(link => {
+      {managerLinks.map((link) => {
         const href = link.path ? `${basePath}/${link.path}` : basePath;
 
         return (
@@ -583,8 +635,16 @@ function ProjectSwitcher({
         onClick={onRetry}
         className={[
           "flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left",
-          "text-[#9F3C1A] transition-colors hover:bg-[#AD3A12]/[0.05]",
-          "dark:text-[#D27857]",
+
+          "text-destructive/75",
+
+          "transition-colors duration-150",
+
+          "hover:bg-destructive/[0.035]",
+          "hover:text-destructive",
+
+          "dark:text-status-overdue-foreground",
+          "dark:hover:bg-status-overdue/10",
         ].join(" ")}
       >
         <RefreshCwIcon size={14} />
@@ -592,7 +652,7 @@ function ProjectSwitcher({
         <div>
           <p className="text-xs font-semibold">Try loading again</p>
 
-          <p className="mt-0.5 text-[0.58rem] opacity-70">
+          <p className="mt-0.5 text-[0.58rem] opacity-75">
             Projects unavailable
           </p>
         </div>
@@ -602,39 +662,72 @@ function ProjectSwitcher({
 
   return (
     <DropdownMenu>
+      {/* ===================================================
+          TRIGGER
+      =================================================== */}
+
       <DropdownMenuTrigger asChild>
         <button
           type="button"
           aria-label="Switch project"
           className={[
-            "group flex w-full items-center justify-between gap-3 rounded-lg px-2 py-2.5 text-left",
-            "transition-colors duration-200",
-            "hover:bg-[#E4EAE7] data-[state=open]:bg-[#E4EAE7]",
-            "dark:hover:bg-white/[0.04] dark:data-[state=open]:bg-white/[0.04]",
+            "group flex w-full items-center justify-between gap-3",
+
+            "rounded-xl px-2 py-2.5 text-left",
+
+            "outline-none",
+
+            "transition-[background-color,color] duration-150",
+
+            "hover:bg-surface-3/55",
+            "data-[state=open]:bg-surface-3/65",
+
+            "dark:hover:bg-surface-2",
+            "dark:data-[state=open]:bg-surface-2",
           ].join(" ")}
         >
           <div className="flex min-w-0 items-center gap-3">
             <span
               className={[
                 "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
-                "bg-[#E2E9E6] text-[#687C81]",
-                "transition-colors duration-200",
-                "group-hover:bg-[#315E6C] group-hover:text-white",
-                "group-data-[state=open]:bg-[#315E6C] group-data-[state=open]:text-white",
-                "dark:bg-white/[0.035] dark:text-white/30",
-                "dark:group-hover:bg-[#DEDA00] dark:group-hover:text-[#303030]",
-                "dark:group-data-[state=open]:bg-[#DEDA00] dark:group-data-[state=open]:text-[#303030]",
+
+                "bg-surface-3/55",
+                "text-muted-foreground/80",
+
+                "ring-1 ring-inset ring-border/30",
+
+                "transition-[background-color,color,box-shadow] duration-150",
+
+                "group-hover:bg-brand-secondary-highlight/[0.08]",
+                "group-hover:text-brand-secondary-highlight",
+                "group-hover:ring-brand-secondary-highlight/10",
+
+                "group-data-[state=open]:bg-brand-secondary-highlight/[0.10]",
+                "group-data-[state=open]:text-brand-secondary-highlight",
+                "group-data-[state=open]:ring-brand-secondary-highlight/10",
+
+                "dark:bg-surface-2",
+                "dark:text-muted-foreground",
+                "dark:ring-border",
+
+                "dark:group-hover:bg-secondary/[0.07]",
+                "dark:group-hover:text-secondary",
+                "dark:group-hover:ring-secondary/10",
+
+                "dark:group-data-[state=open]:bg-secondary/[0.09]",
+                "dark:group-data-[state=open]:text-secondary",
+                "dark:group-data-[state=open]:ring-secondary/10",
               ].join(" ")}
             >
               <ArrowRightLeftIcon size={13} />
             </span>
 
             <div className="min-w-0">
-              <p className="text-[0.5rem] font-semibold uppercase tracking-[0.15em] text-[#788689] dark:text-white/23">
+              <p className="text-[0.5rem] font-semibold uppercase tracking-[0.15em] text-muted-foreground/70">
                 Switch project
               </p>
 
-              <p className="mt-0.5 truncate text-xs font-semibold">
+              <p className="mt-0.5 truncate text-xs font-semibold text-foreground/80 dark:text-foreground/90">
                 {currentProject?.title || "Choose project"}
               </p>
             </div>
@@ -642,34 +735,63 @@ function ProjectSwitcher({
 
           <ChevronDownIcon
             size={13}
-            className="shrink-0 text-[#7C8A8D] transition-transform duration-200 group-data-[state=open]:rotate-180 dark:text-white/25"
+            className={[
+              "shrink-0",
+
+              "text-muted-foreground/55",
+
+              "transition-[transform,color] duration-200",
+
+              "group-hover:text-foreground/65",
+
+              "group-data-[state=open]:rotate-180",
+              "group-data-[state=open]:text-brand-secondary-highlight/80",
+
+              "dark:group-hover:text-secondary/80",
+              "dark:group-data-[state=open]:text-secondary/80",
+            ].join(" ")}
           />
         </button>
       </DropdownMenuTrigger>
+
+      {/* ===================================================
+          POPOVER
+      =================================================== */}
 
       <DropdownMenuContent
         align="start"
         side={side}
         sideOffset={8}
+        collisionPadding={12}
         className={[
-          "w-[min(300px,calc(100vw-2rem))] rounded-xl p-1.5",
-          "border-[#315E6C]/[0.09] bg-[#F8FAF8] text-[#30383A]",
-          "shadow-[0_18px_50px_-24px_rgba(28,48,54,0.24)]",
-          "dark:border-white/[0.08] dark:bg-[#10262D] dark:text-white",
-          "dark:shadow-[0_18px_50px_-24px_rgba(0,0,0,0.65)]",
+          "w-[min(300px,calc(100vw-2rem))]",
+
+          "rounded-xl p-1.5",
+
+          "border-border/55",
+          "bg-popover",
+          "text-popover-foreground",
+
+          "shadow-none",
+
+          "dark:border-border",
         ].join(" ")}
       >
         <DropdownMenuLabel className="px-2.5 py-2">
-          <p className="text-[0.54rem] font-semibold uppercase tracking-[0.16em] text-[#778588] dark:text-white/27">
-            Your projects
+          <p className="text-[0.52rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground/70">
+            Open projects
           </p>
         </DropdownMenuLabel>
 
-        <DropdownMenuSeparator className="bg-[#315E6C]/[0.07] dark:bg-white/[0.07]" />
+        <DropdownMenuSeparator className="bg-border/50 dark:bg-border" />
+
+        {/* =================================================
+            PROJECTS
+        ================================================= */}
 
         <div className="max-h-72 overflow-y-auto py-1">
           {projects.length > 0 ? (
-            projects.map(project => {
+            projects.map((project) => {
               const isCurrent = String(project.id) === String(projectId);
 
               return (
@@ -677,39 +799,77 @@ function ProjectSwitcher({
                   key={project.id}
                   asChild
                   className={[
-                    "rounded-lg",
-                    "focus:bg-[#E5ECE9] dark:focus:bg-white/[0.05]",
+                    "rounded-lg p-0 outline-none",
+
+                    "focus:text-foreground",
+                    "data-[highlighted]:text-foreground",
+
                     isCurrent
-                      ? "bg-[#E5ECE9] dark:bg-white/[0.045]"
-                      : "",
+                      ? [
+                          /* LIGHT CURRENT */
+                          "bg-brand-secondary-highlight/[0.045]",
+
+                          "focus:bg-brand-secondary-highlight/[0.075]",
+                          "data-[highlighted]:bg-brand-secondary-highlight/[0.075]",
+
+                          /* DARK CURRENT */
+                          "dark:bg-secondary/[0.045]",
+
+                          "dark:focus:bg-secondary/[0.065]",
+                          "dark:data-[highlighted]:bg-secondary/[0.065]",
+
+                          "dark:focus:text-foreground",
+                          "dark:data-[highlighted]:text-foreground",
+                        ].join(" ")
+                      : [
+                          /* LIGHT */
+                          "bg-transparent",
+
+                          "focus:bg-surface-3/50",
+                          "data-[highlighted]:bg-surface-3/50",
+
+                          /* DARK */
+                          "dark:bg-transparent",
+
+                          "dark:focus:bg-surface-3/70",
+                          "dark:data-[highlighted]:bg-surface-3/70",
+
+                          "dark:focus:text-foreground",
+                          "dark:data-[highlighted]:text-foreground",
+                        ].join(" "),
                   ].join(" ")}
                 >
                   <Link
                     to={`/projects/${project.id}`}
-                    className="flex items-center justify-between gap-3 px-2.5 py-2.5"
+                    className={[
+                      "flex w-full items-center justify-between gap-3",
+
+                      "rounded-lg px-2.5 py-2.5",
+
+                      "text-inherit outline-none",
+                    ].join(" ")}
                   >
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold">
+                      <p
+                        className={[
+                          "truncate text-[0.76rem] font-semibold",
+
+                          isCurrent
+                            ? "text-foreground/85 dark:text-foreground"
+                            : "text-foreground/75 dark:text-foreground/90",
+                        ].join(" ")}
+                      >
                         {project.title}
                       </p>
 
                       <div className="mt-1 flex min-w-0 items-center gap-2">
-                        {/* {project.projectCode && (
-                          <>
-                            <span className="truncate text-[0.58rem] text-[#7D8A8D] dark:text-white/26">
-                              {project.projectCode}
-                            </span>
-
-                            <span className="h-0.5 w-0.5 shrink-0 rounded-full bg-[#7D8A8D]/50 dark:bg-white/20" />
-                          </>
-                        )} */}
                         {project.projectCode && (
                           <>
-                            <span className="truncate text-[0.58rem] text-[#7D8A8D] dark:text-[#94A3B8]">
+                            <span className="truncate text-[0.55rem] text-muted-foreground/55 dark:text-muted-foreground">
                               {getProjectDisplayCode(project.projectCode)}
                             </span>
 
-                            <span className="h-0.5 w-0.5 shrink-0 rounded-full bg-[#7D8A8D]/50 dark:bg-white/20" />
+                            <span className="h-0.5 w-0.5 shrink-0 rounded-full bg-muted-foreground/20 dark:bg-muted-foreground/45" />
                           </>
                         )}
 
@@ -717,15 +877,29 @@ function ProjectSwitcher({
                       </div>
                     </div>
 
+                    {/* =======================================
+                        CURRENT PROJECT
+                    ======================================= */}
+
                     {isCurrent && (
                       <span
                         className={[
                           "flex h-6 w-6 shrink-0 items-center justify-center rounded-md",
-                          "bg-[#315E6C] text-white",
-                          "dark:bg-[#DEDA00] dark:text-[#303030]",
+
+                          "bg-brand-secondary-highlight/[0.10]",
+                          "text-brand-secondary-highlight",
+
+                          "ring-1 ring-inset",
+                          "ring-brand-secondary-highlight/10",
+
+                          "dark:bg-secondary/[0.08]",
+                          "dark:text-secondary",
+                          "dark:ring-secondary/12",
                         ].join(" ")}
+                        aria-label="Current project"
+                        title="Current project"
                       >
-                        <CheckIcon size={11} strokeWidth={3} />
+                        <CheckIcon size={11} strokeWidth={2.7} />
                       </span>
                     )}
                   </Link>
@@ -740,29 +914,71 @@ function ProjectSwitcher({
           )}
         </div>
 
+        {/* =================================================
+            CREATE PROJECT
+        ================================================= */}
+
         {canCreateProject && (
           <>
-            <DropdownMenuSeparator className="bg-[#315E6C]/[0.07] dark:bg-white/[0.07]" />
+            <DropdownMenuSeparator className="bg-border/50 dark:bg-border" />
 
             <DropdownMenuItem
               asChild
               className={[
-                "rounded-lg p-0",
-                "focus:bg-transparent",
+                "rounded-lg p-0 outline-none",
+
+                "border border-brand-secondary-highlight/10",
+                "bg-brand-secondary-highlight/[0.07]",
+                "text-brand-secondary-highlight",
+
+                "focus:bg-brand-secondary-highlight/[0.10]",
+                "focus:text-brand-secondary-highlight",
+
+                "data-[highlighted]:bg-brand-secondary-highlight/[0.10]",
+                "data-[highlighted]:text-brand-secondary-highlight",
+
+                "dark:border-secondary/12",
+                "dark:bg-secondary/[0.065]",
+                "dark:text-secondary",
+
+                "dark:focus:bg-secondary/[0.095]",
+                "dark:focus:text-secondary",
+
+                "dark:data-[highlighted]:bg-secondary/[0.095]",
+                "dark:data-[highlighted]:text-secondary",
               ].join(" ")}
             >
               <Link
                 to="/projects/new"
                 className={[
-                  "flex w-full items-center gap-2 rounded-lg px-3 py-2.5",
-                  "bg-[#315E6C] text-white",
-                  "transition-colors hover:bg-[#294F5B]",
-                  "dark:bg-[#DEDA00] dark:text-[#303030]",
-                  "dark:hover:bg-[#D4D000] dark:hover:text-[#303030]",
+                  "group/create flex w-full items-center gap-2.5",
+
+                  "rounded-lg px-3 py-2.5",
+
+                  "text-inherit outline-none",
                 ].join(" ")}
               >
-                <PlusIcon size={14} />
-                <span className="text-xs font-semibold">
+                <span
+                  className={[
+                    "flex h-6 w-6 shrink-0 items-center justify-center rounded-md",
+
+                    "bg-brand-secondary-highlight/[0.08]",
+                    "text-brand-secondary-highlight",
+
+                    "transition-colors duration-150",
+
+                    "group-hover/create:bg-brand-secondary-highlight/[0.12]",
+
+                    "dark:bg-secondary/[0.08]",
+                    "dark:text-secondary",
+
+                    "dark:group-hover/create:bg-secondary/[0.12]",
+                  ].join(" ")}
+                >
+                  <PlusIcon size={13} strokeWidth={2.2} />
+                </span>
+
+                <span className="text-[0.7rem] font-semibold">
                   Create new project
                 </span>
               </Link>
@@ -786,15 +1002,17 @@ function ProjectSwitcherEmpty({
   canCreateProject: boolean;
 }) {
   return (
-    <div className="px-3 py-6">
-      <p className="text-sm font-semibold">No projects available</p>
+    <div className="px-3 py-5">
+      <p className="text-xs font-semibold text-foreground/80 dark:text-foreground">
+        No open projects
+      </p>
 
-      <p className="mt-1 text-xs leading-5 text-[#788689] dark:text-white/29">
+      <p className="mt-1 text-[0.66rem] leading-5 text-muted-foreground/85">
         {isAllocat && canCreateProject
-          ? "Create your own project or accept client work to begin."
+          ? "Create a project or accept client work to continue."
           : canCreateProject
-            ? "Create a project to begin."
-            : "Projects available to you will appear here."}
+            ? "Create a project when you're ready to start something new."
+            : "Your active projects will appear here."}
       </p>
     </div>
   );
@@ -808,15 +1026,27 @@ function ProjectWorkspaceError({ onRetry }: { onRetry: () => void }) {
   return (
     <div className="flex min-h-[420px] items-center justify-center">
       <div className="max-w-sm text-center">
-        <span className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-[#E1E8E5] text-[#687B80] dark:bg-white/[0.04] dark:text-white/30">
+        <span
+          className={[
+            "mx-auto flex h-10 w-10 items-center justify-center rounded-xl",
+
+            "bg-surface-3/55",
+            "text-muted-foreground",
+
+            "ring-1 ring-inset ring-border/30",
+
+            "dark:bg-surface-2",
+            "dark:ring-border",
+          ].join(" ")}
+        >
           <RefreshCwIcon size={16} />
         </span>
 
-        <h2 className="mt-4 text-base font-semibold tracking-[-0.015em]">
+        <h2 className="mt-4 text-base font-semibold tracking-[-0.015em] text-foreground/85 dark:text-foreground">
           Could not load this workspace
         </h2>
 
-        <p className="mt-2 text-xs leading-6 text-[#748185] dark:text-white/31">
+        <p className="mt-2 text-xs leading-6 text-muted-foreground">
           We couldn't confirm your project access. Try loading your workspace
           again.
         </p>
@@ -827,10 +1057,7 @@ function ProjectWorkspaceError({ onRetry }: { onRetry: () => void }) {
           onClick={onRetry}
           className={[
             "mt-5 h-9 rounded-lg px-4 text-xs font-semibold shadow-none",
-            "border-[#315E6C]/[0.11] bg-transparent text-[#315E6C]",
-            "hover:bg-[#E8EEEB]",
-            "dark:border-white/[0.09] dark:text-white/65",
-            "dark:hover:bg-white/[0.04] dark:hover:text-white",
+            secondaryActionButton,
           ].join(" ")}
         >
           <RefreshCwIcon size={13} />
@@ -849,15 +1076,20 @@ function ProjectUnavailable() {
   return (
     <div className="flex min-h-[420px] items-center justify-center">
       <div className="max-w-sm text-center">
-        <span className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-[#DCE7E3] text-[#315E6C] dark:bg-[#DEDA00]/[0.08] dark:text-[#DEDA00]">
+        <span
+          className={[
+            "mx-auto flex h-10 w-10 items-center justify-center rounded-xl",
+            workspaceIconSurface,
+          ].join(" ")}
+        >
           <BlocksIcon size={16} />
         </span>
 
-        <h2 className="mt-4 text-base font-semibold tracking-[-0.015em]">
+        <h2 className="mt-4 text-base font-semibold tracking-[-0.015em] text-foreground/85 dark:text-foreground">
           Project unavailable
         </h2>
 
-        <p className="mt-2 text-xs leading-6 text-[#748185] dark:text-white/31">
+        <p className="mt-2 text-xs leading-6 text-muted-foreground">
           This project doesn't exist or isn't available to your account.
         </p>
 
@@ -866,10 +1098,7 @@ function ProjectUnavailable() {
           variant="outline"
           className={[
             "mt-5 h-9 rounded-lg px-4 text-xs font-semibold shadow-none",
-            "border-[#315E6C]/[0.11] bg-transparent text-[#315E6C]",
-            "hover:bg-[#E8EEEB]",
-            "dark:border-white/[0.09] dark:text-white/65",
-            "dark:hover:bg-white/[0.04] dark:hover:text-white",
+            secondaryActionButton,
           ].join(" ")}
         >
           <Link to="/projects">
@@ -889,9 +1118,11 @@ function ProjectUnavailable() {
 function SidebarUnavailable() {
   return (
     <div className="px-2 py-2">
-      <p className="text-xs font-semibold">Workspace unavailable</p>
+      <p className="text-xs font-semibold text-foreground/80 dark:text-foreground">
+        Workspace unavailable
+      </p>
 
-      <p className="mt-1 text-[0.62rem] leading-5 text-[#788689] dark:text-white/27">
+      <p className="mt-1 text-[0.62rem] leading-5 text-muted-foreground/85">
         Select one of your available projects below.
       </p>
     </div>
@@ -914,7 +1145,7 @@ function formatProjectStatus(status?: string) {
   return status
     .trim()
     .replace(/[_-]+/g, " ")
-    .replace(/\b\w/g, letter => letter.toUpperCase());
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
 function getProjectDisplayCode(value?: string) {
@@ -922,9 +1153,7 @@ function getProjectDisplayCode(value?: string) {
 
   if (!code) return "";
 
-  const cleanCode = code.startsWith("#")
-    ? code.slice(1)
-    : code;
+  const cleanCode = code.startsWith("#") ? code.slice(1) : code;
 
   if (cleanCode.length <= 10) {
     return `#${cleanCode}`;
