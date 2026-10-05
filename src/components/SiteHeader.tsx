@@ -22,6 +22,7 @@ import allocatrIcon from "@/assets/icon-variant-01.svg";
 import { useAuth } from "@/auth/useAuth";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
 import { Button } from "@/components/ui/button";
 
 import {
@@ -93,7 +94,7 @@ const publicNavigation: NavigationItem[] = [
 ========================================================= */
 
 function getInitials(name?: string) {
-  if (!name) {
+  if (!name?.trim()) {
     return "U";
   }
 
@@ -106,10 +107,14 @@ function getInitials(name?: string) {
 }
 
 /* =========================================================
-   THEME STYLES
+   BUTTON STYLES
 
-   SiteHeader no longer controls theme.
-   It simply responds to the active document theme.
+   Header does not control theme.
+   These styles only respond to the current theme.
+
+   Hover treatment deliberately preserves the base colours
+   and uses a small opacity change instead of changing the
+   button palette.
 ========================================================= */
 
 const primaryActionButton = [
@@ -118,66 +123,122 @@ const primaryActionButton = [
   "bg-brand-secondary-highlight",
   "text-primary-foreground",
 
-  "hover:border-brand-secondary-highlight/20",
-  "hover:bg-brand-secondary-highlight/90",
-  "hover:text-primary-foreground",
-
   "shadow-none",
 
+  "transition-opacity duration-200",
+
+  "hover:border-brand-secondary-highlight/15",
+  "hover:bg-brand-secondary-highlight",
+  "hover:text-primary-foreground",
+  "hover:opacity-90",
+
   "focus-visible:ring-2",
-  "focus-visible:ring-brand-secondary-highlight/15",
+  "focus-visible:ring-brand-secondary-highlight/20",
+  "focus-visible:ring-offset-2",
+  "focus-visible:ring-offset-background",
 
   "dark:border-secondary/10",
 
   "dark:bg-secondary",
   "dark:text-secondary-foreground",
 
-  "dark:hover:border-secondary/15",
-  "dark:hover:bg-secondary/90",
+  "dark:hover:border-secondary/10",
+  "dark:hover:bg-secondary",
   "dark:hover:text-secondary-foreground",
+  "dark:hover:opacity-90",
 
-  "dark:focus-visible:ring-secondary/15",
+  "dark:focus-visible:ring-secondary/20",
 ].join(" ");
 
 const secondaryActionButton = [
-  "border-border/65",
+  "border border-border/65",
 
   "bg-surface-2/30",
   "text-foreground/70",
 
-  "hover:border-border/85",
-  "hover:bg-surface-3/55",
-  "hover:text-foreground",
-
   "shadow-none",
+
+  "transition-opacity duration-200",
+
+  "hover:border-border/65",
+  "hover:bg-surface-2/30",
+  "hover:text-foreground/70",
+  "hover:opacity-80",
+
+  "focus-visible:ring-2",
+  "focus-visible:ring-brand-secondary-highlight/15",
+  "focus-visible:ring-offset-2",
+  "focus-visible:ring-offset-background",
 
   "dark:border-border",
 
   "dark:bg-surface-2/60",
   "dark:text-foreground/75",
 
-  "dark:hover:bg-surface-3/70",
-  "dark:hover:text-foreground",
+  "dark:hover:border-border",
+  "dark:hover:bg-surface-2/60",
+  "dark:hover:text-foreground/75",
+  "dark:hover:opacity-80",
+
+  "dark:focus-visible:ring-secondary/15",
 ].join(" ");
 
 const ghostActionButton = [
+  "bg-transparent",
+
   "text-muted-foreground",
 
-  "hover:bg-surface-3/55",
-  "hover:text-foreground",
+  "shadow-none",
 
-  "dark:hover:bg-surface-3/65",
+  "transition-opacity duration-200",
+
+  "hover:bg-transparent",
+  "hover:text-foreground",
+  "hover:opacity-80",
+
+  "focus-visible:ring-2",
+  "focus-visible:ring-brand-secondary-highlight/15",
+
+  "dark:hover:bg-transparent",
   "dark:hover:text-foreground",
+
+  "dark:focus-visible:ring-secondary/15",
 ].join(" ");
 
 const headerIconButton = [
   "text-muted-foreground",
 
+  "shadow-none",
+
+  "transition-[background-color,color] duration-200",
+
   "hover:bg-surface-3/55",
   "hover:text-foreground",
 
+  "focus-visible:ring-2",
+  "focus-visible:ring-brand-secondary-highlight/15",
+
   "dark:hover:bg-surface-3/65",
   "dark:hover:text-foreground",
+
+  "dark:focus-visible:ring-secondary/15",
+].join(" ");
+
+/* =========================================================
+   DROPDOWN STYLES
+========================================================= */
+
+const dropdownItem = [
+  "rounded-lg px-2.5 py-2",
+
+  "text-sm text-foreground/75",
+
+  "transition-colors duration-150",
+
+  "focus:bg-surface-3/60",
+  "focus:text-foreground",
+
+  "dark:focus:bg-surface-3/70",
 ].join(" ");
 
 /* =========================================================
@@ -282,26 +343,31 @@ function SiteHeader() {
 
   function handleLogin() {
     closeMenu();
+
     navigate("/login");
   }
 
-  function handleCreateProject() {
+  function handlePostProject() {
     closeMenu();
+
     navigate(user ? "/projects/new" : "/register");
   }
 
   function handleProjects() {
     closeMenu();
+
     navigate("/projects");
   }
 
   function handleProfile() {
     closeMenu();
+
     navigate("/profile");
   }
 
   function handleSettings() {
     closeMenu();
+
     navigate("/settings");
   }
 
@@ -311,6 +377,7 @@ function SiteHeader() {
     }
 
     setLoggingOut(true);
+
     closeMenu();
 
     try {
@@ -332,7 +399,9 @@ function SiteHeader() {
 
   const scrolledSurface = [
     "border-border/60",
+
     "bg-background/94",
+
     "backdrop-blur-2xl",
 
     "shadow-[0_8px_28px_rgb(0_0_0/0.035)]",
@@ -344,8 +413,11 @@ function SiteHeader() {
     ? ["border-transparent", "bg-background/0", "shadow-none"].join(" ")
     : [
         "border-border/40",
+
         "bg-background/88",
+
         "backdrop-blur-xl",
+
         "shadow-none",
       ].join(" ");
 
@@ -385,7 +457,9 @@ function SiteHeader() {
             to="/"
             onClick={closeMenu}
             className={[
-              "group flex shrink-0 items-center rounded-md outline-none",
+              "group flex shrink-0 items-center rounded-md",
+
+              "outline-none",
 
               "focus-visible:ring-2",
               "focus-visible:ring-brand-secondary-highlight/20",
@@ -394,7 +468,7 @@ function SiteHeader() {
             ].join(" ")}
             aria-label="Allocatr home"
           >
-            {/* Mobile mark */}
+            {/* Mobile */}
 
             <img
               src={allocatrIcon}
@@ -404,13 +478,13 @@ function SiteHeader() {
 
                 "transition-opacity duration-200",
 
-                "group-hover:opacity-75",
+                "group-hover:opacity-80",
 
                 "sm:hidden",
               ].join(" ")}
             />
 
-            {/* Desktop light-surface logo */}
+            {/* Desktop light theme */}
 
             <img
               src={allocatrLogoDark}
@@ -420,16 +494,17 @@ function SiteHeader() {
 
                 "transition-opacity duration-200",
 
-                "group-hover:opacity-75",
+                "group-hover:opacity-80",
 
                 "sm:block",
+
                 "dark:sm:hidden",
 
                 "lg:h-[26px]",
               ].join(" ")}
             />
 
-            {/* Desktop dark-surface logo */}
+            {/* Desktop dark theme */}
 
             <img
               src={allocatrLogoLight}
@@ -439,7 +514,7 @@ function SiteHeader() {
 
                 "transition-opacity duration-200",
 
-                "group-hover:opacity-75",
+                "group-hover:opacity-80",
 
                 "dark:sm:block",
 
@@ -449,7 +524,7 @@ function SiteHeader() {
           </Link>
 
           {/* ===============================================
-              DESKTOP NAV
+              DESKTOP NAVIGATION
           =============================================== */}
 
           <nav
@@ -458,7 +533,7 @@ function SiteHeader() {
           >
             {navigation.map((item) => (
               <NavLink
-                key={item.label}
+                key={item.href}
                 to={item.href}
                 className={({ isActive }) =>
                   [
@@ -484,6 +559,7 @@ function SiteHeader() {
                     {item.label}
 
                     <span
+                      aria-hidden
                       className={[
                         "absolute bottom-[7px] left-1/2",
 
@@ -491,7 +567,7 @@ function SiteHeader() {
 
                         "bg-brand-secondary-highlight",
 
-                        "transition-all duration-200",
+                        "transition-[width,opacity] duration-200",
 
                         "dark:bg-secondary",
 
@@ -522,7 +598,7 @@ function SiteHeader() {
                 variant="ghost"
                 onClick={handleLogin}
                 className={[
-                  "h-9 rounded-lg px-3 text-xs font-semibold shadow-none",
+                  "h-9 rounded-lg px-3 text-xs font-semibold",
 
                   ghostActionButton,
                 ].join(" ")}
@@ -534,7 +610,7 @@ function SiteHeader() {
             <Button
               type="button"
               variant="ghost"
-              onClick={handleCreateProject}
+              onClick={handlePostProject}
               className={[
                 "group h-9 rounded-lg px-3.5 text-xs font-semibold",
 
@@ -543,15 +619,10 @@ function SiteHeader() {
                 primaryActionButton,
               ].join(" ")}
             >
-              Create project
+              Post a project
               <ArrowUpRightIcon
                 size={13}
-                className={[
-                  "transition-transform duration-200",
-
-                  "group-hover:translate-x-0.5",
-                  "group-hover:-translate-y-0.5",
-                ].join(" ")}
+                className="transition-opacity duration-200 group-hover:opacity-75"
               />
             </Button>
 
@@ -571,7 +642,7 @@ function SiteHeader() {
           </div>
 
           {/* ===============================================
-              MOBILE ACTION
+              MOBILE MENU BUTTON
           =============================================== */}
 
           <div className="flex items-center lg:hidden">
@@ -579,11 +650,7 @@ function SiteHeader() {
               type="button"
               variant="ghost"
               size="icon"
-              className={[
-                "h-9 w-9 rounded-lg shadow-none",
-
-                headerIconButton,
-              ].join(" ")}
+              className={["h-9 w-9 rounded-lg", headerIconButton].join(" ")}
               onClick={() => {
                 setIsMenuOpen((current) => !current);
               }}
@@ -605,7 +672,7 @@ function SiteHeader() {
         className={[
           "fixed inset-0 z-40 lg:hidden",
 
-          "transition-[opacity,visibility] duration-250",
+          "transition-[opacity,visibility] duration-200",
 
           isMenuOpen
             ? ["pointer-events-auto", "visible", "opacity-100"].join(" ")
@@ -621,6 +688,7 @@ function SiteHeader() {
             "absolute inset-0 top-14",
 
             "bg-foreground/15",
+
             "backdrop-blur-[3px]",
 
             "dark:bg-background/55",
@@ -641,6 +709,7 @@ function SiteHeader() {
             "border-border/70",
 
             "bg-background/98",
+
             "text-foreground",
 
             "backdrop-blur-2xl",
@@ -654,8 +723,8 @@ function SiteHeader() {
             "sm:top-[60px]",
 
             isMenuOpen
-              ? ["translate-y-0", "opacity-100"].join(" ")
-              : ["-translate-y-2", "opacity-0"].join(" "),
+              ? "translate-y-0 opacity-100"
+              : "-translate-y-2 opacity-0",
           ].join(" ")}
         >
           <div
@@ -663,19 +732,19 @@ function SiteHeader() {
               "mx-auto w-full max-w-7xl",
 
               "max-h-[calc(100vh-56px)]",
+
               "overflow-y-auto",
 
               "px-4 pb-6",
 
               "sm:max-h-[calc(100vh-60px)]",
+
               "sm:px-6",
 
               "md:px-8",
             ].join(" ")}
           >
-            {/* ===========================================
-                USER ACCOUNT
-            =========================================== */}
+            {/* ACCOUNT */}
 
             {user && (
               <MobileAccountSummary
@@ -685,9 +754,7 @@ function SiteHeader() {
               />
             )}
 
-            {/* ===========================================
-                MOBILE NAV LINKS
-            =========================================== */}
+            {/* NAVIGATION */}
 
             <nav className={user ? "" : "pt-2"} aria-label="Mobile navigation">
               {!isLandingPage && (
@@ -700,7 +767,7 @@ function SiteHeader() {
 
               {navigation.map((item) => (
                 <MobileNavigationLink
-                  key={item.label}
+                  key={item.href}
                   label={item.label}
                   href={item.href}
                   onClick={closeMenu}
@@ -708,9 +775,7 @@ function SiteHeader() {
               ))}
             </nav>
 
-            {/* ===========================================
-                ACCOUNT SHORTCUTS
-            =========================================== */}
+            {/* ACCOUNT SHORTCUTS */}
 
             {user && (
               <div className="mt-5 grid grid-cols-2 gap-2">
@@ -744,9 +809,7 @@ function SiteHeader() {
               </div>
             )}
 
-            {/* ===========================================
-                MOBILE PRIMARY ACTION
-            =========================================== */}
+            {/* PRIMARY ACTIONS */}
 
             <div
               className={[
@@ -774,21 +837,19 @@ function SiteHeader() {
               <Button
                 type="button"
                 variant="ghost"
-                onClick={handleCreateProject}
+                onClick={handlePostProject}
                 className={[
                   "h-11 rounded-lg text-xs font-semibold",
 
                   primaryActionButton,
                 ].join(" ")}
               >
-                Create project
+                Post a project
                 <ArrowUpRightIcon size={14} />
               </Button>
             </div>
 
-            {/* ===========================================
-                LOGOUT
-            =========================================== */}
+            {/* LOGOUT */}
 
             {user && (
               <button
@@ -804,11 +865,12 @@ function SiteHeader() {
 
                   "text-xs font-medium text-muted-foreground",
 
-                  "transition-colors",
+                  "transition-opacity duration-200",
 
-                  "hover:text-foreground",
+                  "hover:opacity-75",
 
                   "disabled:pointer-events-none",
+
                   "disabled:opacity-50",
                 ].join(" ")}
               >
@@ -825,7 +887,7 @@ function SiteHeader() {
 }
 
 /* =========================================================
-   MOBILE NAV LINK
+   MOBILE NAVIGATION LINK
 ========================================================= */
 
 function MobileNavigationLink({
@@ -849,11 +911,11 @@ function MobileNavigationLink({
 
           "text-sm font-semibold",
 
-          "transition-colors duration-200",
+          "transition-opacity duration-200",
 
           isActive
             ? "text-foreground"
-            : ["text-foreground/70", "hover:text-foreground"].join(" "),
+            : ["text-foreground/70", "hover:opacity-75"].join(" "),
         ].join(" ")
       }
     >
@@ -861,38 +923,24 @@ function MobileNavigationLink({
         <>
           <span className="flex items-center gap-3">
             <span
+              aria-hidden
               className={[
                 "h-1.5 w-1.5 rounded-full",
 
-                "transition-[background-color,transform] duration-200",
+                "transition-colors duration-200",
 
                 isActive
                   ? ["bg-brand-secondary-highlight", "dark:bg-secondary"].join(
                       " ",
                     )
-                  : [
-                      "bg-foreground/15",
-
-                      "group-hover:bg-brand-secondary-highlight/65",
-
-                      "dark:group-hover:bg-secondary/65",
-                    ].join(" "),
+                  : "bg-foreground/15",
               ].join(" ")}
             />
 
             {label}
           </span>
 
-          <ArrowRightIcon
-            size={14}
-            className={[
-              "text-muted-foreground",
-
-              "transition-transform duration-200",
-
-              "group-hover:translate-x-0.5",
-            ].join(" ")}
-          />
+          <ArrowRightIcon size={14} className="text-muted-foreground" />
         </>
       )}
     </NavLink>
@@ -922,6 +970,17 @@ function MobileAccountSummary({
         "border-b border-border/60",
 
         "py-5 text-left",
+
+        "transition-opacity duration-200",
+
+        "hover:opacity-80",
+
+        "focus-visible:outline-none",
+
+        "focus-visible:ring-2",
+        "focus-visible:ring-brand-secondary-highlight/15",
+
+        "dark:focus-visible:ring-secondary/15",
       ].join(" ")}
     >
       <Avatar className="h-10 w-10 shrink-0 border border-border/80">
@@ -935,11 +994,12 @@ function MobileAccountSummary({
           className={[
             "bg-surface-3/70",
 
-            "text-xs font-bold",
+            "text-xs font-semibold",
 
             "text-brand-secondary-highlight",
 
             "dark:bg-surface-2",
+
             "dark:text-secondary",
           ].join(" ")}
         >
@@ -957,16 +1017,7 @@ function MobileAccountSummary({
         </p>
       </div>
 
-      <ArrowRightIcon
-        size={14}
-        className={[
-          "shrink-0 text-muted-foreground",
-
-          "transition-transform duration-200",
-
-          "group-hover:translate-x-0.5",
-        ].join(" ")}
-      />
+      <ArrowRightIcon size={14} className="shrink-0 text-muted-foreground" />
     </button>
   );
 }
@@ -1005,16 +1056,16 @@ function AccountMenu({
 
             "text-foreground",
 
-            "transition-colors",
+            "transition-colors duration-200",
 
             "hover:bg-surface-3/55",
-
-            "dark:hover:bg-surface-3/65",
 
             "focus-visible:outline-none",
 
             "focus-visible:ring-2",
             "focus-visible:ring-brand-secondary-highlight/15",
+
+            "dark:hover:bg-surface-3/65",
 
             "dark:focus-visible:ring-secondary/15",
           ].join(" ")}
@@ -1033,11 +1084,12 @@ function AccountMenu({
               className={[
                 "bg-surface-3/70",
 
-                "text-[0.62rem] font-bold",
+                "text-[0.62rem] font-semibold",
 
                 "text-brand-secondary-highlight",
 
                 "dark:bg-surface-2",
+
                 "dark:text-secondary",
               ].join(" ")}
             >
@@ -1060,6 +1112,7 @@ function AccountMenu({
           "border-border/70",
 
           "bg-popover",
+
           "text-popover-foreground",
 
           "shadow-none",
@@ -1084,11 +1137,12 @@ function AccountMenu({
                 className={[
                   "bg-surface-3/70",
 
-                  "text-xs font-bold",
+                  "text-xs font-semibold",
 
                   "text-brand-secondary-highlight",
 
                   "dark:bg-surface-2",
+
                   "dark:text-secondary",
                 ].join(" ")}
               >
@@ -1112,56 +1166,20 @@ function AccountMenu({
 
         {/* PROJECTS */}
 
-        <DropdownMenuItem
-          onSelect={onProjects}
-          className={[
-            "rounded-lg px-2.5 py-2 text-sm",
-
-            "text-foreground/75",
-
-            "focus:bg-surface-3/60",
-            "focus:text-foreground",
-
-            "dark:focus:bg-surface-3/70",
-          ].join(" ")}
-        >
+        <DropdownMenuItem onSelect={onProjects} className={dropdownItem}>
           <FolderOpenIcon size={15} />
           Projects
         </DropdownMenuItem>
 
-        {/* ACCOUNT LINKS */}
+        {/* ACCOUNT */}
 
         <DropdownMenuGroup>
-          <DropdownMenuItem
-            onSelect={onProfile}
-            className={[
-              "rounded-lg px-2.5 py-2 text-sm",
-
-              "text-foreground/75",
-
-              "focus:bg-surface-3/60",
-              "focus:text-foreground",
-
-              "dark:focus:bg-surface-3/70",
-            ].join(" ")}
-          >
+          <DropdownMenuItem onSelect={onProfile} className={dropdownItem}>
             <User2Icon size={15} />
             Profile
           </DropdownMenuItem>
 
-          <DropdownMenuItem
-            onSelect={onSettings}
-            className={[
-              "rounded-lg px-2.5 py-2 text-sm",
-
-              "text-foreground/75",
-
-              "focus:bg-surface-3/60",
-              "focus:text-foreground",
-
-              "dark:focus:bg-surface-3/70",
-            ].join(" ")}
-          >
+          <DropdownMenuItem onSelect={onSettings} className={dropdownItem}>
             <SettingsIcon size={15} />
             Settings
           </DropdownMenuItem>
@@ -1175,19 +1193,15 @@ function AccountMenu({
           disabled={loggingOut}
           onSelect={(event) => {
             event.preventDefault();
+
             void onLogout();
           }}
           className={[
-            "rounded-lg px-2.5 py-2",
+            dropdownItem,
 
-            "font-medium",
+            "font-medium text-muted-foreground",
 
-            "text-muted-foreground",
-
-            "focus:bg-surface-3/60",
             "focus:text-foreground",
-
-            "dark:focus:bg-surface-3/70",
           ].join(" ")}
         >
           <LogOutIcon size={15} />

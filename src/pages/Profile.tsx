@@ -3,11 +3,7 @@ import { useAuth } from "@/auth/useAuth";
 
 import DashboardMainNav from "@/components/DashboardMainNav";
 
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -68,14 +64,177 @@ type ProfileForm = {
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
-const ACCEPTED_IMAGE_TYPES = [
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-];
+const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
-const EMAIL_VERIFICATION_ENDPOINT =
-  "/profiles/me/email-verification";
+const EMAIL_VERIFICATION_ENDPOINT = "/profiles/me/email-verification";
+
+/* =========================================================
+   THEME
+========================================================= */
+
+const primaryButton = [
+  "border border-brand-secondary-highlight/15",
+
+  "bg-brand-secondary-highlight",
+  "text-primary-foreground",
+
+  "shadow-none",
+
+  "transition-opacity duration-150",
+
+  "hover:border-brand-secondary-highlight/15",
+  "hover:bg-brand-secondary-highlight",
+  "hover:text-primary-foreground",
+  "hover:opacity-90",
+
+  "focus-visible:ring-2",
+  "focus-visible:ring-brand-secondary-highlight/20",
+  "focus-visible:ring-offset-2",
+  "focus-visible:ring-offset-background",
+
+  "dark:border-secondary/10",
+
+  "dark:bg-secondary",
+  "dark:text-secondary-foreground",
+
+  "dark:hover:border-secondary/10",
+  "dark:hover:bg-secondary",
+  "dark:hover:text-secondary-foreground",
+  "dark:hover:opacity-90",
+
+  "dark:focus-visible:ring-secondary/20",
+].join(" ");
+
+const secondaryButton = [
+  "border border-border/65",
+
+  "bg-surface-2/35",
+  "text-foreground/75",
+
+  "shadow-none",
+
+  "transition-opacity duration-150",
+
+  "hover:border-border/65",
+  "hover:bg-surface-2/35",
+  "hover:text-foreground/75",
+  "hover:opacity-75",
+
+  "focus-visible:ring-2",
+  "focus-visible:ring-brand-secondary-highlight/15",
+  "focus-visible:ring-offset-2",
+  "focus-visible:ring-offset-background",
+
+  "dark:border-border",
+
+  "dark:bg-surface-2/65",
+  "dark:text-foreground/75",
+
+  "dark:hover:border-border",
+  "dark:hover:bg-surface-2/65",
+  "dark:hover:text-foreground/75",
+  "dark:hover:opacity-75",
+
+  "dark:focus-visible:ring-secondary/15",
+].join(" ");
+
+const quietIconButton = [
+  "bg-transparent",
+  "text-muted-foreground",
+
+  "shadow-none",
+
+  "transition-opacity duration-150",
+
+  "hover:bg-transparent",
+  "hover:text-foreground",
+  "hover:opacity-70",
+].join(" ");
+
+const fieldClass = [
+  "h-11 rounded-lg",
+
+  "border-border/70",
+
+  "bg-surface-1/70",
+
+  "shadow-none",
+
+  "transition-[border-color,box-shadow,background-color]",
+
+  "focus-visible:border-brand-secondary-highlight/35",
+
+  "focus-visible:ring-1",
+  "focus-visible:ring-brand-secondary-highlight/20",
+
+  "dark:bg-surface-2/35",
+
+  "dark:focus-visible:border-secondary/25",
+
+  "dark:focus-visible:ring-secondary/15",
+].join(" ");
+
+const disabledFieldClass = [
+  "h-11 rounded-lg",
+
+  "border-border/60",
+
+  "bg-surface-2/50",
+
+  "font-medium",
+
+  "text-muted-foreground",
+
+  "shadow-none",
+
+  "disabled:cursor-not-allowed",
+  "disabled:opacity-100",
+  "disabled:text-muted-foreground",
+
+  "dark:bg-surface-2/65",
+].join(" ");
+
+const cardSurface = [
+  "border-border/55",
+
+  "bg-card",
+
+  "dark:border-border",
+
+  "dark:bg-card",
+].join(" ");
+
+const quietSurface = [
+  "border-border/55",
+
+  "bg-surface-2/30",
+
+  "dark:border-border",
+
+  "dark:bg-surface-2/55",
+].join(" ");
+
+const accentIconSurface = [
+  "bg-brand-secondary-highlight/[0.08]",
+
+  "text-brand-secondary-highlight",
+
+  "ring-1 ring-inset ring-brand-secondary-highlight/10",
+
+  "dark:bg-secondary/[0.07]",
+
+  "dark:text-secondary",
+
+  "dark:ring-secondary/10",
+].join(" ");
+
+const progressClass = [
+  "h-1.5",
+
+  "[&_[data-slot=progress-indicator]]:bg-brand-secondary-highlight",
+
+  "dark:[&_[data-slot=progress-indicator]]:bg-secondary",
+].join(" ");
 
 /* =========================================================
    HELPERS
@@ -90,7 +249,7 @@ function getInitials(name?: string | null) {
     .trim()
     .split(/\s+/)
     .slice(0, 2)
-    .map(part => part.charAt(0).toUpperCase())
+    .map((part) => part.charAt(0).toUpperCase())
     .join("");
 }
 
@@ -129,10 +288,7 @@ function formatDateShort(date?: string | null) {
   }).format(parsedDate);
 }
 
-function getApiErrorMessage(
-  error: unknown,
-  fallback: string,
-) {
+function getApiErrorMessage(error: unknown, fallback: string) {
   if (
     isAxiosError(error) &&
     typeof error.response?.data?.message === "string"
@@ -152,32 +308,31 @@ export default function Profile() {
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const [profileUser, setProfileUser] =
-    useState<ProfileUser | null>(null);
+  const [profileUser, setProfileUser] = useState<ProfileUser | null>(null);
 
   const [loadingProfile, setLoadingProfile] = useState(true);
-  const [profileLoadError, setProfileLoadError] =
-    useState<string | null>(null);
+
+  const [profileLoadError, setProfileLoadError] = useState<string | null>(null);
 
   const [file, setFile] = useState<File | null>(null);
+
   const [preview, setPreview] = useState<string | null>(null);
 
   const [uploading, setUploading] = useState(false);
+
   const [uploadProgress, setUploadProgress] = useState(0);
 
   const [savingProfile, setSavingProfile] = useState(false);
 
-  const [sendingVerification, setSendingVerification] =
-    useState(false);
+  const [sendingVerification, setSendingVerification] = useState(false);
 
-  const [pictureError, setPictureError] =
-    useState<string | null>(null);
+  const [pictureError, setPictureError] = useState<string | null>(null);
 
-  const [profileError, setProfileError] =
-    useState<string | null>(null);
+  const [profileError, setProfileError] = useState<string | null>(null);
 
-  const [verificationError, setVerificationError] =
-    useState<string | null>(null);
+  const [verificationError, setVerificationError] = useState<string | null>(
+    null,
+  );
 
   const [profileForm, setProfileForm] = useState<ProfileForm>({
     fullName: "",
@@ -194,12 +349,9 @@ export default function Profile() {
       setLoadingProfile(true);
       setProfileLoadError(null);
 
-      const response = await api.get<ProfileUser>(
-        "/profiles/me",
-        {
-          withCredentials: true,
-        },
-      );
+      const response = await api.get<ProfileUser>("/profiles/me", {
+        withCredentials: true,
+      });
 
       setProfileUser(response.data);
     } catch (error) {
@@ -234,11 +386,7 @@ export default function Profile() {
       phoneNumber: profileUser.phoneNumber ?? "",
       location: profileUser.location ?? "",
     });
-  }, [
-    profileUser?.fullName,
-    profileUser?.phoneNumber,
-    profileUser?.location,
-  ]);
+  }, [profileUser]);
 
   /* =======================================================
      PREVIEW CLEANUP
@@ -256,10 +404,7 @@ export default function Profile() {
      DERIVED VALUES
   ======================================================= */
 
-  const displayedImage =
-    preview ??
-    profileUser?.avatarUrl ??
-    undefined;
+  const displayedImage = preview ?? profileUser?.avatarUrl ?? undefined;
 
   const fileSize = useMemo(() => {
     if (!file) {
@@ -270,12 +415,10 @@ export default function Profile() {
   }, [file]);
 
   const profileHasChanges =
-    profileForm.fullName.trim() !==
-      (profileUser?.fullName ?? "").trim() ||
+    profileForm.fullName.trim() !== (profileUser?.fullName ?? "").trim() ||
     profileForm.phoneNumber.trim() !==
       (profileUser?.phoneNumber ?? "").trim() ||
-    profileForm.location.trim() !==
-      (profileUser?.location ?? "").trim();
+    profileForm.location.trim() !== (profileUser?.location ?? "").trim();
 
   const profileCompletion = useMemo(() => {
     if (!profileUser) {
@@ -291,23 +434,17 @@ export default function Profile() {
       Boolean(profileUser.avatarUrl),
     ];
 
-    const completed =
-      requirements.filter(Boolean).length;
+    const completed = requirements.filter(Boolean).length;
 
-    return Math.round(
-      (completed / requirements.length) * 100,
-    );
+    return Math.round((completed / requirements.length) * 100);
   }, [profileUser]);
 
   /* =======================================================
      PROFILE PICTURE
   ======================================================= */
 
-  function handleFileChange(
-    event: ChangeEvent<HTMLInputElement>,
-  ) {
-    const selectedFile =
-      event.target.files?.[0] ?? null;
+  function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
+    const selectedFile = event.target.files?.[0] ?? null;
 
     setPictureError(null);
 
@@ -316,18 +453,14 @@ export default function Profile() {
     }
 
     if (!ACCEPTED_IMAGE_TYPES.includes(selectedFile.type)) {
-      setPictureError(
-        "Choose a JPEG, PNG or WebP image.",
-      );
+      setPictureError("Choose a JPEG, PNG or WebP image.");
 
       event.target.value = "";
       return;
     }
 
     if (selectedFile.size > MAX_FILE_SIZE) {
-      setPictureError(
-        "The image must be smaller than 5 MB.",
-      );
+      setPictureError("The image must be smaller than 5 MB.");
 
       event.target.value = "";
       return;
@@ -338,7 +471,9 @@ export default function Profile() {
     }
 
     setFile(selectedFile);
+
     setPreview(URL.createObjectURL(selectedFile));
+
     setUploadProgress(0);
   }
 
@@ -367,32 +502,27 @@ export default function Profile() {
     setPictureError(null);
 
     const formData = new FormData();
+
     formData.append("file", file);
 
     try {
       const response = await api.post<{
         avatarUrl: string;
-      }>(
-        "/profiles/profile-picture",
-        formData,
-        {
-          withCredentials: true,
+      }>("/profiles/profile-picture", formData, {
+        withCredentials: true,
 
-          onUploadProgress: event => {
-            if (!event.total) {
-              return;
-            }
+        onUploadProgress: (event) => {
+          if (!event.total) {
+            return;
+          }
 
-            const percent = Math.round(
-              (event.loaded * 100) / event.total,
-            );
+          const percent = Math.round((event.loaded * 100) / event.total);
 
-            setUploadProgress(percent);
-          },
+          setUploadProgress(percent);
         },
-      );
+      });
 
-      setProfileUser(current => {
+      setProfileUser((current) => {
         if (!current) {
           return current;
         }
@@ -408,14 +538,10 @@ export default function Profile() {
       clearSelectedFile();
 
       toast.success("Profile picture updated", {
-        description:
-          "Your new picture is now visible across Allocatr.",
+        description: "Your new picture is now visible across Allocatr.",
       });
     } catch (error) {
-      console.error(
-        "Could not upload profile picture:",
-        error,
-      );
+      console.error("Could not upload profile picture:", error);
 
       setPictureError(
         getApiErrorMessage(
@@ -432,12 +558,10 @@ export default function Profile() {
      PROFILE DETAILS
   ======================================================= */
 
-  function handleProfileFieldChange(
-    event: ChangeEvent<HTMLInputElement>,
-  ) {
+  function handleProfileFieldChange(event: ChangeEvent<HTMLInputElement>) {
     const { name, value } = event.target;
 
-    setProfileForm(current => ({
+    setProfileForm((current) => ({
       ...current,
       [name]: value,
     }));
@@ -445,17 +569,13 @@ export default function Profile() {
     setProfileError(null);
   }
 
-  async function saveProfile(
-    event: FormEvent<HTMLFormElement>,
-  ) {
+  async function saveProfile(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     setProfileError(null);
 
     if (!profileForm.fullName.trim()) {
-      setProfileError(
-        "Enter your full name before saving.",
-      );
+      setProfileError("Enter your full name before saving.");
 
       return;
     }
@@ -467,10 +587,10 @@ export default function Profile() {
         "/profiles/me",
         {
           fullName: profileForm.fullName.trim(),
-          phoneNumber:
-            profileForm.phoneNumber.trim() || null,
-          location:
-            profileForm.location.trim() || null,
+
+          phoneNumber: profileForm.phoneNumber.trim() || null,
+
+          location: profileForm.location.trim() || null,
         },
         {
           withCredentials: true,
@@ -482,14 +602,10 @@ export default function Profile() {
       await refreshUser();
 
       toast.success("Profile updated", {
-        description:
-          "Your personal information has been saved.",
+        description: "Your personal information has been saved.",
       });
     } catch (error) {
-      console.error(
-        "Could not update profile:",
-        error,
-      );
+      console.error("Could not update profile:", error);
 
       setProfileError(
         getApiErrorMessage(
@@ -528,14 +644,10 @@ export default function Profile() {
       );
 
       toast.success("Verification email sent", {
-        description:
-          `Check ${profileUser.email} for your verification link.`,
+        description: `Check ${profileUser.email} for your verification link.`,
       });
     } catch (error) {
-      console.error(
-        "Could not send verification email:",
-        error,
-      );
+      console.error("Could not send verification email:", error);
 
       setVerificationError(
         getApiErrorMessage(
@@ -563,10 +675,7 @@ export default function Profile() {
   if (profileLoadError || !profileUser) {
     return (
       <ProfileErrorPage
-        message={
-          profileLoadError ??
-          "Your profile could not be loaded."
-        }
+        message={profileLoadError ?? "Your profile could not be loaded."}
         onRetry={fetchProfile}
       />
     );
@@ -578,7 +687,6 @@ export default function Profile() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-
       {/* ===================================================
           NAV
       =================================================== */}
@@ -587,11 +695,11 @@ export default function Profile() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <DashboardMainNav>
             <div>
-              <p className="text-[0.58rem] font-medium uppercase tracking-[0.15em] text-muted-foreground">
+              <p className="text-[0.52rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                 Account
               </p>
 
-              <p className="mt-0.5 text-xs font-semibold">
+              <p className="mt-0.5 text-xs font-semibold text-foreground">
                 Profile
               </p>
             </div>
@@ -603,32 +711,37 @@ export default function Profile() {
           MAIN
       =================================================== */}
 
-      <main className="container mx-auto px-5 py-8 md:px-8 lg:py-12">
-
+      <main className="container mx-auto px-4 py-8 sm:px-6 md:px-8 lg:py-12">
         {/* =================================================
-            HEADER
+            PAGE HEADER
         ================================================= */}
 
-        <section className="pb-8">
+        <section className="pb-8 sm:pb-10">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
             <div className="min-w-0 max-w-2xl">
-              <div className="flex items-center gap-2.5">
-                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-secondary shadow-sm shadow-primary/10">
+              <div className="flex items-center gap-3">
+                <span
+                  className={[
+                    "flex h-9 w-9 items-center justify-center rounded-lg",
+
+                    accentIconSurface,
+                  ].join(" ")}
+                >
                   <UserRoundIcon size={15} />
                 </span>
 
-                <p className="text-[0.62rem] font-semibold uppercase tracking-[0.17em] text-muted-foreground">
+                <p className="text-[0.54rem] font-semibold uppercase tracking-[0.17em] text-muted-foreground">
                   Your account
                 </p>
               </div>
 
-              <h1 className="mt-5 text-3xl font-black leading-tight tracking-[-0.04em] sm:text-4xl lg:text-[2.75rem]">
+              <h1 className="mt-5 text-3xl font-semibold leading-tight tracking-[-0.04em] text-foreground/95 sm:text-4xl lg:text-[2.75rem]">
                 Profile
               </h1>
 
               <p className="mt-3 max-w-xl text-sm leading-7 text-muted-foreground">
-                Manage the personal information connected to your
-                Allocatr account.
+                Manage the personal information connected to your Allocatr
+                account.
               </p>
             </div>
 
@@ -636,16 +749,26 @@ export default function Profile() {
               variant="outline"
               className={[
                 "h-8 w-fit rounded-lg px-3",
-                "border-border bg-muted/25",
-                "text-[0.68rem] font-semibold",
-                "text-foreground shadow-none",
+
+                "border-border/60",
+
+                "bg-surface-2/40",
+
+                "text-[0.66rem] font-semibold",
+
+                "text-foreground/70",
+
+                "shadow-none",
+
+                "dark:bg-surface-2/65",
               ].join(" ")}
             >
-              <UserRoundIcon size={12} />
+              <UserRoundIcon
+                size={12}
+                className="text-brand-secondary-highlight dark:text-secondary"
+              />
 
-              {profileUser.isAllocat
-                ? "Allocat account"
-                : "Client account"}
+              {profileUser.isAllocat ? "Allocat account" : "Client account"}
             </Badge>
           </div>
 
@@ -666,7 +789,7 @@ export default function Profile() {
               SUMMARY
           ================================================= */}
 
-          <div className="mt-8 border-y border-border">
+          <div className="mt-8 border-y border-border/55">
             <div className="grid sm:grid-cols-3">
               <SummaryStat
                 label="Profile"
@@ -676,18 +799,13 @@ export default function Profile() {
 
               <SummaryStat
                 label="Location"
-                value={
-                  profileUser.location ||
-                  "Not added"
-                }
+                value={profileUser.location || "Not added"}
                 divided
               />
 
               <SummaryStat
                 label="Member since"
-                value={formatDateShort(
-                  profileUser.createdAt,
-                )}
+                value={formatDateShort(profileUser.createdAt)}
                 divided
               />
             </div>
@@ -698,66 +816,99 @@ export default function Profile() {
             CONTENT
         ================================================= */}
 
-        <div className="grid min-w-0 items-start gap-10 pt-8 lg:grid-cols-[300px_minmax(0,1fr)] xl:grid-cols-[320px_minmax(0,1fr)] xl:gap-14">
-
+        <div className="grid min-w-0 items-start gap-10 border-t border-border/40 pt-8 lg:grid-cols-[300px_minmax(0,1fr)] xl:grid-cols-[320px_minmax(0,1fr)] xl:gap-14">
           {/* =================================================
               LEFT
           ================================================= */}
 
           <aside className="min-w-0">
-
             {/* =============================================
                 PROFILE PICTURE
             ============================================= */}
 
-            <section className="rounded-2xl border border-border bg-background p-6">
+            <section
+              className={["rounded-2xl border p-5 sm:p-6", cardSurface].join(
+                " ",
+              )}
+            >
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <p className="text-[0.62rem] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
+                  <p className="text-[0.52rem] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
                     Identity
                   </p>
 
-                  <p className="mt-1 text-xs font-semibold">
+                  <p className="mt-1.5 text-xs font-semibold text-foreground">
                     Profile picture
                   </p>
                 </div>
 
-                <span className="text-[0.6rem] text-muted-foreground">
+                <span className="text-[0.58rem] text-muted-foreground">
                   Max 5 MB
                 </span>
               </div>
 
               <div className="mt-7 flex flex-col items-center text-center">
                 <div className="relative">
-                  <Avatar className="h-28 w-28 border border-border bg-transparent shadow-sm">
+                  <Avatar className="h-28 w-28 border border-border/70 bg-transparent">
                     <AvatarImage
                       src={displayedImage}
-                      alt={`${profileUser.fullName}'s profile`}
+                      alt={
+                        profileUser.fullName
+                          ? `${profileUser.fullName}'s profile`
+                          : "User profile"
+                      }
                       className="object-cover"
                     />
 
-                    <AvatarFallback className="bg-primary/[0.08] text-2xl font-black text-primary">
+                    <AvatarFallback
+                      className={[
+                        "bg-brand-secondary-highlight/[0.08]",
+
+                        "text-2xl font-semibold",
+
+                        "text-brand-secondary-highlight",
+
+                        "dark:bg-secondary/[0.08]",
+
+                        "dark:text-secondary",
+                      ].join(" ")}
+                    >
                       {getInitials(profileUser.fullName)}
                     </AvatarFallback>
                   </Avatar>
 
                   <button
                     type="button"
-                    onClick={() =>
-                      fileInputRef.current?.click()
-                    }
+                    onClick={() => fileInputRef.current?.click()}
                     disabled={uploading}
                     className={[
                       "absolute -bottom-1 -right-1",
+
                       "flex h-9 w-9 items-center justify-center",
-                      "rounded-lg border-4 border-background",
-                      "bg-primary text-secondary",
-                      "shadow-sm shadow-primary/10",
-                      "transition-all duration-200",
-                      "hover:-translate-y-0.5 hover:scale-[1.03]",
-                      "hover:bg-primary/90",
+
+                      "rounded-lg border-4 border-card",
+
+                      "bg-brand-secondary-highlight",
+
+                      "text-primary-foreground",
+
+                      "transition-opacity duration-150",
+
+                      "hover:opacity-85",
+
+                      "focus-visible:outline-none",
+
+                      "focus-visible:ring-2",
+                      "focus-visible:ring-brand-secondary-highlight/25",
+
                       "disabled:pointer-events-none",
                       "disabled:opacity-60",
+
+                      "dark:bg-secondary",
+
+                      "dark:text-secondary-foreground",
+
+                      "dark:focus-visible:ring-secondary/25",
                     ].join(" ")}
                     aria-label="Choose profile picture"
                   >
@@ -765,29 +916,27 @@ export default function Profile() {
                   </button>
                 </div>
 
-                <h2 className="mt-5 max-w-full break-words text-lg font-bold tracking-[-0.025em]">
+                <h2 className="mt-5 max-w-full break-words text-lg font-semibold tracking-[-0.025em] text-foreground">
                   {profileUser.fullName}
                 </h2>
 
-                <div className="mt-1 flex max-w-full items-center justify-center gap-1.5">
+                <div className="mt-1.5 flex max-w-full items-center justify-center gap-1.5">
                   <p className="min-w-0 truncate text-xs text-muted-foreground">
-                    {profileUser.email ||
-                      "No email available"}
+                    {profileUser.email || "No email available"}
                   </p>
 
                   {profileUser.emailConfirmed && (
                     <BadgeCheckIcon
                       size={12}
-                      className="shrink-0 text-emerald-600 dark:text-emerald-300"
+                      className="shrink-0 text-status-complete-foreground"
                     />
                   )}
                 </div>
 
-                <div className="mt-4 inline-flex items-center gap-1.5 rounded-md border border-border/60 px-2.5 py-1.5 text-[0.65rem] text-muted-foreground">
+                <div className="mt-4 inline-flex items-center gap-1.5 rounded-lg border border-border/55 bg-surface-2/30 px-2.5 py-1.5 text-[0.63rem] text-muted-foreground dark:bg-surface-2/55">
                   <MapPinIcon size={11} />
 
-                  {profileUser.location ||
-                    "Location not added"}
+                  {profileUser.location || "Location not added"}
                 </div>
               </div>
 
@@ -807,18 +956,24 @@ export default function Profile() {
               {/* SELECTED IMAGE */}
 
               {file && (
-                <div className="mt-6 border-t border-border/70 pt-5">
+                <div className="mt-6 border-t border-border/55 pt-5">
                   <div className="flex items-center gap-3">
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/[0.07] text-primary">
-                      <ImageIcon size={16} />
+                    <span
+                      className={[
+                        "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
+
+                        accentIconSurface,
+                      ].join(" ")}
+                    >
+                      <ImageIcon size={15} />
                     </span>
 
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-xs font-semibold">
+                      <p className="truncate text-xs font-semibold text-foreground">
                         {file.name}
                       </p>
 
-                      <p className="mt-0.5 text-[0.65rem] text-muted-foreground">
+                      <p className="mt-0.5 text-[0.63rem] text-muted-foreground">
                         {fileSize}
                       </p>
                     </div>
@@ -828,7 +983,9 @@ export default function Profile() {
                         type="button"
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 rounded-lg text-muted-foreground shadow-none hover:bg-muted/40 hover:text-foreground"
+                        className={["h-8 w-8 rounded-lg", quietIconButton].join(
+                          " ",
+                        )}
                         onClick={clearSelectedFile}
                         aria-label="Remove selected image"
                       >
@@ -843,8 +1000,8 @@ export default function Profile() {
 
               {uploading && (
                 <div className="mt-5">
-                  <div className="mb-2 flex items-center justify-between text-[0.68rem]">
-                    <span className="font-medium">
+                  <div className="mb-2 flex items-center justify-between text-[0.66rem]">
+                    <span className="font-medium text-foreground">
                       Uploading image
                     </span>
 
@@ -853,16 +1010,11 @@ export default function Profile() {
                     </span>
                   </div>
 
-                  <Progress
-                    value={uploadProgress}
-                    className="h-1.5"
-                  />
+                  <Progress value={uploadProgress} className={progressClass} />
                 </div>
               )}
 
-              {pictureError && (
-                <InlineError message={pictureError} />
-              )}
+              {pictureError && <InlineError message={pictureError} />}
 
               {/* PICTURE ACTIONS */}
 
@@ -870,10 +1022,12 @@ export default function Profile() {
                 <Button
                   type="button"
                   variant="outline"
-                  className="h-10 rounded-lg bg-transparent text-xs font-semibold shadow-none"
-                  onClick={() =>
-                    fileInputRef.current?.click()
-                  }
+                  className={[
+                    "h-10 rounded-lg text-xs font-semibold",
+
+                    secondaryButton,
+                  ].join(" ")}
+                  onClick={() => fileInputRef.current?.click()}
                   disabled={uploading}
                 >
                   <CameraIcon size={14} />
@@ -888,18 +1042,18 @@ export default function Profile() {
                 {file && (
                   <Button
                     type="button"
-                    className="h-10 rounded-lg text-xs font-semibold shadow-none"
-                    onClick={() =>
-                      void uploadProfilePicture()
-                    }
+                    variant="ghost"
+                    className={[
+                      "h-10 rounded-lg text-xs font-semibold",
+
+                      primaryButton,
+                    ].join(" ")}
+                    onClick={() => void uploadProfilePicture()}
                     disabled={uploading}
                   >
                     {uploading ? (
                       <>
-                        <LoaderCircleIcon
-                          size={14}
-                          className="animate-spin"
-                        />
+                        <LoaderCircleIcon size={14} className="animate-spin" />
                         Uploading
                       </>
                     ) : (
@@ -912,32 +1066,32 @@ export default function Profile() {
                 )}
               </div>
 
-              <p className="mt-4 text-center text-[0.63rem] leading-5 text-muted-foreground">
+              <p className="mt-4 text-center text-[0.61rem] leading-5 text-muted-foreground">
                 JPEG, PNG or WebP.
               </p>
 
               {/* COMPLETION */}
 
-              <div className="mt-7 border-t border-border/70 pt-5">
+              <div className="mt-7 border-t border-border/55 pt-5">
                 <div className="flex items-end justify-between gap-3">
                   <div>
-                    <p className="text-xs font-semibold">
+                    <p className="text-xs font-semibold text-foreground">
                       Profile completeness
                     </p>
 
-                    <p className="mt-1 text-[0.62rem] leading-5 text-muted-foreground">
+                    <p className="mt-1 text-[0.61rem] leading-5 text-muted-foreground">
                       Complete and verify your account details.
                     </p>
                   </div>
 
-                  <span className="text-lg font-black tracking-[-0.035em]">
+                  <span className="text-lg font-semibold tracking-[-0.035em] text-foreground">
                     {profileCompletion}%
                   </span>
                 </div>
 
                 <Progress
                   value={profileCompletion}
-                  className="mt-3 h-1.5"
+                  className={["mt-3", progressClass].join(" ")}
                 />
               </div>
             </section>
@@ -946,19 +1100,39 @@ export default function Profile() {
                 TRUST
             ============================================= */}
 
-            <section className="mt-5 flex items-start gap-3 rounded-xl bg-muted/[0.15] px-4 py-4">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-400/[0.08] text-emerald-700 dark:text-emerald-300">
-                <ShieldCheckIcon size={16} />
+            <section
+              className={[
+                "mt-5 flex items-start gap-3 rounded-xl border px-4 py-4",
+
+                "border-brand-secondary-highlight/10",
+
+                "bg-brand-secondary-highlight/[0.035]",
+
+                "dark:border-secondary/10",
+
+                "dark:bg-secondary/[0.035]",
+              ].join(" ")}
+            >
+              <span
+                className={[
+                  "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
+
+                  "bg-status-complete/[0.08]",
+
+                  "text-status-complete-foreground",
+                ].join(" ")}
+              >
+                <ShieldCheckIcon size={15} />
               </span>
 
               <div>
-                <p className="text-xs font-semibold">
+                <p className="text-xs font-semibold text-foreground">
                   Keep your details current
                 </p>
 
-                <p className="mt-1 text-[0.66rem] leading-5 text-muted-foreground">
-                  Accurate and verified information improves account
-                  security and keeps project communication reliable.
+                <p className="mt-1 text-[0.64rem] leading-5 text-muted-foreground">
+                  Accurate and verified information improves account security
+                  and keeps project communication reliable.
                 </p>
               </div>
             </section>
@@ -976,7 +1150,6 @@ export default function Profile() {
                 description="The basic information shown throughout your workspace."
               >
                 <div className="grid gap-6">
-
                   {/* =========================================
                       FULL NAME
                   ========================================= */}
@@ -997,15 +1170,7 @@ export default function Profile() {
                         value={profileForm.fullName}
                         onChange={handleProfileFieldChange}
                         placeholder="Enter your full name"
-                        className={[
-                          "h-11 rounded-lg",
-                          "!bg-transparent",
-                          "border-border",
-                          "pl-10 shadow-none",
-                          "focus-visible:border-primary/40",
-                          "focus-visible:ring-1",
-                          "focus-visible:ring-primary/30",
-                        ].join(" ")}
+                        className={[fieldClass, "pl-10"].join(" ")}
                         disabled={savingProfile}
                       />
                     </div>
@@ -1031,18 +1196,9 @@ export default function Profile() {
                           type="email"
                           value={profileUser.email ?? ""}
                           disabled
-                          className={[
-                            "h-11 rounded-lg",
-                            "!bg-muted/[0.2]",
-                            "border-border/70",
-                            "pl-10 pr-10",
-                            "font-medium",
-                            "text-muted-foreground",
-                            "shadow-none",
-                            "disabled:cursor-not-allowed",
-                            "disabled:opacity-100",
-                            "disabled:text-muted-foreground",
-                          ].join(" ")}
+                          className={[disabledFieldClass, "pl-10 pr-10"].join(
+                            " ",
+                          )}
                         />
 
                         <LockKeyholeIcon
@@ -1055,11 +1211,16 @@ export default function Profile() {
                         <div
                           className={[
                             "flex h-11 shrink-0 items-center gap-1.5",
-                            "rounded-lg border border-border/70",
-                            "bg-transparent px-3.5",
+
+                            "rounded-lg border px-3.5",
+
+                            "border-status-complete/15",
+
+                            "bg-status-complete/[0.055]",
+
                             "text-xs font-semibold",
-                            "text-emerald-700",
-                            "dark:text-emerald-300",
+
+                            "text-status-complete-foreground",
                           ].join(" ")}
                         >
                           <BadgeCheckIcon size={13} />
@@ -1095,15 +1256,7 @@ export default function Profile() {
                           value={profileForm.phoneNumber}
                           onChange={handleProfileFieldChange}
                           placeholder="+263..."
-                          className={[
-                            "h-11 rounded-lg",
-                            "!bg-transparent",
-                            "border-border",
-                            "pl-10 shadow-none",
-                            "focus-visible:border-primary/40",
-                            "focus-visible:ring-1",
-                            "focus-visible:ring-primary/30",
-                          ].join(" ")}
+                          className={[fieldClass, "pl-10"].join(" ")}
                           disabled={savingProfile}
                         />
                       </div>
@@ -1122,15 +1275,7 @@ export default function Profile() {
                           value={profileForm.location}
                           onChange={handleProfileFieldChange}
                           placeholder="City, country"
-                          className={[
-                            "h-11 rounded-lg",
-                            "!bg-transparent",
-                            "border-border",
-                            "pl-10 shadow-none",
-                            "focus-visible:border-primary/40",
-                            "focus-visible:ring-1",
-                            "focus-visible:ring-primary/30",
-                          ].join(" ")}
+                          className={[fieldClass, "pl-10"].join(" ")}
                           disabled={savingProfile}
                         />
                       </div>
@@ -1138,18 +1283,17 @@ export default function Profile() {
                   </div>
                 </div>
 
-                {profileError && (
-                  <InlineError message={profileError} />
-                )}
+                {profileError && <InlineError message={profileError} />}
 
                 {/* =========================================
                     SAVE
                 ========================================= */}
 
-                <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="mt-8 flex flex-col gap-3 border-t border-border/45 pt-6 sm:flex-row sm:items-center sm:justify-between">
                   <p
                     className={[
-                      "text-[0.68rem]",
+                      "text-[0.66rem]",
+
                       profileHasChanges
                         ? "font-medium text-foreground"
                         : "text-muted-foreground",
@@ -1162,18 +1306,27 @@ export default function Profile() {
 
                   <Button
                     type="submit"
-                    disabled={
-                      !profileHasChanges ||
-                      savingProfile
-                    }
-                    className="h-10 rounded-lg px-5 text-xs font-semibold shadow-none"
+                    variant="ghost"
+                    disabled={!profileHasChanges || savingProfile}
+                    className={[
+                      "h-10 rounded-lg px-5 text-xs font-semibold",
+
+                      primaryButton,
+
+                      "disabled:border-border/50",
+
+                      "disabled:bg-surface-3",
+
+                      "disabled:text-muted-foreground",
+
+                      "disabled:opacity-60",
+
+                      "dark:disabled:bg-surface-2",
+                    ].join(" ")}
                   >
                     {savingProfile ? (
                       <>
-                        <LoaderCircleIcon
-                          size={14}
-                          className="animate-spin"
-                        />
+                        <LoaderCircleIcon size={14} className="animate-spin" />
                         Saving
                       </>
                     ) : (
@@ -1207,29 +1360,19 @@ export default function Profile() {
                       ? "Verified"
                       : "Verification required"
                   }
-                  status={
-                    profileUser.emailConfirmed
-                      ? "success"
-                      : "pending"
-                  }
+                  status={profileUser.emailConfirmed ? "success" : "pending"}
                 />
 
                 <AccountItem
                   icon={Clock3Icon}
                   label="Member since"
-                  value={formatDate(
-                    profileUser.createdAt,
-                  )}
+                  value={formatDate(profileUser.createdAt)}
                 />
 
                 <AccountItem
                   icon={UserRoundIcon}
                   label="Account type"
-                  value={
-                    profileUser.isAllocat
-                      ? "Allocat"
-                      : "Client"
-                  }
+                  value={profileUser.isAllocat ? "Allocat" : "Client"}
                 />
 
                 <AccountItem
@@ -1260,7 +1403,7 @@ function EmailVerificationWarning({
   error,
   onVerify,
 }: {
-  email: string | null;
+  email?: string | null;
   sending: boolean;
   error: string | null;
   onVerify: () => Promise<void>;
@@ -1269,9 +1412,14 @@ function EmailVerificationWarning({
     <section
       className={[
         "mt-7 rounded-xl border",
-        "border-border/70",
-        "bg-muted/[0.12]",
-        "px-4 py-4 sm:px-5",
+
+        "border-status-pending/20",
+
+        "bg-status-pending/[0.045]",
+
+        "px-4 py-4",
+
+        "sm:px-5",
       ].join(" ")}
       aria-label="Email verification required"
     >
@@ -1280,30 +1428,31 @@ function EmailVerificationWarning({
           <span
             className={[
               "mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center",
+
               "rounded-lg",
-              "bg-primary text-secondary",
-              "shadow-sm shadow-primary/10",
+
+              "bg-status-pending/[0.12]",
+
+              "text-status-pending-foreground",
             ].join(" ")}
           >
             <MailCheckIcon size={15} />
           </span>
 
           <div className="min-w-0">
-            <p className="text-sm font-semibold tracking-[-0.01em]">
+            <p className="text-sm font-semibold tracking-[-0.01em] text-foreground">
               Email verification required
             </p>
 
             <p className="mt-1 text-xs leading-5 text-muted-foreground">
               Confirm{" "}
               {email ? (
-                <span className="font-medium text-foreground">
-                  {email}
-                </span>
+                <span className="font-medium text-foreground">{email}</span>
               ) : (
                 "your email address"
               )}{" "}
-              to complete your profile and keep your account
-              information verified.
+              to complete your profile and keep your account information
+              verified.
             </p>
 
             {error && (
@@ -1311,14 +1460,9 @@ function EmailVerificationWarning({
                 className="mt-3 flex items-start gap-2 text-xs text-destructive"
                 role="alert"
               >
-                <AlertCircleIcon
-                  size={13}
-                  className="mt-0.5 shrink-0"
-                />
+                <AlertCircleIcon size={13} className="mt-0.5 shrink-0" />
 
-                <p className="leading-5">
-                  {error}
-                </p>
+                <p className="leading-5">{error}</p>
               </div>
             )}
           </div>
@@ -1354,35 +1498,26 @@ function VerificationButton({
       type="button"
       variant="outline"
       onClick={() => void onVerify()}
-      disabled={
-        sending ||
-        disabled
-      }
+      disabled={sending || disabled}
       className={[
-        "shrink-0 rounded-lg",
-        "border-border",
-        "bg-transparent",
-        "text-xs font-semibold text-foreground",
-        "shadow-none",
-        "transition-colors",
-        "hover:border-foreground/15",
-        "hover:bg-muted/40",
-        "hover:text-foreground",
-        "disabled:border-border",
-        "disabled:bg-transparent",
+        "shrink-0 rounded-lg text-xs font-semibold",
+
+        secondaryButton,
+
+        "disabled:border-border/60",
+
+        "disabled:bg-surface-2/20",
+
         "disabled:text-muted-foreground",
+
         "disabled:opacity-60",
-        size === "field"
-          ? "h-11 px-4"
-          : "h-9 px-3.5",
+
+        size === "field" ? "h-11 px-4" : "h-9 px-3.5",
       ].join(" ")}
     >
       {sending ? (
         <>
-          <LoaderCircleIcon
-            size={13}
-            className="animate-spin"
-          />
+          <LoaderCircleIcon size={13} className="animate-spin" />
           Sending
         </>
       ) : (
@@ -1414,23 +1549,21 @@ function SummaryStat({
     <div
       className={[
         "min-w-0 px-5 py-4",
-        "transition-colors hover:bg-muted/[0.08]",
-        divided
-          ? "border-t border-border sm:border-l sm:border-t-0"
-          : "",
+
+        divided ? "border-t border-border/55 sm:border-l sm:border-t-0" : "",
       ].join(" ")}
     >
-      <p className="text-[0.58rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+      <p className="text-[0.52rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
         {label}
       </p>
 
       <div className="mt-1.5 flex min-w-0 items-baseline gap-1.5">
-        <p className="truncate text-lg font-black tracking-[-0.03em] sm:text-xl">
+        <p className="truncate text-lg font-semibold tracking-[-0.03em] text-foreground sm:text-xl">
           {value}
         </p>
 
         {suffix && (
-          <span className="truncate text-[0.62rem] font-medium text-muted-foreground">
+          <span className="truncate text-[0.6rem] font-medium text-muted-foreground">
             {suffix}
           </span>
         )}
@@ -1461,20 +1594,21 @@ function ProfileSection({
   return (
     <section
       className={[
-        divided
-          ? "border-t border-border/50 pt-9"
-          : "",
-        !last
-          ? "pb-10"
-          : "",
+        divided ? "border-t border-border/50 pt-9" : "",
+
+        !last ? "pb-10" : "",
       ].join(" ")}
     >
       <div className="mb-7 max-w-2xl">
-        <p className="text-[0.6rem] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
-          {eyebrow}
-        </p>
+        <div className="flex items-center gap-2.5">
+          <span className="h-1.5 w-6 rounded-full bg-brand-secondary-highlight dark:bg-secondary" />
 
-        <h2 className="mt-1.5 text-xl font-black tracking-[-0.025em] sm:text-2xl">
+          <p className="text-[0.52rem] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
+            {eyebrow}
+          </p>
+        </div>
+
+        <h2 className="mt-3 text-xl font-semibold tracking-[-0.025em] text-foreground sm:text-2xl">
           {title}
         </h2>
 
@@ -1504,12 +1638,10 @@ function ProfileField({
   return (
     <div className="grid gap-2">
       <div>
-        <Label className="text-xs font-semibold">
-          {label}
-        </Label>
+        <Label className="text-xs font-semibold text-foreground">{label}</Label>
 
         {description && (
-          <p className="mt-1 text-[0.65rem] leading-5 text-muted-foreground">
+          <p className="mt-1 text-[0.63rem] leading-5 text-muted-foreground">
             {description}
           </p>
         )}
@@ -1539,17 +1671,23 @@ function AccountItem({
   status?: "success" | "pending";
 }) {
   return (
-    <div className="group flex items-center gap-3 rounded-xl border border-border/75 bg-transparent px-4 py-4 transition-colors hover:bg-muted/[0.08]">
-      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted/40 text-muted-foreground transition-colors group-hover:bg-primary/[0.07] group-hover:text-primary">
+    <div
+      className={[
+        "flex items-center gap-3 rounded-xl border px-4 py-4",
+
+        quietSurface,
+      ].join(" ")}
+    >
+      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-surface-3/70 text-muted-foreground ring-1 ring-inset ring-border/35 dark:bg-surface-2">
         <Icon size={14} />
       </span>
 
       <div className="min-w-0 flex-1">
-        <p className="text-[0.6rem] font-medium text-muted-foreground">
+        <p className="text-[0.58rem] font-medium text-muted-foreground">
           {label}
         </p>
 
-        <p className="mt-0.5 truncate text-sm font-semibold">
+        <p className="mt-0.5 truncate text-sm font-semibold text-foreground">
           {value}
         </p>
       </div>
@@ -1558,16 +1696,23 @@ function AccountItem({
         <span
           className={[
             "shrink-0 rounded-md px-2 py-1",
-            "text-[0.58rem] font-semibold",
+
+            "text-[0.56rem] font-semibold",
 
             status === "success"
-              ? "bg-emerald-400/[0.08] text-emerald-700 dark:text-emerald-300"
-              : "bg-muted text-muted-foreground",
+              ? [
+                  "bg-status-complete/[0.08]",
+
+                  "text-status-complete-foreground",
+                ].join(" ")
+              : [
+                  "bg-status-pending/[0.09]",
+
+                  "text-status-pending-foreground",
+                ].join(" "),
           ].join(" ")}
         >
-          {status === "success"
-            ? "Verified"
-            : "Pending"}
+          {status === "success" ? "Verified" : "Pending"}
         </span>
       )}
     </div>
@@ -1578,24 +1723,15 @@ function AccountItem({
    INLINE ERROR
 ========================================================= */
 
-function InlineError({
-  message,
-}: {
-  message: string;
-}) {
+function InlineError({ message }: { message: string }) {
   return (
     <div
       className="mt-4 flex items-start gap-2.5 rounded-lg border border-destructive/20 bg-destructive/[0.05] px-3.5 py-3 text-xs text-destructive"
       role="alert"
     >
-      <AlertCircleIcon
-        size={15}
-        className="mt-0.5 shrink-0"
-      />
+      <AlertCircleIcon size={15} className="mt-0.5 shrink-0" />
 
-      <p className="leading-5">
-        {message}
-      </p>
+      <p className="leading-5">{message}</p>
     </div>
   );
 }
@@ -1613,17 +1749,18 @@ function ProfileLoading() {
         </div>
       </header>
 
-      <main className="container mx-auto px-5 py-10 md:px-8 lg:py-12">
+      <main className="container mx-auto px-4 py-8 sm:px-6 md:px-8 lg:py-12">
         <div className="max-w-xl">
-          <Skeleton className="h-8 w-8 rounded-lg" />
+          <Skeleton className="h-9 w-9 rounded-lg" />
+
           <Skeleton className="mt-5 h-10 w-48" />
+
           <Skeleton className="mt-4 h-4 w-full" />
+
           <Skeleton className="mt-2 h-4 w-4/5" />
         </div>
 
-        <Skeleton className="mt-7 h-[74px] w-full rounded-xl" />
-
-        <div className="mt-8 border-y border-border">
+        <div className="mt-8 border-y border-border/55">
           <div className="grid sm:grid-cols-3">
             {Array.from({ length: 3 }).map((_, index) => (
               <div
@@ -1632,23 +1769,26 @@ function ProfileLoading() {
                   "px-5 py-4",
 
                   index > 0
-                    ? "border-t border-border sm:border-l sm:border-t-0"
+                    ? "border-t border-border/55 sm:border-l sm:border-t-0"
                     : "",
                 ].join(" ")}
               >
                 <Skeleton className="h-3 w-16" />
+
                 <Skeleton className="mt-3 h-6 w-24" />
               </div>
             ))}
           </div>
         </div>
 
-        <div className="mt-8 grid gap-10 lg:grid-cols-[300px_minmax(0,1fr)] xl:grid-cols-[320px_minmax(0,1fr)]">
+        <div className="mt-8 grid gap-10 border-t border-border/40 pt-8 lg:grid-cols-[300px_minmax(0,1fr)] xl:grid-cols-[320px_minmax(0,1fr)]">
           <Skeleton className="h-[520px] rounded-2xl" />
 
           <div>
             <Skeleton className="h-3 w-24" />
+
             <Skeleton className="mt-3 h-7 w-48" />
+
             <Skeleton className="mt-3 h-4 w-80 max-w-full" />
 
             <div className="mt-8 space-y-6">
@@ -1656,11 +1796,13 @@ function ProfileLoading() {
 
               <div className="flex gap-3">
                 <Skeleton className="h-11 flex-1 rounded-lg" />
+
                 <Skeleton className="h-11 w-28 rounded-lg" />
               </div>
 
               <div className="grid gap-6 sm:grid-cols-2">
                 <Skeleton className="h-11 rounded-lg" />
+
                 <Skeleton className="h-11 rounded-lg" />
               </div>
             </div>
@@ -1690,13 +1832,13 @@ function ProfileErrorPage({
         </div>
       </header>
 
-      <main className="container mx-auto px-5 py-20 md:px-8">
+      <main className="container mx-auto px-4 py-20 sm:px-6 md:px-8">
         <div className="max-w-md">
-          <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-destructive/10 text-destructive">
-            <AlertCircleIcon size={20} />
+          <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-destructive/[0.08] text-destructive">
+            <AlertCircleIcon size={19} />
           </span>
 
-          <h1 className="mt-5 text-2xl font-black tracking-[-0.03em]">
+          <h1 className="mt-5 text-2xl font-semibold tracking-[-0.03em] text-foreground">
             Could not load your profile
           </h1>
 
@@ -1706,8 +1848,13 @@ function ProfileErrorPage({
 
           <Button
             type="button"
+            variant="ghost"
             onClick={() => void onRetry()}
-            className="mt-6 h-10 rounded-lg px-5 text-xs font-semibold shadow-none"
+            className={[
+              "mt-6 h-10 rounded-lg px-5 text-xs font-semibold",
+
+              primaryButton,
+            ].join(" ")}
           >
             <RefreshCwIcon size={14} />
             Try again
