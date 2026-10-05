@@ -1,567 +1,3 @@
-// import {
-//   ArrowLeftIcon,
-//   ArrowRightIcon,
-//   EyeIcon,
-//   EyeOffIcon,
-//   LoaderCircleIcon,
-//   LockKeyholeIcon,
-//   MailIcon,
-// } from "lucide-react";
-
-// import { useEffect, useState } from "react";
-// import { Link, useNavigate, useSearchParams } from "react-router-dom";
-// import { motion } from "framer-motion";
-
-// import { zodResolver } from "@hookform/resolvers/zod";
-// import { Controller, useForm } from "react-hook-form";
-// import * as z from "zod";
-
-// import { useAuth } from "@/auth/useAuth";
-
-// import assets from "@/assets/assets";
-// import AllocatrLogo from "@/components/AllocatrLogo";
-
-// import { Button } from "@/components/ui/button";
-// import { Field, FieldError, FieldLabel } from "@/components/ui/field";
-// import { Input } from "@/components/ui/input";
-
-// /* =========================================================
-//    IMAGE
-// ========================================================= */
-
-// const LOGIN_IMAGE =
-//   "https://images.pexels.com/photos/730896/pexels-photo-730896.jpeg?cs=srgb&dl=pexels-snapwire-730896.jpg&fm=jpg";
-
-// /* =========================================================
-//    VALIDATION
-// ========================================================= */
-
-// const loginSchema = z.object({
-//   email: z.string().trim().min(1, "Email address is required.").email("Enter a valid email address."),
-//   password: z.string().min(1, "Password is required.").min(8, "Password must be at least 8 characters."),
-// });
-
-// type LoginFormValues = z.infer<typeof loginSchema>;
-
-// /* =========================================================
-//    LOGIN
-// ========================================================= */
-
-// export default function Login() {
-//   const { login, user } = useAuth();
-//   const navigate = useNavigate();
-//   const [searchParams] = useSearchParams();
-
-//   const [showPassword, setShowPassword] = useState(false);
-
-//   const returnTo = getSafeReturnTo(searchParams.get("returnTo"));
-//   const registerUrl = returnTo
-//     ? `/register?returnTo=${encodeURIComponent(returnTo)}`
-//     : "/register";
-
-//   const form = useForm<LoginFormValues>({
-//     resolver: zodResolver(loginSchema),
-//     mode: "onBlur",
-//     reValidateMode: "onChange",
-//     defaultValues: {
-//       email: "",
-//       password: "",
-//     },
-//   });
-
-//   const { isSubmitting } = form.formState;
-//   const credentialsError = form.formState.errors.root?.credentials;
-
-//   /* =======================================================
-//      AUTH REDIRECT
-//   ======================================================= */
-
-//   useEffect(() => {
-//     if (!user) return;
-
-//     navigate(returnTo || "/projects", {
-//       replace: true,
-//     });
-//   }, [user, returnTo, navigate]);
-
-//   /* =======================================================
-//      CLEAR AUTH ERROR
-//   ======================================================= */
-
-//   function clearCredentialsError() {
-//     if (form.formState.errors.root?.credentials) {
-//       form.clearErrors("root.credentials");
-//     }
-//   }
-
-//   /* =======================================================
-//      LOGIN
-//   ======================================================= */
-
-//   async function handleLogin(values: LoginFormValues) {
-//     form.clearErrors("root.credentials");
-
-//     try {
-//       await login(values.email.trim(), values.password);
-
-//       navigate(returnTo || "/projects", {
-//         replace: true,
-//       });
-//     } catch (error: unknown) {
-//       form.setError("root.credentials", {
-//         type: "server",
-//         message: getLoginErrorMessage(error),
-//       });
-//     }
-//   }
-
-//   return (
-//     <>
-//       <style>
-//         {`
-//           .allocatr-login {
-//             color-scheme: dark;
-//           }
-
-//           .allocatr-login input {
-//             color-scheme: dark;
-//           }
-
-//           .allocatr-login-input:-webkit-autofill,
-//           .allocatr-login-input:-webkit-autofill:hover,
-//           .allocatr-login-input:-webkit-autofill:focus,
-//           .allocatr-login-input:-webkit-autofill:active {
-//             -webkit-text-fill-color: #ffffff !important;
-//             caret-color: #ffffff !important;
-//             background-color: #151515 !important;
-//             -webkit-box-shadow: 0 0 0 1000px #151515 inset !important;
-//             box-shadow: 0 0 0 1000px #151515 inset !important;
-//             transition: background-color 9999s ease-out 0s, color 9999s ease-out 0s;
-//           }
-
-//           .allocatr-login-input:-moz-autofill {
-//             color: #ffffff !important;
-//             caret-color: #ffffff !important;
-//             background-color: #151515 !important;
-//             box-shadow: 0 0 0 1000px #151515 inset !important;
-//           }
-
-//           .allocatr-login-input:-webkit-autofill::first-line {
-//             color: #ffffff !important;
-//             font-family: inherit !important;
-//             font-size: inherit !important;
-//           }
-//         `}
-//       </style>
-
-//       <main className="allocatr-login dark relative min-h-screen overflow-hidden bg-[#111111] text-white">
-
-//         {/* BACKGROUND */}
-
-//         <div className="absolute inset-0">
-//           <img
-//             src={LOGIN_IMAGE}
-//             alt=""
-//             className="h-full w-full object-cover object-center"
-//           />
-
-//           <div className="absolute inset-0 bg-black/20" />
-
-//           <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,0.08)_0%,rgba(0,0,0,0.02)_40%,rgba(0,0,0,0.32)_100%)]" />
-//           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.18)_0%,transparent_28%,transparent_70%,rgba(0,0,0,0.32)_100%)]" />
-//         </div>
-
-//         {/* TOP BAR */}
-
-//         <header className="relative z-20 flex h-[76px] items-center border-b border-white/[0.06] bg-[#171717]/95 px-5 backdrop-blur-xl sm:px-8">
-//           <Link
-//             to="/"
-//             className="group inline-flex items-center"
-//             aria-label="Go to Allocatr home"
-//           >
-//             <AllocatrLogo
-//               theme="dark"
-//               className="w-[7.25rem] sm:w-[8rem]"
-//             />
-//           </Link>
-//         </header>
-
-//         {/* LOGIN AREA */}
-
-//         <section className="relative z-10 flex min-h-[calc(100vh-126px)] items-center justify-center px-5 py-10 sm:px-8">
-//           <motion.div
-//             initial={{
-//               opacity: 0,
-//               y: 16,
-//               scale: 0.985,
-//             }}
-//             animate={{
-//               opacity: 1,
-//               y: 0,
-//               scale: 1,
-//             }}
-//             transition={{
-//               duration: 0.55,
-//               ease: "easeOut",
-//             }}
-//             className="w-full max-w-[390px]"
-//           >
-//             <div className="overflow-hidden rounded-[1.4rem] border border-white/[0.10] bg-[#242424]/90 shadow-2xl shadow-black/40 backdrop-blur-xl">
-
-//               {/* CARD BRAND */}
-
-//               <div className="px-7 pb-5 pt-8 text-center sm:px-8">
-//                 <Link
-//                   to="/"
-//                   aria-label="Allocatr home"
-//                   className="mx-auto flex h-20 w-20 items-center justify-center rounded-[1.25rem] bg-black/30 ring-1 ring-white/[0.07] transition-transform duration-300 hover:scale-[1.03]"
-//                 >
-//                   <img
-//                     src={assets.allocatrIcon}
-//                     alt="Allocatr"
-//                     className="h-12 w-12 object-contain"
-//                   />
-//                 </Link>
-
-//                 <h1 className="mt-5 text-xl font-black tracking-[-0.025em] text-white">
-//                   Welcome back
-//                 </h1>
-
-//                 <p className="mt-1.5 text-xs text-white/45">
-//                   {returnTo
-//                     ? "Sign in to continue where you left off"
-//                     : "Sign in to your workspace"}
-//                 </p>
-//               </div>
-
-//               {/* FORM */}
-
-//               <form
-//                 onSubmit={form.handleSubmit(handleLogin)}
-//                 noValidate
-//                 className="space-y-4 px-7 pb-7 sm:px-8"
-//               >
-
-//                 {/* EMAIL */}
-
-//                 <Controller
-//                   name="email"
-//                   control={form.control}
-//                   render={({ field, fieldState }) => {
-//                     const invalid = fieldState.invalid || Boolean(credentialsError);
-
-//                     return (
-//                       <Field data-invalid={invalid}>
-//                         <FieldLabel
-//                           htmlFor="email"
-//                           className="sr-only"
-//                         >
-//                           Email address
-//                         </FieldLabel>
-
-//                         <div className="relative">
-//                           <MailIcon
-//                             size={16}
-//                             className={[
-//                               "pointer-events-none absolute left-3.5 top-1/2 z-10 -translate-y-1/2",
-//                               invalid
-//                                 ? "text-destructive"
-//                                 : "text-white/35",
-//                             ].join(" ")}
-//                           />
-
-//                           <Input
-//                             {...field}
-//                             id="email"
-//                             type="email"
-//                             autoComplete="email"
-//                             placeholder="Email address"
-//                             disabled={isSubmitting}
-//                             aria-invalid={invalid}
-//                             onChange={event => {
-//                               field.onChange(event);
-//                               clearCredentialsError();
-//                             }}
-//                             className={[
-//                               "allocatr-login-input",
-//                               "h-11 rounded-lg",
-//                               "!bg-[#151515]",
-//                               "!text-white",
-//                               "pl-10 pr-4",
-//                               "shadow-none",
-//                               "placeholder:!text-white/30",
-//                               "focus-visible:ring-1",
-//                               invalid
-//                                 ? "!border-destructive/70 focus-visible:!border-destructive focus-visible:ring-destructive/25"
-//                                 : "!border-white/[0.12] focus-visible:!border-brand-primary/60 focus-visible:ring-brand-primary/30",
-//                             ].join(" ")}
-//                           />
-//                         </div>
-
-//                         <FieldError
-//                           errors={[fieldState.error]}
-//                           className="text-[0.68rem] text-destructive"
-//                         />
-//                       </Field>
-//                     );
-//                   }}
-//                 />
-
-//                 {/* PASSWORD */}
-
-//                 <Controller
-//                   name="password"
-//                   control={form.control}
-//                   render={({ field, fieldState }) => {
-//                     const invalid = fieldState.invalid || Boolean(credentialsError);
-
-//                     return (
-//                       <Field data-invalid={invalid}>
-//                         <FieldLabel
-//                           htmlFor="password"
-//                           className="sr-only"
-//                         >
-//                           Password
-//                         </FieldLabel>
-
-//                         <div className="relative">
-//                           <LockKeyholeIcon
-//                             size={16}
-//                             className={[
-//                               "pointer-events-none absolute left-3.5 top-1/2 z-10 -translate-y-1/2",
-//                               invalid
-//                                 ? "text-destructive"
-//                                 : "text-white/35",
-//                             ].join(" ")}
-//                           />
-
-//                           <Input
-//                             {...field}
-//                             id="password"
-//                             type={showPassword ? "text" : "password"}
-//                             autoComplete="current-password"
-//                             placeholder="Password"
-//                             disabled={isSubmitting}
-//                             aria-invalid={invalid}
-//                             onChange={event => {
-//                               field.onChange(event);
-//                               clearCredentialsError();
-//                             }}
-//                             className={[
-//                               "allocatr-login-input",
-//                               "h-11 rounded-lg",
-//                               "!bg-[#151515]",
-//                               "!text-white",
-//                               "pl-10 pr-11",
-//                               "shadow-none",
-//                               "placeholder:!text-white/30",
-//                               "focus-visible:ring-1",
-//                               invalid
-//                                 ? "!border-destructive/70 focus-visible:!border-destructive focus-visible:ring-destructive/25"
-//                                 : "!border-white/[0.12] focus-visible:!border-brand-primary/60 focus-visible:ring-brand-primary/30",
-//                             ].join(" ")}
-//                           />
-
-//                           <button
-//                             type="button"
-//                             onClick={() => setShowPassword(current => !current)}
-//                             disabled={isSubmitting}
-//                             className="absolute right-3.5 top-1/2 z-10 -translate-y-1/2 text-white/35 transition-colors hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
-//                             aria-label={
-//                               showPassword
-//                                 ? "Hide password"
-//                                 : "Show password"
-//                             }
-//                           >
-//                             {showPassword ? (
-//                               <EyeOffIcon size={16} />
-//                             ) : (
-//                               <EyeIcon size={16} />
-//                             )}
-//                           </button>
-//                         </div>
-
-//                         <FieldError
-//                           errors={[fieldState.error]}
-//                           className="text-[0.68rem] text-destructive"
-//                         />
-//                       </Field>
-//                     );
-//                   }}
-//                 />
-
-//                 {/* CREDENTIAL ERROR */}
-
-//                 {credentialsError && (
-//                   <Field data-invalid>
-//                     <FieldError
-//                       errors={[credentialsError]}
-//                       className="text-[0.68rem] text-destructive"
-//                     />
-//                   </Field>
-//                 )}
-
-//                 {/* FORGOT PASSWORD */}
-
-//                 <div className="flex justify-end">
-//                   <Link
-//                     to="/forgot-password"
-//                     className="text-[0.68rem] font-medium text-white/45 transition-colors hover:text-brand-primary"
-//                   >
-//                     Forgot password?
-//                   </Link>
-//                 </div>
-
-//                 {/* SUBMIT */}
-
-//                 <Button
-//                   type="submit"
-//                   disabled={isSubmitting}
-//                   className="group mt-1 h-11 w-full rounded-lg bg-brand-primary font-bold text-dark-gray shadow-none hover:bg-brand-primary/90"
-//                 >
-//                   {isSubmitting ? (
-//                     <>
-//                       <LoaderCircleIcon
-//                         size={16}
-//                         className="animate-spin"
-//                       />
-
-//                       Signing in
-//                     </>
-//                   ) : (
-//                     <>
-//                       Sign in
-
-//                       <ArrowRightIcon
-//                         size={15}
-//                         className="transition-transform duration-200 group-hover:translate-x-0.5"
-//                       />
-//                     </>
-//                   )}
-//                 </Button>
-
-//                 {/* CREATE ACCOUNT */}
-
-//                 <p className="pt-2 text-center text-xs text-white/55">
-//                   Don't have an account?{" "}
-
-//                   <Link
-//                     to={registerUrl}
-//                     className="font-semibold text-brand-primary transition-opacity hover:opacity-75"
-//                   >
-//                     Create account
-//                   </Link>
-//                 </p>
-//               </form>
-//             </div>
-
-//             <p className="mt-4 text-center text-[0.62rem] text-white/40">
-//               Work, properly allocated.
-//             </p>
-//           </motion.div>
-//         </section>
-
-//         {/* BOTTOM BAR */}
-
-//         <footer className="relative z-20 flex min-h-[50px] items-center justify-between gap-4 border-t border-white/[0.06] bg-[#171717]/95 px-5 backdrop-blur-xl sm:px-8">
-//           <Link
-//             to="/"
-//             className="inline-flex items-center gap-2 text-[0.68rem] font-medium uppercase tracking-[0.08em] text-white/45 transition-colors hover:text-brand-primary"
-//           >
-//             <ArrowLeftIcon size={12} />
-//             Back to website
-//           </Link>
-
-//           <div className="flex items-center gap-3 text-[0.65rem] text-white/30">
-//             <LockKeyholeIcon size={11} />
-
-//             <span className="hidden sm:inline">
-//               Secure Allocatr access
-//             </span>
-
-//             <span>
-//               © {new Date().getFullYear()}
-//             </span>
-//           </div>
-//         </footer>
-//       </main>
-//     </>
-//   );
-// }
-
-// /* =========================================================
-//    RETURN PATH
-// ========================================================= */
-
-// function getSafeReturnTo(value: string | null): string | null {
-//   if (!value) return null;
-
-//   const trimmed = value.trim();
-
-//   if (!trimmed.startsWith("/")) return null;
-//   if (trimmed.startsWith("//")) return null;
-//   if (trimmed.startsWith("/login")) return null;
-//   if (trimmed.startsWith("/register")) return null;
-
-//   return trimmed;
-// }
-
-// /* =========================================================
-//    LOGIN ERROR
-// ========================================================= */
-
-// function getLoginErrorMessage(error: unknown): string {
-//   const fallback =
-//     "We couldn’t sign you in with those details. Check your email and password, then try again.";
-
-//   if (
-//     typeof error !== "object" ||
-//     error === null ||
-//     !("response" in error)
-//   ) {
-//     return fallback;
-//   }
-
-//   const response = (
-//     error as {
-//       response?: {
-//         status?: number;
-//         data?: {
-//           message?: string;
-//         };
-//       };
-//     }
-//   ).response;
-
-//   const status = response?.status;
-//   const backendMessage = response?.data?.message?.trim();
-//   const normalizedMessage = backendMessage?.toLowerCase();
-
-//   if (status === 401) return fallback;
-//   if (!normalizedMessage) return fallback;
-
-//   const credentialMessages = [
-//     "invalid credentials",
-//     "invalid credential",
-//     "invalid email or password",
-//     "incorrect email or password",
-//     "incorrect password",
-//     "authentication failed",
-//     "login failed",
-//     "unauthorized",
-//   ];
-
-//   if (
-//     credentialMessages.some(message =>
-//       normalizedMessage.includes(message),
-//     )
-//   ) {
-//     return fallback;
-//   }
-
-//   return backendMessage || fallback;
-// }
-
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
@@ -573,9 +9,21 @@ import {
   PawPrintIcon,
 } from "lucide-react";
 
-import { useEffect, useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { motion, useReducedMotion } from "framer-motion";
+import {
+  useEffect,
+  useState,
+} from "react";
+
+import {
+  Link,
+  useNavigate,
+  useSearchParams,
+} from "react-router-dom";
+
+import {
+  motion,
+  useReducedMotion,
+} from "framer-motion";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
@@ -589,15 +37,14 @@ import allocatrLogoLight from "@/assets/allocatr-neg-light.svg";
 import allocatrLogoDark from "@/assets/allocatr-dark-02.svg";
 
 import { Button } from "@/components/ui/button";
-import { Field, FieldError, FieldLabel } from "@/components/ui/field";
+
+import {
+  Field,
+  FieldError,
+  FieldLabel,
+} from "@/components/ui/field";
+
 import { Input } from "@/components/ui/input";
-
-/* =========================================================
-   IMAGE
-========================================================= */
-
-const LOGIN_IMAGE =
-  "https://images.pexels.com/photos/730896/pexels-photo-730896.jpeg?cs=srgb&dl=pexels-snapwire-730896.jpg&fm=jpg";
 
 /* =========================================================
    VALIDATION
@@ -658,7 +105,7 @@ const inputStyle = [
 
   "shadow-none",
 
-  "placeholder:text-muted-foreground/60",
+  "placeholder:text-muted-foreground/55",
 
   "transition-[background-color,border-color,box-shadow] duration-200",
 
@@ -689,7 +136,9 @@ export default function Login() {
 
   const [showPassword, setShowPassword] = useState(false);
 
-  const returnTo = getSafeReturnTo(searchParams.get("returnTo"));
+  const returnTo = getSafeReturnTo(
+    searchParams.get("returnTo"),
+  );
 
   const registerUrl = returnTo
     ? `/register?returnTo=${encodeURIComponent(returnTo)}`
@@ -708,7 +157,8 @@ export default function Login() {
 
   const { isSubmitting } = form.formState;
 
-  const credentialsError = form.formState.errors.root?.credentials;
+  const credentialsError =
+    form.formState.errors.root?.credentials;
 
   /* =======================================================
      AUTH REDIRECT
@@ -722,7 +172,11 @@ export default function Login() {
     navigate(returnTo || "/projects", {
       replace: true,
     });
-  }, [user, returnTo, navigate]);
+  }, [
+    user,
+    returnTo,
+    navigate,
+  ]);
 
   /* =======================================================
      CLEAR AUTH ERROR
@@ -738,11 +192,16 @@ export default function Login() {
      LOGIN
   ======================================================= */
 
-  async function handleLogin(values: LoginFormValues) {
+  async function handleLogin(
+    values: LoginFormValues,
+  ) {
     form.clearErrors("root.credentials");
 
     try {
-      await login(values.email.trim(), values.password);
+      await login(
+        values.email.trim(),
+        values.password,
+      );
 
       navigate(returnTo || "/projects", {
         replace: true,
@@ -759,8 +218,6 @@ export default function Login() {
     <>
       {/* ===================================================
           AUTOFILL
-
-          Uses theme tokens rather than fixed dark colours.
       =================================================== */}
 
       <style>
@@ -771,10 +228,13 @@ export default function Login() {
           .allocatr-login-input:-webkit-autofill:active {
             -webkit-text-fill-color: var(--foreground) !important;
             caret-color: var(--foreground) !important;
+
             -webkit-box-shadow:
               0 0 0 1000px var(--surface-2) inset !important;
+
             box-shadow:
               0 0 0 1000px var(--surface-2) inset !important;
+
             transition:
               background-color 9999s ease-out 0s,
               color 9999s ease-out 0s;
@@ -783,7 +243,10 @@ export default function Login() {
           .allocatr-login-input:-moz-autofill {
             color: var(--foreground) !important;
             caret-color: var(--foreground) !important;
-            background-color: var(--surface-2) !important;
+
+            background-color:
+              var(--surface-2) !important;
+
             box-shadow:
               0 0 0 1000px var(--surface-2) inset !important;
           }
@@ -796,7 +259,63 @@ export default function Login() {
         `}
       </style>
 
-      <main className="relative min-h-screen overflow-hidden bg-background text-foreground">
+      <main className="relative flex min-h-screen flex-col overflow-hidden bg-background text-foreground">
+        {/* =================================================
+            BACKGROUND DETAIL
+        ================================================= */}
+
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0"
+        >
+          <div
+            className={[
+              "absolute inset-x-0 top-0 hidden h-[420px]",
+
+              "opacity-[0.18]",
+
+              "sm:block",
+            ].join(" ")}
+            style={{
+              backgroundImage:
+                "linear-gradient(to right, color-mix(in srgb, var(--border) 45%, transparent) 1px, transparent 1px), linear-gradient(to bottom, color-mix(in srgb, var(--border) 45%, transparent) 1px, transparent 1px)",
+
+              backgroundSize:
+                "44px 44px",
+
+              maskImage:
+                "linear-gradient(to bottom, black 0%, transparent 90%)",
+
+              WebkitMaskImage:
+                "linear-gradient(to bottom, black 0%, transparent 90%)",
+            }}
+          />
+
+          <PawPrintIcon
+            className={[
+              "absolute -right-12 top-[18%]",
+
+              "hidden h-44 w-44 -rotate-12",
+
+              "text-foreground/[0.012]",
+
+              "lg:block",
+            ].join(" ")}
+          />
+
+          <PawPrintIcon
+            className={[
+              "absolute -left-8 bottom-[15%]",
+
+              "hidden h-28 w-28 rotate-12",
+
+              "text-foreground/[0.008]",
+
+              "xl:block",
+            ].join(" ")}
+          />
+        </div>
+
         {/* =================================================
             HEADER
         ================================================= */}
@@ -804,15 +323,21 @@ export default function Login() {
         <header
           className={[
             "relative z-30",
+
             "border-b border-border/50",
-            "bg-background/90",
+
+            "bg-background/88",
+
             "backdrop-blur-xl",
           ].join(" ")}
         >
           <div
             className={[
               "mx-auto flex h-16 w-full max-w-7xl items-center justify-between",
-              "px-4 sm:px-6 md:px-8",
+
+              "px-4",
+              "sm:px-6",
+              "md:px-8",
             ].join(" ")}
           >
             {/* LOGO */}
@@ -821,7 +346,9 @@ export default function Login() {
               to="/"
               aria-label="Go to Allocatr home"
               className={[
-                "group inline-flex items-center rounded-md outline-none",
+                "group inline-flex items-center rounded-md",
+
+                "outline-none",
 
                 "focus-visible:ring-2",
                 "focus-visible:ring-brand-secondary-highlight/20",
@@ -865,7 +392,9 @@ export default function Login() {
               className={[
                 "group inline-flex h-9 items-center gap-2 rounded-lg px-2",
 
-                "text-[0.68rem] font-medium text-muted-foreground",
+                "text-[0.68rem] font-medium",
+
+                "text-muted-foreground",
 
                 "transition-colors",
 
@@ -877,156 +406,174 @@ export default function Login() {
                 className="transition-transform duration-200 group-hover:-translate-x-0.5"
               />
 
-              <span className="hidden sm:inline">Back to website</span>
+              <span className="hidden sm:inline">
+                Back to website
+              </span>
             </Link>
           </div>
         </header>
 
         {/* =================================================
-            PAGE
+            LOGIN AREA
         ================================================= */}
 
-        <div
+        <section
           className={[
-            "mx-auto grid min-h-[calc(100vh-4rem)] w-full max-w-7xl",
+            "relative z-10 flex flex-1 items-center justify-center",
 
-            "lg:grid-cols-[0.88fr_1.12fr]",
+            "px-4 py-10",
+
+            "sm:px-6 sm:py-14",
+
+            "md:px-8 md:py-16",
           ].join(" ")}
         >
-          {/* ===============================================
-              FORM SIDE
-          =============================================== */}
-
-          <section
-            className={[
-              "relative flex items-center",
-
-              "px-4 py-12",
-              "sm:px-6 sm:py-16",
-              "md:px-8",
-              "lg:py-20",
-            ].join(" ")}
+          <motion.div
+            initial={
+              reduceMotion
+                ? false
+                : {
+                    opacity: 0,
+                    y: 16,
+                  }
+            }
+            animate={{
+              opacity: 1,
+              y: 0,
+            }}
+            transition={{
+              duration: 0.5,
+              ease: "easeOut",
+            }}
+            className="w-full max-w-[460px]"
           >
-            {/* SUBTLE CAT LANGUAGE */}
+            {/* =============================================
+                INTRO
+            ============================================= */}
 
-            <PawPrintIcon
-              aria-hidden
-              className={[
-                "pointer-events-none absolute -left-4 top-[22%]",
-                "hidden h-32 w-32 rotate-12",
-                "text-foreground/[0.012]",
-                "md:block",
-              ].join(" ")}
-            />
-
-            <motion.div
-              initial={
-                reduceMotion
-                  ? false
-                  : {
-                      opacity: 0,
-                      y: 16,
-                    }
-              }
-              animate={{
-                opacity: 1,
-                y: 0,
-              }}
-              transition={{
-                duration: 0.5,
-                ease: "easeOut",
-              }}
-              className="relative mx-auto w-full max-w-[420px]"
-            >
-              {/* ===========================================
-                  BRAND TILE
-              =========================================== */}
+            <div className="mb-7 text-center sm:mb-8">
+              {/* ICON TILE */}
 
               <Link
                 to="/"
                 aria-label="Allocatr home"
                 className={[
-                  "group flex h-12 w-12 items-center justify-center",
+                  "group mx-auto flex h-12 w-12 items-center justify-center",
 
                   "rounded-xl border",
 
                   "border-border/65",
+
                   "bg-surface-2/55",
 
                   "ring-1 ring-inset ring-border/20",
 
-                  "transition-[background-color,border-color,transform]",
-                  "duration-200",
+                  "transition-[background-color,border-color,transform] duration-200",
 
                   "hover:-translate-y-0.5",
+
                   "hover:border-border/85",
+
                   "hover:bg-surface-3/60",
 
+                  "focus-visible:outline-none",
+
+                  "focus-visible:ring-2",
+
+                  "focus-visible:ring-brand-secondary-highlight/15",
+
                   "dark:border-border",
+
                   "dark:bg-surface-2/70",
+
+                  "dark:focus-visible:ring-secondary/15",
                 ].join(" ")}
               >
-                <span className="flex h-7 w-7 items-center justify-center">
-                  <img
-                    src={assets.allocatrIcon}
-                    alt=""
-                    className="h-[22px] w-[22px] object-contain"
-                  />
-                </span>
+                <img
+                  src={assets.allocatrIcon}
+                  alt=""
+                  className="h-[21px] w-[21px] object-contain"
+                />
               </Link>
 
-              {/* ===========================================
-                  INTRO
-              =========================================== */}
+              <p
+                className={[
+                  "mt-6",
 
-              <div className="mt-7">
-                <p
-                  className={[
-                    "text-[0.52rem] font-semibold uppercase",
-                    "tracking-[0.17em]",
-                    "text-muted-foreground",
-                  ].join(" ")}
-                >
-                  Allocatr workspace
-                </p>
+                  "text-[0.5rem] font-semibold uppercase",
 
-                <h1
-                  className={[
-                    "mt-3",
-                    "text-[2rem] font-semibold",
-                    "leading-[1.02]",
-                    "tracking-[-0.04em]",
-                    "text-foreground",
-                    "sm:text-[2.25rem]",
-                  ].join(" ")}
-                >
-                  Welcome back.
-                </h1>
+                  "tracking-[0.17em]",
 
-                <p className="mt-3 max-w-sm text-sm leading-6 text-muted-foreground">
-                  {returnTo
-                    ? "Sign in to continue where you left off."
-                    : "Sign in to access your projects, work and account."}
-                </p>
-              </div>
+                  "text-muted-foreground",
+                ].join(" ")}
+              >
+                Allocatr workspace
+              </p>
 
-              {/* ===========================================
-                  FORM
-              =========================================== */}
+              <h1
+                className={[
+                  "mt-3",
 
+                  "text-[2rem] font-semibold",
+
+                  "leading-[1.02]",
+
+                  "tracking-[-0.04em]",
+
+                  "text-foreground",
+
+                  "sm:text-[2.3rem]",
+                ].join(" ")}
+              >
+                Welcome back.
+              </h1>
+
+              <p className="mx-auto mt-3 max-w-sm text-sm leading-6 text-muted-foreground">
+                {returnTo
+                  ? "Sign in to continue where you left off."
+                  : "Sign in to access your projects, work and account."}
+              </p>
+            </div>
+
+            {/* =============================================
+                FORM CARD
+            ============================================= */}
+
+            <div
+              className={[
+                "rounded-[1.35rem] border",
+
+                "border-border/60",
+
+                "bg-card",
+
+                "px-5 py-6",
+
+                "sm:px-8 sm:py-8",
+
+                "dark:border-border",
+                "dark:bg-card",
+              ].join(" ")}
+            >
               <form
                 onSubmit={form.handleSubmit(handleLogin)}
                 noValidate
-                className="mt-8 space-y-5"
+                className="space-y-5"
               >
-                {/* EMAIL */}
+                {/* =========================================
+                    EMAIL
+                ========================================= */}
 
                 <Controller
                   name="email"
                   control={form.control}
-                  render={({ field, fieldState }) => {
+                  render={({
+                    field,
+                    fieldState,
+                  }) => {
                     const invalid =
-                      fieldState.invalid || Boolean(credentialsError);
+                      fieldState.invalid ||
+                      Boolean(credentialsError);
 
                     return (
                       <Field data-invalid={invalid}>
@@ -1034,7 +581,9 @@ export default function Login() {
                           htmlFor="email"
                           className={[
                             "mb-2 block",
+
                             "text-[0.68rem] font-semibold",
+
                             "text-foreground/75",
                           ].join(" ")}
                         >
@@ -1046,7 +595,9 @@ export default function Login() {
                             size={15}
                             className={[
                               "pointer-events-none",
+
                               "absolute left-3.5 top-1/2 z-10",
+
                               "-translate-y-1/2",
 
                               invalid
@@ -1069,6 +620,7 @@ export default function Login() {
                             }}
                             className={[
                               "allocatr-login-input",
+
                               inputStyle,
 
                               "pl-10 pr-4",
@@ -1076,7 +628,9 @@ export default function Login() {
                               invalid
                                 ? [
                                     "border-destructive/65",
+
                                     "focus-visible:border-destructive",
+
                                     "focus-visible:ring-destructive/10",
                                   ].join(" ")
                                 : "",
@@ -1093,14 +647,20 @@ export default function Login() {
                   }}
                 />
 
-                {/* PASSWORD */}
+                {/* =========================================
+                    PASSWORD
+                ========================================= */}
 
                 <Controller
                   name="password"
                   control={form.control}
-                  render={({ field, fieldState }) => {
+                  render={({
+                    field,
+                    fieldState,
+                  }) => {
                     const invalid =
-                      fieldState.invalid || Boolean(credentialsError);
+                      fieldState.invalid ||
+                      Boolean(credentialsError);
 
                     return (
                       <Field data-invalid={invalid}>
@@ -1116,7 +676,9 @@ export default function Login() {
                             to="/forgot-password"
                             className={[
                               "text-[0.65rem] font-medium",
+
                               "text-brand-secondary-highlight",
+
                               "transition-opacity",
 
                               "hover:opacity-70",
@@ -1133,7 +695,9 @@ export default function Login() {
                             size={15}
                             className={[
                               "pointer-events-none",
+
                               "absolute left-3.5 top-1/2 z-10",
+
                               "-translate-y-1/2",
 
                               invalid
@@ -1145,7 +709,11 @@ export default function Login() {
                           <Input
                             {...field}
                             id="password"
-                            type={showPassword ? "text" : "password"}
+                            type={
+                              showPassword
+                                ? "text"
+                                : "password"
+                            }
                             autoComplete="current-password"
                             placeholder="Enter your password"
                             disabled={isSubmitting}
@@ -1156,6 +724,7 @@ export default function Login() {
                             }}
                             className={[
                               "allocatr-login-input",
+
                               inputStyle,
 
                               "pl-10 pr-11",
@@ -1163,7 +732,9 @@ export default function Login() {
                               invalid
                                 ? [
                                     "border-destructive/65",
+
                                     "focus-visible:border-destructive",
+
                                     "focus-visible:ring-destructive/10",
                                   ].join(" ")
                                 : "",
@@ -1173,11 +744,14 @@ export default function Login() {
                           <button
                             type="button"
                             onClick={() =>
-                              setShowPassword((current) => !current)
+                              setShowPassword(
+                                (current) => !current,
+                              )
                             }
                             disabled={isSubmitting}
                             className={[
                               "absolute right-3.5 top-1/2 z-10",
+
                               "-translate-y-1/2",
 
                               "text-muted-foreground",
@@ -1187,13 +761,17 @@ export default function Login() {
                               "hover:text-foreground",
 
                               "focus-visible:outline-none",
+
                               "focus-visible:text-foreground",
 
                               "disabled:cursor-not-allowed",
+
                               "disabled:opacity-50",
                             ].join(" ")}
                             aria-label={
-                              showPassword ? "Hide password" : "Show password"
+                              showPassword
+                                ? "Hide password"
+                                : "Show password"
                             }
                           >
                             {showPassword ? (
@@ -1213,7 +791,9 @@ export default function Login() {
                   }}
                 />
 
-                {/* CREDENTIAL ERROR */}
+                {/* =========================================
+                    CREDENTIAL ERROR
+                ========================================= */}
 
                 {credentialsError && (
                   <div
@@ -1221,9 +801,11 @@ export default function Login() {
                       "rounded-lg border px-3.5 py-3",
 
                       "border-destructive/20",
+
                       "bg-destructive/[0.045]",
 
                       "text-[0.68rem] leading-5",
+
                       "text-destructive",
                     ].join(" ")}
                   >
@@ -1231,7 +813,9 @@ export default function Login() {
                   </div>
                 )}
 
-                {/* SUBMIT */}
+                {/* =========================================
+                    SUBMIT
+                ========================================= */}
 
                 <Button
                   type="submit"
@@ -1247,28 +831,32 @@ export default function Login() {
                 >
                   {isSubmitting ? (
                     <>
-                      <LoaderCircleIcon size={15} className="animate-spin" />
+                      <LoaderCircleIcon
+                        size={15}
+                        className="animate-spin"
+                      />
+
                       Signing in
                     </>
                   ) : (
                     <>
                       Sign in
+
                       <ArrowRightIcon
                         size={14}
-                        className={[
-                          "transition-transform duration-200",
-
-                          "group-hover:translate-x-0.5",
-                        ].join(" ")}
+                        className="transition-transform duration-200 group-hover:translate-x-0.5"
                       />
                     </>
                   )}
                 </Button>
 
-                {/* REGISTER */}
+                {/* =========================================
+                    REGISTER
+                ========================================= */}
 
-                <p className="pt-1 text-center text-xs text-muted-foreground">
+                <p className="text-center text-xs text-muted-foreground">
                   Don&apos;t have an account?{" "}
+
                   <Link
                     to={registerUrl}
                     className={[
@@ -1287,163 +875,45 @@ export default function Login() {
                   </Link>
                 </p>
               </form>
+            </div>
 
-              {/* ===========================================
-                  SMALL TRUST LINE
-              =========================================== */}
+            {/* =============================================
+                TRUST
+            ============================================= */}
 
-              <div className="mt-9 flex items-center justify-center gap-2 text-[0.58rem] text-muted-foreground/75">
-                <LockKeyholeIcon size={11} />
+            <div className="mt-5 flex items-center justify-center gap-2 text-[0.58rem] text-muted-foreground/65">
+              <LockKeyholeIcon size={10} />
 
-                <span>Secure Allocatr access</span>
-              </div>
-            </motion.div>
-          </section>
-
-          {/* ===============================================
-              VISUAL SIDE
-
-              Hidden entirely on smaller screens.
-          =============================================== */}
-
-          <section className="hidden p-4 pl-0 lg:block">
-            <motion.div
-              initial={
-                reduceMotion
-                  ? false
-                  : {
-                      opacity: 0,
-                      x: 18,
-                    }
-              }
-              animate={{
-                opacity: 1,
-                x: 0,
-              }}
-              transition={{
-                delay: 0.08,
-                duration: 0.6,
-                ease: "easeOut",
-              }}
-              className={[
-                "relative h-full min-h-[calc(100vh-6rem)]",
-                "overflow-hidden rounded-[2rem]",
-                "border border-border/55",
-                "bg-surface-2",
-              ].join(" ")}
-            >
-              <img
-                src={LOGIN_IMAGE}
-                alt=""
-                className={[
-                  "absolute inset-0 h-full w-full object-cover",
-
-                  "saturate-[0.78]",
-
-                  "dark:brightness-[0.7]",
-                  "dark:saturate-[0.65]",
-                ].join(" ")}
-              />
-
-              {/* Image atmosphere */}
-
-              <div aria-hidden className="absolute inset-0 bg-black/15" />
-
-              <div
-                aria-hidden
-                className={[
-                  "absolute inset-0",
-
-                  "bg-gradient-to-t",
-                  "from-black/75",
-                  "via-black/10",
-                  "to-black/5",
-                ].join(" ")}
-              />
-
-              {/* PAWS */}
-
-              <div
-                aria-hidden
-                className="absolute right-9 top-9 flex items-center gap-3"
-              >
-                <PawPrintIcon className="h-5 w-5 -rotate-12 text-white/45" />
-
-                <PawPrintIcon className="h-4 w-4 rotate-6 text-white/25" />
-
-                <PawPrintIcon className="h-3 w-3 -rotate-6 text-white/15" />
-              </div>
-
-              {/* CONTENT */}
-
-              <div className="absolute inset-x-0 bottom-0 p-10 xl:p-12">
-                <div className="max-w-xl">
-                  <div className="flex items-center gap-2.5">
-                    <span className="h-1.5 w-7 rounded-full bg-brand-primary" />
-
-                    <p className="text-[0.52rem] font-semibold uppercase tracking-[0.18em] text-white/60">
-                      Work, properly allocated
-                    </p>
-                  </div>
-
-                  <h2
-                    className={[
-                      "mt-5 max-w-[11ch]",
-
-                      "text-[3rem] font-semibold",
-                      "leading-[0.96]",
-                      "tracking-[-0.045em]",
-
-                      "text-white",
-
-                      "xl:text-[3.5rem]",
-                    ].join(" ")}
-                  >
-                    Keep the work and the people connected.
-                  </h2>
-
-                  <p className="mt-5 max-w-lg text-sm leading-7 text-white/65">
-                    Projects, capability, ownership and progress stay together
-                    from the first brief through to delivery.
-                  </p>
-
-                  <div className="mt-8 flex flex-wrap gap-x-6 gap-y-3 border-t border-white/15 pt-5">
-                    <VisualDetail>Project first</VisualDetail>
-
-                    <VisualDetail>Capability led</VisualDetail>
-
-                    <VisualDetail>Clear ownership</VisualDetail>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </section>
-        </div>
+              Secure Allocatr access
+            </div>
+          </motion.div>
+        </section>
 
         {/* =================================================
-            MOBILE FOOTER
+            FOOTER
         ================================================= */}
 
         <footer
           className={[
             "relative z-20",
+
             "border-t border-border/50",
 
             "px-4 py-5",
-            "sm:px-6",
-            "md:px-8",
 
-            "lg:hidden",
+            "sm:px-6",
+
+            "md:px-8",
           ].join(" ")}
         >
-          <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
-            <p className="text-[0.58rem] text-muted-foreground">
+          <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-4">
+            <span className="text-[0.58rem] text-muted-foreground/70">
               © {new Date().getFullYear()} Allocatr
-            </p>
+            </span>
 
-            <p className="text-[0.58rem] text-muted-foreground">
+            <span className="hidden text-[0.58rem] text-muted-foreground/70 sm:inline">
               Work, properly allocated.
-            </p>
+            </span>
           </div>
         </footer>
       </main>
@@ -1452,24 +922,12 @@ export default function Login() {
 }
 
 /* =========================================================
-   VISUAL DETAIL
-========================================================= */
-
-function VisualDetail({ children }: { children: React.ReactNode }) {
-  return (
-    <span className="inline-flex items-center gap-2 text-[0.57rem] font-medium text-white/60">
-      <span className="h-1.5 w-1.5 rounded-full bg-brand-primary" />
-
-      {children}
-    </span>
-  );
-}
-
-/* =========================================================
    RETURN PATH
 ========================================================= */
 
-function getSafeReturnTo(value: string | null): string | null {
+function getSafeReturnTo(
+  value: string | null,
+): string | null {
   if (!value) {
     return null;
   }
@@ -1499,11 +957,17 @@ function getSafeReturnTo(value: string | null): string | null {
    LOGIN ERROR
 ========================================================= */
 
-function getLoginErrorMessage(error: unknown): string {
+function getLoginErrorMessage(
+  error: unknown,
+): string {
   const fallback =
     "We couldn’t sign you in with those details. Check your email and password, then try again.";
 
-  if (typeof error !== "object" || error === null || !("response" in error)) {
+  if (
+    typeof error !== "object" ||
+    error === null ||
+    !("response" in error)
+  ) {
     return fallback;
   }
 
@@ -1511,6 +975,7 @@ function getLoginErrorMessage(error: unknown): string {
     error as {
       response?: {
         status?: number;
+
         data?: {
           message?: string;
         };
@@ -1518,11 +983,14 @@ function getLoginErrorMessage(error: unknown): string {
     }
   ).response;
 
-  const status = response?.status;
+  const status =
+    response?.status;
 
-  const backendMessage = response?.data?.message?.trim();
+  const backendMessage =
+    response?.data?.message?.trim();
 
-  const normalizedMessage = backendMessage?.toLowerCase();
+  const normalizedMessage =
+    backendMessage?.toLowerCase();
 
   if (status === 401) {
     return fallback;
@@ -1544,7 +1012,9 @@ function getLoginErrorMessage(error: unknown): string {
   ];
 
   if (
-    credentialMessages.some((message) => normalizedMessage.includes(message))
+    credentialMessages.some((message) =>
+      normalizedMessage.includes(message),
+    )
   ) {
     return fallback;
   }
