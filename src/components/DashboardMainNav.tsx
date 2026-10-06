@@ -23,7 +23,6 @@ import AllocatrIconLogo from "@/components/AllocatrIconLogo";
 import BecomeAllocatDialog from "@/components/BecomeAllocatDialog";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-
 import { Button } from "@/components/ui/button";
 
 import {
@@ -106,45 +105,61 @@ function getInitialTheme(): Theme {
 ========================================================= */
 
 const navIconButton = [
-  "relative h-9 w-9 rounded-lg",
-  "text-muted-foreground",
-  "shadow-none",
-
+  "relative h-9 w-9 rounded-lg text-muted-foreground shadow-none",
   "transition-[background-color,color,border-color] duration-200",
-
-  "hover:bg-surface-3/55",
-  "hover:text-foreground",
-
-  "focus-visible:ring-2",
-  "focus-visible:ring-brand-secondary-highlight/15",
-
-  "dark:hover:bg-surface-3/65",
-  "dark:hover:text-foreground",
+  "hover:bg-surface-3/55 hover:text-foreground",
+  "focus-visible:ring-2 focus-visible:ring-brand-secondary-highlight/15",
+  "dark:hover:bg-surface-3/65 dark:hover:text-foreground",
   "dark:focus-visible:ring-secondary/15",
 ].join(" ");
 
 const dropdownSurface = [
   "rounded-xl border p-1.5",
-
-  "border-border/70",
-  "bg-popover",
-  "text-popover-foreground",
-
+  "border-border/70 bg-popover text-popover-foreground",
   "shadow-none",
-
   "dark:border-border",
 ].join(" ");
 
 const dropdownItem = [
   "rounded-lg px-2.5 py-2",
   "text-sm text-foreground/75",
+  "transition-colors duration-150",
+  "focus:bg-surface-3/60 focus:text-foreground",
+  "dark:focus:bg-surface-3/70",
+].join(" ");
+
+const destructiveDropdownItem = [
+  "rounded-lg px-2.5 py-2",
+  "font-medium",
+  "text-foreground/75",
 
   "transition-colors duration-150",
 
-  "focus:bg-surface-3/60",
-  "focus:text-foreground",
+  // Light theme — same restrained red treatment as overdue states
+  "focus:bg-destructive/[0.07]",
+  "focus:text-destructive",
 
-  "dark:focus:bg-surface-3/70",
+  "data-[highlighted]:bg-destructive/[0.07]",
+  "data-[highlighted]:text-destructive",
+
+  // Icon stays neutral until hover/focus
+  "[&_svg]:text-muted-foreground",
+
+  "focus:[&_svg]:text-destructive",
+  "data-[highlighted]:[&_svg]:text-destructive",
+
+  // Dark theme — slightly stronger tinted surface
+  "dark:text-foreground/75",
+
+  "dark:focus:bg-destructive/[0.12]",
+  "dark:focus:text-destructive",
+
+  "dark:data-[highlighted]:bg-destructive/[0.12]",
+  "dark:data-[highlighted]:text-destructive",
+
+  "dark:[&_svg]:text-muted-foreground",
+  "dark:focus:[&_svg]:text-destructive",
+  "dark:data-[highlighted]:[&_svg]:text-destructive",
 ].join(" ");
 
 /* =========================================================
@@ -153,7 +168,8 @@ const dropdownItem = [
 
 function DashboardMainNav({ children, notificationCount = 0 }: Props) {
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+
+  const { user, logout, refreshUser } = useAuth();
 
   const [theme, setTheme] = useState<Theme>(getInitialTheme);
   const [loggingOut, setLoggingOut] = useState(false);
@@ -185,7 +201,15 @@ function DashboardMainNav({ children, notificationCount = 0 }: Props) {
   }
 
   /* =======================================================
-     ACCOUNT
+     PROFILE
+  ======================================================= */
+
+  function handleProfile() {
+    navigate(user?.isAllocat ? "/allocats/profile" : "/profile");
+  }
+
+  /* =======================================================
+     LOGOUT
   ======================================================= */
 
   async function handleLogout() {
@@ -208,6 +232,10 @@ function DashboardMainNav({ children, notificationCount = 0 }: Props) {
     }
   }
 
+  /* =======================================================
+     BECOME ALLOCAT
+  ======================================================= */
+
   async function handleBecomeAllocat() {
     if (becomingAllocat || user?.isAllocat) {
       return;
@@ -224,11 +252,19 @@ function DashboardMainNav({ children, notificationCount = 0 }: Props) {
         },
       );
 
+      /*
+       * Update AuthContext before entering the guarded
+       * Allocat setup route.
+       */
+      await refreshUser();
+
       setBecomeAllocatOpen(false);
 
       navigate("/allocats/profile/create");
     } catch (error) {
       console.error("Could not update account mode:", error);
+
+      throw error;
     } finally {
       setBecomingAllocat(false);
     }
@@ -259,7 +295,7 @@ function DashboardMainNav({ children, notificationCount = 0 }: Props) {
 
               "ring-1 ring-inset ring-border/20",
 
-              "transition-[background-color,border-color,transform] duration-200",
+              "transition-[background-color,border-color] duration-200",
 
               "hover:border-border/85",
               "hover:bg-surface-3/60",
@@ -276,24 +312,17 @@ function DashboardMainNav({ children, notificationCount = 0 }: Props) {
               "dark:focus-visible:ring-secondary/20",
             ].join(" ")}
           >
-            {/* Small mark inside the larger brand tile */}
-
             <span
               className={[
                 "flex h-[22px] w-[22px] shrink-0 items-center justify-center",
-                "overflow-hidden",
-                "rounded-full",
+                "overflow-hidden rounded-full",
 
-                "[&_img]:h-[18px]",
-                "[&_img]:w-[18px]",
-                "[&_img]:max-h-[18px]",
-                "[&_img]:max-w-[18px]",
+                "[&_img]:h-[18px] [&_img]:w-[18px]",
+                "[&_img]:max-h-[18px] [&_img]:max-w-[18px]",
                 "[&_img]:object-contain",
 
-                "[&_svg]:h-[18px]",
-                "[&_svg]:w-[18px]",
-                "[&_svg]:max-h-[18px]",
-                "[&_svg]:max-w-[18px]",
+                "[&_svg]:h-[18px] [&_svg]:w-[18px]",
+                "[&_svg]:max-h-[18px] [&_svg]:max-w-[18px]",
               ].join(" ")}
             >
               <AllocatrIconLogo theme="" />
@@ -356,7 +385,7 @@ function DashboardMainNav({ children, notificationCount = 0 }: Props) {
             initials={initials}
             loggingOut={loggingOut}
             onLogout={handleLogout}
-            onProfile={() => navigate("/profile")}
+            onProfile={handleProfile}
             onSettings={() => navigate("/settings")}
             onBecomeAllocat={() => setBecomeAllocatOpen(true)}
           />
@@ -489,6 +518,8 @@ function AccountMenu({
   onSettings,
   onBecomeAllocat,
 }: AccountMenuProps) {
+  const profileLabel = user?.isAllocat ? "Allocat profile" : "Profile";
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -543,7 +574,7 @@ function AccountMenu({
             </p>
 
             <p className="mt-0.5 text-[0.54rem] text-muted-foreground">
-              Account
+              {user?.isAllocat ? "Allocat account" : "Account"}
             </p>
           </div>
         </button>
@@ -592,6 +623,12 @@ function AccountMenu({
                   {user.email}
                 </p>
               )}
+
+              {user?.isAllocat && (
+                <p className="mt-1 text-[0.58rem] font-medium text-brand-secondary-highlight dark:text-secondary">
+                  Allocat
+                </p>
+              )}
             </div>
           </div>
         </DropdownMenuLabel>
@@ -603,7 +640,7 @@ function AccountMenu({
         <DropdownMenuGroup>
           <DropdownMenuItem onSelect={onProfile} className={dropdownItem}>
             <User2Icon size={14} />
-            Profile
+            {profileLabel}
           </DropdownMenuItem>
 
           <DropdownMenuItem onSelect={onSettings} className={dropdownItem}>
@@ -635,18 +672,7 @@ function AccountMenu({
             event.preventDefault();
             void onLogout();
           }}
-          className={[
-            "rounded-lg px-2.5 py-2",
-
-            "font-medium",
-
-            "text-muted-foreground",
-
-            "focus:bg-surface-3/60",
-            "focus:text-foreground",
-
-            "dark:focus:bg-surface-3/70",
-          ].join(" ")}
+          className={destructiveDropdownItem}
         >
           <LogOutIcon size={14} />
 

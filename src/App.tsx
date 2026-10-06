@@ -22,61 +22,77 @@ import Profile from "./pages/Profile";
 import PricingPage from "./pages/PricingPage";
 import AppToaster from "@/components/AppToaster";
 
-
 import { AuthProvider } from "./auth/AuthContext";
 import { RequireAuth } from "./auth/RequireAuth";
 import CreateAllocatProfile from "./pages/CreateAllocatProfile";
 import AboutPage from "./pages/AboutPage";
 import HowItWorksPage from "./pages/HowItWorksPage";
+import RequireAllocatSetup from "./auth/RequireAllocatSetup";
+
+function CreateAllocatProfileRoute() {
+  return (
+    <RequireAllocatSetup>
+      <CreateAllocatProfile />
+    </RequireAllocatSetup>
+  );
+}
 
 function App() {
   const theme = localStorage.getItem("theme") || "light";
 
   useEffect(() => {
-          const root = document.documentElement;
-          if (theme === "light") {
-              root.classList.add("light");
-              root.classList.remove("dark");
-          } else {
-              root.classList.add("dark");
-              root.classList.remove("light");
-          }
-          localStorage.setItem("theme", theme);
-      }, [theme]);
+    const root = document.documentElement;
+    if (theme === "light") {
+      root.classList.add("light");
+      root.classList.remove("dark");
+    } else {
+      root.classList.add("dark");
+      root.classList.remove("light");
+    }
+    localStorage.setItem("theme", theme);
+  }, [theme]);
 
   const router = createBrowserRouter([
-    {      
+    {
       path: "/",
       Component: LandingPage,
-      errorElement: <NotFoundErrorPage />
-    },
-    {      
-      path: "/register", Component: Register,
-    },
-    {      
-      path: "/login", Component: Login,
-    },        
-    {
-      path: "/discover", Component: Discover,
-    },        
-    {
-      path: "/allocats/:profileId", Component: AllocatProfilePage,
+      errorElement: <NotFoundErrorPage />,
     },
     {
-      path: "/verify-email", Component: VerifyEmail,
+      path: "/register",
+      Component: Register,
     },
-    {      
-      path: "/about", Component: AboutPage,
-      errorElement: <NotFoundErrorPage />
+    {
+      path: "/login",
+      Component: Login,
     },
-    {      
-      path: "/how-it-works", Component: HowItWorksPage,
-      errorElement: <NotFoundErrorPage />
+    {
+      path: "/discover",
+      Component: Discover,
     },
-    {      
-      path: "/plans", Component: PricingPage,
-      errorElement: <NotFoundErrorPage />
-    },        
+    {
+      path: "/allocats/:profileId",
+      Component: AllocatProfilePage,
+    },
+    {
+      path: "/verify-email",
+      Component: VerifyEmail,
+    },
+    {
+      path: "/about",
+      Component: AboutPage,
+      errorElement: <NotFoundErrorPage />,
+    },
+    {
+      path: "/how-it-works",
+      Component: HowItWorksPage,
+      errorElement: <NotFoundErrorPage />,
+    },
+    {
+      path: "/plans",
+      Component: PricingPage,
+      errorElement: <NotFoundErrorPage />,
+    },
 
     // PROTECTED ROUTES
     {
@@ -114,8 +130,9 @@ function App() {
         },
         {
           path: "allocats/profile/create",
-          Component: CreateAllocatProfile
-        }
+          Component: CreateAllocatProfileRoute,
+        },
+
         // {
         //   path: "/profile/edit",
         //   Component: EditProfile,
@@ -123,12 +140,11 @@ function App() {
       ],
     },
   ]);
-  
 
   return (
     <>
       <AuthProvider>
-          <RouterProvider router={router}/>
+        <RouterProvider router={router} />
       </AuthProvider>
       <AppToaster />
     </>

@@ -4,7 +4,6 @@ import { useAuth } from "@/auth/useAuth";
 import DashboardMainNav from "@/components/DashboardMainNav";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,6 +31,7 @@ import {
 } from "lucide-react";
 
 import { isAxiosError } from "axios";
+import { Navigate } from "react-router-dom";
 import { toast } from "sonner";
 
 import {
@@ -63,176 +63,66 @@ type ProfileForm = {
 ========================================================= */
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
-
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 const EMAIL_VERIFICATION_ENDPOINT = "/profiles/me/email-verification";
+const ALLOCAT_PROFILE_ROUTE = "/allocats/profile";
 
 /* =========================================================
    THEME
 ========================================================= */
 
 const primaryButton = [
-  "border border-brand-secondary-highlight/15",
-
-  "bg-brand-secondary-highlight",
-  "text-primary-foreground",
-
-  "shadow-none",
-
+  "border border-brand-secondary-highlight/15 bg-brand-secondary-highlight text-primary-foreground shadow-none",
   "transition-opacity duration-150",
-
-  "hover:border-brand-secondary-highlight/15",
-  "hover:bg-brand-secondary-highlight",
-  "hover:text-primary-foreground",
-  "hover:opacity-90",
-
-  "focus-visible:ring-2",
-  "focus-visible:ring-brand-secondary-highlight/20",
-  "focus-visible:ring-offset-2",
-  "focus-visible:ring-offset-background",
-
-  "dark:border-secondary/10",
-
-  "dark:bg-secondary",
-  "dark:text-secondary-foreground",
-
-  "dark:hover:border-secondary/10",
-  "dark:hover:bg-secondary",
-  "dark:hover:text-secondary-foreground",
-  "dark:hover:opacity-90",
-
+  "hover:border-brand-secondary-highlight/15 hover:bg-brand-secondary-highlight hover:text-primary-foreground hover:opacity-90",
+  "focus-visible:ring-2 focus-visible:ring-brand-secondary-highlight/20 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+  "dark:border-secondary/10 dark:bg-secondary dark:text-secondary-foreground",
+  "dark:hover:border-secondary/10 dark:hover:bg-secondary dark:hover:text-secondary-foreground dark:hover:opacity-90",
   "dark:focus-visible:ring-secondary/20",
 ].join(" ");
 
 const secondaryButton = [
-  "border border-border/65",
-
-  "bg-surface-2/35",
-  "text-foreground/75",
-
-  "shadow-none",
-
+  "border border-border/65 bg-surface-2/35 text-foreground/75 shadow-none",
   "transition-opacity duration-150",
-
-  "hover:border-border/65",
-  "hover:bg-surface-2/35",
-  "hover:text-foreground/75",
-  "hover:opacity-75",
-
-  "focus-visible:ring-2",
-  "focus-visible:ring-brand-secondary-highlight/15",
-  "focus-visible:ring-offset-2",
-  "focus-visible:ring-offset-background",
-
-  "dark:border-border",
-
-  "dark:bg-surface-2/65",
-  "dark:text-foreground/75",
-
-  "dark:hover:border-border",
-  "dark:hover:bg-surface-2/65",
-  "dark:hover:text-foreground/75",
-  "dark:hover:opacity-75",
-
+  "hover:border-border/65 hover:bg-surface-2/35 hover:text-foreground/75 hover:opacity-75",
+  "focus-visible:ring-2 focus-visible:ring-brand-secondary-highlight/15 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+  "dark:border-border dark:bg-surface-2/65 dark:text-foreground/75",
+  "dark:hover:border-border dark:hover:bg-surface-2/65 dark:hover:text-foreground/75 dark:hover:opacity-75",
   "dark:focus-visible:ring-secondary/15",
 ].join(" ");
 
 const quietIconButton = [
-  "bg-transparent",
-  "text-muted-foreground",
-
-  "shadow-none",
-
-  "transition-opacity duration-150",
-
-  "hover:bg-transparent",
-  "hover:text-foreground",
-  "hover:opacity-70",
+  "bg-transparent text-muted-foreground shadow-none transition-opacity duration-150",
+  "hover:bg-transparent hover:text-foreground hover:opacity-70",
 ].join(" ");
 
 const fieldClass = [
-  "h-11 rounded-lg",
-
-  "border-border/70",
-
-  "bg-surface-1/70",
-
-  "shadow-none",
-
+  "h-11 rounded-lg border-border/70 bg-surface-1/70 shadow-none",
   "transition-[border-color,box-shadow,background-color]",
-
-  "focus-visible:border-brand-secondary-highlight/35",
-
-  "focus-visible:ring-1",
-  "focus-visible:ring-brand-secondary-highlight/20",
-
-  "dark:bg-surface-2/35",
-
-  "dark:focus-visible:border-secondary/25",
-
-  "dark:focus-visible:ring-secondary/15",
+  "focus-visible:border-brand-secondary-highlight/35 focus-visible:ring-1 focus-visible:ring-brand-secondary-highlight/20",
+  "dark:bg-surface-2/35 dark:focus-visible:border-secondary/25 dark:focus-visible:ring-secondary/15",
 ].join(" ");
 
 const disabledFieldClass = [
-  "h-11 rounded-lg",
-
-  "border-border/60",
-
-  "bg-surface-2/50",
-
-  "font-medium",
-
-  "text-muted-foreground",
-
-  "shadow-none",
-
-  "disabled:cursor-not-allowed",
-  "disabled:opacity-100",
-  "disabled:text-muted-foreground",
-
+  "h-11 rounded-lg border-border/60 bg-surface-2/50 font-medium text-muted-foreground shadow-none",
+  "disabled:cursor-not-allowed disabled:opacity-100 disabled:text-muted-foreground",
   "dark:bg-surface-2/65",
 ].join(" ");
 
-const cardSurface = [
-  "border-border/55",
+const cardSurface = "border-border/55 bg-card dark:border-border dark:bg-card";
 
-  "bg-card",
-
-  "dark:border-border",
-
-  "dark:bg-card",
-].join(" ");
-
-const quietSurface = [
-  "border-border/55",
-
-  "bg-surface-2/30",
-
-  "dark:border-border",
-
-  "dark:bg-surface-2/55",
-].join(" ");
+const quietSurface =
+  "border-border/55 bg-surface-2/30 dark:border-border dark:bg-surface-2/55";
 
 const accentIconSurface = [
-  "bg-brand-secondary-highlight/[0.08]",
-
-  "text-brand-secondary-highlight",
-
-  "ring-1 ring-inset ring-brand-secondary-highlight/10",
-
-  "dark:bg-secondary/[0.07]",
-
-  "dark:text-secondary",
-
-  "dark:ring-secondary/10",
+  "bg-brand-secondary-highlight/[0.08] text-brand-secondary-highlight ring-1 ring-inset ring-brand-secondary-highlight/10",
+  "dark:bg-secondary/[0.07] dark:text-secondary dark:ring-secondary/10",
 ].join(" ");
 
 const progressClass = [
   "h-1.5",
-
   "[&_[data-slot=progress-indicator]]:bg-brand-secondary-highlight",
-
   "dark:[&_[data-slot=progress-indicator]]:bg-secondary",
 ].join(" ");
 
@@ -304,32 +194,24 @@ function getApiErrorMessage(error: unknown, fallback: string) {
 ========================================================= */
 
 export default function Profile() {
-  const { refreshUser } = useAuth();
+  const { user, refreshUser } = useAuth();
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const [profileUser, setProfileUser] = useState<ProfileUser | null>(null);
-
   const [loadingProfile, setLoadingProfile] = useState(true);
-
   const [profileLoadError, setProfileLoadError] = useState<string | null>(null);
 
   const [file, setFile] = useState<File | null>(null);
-
   const [preview, setPreview] = useState<string | null>(null);
-
   const [uploading, setUploading] = useState(false);
-
   const [uploadProgress, setUploadProgress] = useState(0);
 
   const [savingProfile, setSavingProfile] = useState(false);
-
   const [sendingVerification, setSendingVerification] = useState(false);
 
   const [pictureError, setPictureError] = useState<string | null>(null);
-
   const [profileError, setProfileError] = useState<string | null>(null);
-
   const [verificationError, setVerificationError] = useState<string | null>(
     null,
   );
@@ -342,9 +224,18 @@ export default function Profile() {
 
   /* =======================================================
      LOAD PROFILE
+
+     This page belongs only to regular client accounts.
+
+     An Allocat must use /allocats/profile instead, so do not
+     load the regular profile page data for an Allocat.
   ======================================================= */
 
   const fetchProfile = useCallback(async () => {
+    if (!user || user.isAllocat) {
+      return;
+    }
+
     try {
       setLoadingProfile(true);
       setProfileLoadError(null);
@@ -366,11 +257,15 @@ export default function Profile() {
     } finally {
       setLoadingProfile(false);
     }
-  }, []);
+  }, [user]);
 
   useEffect(() => {
+    if (!user || user.isAllocat) {
+      return;
+    }
+
     void fetchProfile();
-  }, [fetchProfile]);
+  }, [user, fetchProfile]);
 
   /* =======================================================
      SYNC FORM
@@ -454,14 +349,12 @@ export default function Profile() {
 
     if (!ACCEPTED_IMAGE_TYPES.includes(selectedFile.type)) {
       setPictureError("Choose a JPEG, PNG or WebP image.");
-
       event.target.value = "";
       return;
     }
 
     if (selectedFile.size > MAX_FILE_SIZE) {
       setPictureError("The image must be smaller than 5 MB.");
-
       event.target.value = "";
       return;
     }
@@ -471,9 +364,7 @@ export default function Profile() {
     }
 
     setFile(selectedFile);
-
     setPreview(URL.createObjectURL(selectedFile));
-
     setUploadProgress(0);
   }
 
@@ -502,7 +393,6 @@ export default function Profile() {
     setPictureError(null);
 
     const formData = new FormData();
-
     formData.append("file", file);
 
     try {
@@ -516,22 +406,18 @@ export default function Profile() {
             return;
           }
 
-          const percent = Math.round((event.loaded * 100) / event.total);
-
-          setUploadProgress(percent);
+          setUploadProgress(Math.round((event.loaded * 100) / event.total));
         },
       });
 
-      setProfileUser((current) => {
-        if (!current) {
-          return current;
-        }
-
-        return {
-          ...current,
-          avatarUrl: response.data.avatarUrl,
-        };
-      });
+      setProfileUser((current) =>
+        current
+          ? {
+              ...current,
+              avatarUrl: response.data.avatarUrl,
+            }
+          : current,
+      );
 
       await refreshUser();
 
@@ -576,7 +462,6 @@ export default function Profile() {
 
     if (!profileForm.fullName.trim()) {
       setProfileError("Enter your full name before saving.");
-
       return;
     }
 
@@ -587,9 +472,7 @@ export default function Profile() {
         "/profiles/me",
         {
           fullName: profileForm.fullName.trim(),
-
           phoneNumber: profileForm.phoneNumber.trim() || null,
-
           location: profileForm.location.trim() || null,
         },
         {
@@ -661,16 +544,23 @@ export default function Profile() {
   }
 
   /* =======================================================
-     LOADING
+     ACCESS + PAGE STATES
   ======================================================= */
 
-  if (loadingProfile) {
-    return <ProfileLoading />;
+  /*
+   * The regular profile belongs only to clients.
+   *
+   * An Allocat manually entering /profile should never see
+   * this page. Their Allocat profile already includes their
+   * basic account information.
+   */
+  if (user?.isAllocat) {
+    return <Navigate to={ALLOCAT_PROFILE_ROUTE} replace />;
   }
 
-  /* =======================================================
-     LOAD ERROR
-  ======================================================= */
+  if (!user || loadingProfile) {
+    return <ProfileLoading />;
+  }
 
   if (profileLoadError || !profileUser) {
     return (
@@ -687,10 +577,6 @@ export default function Profile() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      {/* ===================================================
-          NAV
-      =================================================== */}
-
       <header className="sticky top-0 z-40 border-b border-border/60 bg-background/90 backdrop-blur-xl">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <DashboardMainNav>
@@ -707,15 +593,7 @@ export default function Profile() {
         </div>
       </header>
 
-      {/* ===================================================
-          MAIN
-      =================================================== */}
-
       <main className="container mx-auto px-4 py-8 sm:px-6 md:px-8 lg:py-12">
-        {/* =================================================
-            PAGE HEADER
-        ================================================= */}
-
         <section className="pb-8 sm:pb-10">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
             <div className="min-w-0 max-w-2xl">
@@ -723,7 +601,6 @@ export default function Profile() {
                 <span
                   className={[
                     "flex h-9 w-9 items-center justify-center rounded-lg",
-
                     accentIconSurface,
                   ].join(" ")}
                 >
@@ -749,32 +626,18 @@ export default function Profile() {
               variant="outline"
               className={[
                 "h-8 w-fit rounded-lg px-3",
-
-                "border-border/60",
-
-                "bg-surface-2/40",
-
-                "text-[0.66rem] font-semibold",
-
-                "text-foreground/70",
-
-                "shadow-none",
-
-                "dark:bg-surface-2/65",
+                "border-border/60 bg-surface-2/40",
+                "text-[0.66rem] font-semibold text-foreground/70",
+                "shadow-none dark:bg-surface-2/65",
               ].join(" ")}
             >
               <UserRoundIcon
                 size={12}
                 className="text-brand-secondary-highlight dark:text-secondary"
               />
-
-              {profileUser.isAllocat ? "Allocat account" : "Client account"}
+              Client account
             </Badge>
           </div>
-
-          {/* =================================================
-              VERIFICATION NOTICE
-          ================================================= */}
 
           {!profileUser.emailConfirmed && (
             <EmailVerificationWarning
@@ -784,10 +647,6 @@ export default function Profile() {
               onVerify={sendVerificationEmail}
             />
           )}
-
-          {/* =================================================
-              SUMMARY
-          ================================================= */}
 
           <div className="mt-8 border-y border-border/55">
             <div className="grid sm:grid-cols-3">
@@ -812,20 +671,8 @@ export default function Profile() {
           </div>
         </section>
 
-        {/* =================================================
-            CONTENT
-        ================================================= */}
-
         <div className="grid min-w-0 items-start gap-10 border-t border-border/40 pt-8 lg:grid-cols-[300px_minmax(0,1fr)] xl:grid-cols-[320px_minmax(0,1fr)] xl:gap-14">
-          {/* =================================================
-              LEFT
-          ================================================= */}
-
           <aside className="min-w-0">
-            {/* =============================================
-                PROFILE PICTURE
-            ============================================= */}
-
             <section
               className={["rounded-2xl border p-5 sm:p-6", cardSurface].join(
                 " ",
@@ -862,15 +709,8 @@ export default function Profile() {
 
                     <AvatarFallback
                       className={[
-                        "bg-brand-secondary-highlight/[0.08]",
-
-                        "text-2xl font-semibold",
-
-                        "text-brand-secondary-highlight",
-
-                        "dark:bg-secondary/[0.08]",
-
-                        "dark:text-secondary",
+                        "bg-brand-secondary-highlight/[0.08] text-2xl font-semibold text-brand-secondary-highlight",
+                        "dark:bg-secondary/[0.08] dark:text-secondary",
                       ].join(" ")}
                     >
                       {getInitials(profileUser.fullName)}
@@ -882,33 +722,13 @@ export default function Profile() {
                     onClick={() => fileInputRef.current?.click()}
                     disabled={uploading}
                     className={[
-                      "absolute -bottom-1 -right-1",
-
-                      "flex h-9 w-9 items-center justify-center",
-
+                      "absolute -bottom-1 -right-1 flex h-9 w-9 items-center justify-center",
                       "rounded-lg border-4 border-card",
-
-                      "bg-brand-secondary-highlight",
-
-                      "text-primary-foreground",
-
-                      "transition-opacity duration-150",
-
-                      "hover:opacity-85",
-
-                      "focus-visible:outline-none",
-
-                      "focus-visible:ring-2",
-                      "focus-visible:ring-brand-secondary-highlight/25",
-
-                      "disabled:pointer-events-none",
-                      "disabled:opacity-60",
-
-                      "dark:bg-secondary",
-
-                      "dark:text-secondary-foreground",
-
-                      "dark:focus-visible:ring-secondary/25",
+                      "bg-brand-secondary-highlight text-primary-foreground",
+                      "transition-opacity duration-150 hover:opacity-85",
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-secondary-highlight/25",
+                      "disabled:pointer-events-none disabled:opacity-60",
+                      "dark:bg-secondary dark:text-secondary-foreground dark:focus-visible:ring-secondary/25",
                     ].join(" ")}
                     aria-label="Choose profile picture"
                   >
@@ -935,12 +755,9 @@ export default function Profile() {
 
                 <div className="mt-4 inline-flex items-center gap-1.5 rounded-lg border border-border/55 bg-surface-2/30 px-2.5 py-1.5 text-[0.63rem] text-muted-foreground dark:bg-surface-2/55">
                   <MapPinIcon size={11} />
-
                   {profileUser.location || "Location not added"}
                 </div>
               </div>
-
-              {/* FILE INPUT */}
 
               <input
                 ref={fileInputRef}
@@ -953,15 +770,12 @@ export default function Profile() {
                 disabled={uploading}
               />
 
-              {/* SELECTED IMAGE */}
-
               {file && (
                 <div className="mt-6 border-t border-border/55 pt-5">
                   <div className="flex items-center gap-3">
                     <span
                       className={[
                         "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
-
                         accentIconSurface,
                       ].join(" ")}
                     >
@@ -996,8 +810,6 @@ export default function Profile() {
                 </div>
               )}
 
-              {/* UPLOAD PROGRESS */}
-
               {uploading && (
                 <div className="mt-5">
                   <div className="mb-2 flex items-center justify-between text-[0.66rem]">
@@ -1016,15 +828,12 @@ export default function Profile() {
 
               {pictureError && <InlineError message={pictureError} />}
 
-              {/* PICTURE ACTIONS */}
-
               <div className="mt-6 grid gap-2">
                 <Button
                   type="button"
                   variant="outline"
                   className={[
                     "h-10 rounded-lg text-xs font-semibold",
-
                     secondaryButton,
                   ].join(" ")}
                   onClick={() => fileInputRef.current?.click()}
@@ -1045,7 +854,6 @@ export default function Profile() {
                     variant="ghost"
                     className={[
                       "h-10 rounded-lg text-xs font-semibold",
-
                       primaryButton,
                     ].join(" ")}
                     onClick={() => void uploadProfilePicture()}
@@ -1069,8 +877,6 @@ export default function Profile() {
               <p className="mt-4 text-center text-[0.61rem] leading-5 text-muted-foreground">
                 JPEG, PNG or WebP.
               </p>
-
-              {/* COMPLETION */}
 
               <div className="mt-7 border-t border-border/55 pt-5">
                 <div className="flex items-end justify-between gap-3">
@@ -1096,32 +902,14 @@ export default function Profile() {
               </div>
             </section>
 
-            {/* =============================================
-                TRUST
-            ============================================= */}
-
             <section
               className={[
                 "mt-5 flex items-start gap-3 rounded-xl border px-4 py-4",
-
-                "border-brand-secondary-highlight/10",
-
-                "bg-brand-secondary-highlight/[0.035]",
-
-                "dark:border-secondary/10",
-
-                "dark:bg-secondary/[0.035]",
+                "border-brand-secondary-highlight/10 bg-brand-secondary-highlight/[0.035]",
+                "dark:border-secondary/10 dark:bg-secondary/[0.035]",
               ].join(" ")}
             >
-              <span
-                className={[
-                  "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
-
-                  "bg-status-complete/[0.08]",
-
-                  "text-status-complete-foreground",
-                ].join(" ")}
-              >
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-status-complete/[0.08] text-status-complete-foreground">
                 <ShieldCheckIcon size={15} />
               </span>
 
@@ -1138,10 +926,6 @@ export default function Profile() {
             </section>
           </aside>
 
-          {/* =================================================
-              RIGHT
-          ================================================= */}
-
           <div className="min-w-0">
             <form onSubmit={saveProfile}>
               <ProfileSection
@@ -1150,10 +934,6 @@ export default function Profile() {
                 description="The basic information shown throughout your workspace."
               >
                 <div className="grid gap-6">
-                  {/* =========================================
-                      FULL NAME
-                  ========================================= */}
-
                   <ProfileField
                     label="Full name"
                     description="The name shown to other people on Allocatr."
@@ -1175,10 +955,6 @@ export default function Profile() {
                       />
                     </div>
                   </ProfileField>
-
-                  {/* =========================================
-                      EMAIL
-                  ========================================= */}
 
                   <ProfileField
                     label="Email address"
@@ -1210,17 +986,9 @@ export default function Profile() {
                       {profileUser.emailConfirmed ? (
                         <div
                           className={[
-                            "flex h-11 shrink-0 items-center gap-1.5",
-
-                            "rounded-lg border px-3.5",
-
-                            "border-status-complete/15",
-
-                            "bg-status-complete/[0.055]",
-
-                            "text-xs font-semibold",
-
-                            "text-status-complete-foreground",
+                            "flex h-11 shrink-0 items-center gap-1.5 rounded-lg border px-3.5",
+                            "border-status-complete/15 bg-status-complete/[0.055]",
+                            "text-xs font-semibold text-status-complete-foreground",
                           ].join(" ")}
                         >
                           <BadgeCheckIcon size={13} />
@@ -1236,10 +1004,6 @@ export default function Profile() {
                       )}
                     </div>
                   </ProfileField>
-
-                  {/* =========================================
-                      PHONE + LOCATION
-                  ========================================= */}
 
                   <div className="grid gap-6 sm:grid-cols-2">
                     <ProfileField label="Phone number">
@@ -1285,15 +1049,10 @@ export default function Profile() {
 
                 {profileError && <InlineError message={profileError} />}
 
-                {/* =========================================
-                    SAVE
-                ========================================= */}
-
                 <div className="mt-8 flex flex-col gap-3 border-t border-border/45 pt-6 sm:flex-row sm:items-center sm:justify-between">
                   <p
                     className={[
                       "text-[0.66rem]",
-
                       profileHasChanges
                         ? "font-medium text-foreground"
                         : "text-muted-foreground",
@@ -1310,17 +1069,8 @@ export default function Profile() {
                     disabled={!profileHasChanges || savingProfile}
                     className={[
                       "h-10 rounded-lg px-5 text-xs font-semibold",
-
                       primaryButton,
-
-                      "disabled:border-border/50",
-
-                      "disabled:bg-surface-3",
-
-                      "disabled:text-muted-foreground",
-
-                      "disabled:opacity-60",
-
+                      "disabled:border-border/50 disabled:bg-surface-3 disabled:text-muted-foreground disabled:opacity-60",
                       "dark:disabled:bg-surface-2",
                     ].join(" ")}
                   >
@@ -1339,10 +1089,6 @@ export default function Profile() {
                 </div>
               </ProfileSection>
             </form>
-
-            {/* =============================================
-                ACCOUNT STATUS
-            ============================================= */}
 
             <ProfileSection
               eyebrow="Account"
@@ -1372,17 +1118,13 @@ export default function Profile() {
                 <AccountItem
                   icon={UserRoundIcon}
                   label="Account type"
-                  value={profileUser.isAllocat ? "Allocat" : "Client"}
+                  value="Client"
                 />
 
                 <AccountItem
                   icon={LockKeyholeIcon}
                   label="Profile visibility"
-                  value={
-                    profileUser.isAllocat
-                      ? "Professional account"
-                      : "Private account"
-                  }
+                  value="Private account"
                 />
               </div>
             </ProfileSection>
@@ -1411,31 +1153,14 @@ function EmailVerificationWarning({
   return (
     <section
       className={[
-        "mt-7 rounded-xl border",
-
-        "border-status-pending/20",
-
-        "bg-status-pending/[0.045]",
-
-        "px-4 py-4",
-
-        "sm:px-5",
+        "mt-7 rounded-xl border px-4 py-4 sm:px-5",
+        "border-status-pending/20 bg-status-pending/[0.045]",
       ].join(" ")}
       aria-label="Email verification required"
     >
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
         <div className="flex min-w-0 flex-1 items-start gap-3.5">
-          <span
-            className={[
-              "mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center",
-
-              "rounded-lg",
-
-              "bg-status-pending/[0.12]",
-
-              "text-status-pending-foreground",
-            ].join(" ")}
-          >
+          <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-status-pending/[0.12] text-status-pending-foreground">
             <MailCheckIcon size={15} />
           </span>
 
@@ -1461,7 +1186,6 @@ function EmailVerificationWarning({
                 role="alert"
               >
                 <AlertCircleIcon size={13} className="mt-0.5 shrink-0" />
-
                 <p className="leading-5">{error}</p>
               </div>
             )}
@@ -1501,17 +1225,8 @@ function VerificationButton({
       disabled={sending || disabled}
       className={[
         "shrink-0 rounded-lg text-xs font-semibold",
-
         secondaryButton,
-
-        "disabled:border-border/60",
-
-        "disabled:bg-surface-2/20",
-
-        "disabled:text-muted-foreground",
-
-        "disabled:opacity-60",
-
+        "disabled:border-border/60 disabled:bg-surface-2/20 disabled:text-muted-foreground disabled:opacity-60",
         size === "field" ? "h-11 px-4" : "h-9 px-3.5",
       ].join(" ")}
     >
@@ -1549,7 +1264,6 @@ function SummaryStat({
     <div
       className={[
         "min-w-0 px-5 py-4",
-
         divided ? "border-t border-border/55 sm:border-l sm:border-t-0" : "",
       ].join(" ")}
     >
@@ -1595,7 +1309,6 @@ function ProfileSection({
     <section
       className={[
         divided ? "border-t border-border/50 pt-9" : "",
-
         !last ? "pb-10" : "",
       ].join(" ")}
     >
@@ -1674,7 +1387,6 @@ function AccountItem({
     <div
       className={[
         "flex items-center gap-3 rounded-xl border px-4 py-4",
-
         quietSurface,
       ].join(" ")}
     >
@@ -1695,21 +1407,10 @@ function AccountItem({
       {status && (
         <span
           className={[
-            "shrink-0 rounded-md px-2 py-1",
-
-            "text-[0.56rem] font-semibold",
-
+            "shrink-0 rounded-md px-2 py-1 text-[0.56rem] font-semibold",
             status === "success"
-              ? [
-                  "bg-status-complete/[0.08]",
-
-                  "text-status-complete-foreground",
-                ].join(" ")
-              : [
-                  "bg-status-pending/[0.09]",
-
-                  "text-status-pending-foreground",
-                ].join(" "),
+              ? "bg-status-complete/[0.08] text-status-complete-foreground"
+              : "bg-status-pending/[0.09] text-status-pending-foreground",
           ].join(" ")}
         >
           {status === "success" ? "Verified" : "Pending"}
@@ -1730,7 +1431,6 @@ function InlineError({ message }: { message: string }) {
       role="alert"
     >
       <AlertCircleIcon size={15} className="mt-0.5 shrink-0" />
-
       <p className="leading-5">{message}</p>
     </div>
   );
@@ -1752,11 +1452,8 @@ function ProfileLoading() {
       <main className="container mx-auto px-4 py-8 sm:px-6 md:px-8 lg:py-12">
         <div className="max-w-xl">
           <Skeleton className="h-9 w-9 rounded-lg" />
-
           <Skeleton className="mt-5 h-10 w-48" />
-
           <Skeleton className="mt-4 h-4 w-full" />
-
           <Skeleton className="mt-2 h-4 w-4/5" />
         </div>
 
@@ -1767,14 +1464,12 @@ function ProfileLoading() {
                 key={index}
                 className={[
                   "px-5 py-4",
-
                   index > 0
                     ? "border-t border-border/55 sm:border-l sm:border-t-0"
                     : "",
                 ].join(" ")}
               >
                 <Skeleton className="h-3 w-16" />
-
                 <Skeleton className="mt-3 h-6 w-24" />
               </div>
             ))}
@@ -1786,9 +1481,7 @@ function ProfileLoading() {
 
           <div>
             <Skeleton className="h-3 w-24" />
-
             <Skeleton className="mt-3 h-7 w-48" />
-
             <Skeleton className="mt-3 h-4 w-80 max-w-full" />
 
             <div className="mt-8 space-y-6">
@@ -1796,13 +1489,11 @@ function ProfileLoading() {
 
               <div className="flex gap-3">
                 <Skeleton className="h-11 flex-1 rounded-lg" />
-
                 <Skeleton className="h-11 w-28 rounded-lg" />
               </div>
 
               <div className="grid gap-6 sm:grid-cols-2">
                 <Skeleton className="h-11 rounded-lg" />
-
                 <Skeleton className="h-11 rounded-lg" />
               </div>
             </div>
@@ -1852,7 +1543,6 @@ function ProfileErrorPage({
             onClick={() => void onRetry()}
             className={[
               "mt-6 h-10 rounded-lg px-5 text-xs font-semibold",
-
               primaryButton,
             ].join(" ")}
           >

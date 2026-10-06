@@ -10,6 +10,7 @@ import {
 } from "react";
 
 import { isAxiosError } from "axios";
+import { Navigate, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 import {
@@ -86,164 +87,83 @@ type ProfessionalDraft = {
   skillIds: string[];
 };
 
+type IncompleteProfileItem = {
+  key: string;
+  label: string;
+  section: Exclude<EditingSection, null>;
+};
+
 /* =========================================================
    CONSTANTS
 ========================================================= */
 
 const MAX_AVATAR_SIZE = 5 * 1024 * 1024;
-
 const ACCEPTED_AVATAR_TYPES = ["image/jpeg", "image/png", "image/webp"];
+
+const CREATE_PROFILE_ROUTE = "/allocats/profile/create";
+const REGULAR_PROFILE_ROUTE = "/profile";
 
 /* =========================================================
    THEME
 ========================================================= */
 
 const primaryButton = [
-  "border border-brand-secondary-highlight/15",
-  "bg-brand-secondary-highlight",
-  "text-primary-foreground",
-  "shadow-none",
-
+  "border border-brand-secondary-highlight/15 bg-brand-secondary-highlight text-primary-foreground shadow-none",
   "transition-opacity duration-150",
-
-  "hover:border-brand-secondary-highlight/15",
-  "hover:bg-brand-secondary-highlight",
-  "hover:text-primary-foreground",
-  "hover:opacity-90",
-
-  "focus-visible:ring-2",
-  "focus-visible:ring-brand-secondary-highlight/20",
-  "focus-visible:ring-offset-2",
-  "focus-visible:ring-offset-background",
-
-  "dark:border-secondary/10",
-  "dark:bg-secondary",
-  "dark:text-secondary-foreground",
-
-  "dark:hover:border-secondary/10",
-  "dark:hover:bg-secondary",
-  "dark:hover:text-secondary-foreground",
-  "dark:hover:opacity-90",
-
+  "hover:border-brand-secondary-highlight/15 hover:bg-brand-secondary-highlight hover:text-primary-foreground hover:opacity-90",
+  "focus-visible:ring-2 focus-visible:ring-brand-secondary-highlight/20 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+  "dark:border-secondary/10 dark:bg-secondary dark:text-secondary-foreground",
+  "dark:hover:border-secondary/10 dark:hover:bg-secondary dark:hover:text-secondary-foreground dark:hover:opacity-90",
   "dark:focus-visible:ring-secondary/20",
 ].join(" ");
 
 const secondaryButton = [
-  "border border-border/65",
-  "bg-surface-2/35",
-  "text-foreground/75",
-  "shadow-none",
-
+  "border border-border/65 bg-surface-2/35 text-foreground/75 shadow-none",
   "transition-opacity duration-150",
-
-  "hover:border-border/65",
-  "hover:bg-surface-2/35",
-  "hover:text-foreground/75",
-  "hover:opacity-75",
-
-  "focus-visible:ring-2",
-  "focus-visible:ring-brand-secondary-highlight/15",
-  "focus-visible:ring-offset-2",
-  "focus-visible:ring-offset-background",
-
-  "dark:border-border",
-  "dark:bg-surface-2/65",
-  "dark:text-foreground/75",
-
-  "dark:hover:border-border",
-  "dark:hover:bg-surface-2/65",
-  "dark:hover:text-foreground/75",
-  "dark:hover:opacity-75",
-
+  "hover:border-border/65 hover:bg-surface-2/35 hover:text-foreground/75 hover:opacity-75",
+  "focus-visible:ring-2 focus-visible:ring-brand-secondary-highlight/15 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+  "dark:border-border dark:bg-surface-2/65 dark:text-foreground/75",
+  "dark:hover:border-border dark:hover:bg-surface-2/65 dark:hover:text-foreground/75 dark:hover:opacity-75",
   "dark:focus-visible:ring-secondary/15",
 ].join(" ");
 
 const quietIconButton = [
-  "bg-transparent",
-  "text-muted-foreground",
-  "shadow-none",
-
-  "transition-opacity duration-150",
-
-  "hover:bg-transparent",
-  "hover:text-foreground",
-  "hover:opacity-70",
+  "bg-transparent text-muted-foreground shadow-none transition-opacity duration-150",
+  "hover:bg-transparent hover:text-foreground hover:opacity-70",
 ].join(" ");
 
 const fieldClass = [
-  "h-11 rounded-lg",
-  "border-border/70",
-  "bg-surface-1/70",
-  "shadow-none",
-
+  "h-11 rounded-lg border-border/70 bg-surface-1/70 shadow-none",
   "transition-[border-color,box-shadow,background-color]",
-
-  "focus-visible:border-brand-secondary-highlight/35",
-  "focus-visible:ring-1",
-  "focus-visible:ring-brand-secondary-highlight/20",
-
-  "dark:bg-surface-2/35",
-  "dark:focus-visible:border-secondary/25",
-  "dark:focus-visible:ring-secondary/15",
+  "focus-visible:border-brand-secondary-highlight/35 focus-visible:ring-1 focus-visible:ring-brand-secondary-highlight/20",
+  "dark:bg-surface-2/35 dark:focus-visible:border-secondary/25 dark:focus-visible:ring-secondary/15",
 ].join(" ");
 
 const disabledFieldClass = [
-  "h-11 rounded-lg",
-  "border-border/60",
-  "bg-surface-2/50",
-  "font-medium",
-  "text-muted-foreground",
-  "shadow-none",
-
-  "disabled:cursor-not-allowed",
-  "disabled:opacity-100",
-  "disabled:text-muted-foreground",
-
+  "h-11 rounded-lg border-border/60 bg-surface-2/50 font-medium text-muted-foreground shadow-none",
+  "disabled:cursor-not-allowed disabled:opacity-100 disabled:text-muted-foreground",
   "dark:bg-surface-2/65",
 ].join(" ");
 
-const cardSurface = [
-  "border-border/55",
-  "bg-card",
+const cardSurface = "border-border/55 bg-card dark:border-border dark:bg-card";
 
-  "dark:border-border",
-  "dark:bg-card",
-].join(" ");
-
-const quietSurface = [
-  "border-border/55",
-  "bg-surface-2/30",
-
-  "dark:border-border",
-  "dark:bg-surface-2/55",
-].join(" ");
+const quietSurface =
+  "border-border/55 bg-surface-2/30 dark:border-border dark:bg-surface-2/55";
 
 const accentIconSurface = [
-  "bg-brand-secondary-highlight/[0.08]",
-  "text-brand-secondary-highlight",
-  "ring-1 ring-inset ring-brand-secondary-highlight/10",
-
-  "dark:bg-secondary/[0.07]",
-  "dark:text-secondary",
-  "dark:ring-secondary/10",
+  "bg-brand-secondary-highlight/[0.08] text-brand-secondary-highlight ring-1 ring-inset ring-brand-secondary-highlight/10",
+  "dark:bg-secondary/[0.07] dark:text-secondary dark:ring-secondary/10",
 ].join(" ");
 
 const progressClass = [
   "h-1.5",
-
   "[&_[data-slot=progress-indicator]]:bg-brand-secondary-highlight",
-
   "dark:[&_[data-slot=progress-indicator]]:bg-secondary",
 ].join(" ");
 
 const professionalScoreSurface = [
-  "border-primary/20",
-  "bg-primary",
-  "text-primary-foreground",
-
-  "dark:border-brand-secondary-highlight/25",
-  "dark:bg-brand-secondary",
-  "dark:text-white",
+  "border-primary/20 bg-primary text-primary-foreground",
+  "dark:border-brand-secondary-highlight/25 dark:bg-brand-secondary dark:text-white",
 ].join(" ");
 
 /* =========================================================
@@ -251,35 +171,30 @@ const professionalScoreSurface = [
 ========================================================= */
 
 function AllocatProfilePage() {
-  const { refreshUser } = useAuth();
+  const navigate = useNavigate();
+  const { user, refreshUser } = useAuth();
 
   const [accountProfile, setAccountProfile] = useState<ProfileUser | null>(
     null,
   );
-
   const [allocatProfile, setAllocatProfile] = useState<MyAllocatProfile | null>(
     null,
   );
-
   const [skillOptions, setSkillOptions] = useState<AllocatSkill[]>([]);
 
   const [loading, setLoading] = useState(true);
   const [loadingSkills, setLoadingSkills] = useState(false);
 
   const [pageError, setPageError] = useState<string | null>(null);
-
   const [skillCatalogError, setSkillCatalogError] = useState<string | null>(
     null,
   );
 
   const [editingSection, setEditingSection] = useState<EditingSection>(null);
-
   const [savingSection, setSavingSection] = useState<EditingSection>(null);
-
   const [sectionError, setSectionError] = useState<string | null>(null);
 
   const [updatingVisibility, setUpdatingVisibility] = useState(false);
-
   const [showHideProfileWarning, setShowHideProfileWarning] = useState(false);
 
   const [accountDraft, setAccountDraft] = useState<AccountDraft>({
@@ -306,10 +221,8 @@ function AllocatProfilePage() {
 
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
-
   const [avatarProgress, setAvatarProgress] = useState(0);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
-
   const [avatarError, setAvatarError] = useState<string | null>(null);
 
   /* =======================================================
@@ -339,33 +252,55 @@ function AllocatProfilePage() {
 
   /* =======================================================
      LOAD PROFILE
+
+     Only actual Allocats are allowed to request professional
+     Allocat profile data.
+
+     A 404 from /allocats/profiles/me therefore means:
+     the authenticated user IS an Allocat, but has not yet
+     completed initial professional profile creation.
   ======================================================= */
 
   const fetchPageData = useCallback(async () => {
+    if (!user?.isAllocat) {
+      return;
+    }
+
     try {
       setLoading(true);
       setPageError(null);
 
-      const [accountResponse, allocatResponse] = await Promise.all([
-        api.get<ProfileUser>("/profiles/me", {
-          withCredentials: true,
-        }),
-
-        api.get<MyAllocatProfile>("/allocats/profiles/me", {
-          withCredentials: true,
-        }),
-      ]);
+      const accountResponse = await api.get<ProfileUser>("/profiles/me", {
+        withCredentials: true,
+      });
 
       const account = accountResponse.data;
-      const profile = allocatResponse.data;
 
       setAccountProfile(account);
-      setAllocatProfile(profile);
-
       setAccountDraft(toAccountDraft(account));
-      setProfessionalDraft(toProfessionalDraft(profile));
 
-      void loadSkillOptions();
+      try {
+        const allocatResponse = await api.get<MyAllocatProfile>(
+          "/allocats/profiles/me",
+          {
+            withCredentials: true,
+          },
+        );
+
+        const profile = allocatResponse.data;
+
+        setAllocatProfile(profile);
+        setProfessionalDraft(toProfessionalDraft(profile));
+
+        void loadSkillOptions();
+      } catch (error) {
+        if (isAxiosError(error) && error.response?.status === 404) {
+          setAllocatProfile(null);
+          return;
+        }
+
+        throw error;
+      }
     } catch (error) {
       console.error("Could not load Allocat profile:", error);
 
@@ -375,11 +310,15 @@ function AllocatProfilePage() {
     } finally {
       setLoading(false);
     }
-  }, [loadSkillOptions]);
+  }, [user?.isAllocat, loadSkillOptions]);
 
   useEffect(() => {
+    if (!user?.isAllocat) {
+      return;
+    }
+
     void fetchPageData();
-  }, [fetchPageData]);
+  }, [user?.isAllocat, fetchPageData]);
 
   /* =======================================================
      AVATAR CLEANUP
@@ -454,6 +393,14 @@ function AllocatProfilePage() {
     allocatProfile?.avatarUrl ??
     undefined;
 
+  const incompleteProfileItems = useMemo(() => {
+    if (!accountProfile || !allocatProfile) {
+      return [];
+    }
+
+    return getIncompleteProfileItems(accountProfile, allocatProfile);
+  }, [accountProfile, allocatProfile]);
+
   /* =======================================================
      EDIT HELPERS
   ======================================================= */
@@ -477,6 +424,32 @@ function AllocatProfilePage() {
 
     setSectionError(null);
     setEditingSection(section);
+
+    requestAnimationFrame(() => {
+      if (section === "account") {
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth",
+        });
+
+        return;
+      }
+
+      document.getElementById(`profile-${section}`)?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    });
+  }
+
+  function completeNextProfileItem() {
+    const next = incompleteProfileItems[0];
+
+    if (!next) {
+      return;
+    }
+
+    startEditing(next.section);
   }
 
   function cancelEditing() {
@@ -600,12 +573,6 @@ function AllocatProfilePage() {
       return;
     }
 
-    /*
-     * Showing a profile again is safe to perform immediately.
-     *
-     * Hiding a visible profile affects client discovery, so every
-     * UI control routes through the confirmation dialog first.
-     */
     if (allocatProfile.isVisible) {
       setShowHideProfileWarning(true);
       return;
@@ -777,14 +744,25 @@ function AllocatProfilePage() {
   }
 
   /* =======================================================
-     PAGE STATES
+     ACCESS + PAGE STATES
   ======================================================= */
 
-  if (loading) {
+  /*
+   * /allocats/profile belongs only to Allocats.
+   *
+   * A normal client manually entering the URL is returned
+   * to the regular account profile rather than seeing an
+   * Allocat error or incomplete-profile state.
+   */
+  if (user && !user.isAllocat) {
+    return <Navigate to={REGULAR_PROFILE_ROUTE} replace />;
+  }
+
+  if (!user || loading) {
     return <AllocatProfileSkeleton />;
   }
 
-  if (pageError || !accountProfile || !allocatProfile) {
+  if (pageError || !accountProfile) {
     return (
       <AllocatProfileError
         message={pageError ?? "Your profile could not be loaded."}
@@ -793,8 +771,22 @@ function AllocatProfilePage() {
     );
   }
 
-  const rating = allocatProfile.rating;
+  /*
+   * At this point we already know user.isAllocat === true.
+   *
+   * A missing professional profile therefore means this
+   * Allocat left onboarding before completing setup.
+   */
+  if (!allocatProfile) {
+    return (
+      <IncompleteAllocatSetup
+        accountProfile={accountProfile}
+        onContinue={() => navigate(CREATE_PROFILE_ROUTE)}
+      />
+    );
+  }
 
+  const rating = allocatProfile.rating;
   const completedProjects = allocatProfile.completedProjects;
 
   /* =======================================================
@@ -803,10 +795,6 @@ function AllocatProfilePage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      {/* ===================================================
-          NAV
-      =================================================== */}
-
       <header className="sticky top-0 z-40 border-b border-border/60 bg-background/90 backdrop-blur-xl">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <DashboardMainNav>
@@ -823,40 +811,22 @@ function AllocatProfilePage() {
         </div>
       </header>
 
-      {/* ===================================================
-          MAIN
-      =================================================== */}
-
       <main className="container mx-auto px-4 py-8 sm:px-6 md:px-8 lg:py-12">
-        {/* =================================================
-            INTRO
-        ================================================= */}
-
         <section className="pb-8 sm:pb-10">
           <div className="flex flex-col gap-8 xl:flex-row xl:items-end xl:justify-between">
             <div className="flex min-w-0 flex-col gap-5 sm:flex-row sm:items-center">
-              {/* AVATAR */}
-
               <div className="relative w-fit shrink-0">
                 <Avatar className="h-24 w-24 border border-border/70 bg-transparent sm:h-28 sm:w-28">
                   <AvatarImage
                     src={displayedAvatar}
-                    alt={
-                      accountProfile.fullName
-                        ? `${accountProfile.fullName}'s profile`
-                        : "Allocat profile"
-                    }
+                    alt={`${accountProfile.fullName}'s profile`}
                     className="object-cover"
                   />
 
                   <AvatarFallback
                     className={[
-                      "bg-brand-secondary-highlight/[0.08]",
-                      "text-2xl font-semibold",
-                      "text-brand-secondary-highlight",
-
-                      "dark:bg-secondary/[0.08]",
-                      "dark:text-secondary",
+                      "bg-brand-secondary-highlight/[0.08] text-2xl font-semibold text-brand-secondary-highlight",
+                      "dark:bg-secondary/[0.08] dark:text-secondary",
                     ].join(" ")}
                   >
                     {initials}
@@ -866,15 +836,10 @@ function AllocatProfilePage() {
                 {allocatProfile.verified && (
                   <span
                     className={[
-                      "absolute -bottom-1 -right-1",
-                      "flex h-8 w-8 items-center justify-center",
+                      "absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center",
                       "rounded-lg border-[3px] border-background",
-
-                      "bg-brand-secondary-highlight",
-                      "text-primary-foreground",
-
-                      "dark:bg-secondary",
-                      "dark:text-secondary-foreground",
+                      "bg-brand-secondary-highlight text-primary-foreground",
+                      "dark:bg-secondary dark:text-secondary-foreground",
                     ].join(" ")}
                     title="Verified Allocat"
                   >
@@ -888,26 +853,13 @@ function AllocatProfilePage() {
                     disabled={uploadingAvatar}
                     onClick={() => avatarInputRef.current?.click()}
                     className={[
-                      "absolute -left-1 -top-1",
-                      "flex h-8 w-8 items-center justify-center",
+                      "absolute -left-1 -top-1 flex h-8 w-8 items-center justify-center",
                       "rounded-lg border-[3px] border-background",
-
-                      "bg-brand-secondary-highlight",
-                      "text-primary-foreground",
-
-                      "transition-opacity duration-150",
-                      "hover:opacity-85",
-
-                      "focus-visible:outline-none",
-                      "focus-visible:ring-2",
-                      "focus-visible:ring-brand-secondary-highlight/25",
-
-                      "disabled:pointer-events-none",
-                      "disabled:opacity-60",
-
-                      "dark:bg-secondary",
-                      "dark:text-secondary-foreground",
-                      "dark:focus-visible:ring-secondary/25",
+                      "bg-brand-secondary-highlight text-primary-foreground",
+                      "transition-opacity duration-150 hover:opacity-85",
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-secondary-highlight/25",
+                      "disabled:pointer-events-none disabled:opacity-60",
+                      "dark:bg-secondary dark:text-secondary-foreground dark:focus-visible:ring-secondary/25",
                     ].join(" ")}
                     aria-label="Change profile picture"
                   >
@@ -915,8 +867,6 @@ function AllocatProfilePage() {
                   </button>
                 )}
               </div>
-
-              {/* IDENTITY */}
 
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
@@ -926,13 +876,9 @@ function AllocatProfilePage() {
 
                   <span
                     className={[
-                      "rounded-lg px-2 py-1",
-                      "bg-brand-secondary-highlight/[0.07]",
-                      "text-[0.58rem] font-semibold",
-                      "text-brand-secondary-highlight",
-
-                      "dark:bg-secondary/[0.07]",
-                      "dark:text-secondary",
+                      "rounded-lg px-2 py-1 text-[0.58rem] font-semibold",
+                      "bg-brand-secondary-highlight/[0.07] text-brand-secondary-highlight",
+                      "dark:bg-secondary/[0.07] dark:text-secondary",
                     ].join(" ")}
                   >
                     Level {allocatProfile.level}
@@ -963,7 +909,6 @@ function AllocatProfilePage() {
                 <p
                   className={[
                     "mt-2 text-sm font-semibold sm:text-base",
-
                     allocatProfile.title
                       ? "text-foreground/80"
                       : "text-muted-foreground",
@@ -995,18 +940,15 @@ function AllocatProfilePage() {
                     {formatAvailability(allocatProfile.availabilityStatus)}
                   </span>
 
-                  {allocatProfile.responseTime !== null && (
+                  {allocatProfile.responseTime != null && (
                     <span className="inline-flex items-center gap-1.5">
                       <Clock3Icon size={13} />
-
                       {formatResponseSummary(allocatProfile.responseTime)}
                     </span>
                   )}
                 </div>
               </div>
             </div>
-
-            {/* VISIBILITY */}
 
             <div className="flex shrink-0 items-center">
               <Button
@@ -1032,9 +974,12 @@ function AllocatProfilePage() {
             </div>
           </div>
 
-          {/* =================================================
-              ACCOUNT EDIT
-          ================================================= */}
+          {incompleteProfileItems.length > 0 && (
+            <IncompleteProfileWarning
+              items={incompleteProfileItems}
+              onComplete={completeNextProfileItem}
+            />
+          )}
 
           {editingSection === "account" && (
             <form
@@ -1250,10 +1195,6 @@ function AllocatProfilePage() {
             </form>
           )}
 
-          {/* =================================================
-              SUMMARY
-          ================================================= */}
-
           <div className="mt-8 border-y border-border/55">
             <div className="grid sm:grid-cols-2 xl:grid-cols-4">
               <ProfileStat
@@ -1305,21 +1246,10 @@ function AllocatProfilePage() {
           </div>
         </section>
 
-        {/* =================================================
-            CONTENT
-        ================================================= */}
-
         <div className="grid items-start gap-10 border-t border-border/40 pt-8 xl:grid-cols-[minmax(0,1fr)_300px] xl:gap-14">
-          {/* =================================================
-              MAIN COLUMN
-          ================================================= */}
-
           <div className="min-w-0">
-            {/* =================================================
-                OVERVIEW
-            ================================================= */}
-
             <ProfileSection
+              sectionId="profile-about"
               eyebrow="Overview"
               title={`About ${getFirstName(accountProfile.fullName)}`}
               editing={editingSection === "about"}
@@ -1365,20 +1295,10 @@ function AllocatProfilePage() {
                         }
                         className={[
                           "min-h-40 resize-none rounded-xl leading-7",
-
-                          "border-border/70",
-                          "bg-surface-1/70",
-                          "shadow-none",
-
+                          "border-border/70 bg-surface-1/70 shadow-none",
                           "transition-[border-color,box-shadow,background-color]",
-
-                          "focus-visible:border-brand-secondary-highlight/35",
-                          "focus-visible:ring-1",
-                          "focus-visible:ring-brand-secondary-highlight/20",
-
-                          "dark:bg-surface-2/35",
-                          "dark:focus-visible:border-secondary/25",
-                          "dark:focus-visible:ring-secondary/15",
+                          "focus-visible:border-brand-secondary-highlight/35 focus-visible:ring-1 focus-visible:ring-brand-secondary-highlight/20",
+                          "dark:bg-surface-2/35 dark:focus-visible:border-secondary/25 dark:focus-visible:ring-secondary/15",
                         ].join(" ")}
                       />
                     </ProfileField>
@@ -1452,11 +1372,8 @@ function AllocatProfilePage() {
               )}
             </ProfileSection>
 
-            {/* =================================================
-                SKILLS
-            ================================================= */}
-
             <ProfileSection
+              sectionId="profile-skills"
               eyebrow="Expertise"
               title="Skills"
               divided
@@ -1495,17 +1412,10 @@ function AllocatProfilePage() {
                         key={skill.id}
                         className={[
                           "rounded-lg px-3 py-1.5",
-
                           "bg-brand-secondary-highlight/[0.07]",
-
-                          "text-xs font-semibold",
-                          "text-brand-secondary-highlight",
-
+                          "text-xs font-semibold text-brand-secondary-highlight",
                           "ring-1 ring-inset ring-brand-secondary-highlight/10",
-
-                          "dark:bg-secondary/[0.07]",
-                          "dark:text-secondary",
-                          "dark:ring-secondary/10",
+                          "dark:bg-secondary/[0.07] dark:text-secondary dark:ring-secondary/10",
                         ].join(" ")}
                       >
                         {skill.name}
@@ -1525,11 +1435,8 @@ function AllocatProfilePage() {
               )}
             </ProfileSection>
 
-            {/* =================================================
-                WORKING DETAILS
-            ================================================= */}
-
             <ProfileSection
+              sectionId="profile-work"
               eyebrow="Professional"
               title="Working details"
               divided
@@ -1555,9 +1462,7 @@ function AllocatProfilePage() {
                         ].join(" ")}
                       >
                         <option value="available">Available</option>
-
                         <option value="busy">Busy</option>
-
                         <option value="unavailable">Unavailable</option>
                       </select>
                     </ProfileField>
@@ -1675,10 +1580,6 @@ function AllocatProfilePage() {
               )}
             </ProfileSection>
 
-            {/* =================================================
-                COMPLETED PROJECTS
-            ================================================= */}
-
             <ProfileSection
               eyebrow="Work history"
               title="Completed projects"
@@ -1721,10 +1622,6 @@ function AllocatProfilePage() {
               )}
             </ProfileSection>
 
-            {/* =================================================
-                VERIFICATION
-            ================================================= */}
-
             <ProfileSection eyebrow="Trust" title="Verification" divided last>
               <div className="grid gap-3 md:grid-cols-3">
                 <VerificationItem
@@ -1756,58 +1653,42 @@ function AllocatProfilePage() {
             </ProfileSection>
           </div>
 
-          {/* =================================================
-              SIDEBAR
-          ================================================= */}
-
           <aside className="min-w-0 xl:sticky xl:top-24">
-            {/* =============================================
-                PROFESSIONAL SCORE
-            ============================================= */}
-
             <section
               className={[
-                "relative overflow-hidden rounded-2xl border p-5",
+                "rounded-2xl border p-5",
                 professionalScoreSurface,
               ].join(" ")}
             >
-              <div className="relative z-10">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-[0.52rem] font-semibold uppercase tracking-[0.15em] text-white/55">
-                      Professional score
-                    </p>
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-[0.52rem] font-semibold uppercase tracking-[0.15em] text-white/55">
+                    Professional score
+                  </p>
 
-                    <h2 className="mt-2 text-lg font-semibold tracking-[-0.025em] text-white">
-                      {getScoreLabel(allocatProfile.professionalScore)}
-                    </h2>
-                  </div>
-
-                  <span className="text-lg font-semibold tracking-[-0.04em] text-white">
-                    {allocatProfile.professionalScore}%
-                  </span>
+                  <h2 className="mt-2 text-lg font-semibold tracking-[-0.025em] text-white">
+                    {getScoreLabel(allocatProfile.professionalScore)}
+                  </h2>
                 </div>
 
-                <ContrastProgress
-                  value={allocatProfile.professionalScore}
-                  className="mt-5"
-                />
-
-                <p className="mt-4 text-xs leading-6 text-white/65">
-                  Complete your professional information, skills and verified
-                  details, then build your reputation through completed work.
+                <p className="shrink-0 text-3xl font-semibold tracking-[-0.04em] text-white">
+                  {allocatProfile.professionalScore}
+                  <span className="ml-0.5 text-sm font-medium text-white/55">
+                    %
+                  </span>
                 </p>
               </div>
 
-              <div
-                aria-hidden
-                className="pointer-events-none absolute -right-14 -top-14 h-36 w-36 rounded-full border border-white/[0.05]"
+              <ContrastProgress
+                value={allocatProfile.professionalScore}
+                className="mt-5"
               />
-            </section>
 
-            {/* =============================================
-                WORK PREFERENCES
-            ============================================= */}
+              <p className="mt-4 text-xs leading-6 text-white/65">
+                Complete your professional information, skills and verified
+                details, then build your reputation through completed work.
+              </p>
+            </section>
 
             <section
               className={[
@@ -1850,11 +1731,11 @@ function AllocatProfilePage() {
                 <SidebarDetail
                   label="Response time"
                   value={
-                    allocatProfile.responseTime !== null
+                    allocatProfile.responseTime != null
                       ? formatResponseTime(allocatProfile.responseTime)
                       : "Not measured yet"
                   }
-                  muted={allocatProfile.responseTime === null}
+                  muted={allocatProfile.responseTime == null}
                 />
 
                 <SidebarDetail
@@ -1898,10 +1779,6 @@ function AllocatProfilePage() {
               </div>
             </section>
 
-            {/* =============================================
-                PUBLIC PROFILE
-            ============================================= */}
-
             <section
               className={["mt-5 rounded-2xl border p-5", quietSurface].join(
                 " ",
@@ -1922,7 +1799,6 @@ function AllocatProfilePage() {
                 <span
                   className={[
                     "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
-
                     allocatProfile.isVisible
                       ? accentIconSurface
                       : "bg-surface-3/70 text-muted-foreground dark:bg-surface-2",
@@ -1940,7 +1816,6 @@ function AllocatProfilePage() {
                 <span
                   className={[
                     "h-1.5 w-1.5 shrink-0 rounded-full",
-
                     allocatProfile.isVisible
                       ? "bg-status-complete"
                       : "bg-muted-foreground/40",
@@ -1977,16 +1852,235 @@ function AllocatProfilePage() {
         </div>
       </main>
 
-      {/* ===================================================
-          HIDE PROFILE CONFIRMATION
-      =================================================== */}
-
       <HideProfileWarning
         open={showHideProfileWarning}
         loading={updatingVisibility}
         onCancel={() => setShowHideProfileWarning(false)}
         onConfirm={() => void updateVisibility(false)}
       />
+    </div>
+  );
+}
+
+/* =========================================================
+   PROFILE NOT YET CREATED
+========================================================= */
+
+function IncompleteAllocatSetup({
+  accountProfile,
+  onContinue,
+}: {
+  accountProfile: ProfileUser;
+  onContinue: () => void;
+}) {
+  const initials = getInitials(accountProfile.fullName);
+
+  return (
+    <div className="min-h-screen bg-background text-foreground">
+      <header className="sticky top-0 z-40 border-b border-border/60 bg-background/90 backdrop-blur-xl">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <DashboardMainNav>
+            <div>
+              <p className="text-[0.52rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                Allocat
+              </p>
+
+              <p className="mt-0.5 text-xs font-semibold text-foreground">
+                Profile
+              </p>
+            </div>
+          </DashboardMainNav>
+        </div>
+      </header>
+
+      <main className="container mx-auto px-4 py-8 sm:px-6 md:px-8 lg:py-12">
+        <section className="max-w-4xl">
+          <div className="flex items-center gap-5">
+            <Avatar className="h-20 w-20 border border-border/70">
+              <AvatarImage
+                src={accountProfile.avatarUrl ?? undefined}
+                className="object-cover"
+              />
+
+              <AvatarFallback
+                className={[
+                  "bg-brand-secondary-highlight/[0.08] text-xl font-semibold text-brand-secondary-highlight",
+                  "dark:bg-secondary/[0.08] dark:text-secondary",
+                ].join(" ")}
+              >
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+
+            <div className="min-w-0">
+              <p className="text-[0.52rem] font-semibold uppercase tracking-[0.16em] text-brand-secondary-highlight dark:text-secondary">
+                Professional profile
+              </p>
+
+              <h1 className="mt-2 break-words text-3xl font-semibold leading-[1.02] tracking-[-0.04em] text-foreground/95 sm:text-4xl">
+                {accountProfile.fullName}
+              </h1>
+
+              <p className="mt-2 text-sm text-muted-foreground">
+                Professional profile setup not completed
+              </p>
+            </div>
+          </div>
+
+          <div
+            className={[
+              "mt-8 rounded-2xl border p-5 sm:p-6",
+              "border-status-pending/25 bg-status-pending/[0.055]",
+            ].join(" ")}
+          >
+            <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-status-pending/[0.10] text-status-pending-foreground">
+                <AlertCircleIcon size={17} />
+              </span>
+
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-semibold uppercase tracking-[0.13em] text-status-pending-foreground">
+                  Profile incomplete
+                </p>
+
+                <h2 className="mt-2 text-xl font-semibold tracking-[-0.025em] text-foreground sm:text-2xl">
+                  Finish setting up your Allocat profile
+                </h2>
+
+                <p className="mt-3 max-w-2xl text-sm leading-7 text-muted-foreground">
+                  Your Allocat account is active, but your professional profile
+                  has not been created yet. Complete the setup so clients can
+                  understand your skills, experience, location and working
+                  preferences.
+                </p>
+
+                <div className="mt-5 flex flex-wrap gap-x-6 gap-y-2 text-xs text-muted-foreground">
+                  <span>Professional details</span>
+                  <span>Location & contact</span>
+                  <span>Skills</span>
+                  <span>Working preferences</span>
+                  <span>Identity</span>
+                </div>
+
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={onContinue}
+                  className={[
+                    "mt-6 h-10 rounded-lg px-5 text-xs font-semibold",
+                    primaryButton,
+                  ].join(" ")}
+                >
+                  Continue profile setup
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-8 grid gap-4 border-t border-border/50 pt-7 sm:grid-cols-3">
+            <SetupStateItem
+              icon={BriefcaseBusinessIcon}
+              title="Professional profile"
+              value="Not created"
+            />
+
+            <SetupStateItem
+              icon={ShieldCheckIcon}
+              title="Verification"
+              value="Not started"
+            />
+
+            <SetupStateItem
+              icon={EyeOffIcon}
+              title="Client discovery"
+              value="Not ready"
+            />
+          </div>
+        </section>
+      </main>
+    </div>
+  );
+}
+
+function SetupStateItem({
+  icon: Icon,
+  title,
+  value,
+}: {
+  icon: LucideIcon;
+  title: string;
+  value: string;
+}) {
+  return (
+    <div className="flex items-center gap-3 py-2">
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-surface-2 text-muted-foreground dark:bg-surface-2/70">
+        <Icon size={14} />
+      </span>
+
+      <div>
+        <p className="text-[0.6rem] text-muted-foreground">{title}</p>
+        <p className="mt-0.5 text-xs font-semibold text-foreground">{value}</p>
+      </div>
+    </div>
+  );
+}
+
+/* =========================================================
+   INCOMPLETE PROFILE WARNING
+========================================================= */
+
+function IncompleteProfileWarning({
+  items,
+  onComplete,
+}: {
+  items: IncompleteProfileItem[];
+  onComplete: () => void;
+}) {
+  const visibleItems = items.slice(0, 4);
+  const remaining = items.length - visibleItems.length;
+
+  return (
+    <div
+      className={[
+        "mt-7 rounded-xl border p-4 sm:p-5",
+        "border-status-pending/25 bg-status-pending/[0.055]",
+      ].join(" ")}
+    >
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-status-pending/[0.10] text-status-pending-foreground">
+          <AlertCircleIcon size={15} />
+        </span>
+
+        <div className="min-w-0 flex-1">
+          <p className="text-xs font-semibold text-foreground">
+            Complete your professional profile
+          </p>
+
+          <p className="mt-1 max-w-2xl text-xs leading-6 text-muted-foreground">
+            You still have {items.length} key{" "}
+            {items.length === 1 ? "detail" : "details"} to add. A more complete
+            profile gives clients better context when they discover or invite
+            you.
+          </p>
+
+          <p className="mt-2 text-[0.62rem] leading-5 text-status-pending-foreground">
+            Missing: {visibleItems.map((item) => item.label).join(", ")}
+            {remaining > 0 ? ` and ${remaining} more` : ""}.
+          </p>
+        </div>
+
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={onComplete}
+          className={[
+            "h-9 shrink-0 rounded-lg px-4 text-xs font-semibold",
+            primaryButton,
+          ].join(" ")}
+        >
+          Complete profile
+        </Button>
+      </div>
     </div>
   );
 }
@@ -2027,22 +2121,12 @@ function HideProfileWarning({
         aria-describedby="hide-profile-description"
         className={[
           "w-full max-w-md rounded-2xl border p-5 sm:p-6",
-          "border-border/65",
-          "bg-card",
-          "text-card-foreground",
-          "shadow-none",
-          "dark:border-border",
-          "dark:bg-card",
+          "border-border/65 bg-card text-card-foreground shadow-none",
+          "dark:border-border dark:bg-card",
         ].join(" ")}
       >
         <div className="flex items-start gap-4">
-          <span
-            className={[
-              "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg",
-              "bg-status-pending/[0.10]",
-              "text-status-pending-foreground",
-            ].join(" ")}
-          >
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-status-pending/[0.10] text-status-pending-foreground">
             <ShieldAlertIcon size={17} />
           </span>
 
@@ -2101,23 +2185,10 @@ function HideProfileWarning({
             disabled={loading}
             className={[
               "h-10 rounded-lg px-4 text-xs font-semibold",
-
-              "border border-destructive/15",
-              "bg-destructive",
-              "text-destructive-foreground",
-              "shadow-none",
-
+              "border border-destructive/15 bg-destructive text-destructive-foreground shadow-none",
               "transition-opacity duration-150",
-
-              "hover:border-destructive/15",
-              "hover:bg-destructive",
-              "hover:text-destructive-foreground",
-              "hover:opacity-90",
-
-              "focus-visible:ring-2",
-              "focus-visible:ring-destructive/20",
-              "focus-visible:ring-offset-2",
-              "focus-visible:ring-offset-background",
+              "hover:border-destructive/15 hover:bg-destructive hover:text-destructive-foreground hover:opacity-90",
+              "focus-visible:ring-2 focus-visible:ring-destructive/20 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
             ].join(" ")}
           >
             {loading ? (
@@ -2157,8 +2228,7 @@ function ContrastProgress({
   return (
     <div
       className={[
-        "h-1.5 w-full overflow-hidden rounded-full",
-        "bg-white/[0.14]",
+        "h-1.5 w-full overflow-hidden rounded-full bg-white/[0.12]",
         className,
       ].join(" ")}
       role="progressbar"
@@ -2182,6 +2252,7 @@ function ContrastProgress({
 ========================================================= */
 
 function ProfileSection({
+  sectionId,
   eyebrow,
   title,
   editing = false,
@@ -2191,6 +2262,7 @@ function ProfileSection({
   divided = false,
   last = false,
 }: {
+  sectionId?: string;
   eyebrow: string;
   title: string;
   editing?: boolean;
@@ -2202,9 +2274,10 @@ function ProfileSection({
 }) {
   return (
     <section
+      id={sectionId}
       className={[
+        "scroll-mt-28",
         divided ? "border-t border-border/50 pt-9" : "",
-
         !last ? "pb-10" : "",
       ].join(" ")}
     >
@@ -2325,7 +2398,6 @@ function ProfileField({
   return (
     <div>
       <Label className="text-xs font-semibold text-foreground">{label}</Label>
-
       <div className="mt-2">{children}</div>
     </div>
   );
@@ -2366,11 +2438,9 @@ function ReadOnlyField({
         <p
           className={[
             "mt-2 text-sm",
-
             multiline
               ? "whitespace-pre-line leading-8 text-muted-foreground"
               : "font-medium leading-6 text-foreground/80",
-
             positive ? "text-status-complete-foreground" : "",
           ].join(" ")}
         >
@@ -2395,7 +2465,6 @@ function MissingValue({ children }: { children: ReactNode }) {
   return (
     <span className="inline-flex items-center gap-2 text-xs font-medium text-status-pending-foreground">
       <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-status-pending" />
-
       {children}
     </span>
   );
@@ -2420,7 +2489,6 @@ function ProfileStat({
     <div
       className={[
         "min-w-0 px-5 py-4",
-
         divided ? "border-t border-border/55 sm:border-l sm:border-t-0" : "",
       ].join(" ")}
     >
@@ -2468,7 +2536,6 @@ function DetailItem({
       <span
         className={[
           "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
-
           missing
             ? "bg-status-pending/[0.08] text-status-pending-foreground"
             : accentIconSurface,
@@ -2517,7 +2584,6 @@ function VerificationItem({
         <span
           className={[
             "flex h-8 w-8 items-center justify-center rounded-lg",
-
             verified
               ? accentIconSurface
               : "bg-surface-3/70 text-muted-foreground dark:bg-surface-2",
@@ -2529,7 +2595,6 @@ function VerificationItem({
         <span
           className={[
             "text-[0.56rem] font-semibold",
-
             verified
               ? "text-status-complete-foreground"
               : "text-status-pending-foreground",
@@ -2582,7 +2647,6 @@ function SidebarDetail({
           <p
             className={[
               "break-words text-right text-xs",
-
               strong
                 ? "font-semibold text-brand-secondary-highlight dark:text-secondary"
                 : muted
@@ -2660,7 +2724,6 @@ function InlineError({ message }: { message: string }) {
       role="alert"
     >
       <AlertCircleIcon size={14} className="mt-0.5 shrink-0" />
-
       <p className="leading-5">{message}</p>
     </div>
   );
@@ -2743,14 +2806,11 @@ function AllocatProfileSkeleton() {
 
         <div className="mt-8 border-y border-border/55">
           <div className="grid sm:grid-cols-2 xl:grid-cols-4">
-            {Array.from({
-              length: 4,
-            }).map((_, index) => (
+            {Array.from({ length: 4 }).map((_, index) => (
               <div
                 key={index}
                 className={[
                   "px-5 py-4",
-
                   index > 0
                     ? "border-t border-border/55 sm:border-l sm:border-t-0"
                     : "",
@@ -2787,15 +2847,90 @@ function AllocatProfileSkeleton() {
 }
 
 /* =========================================================
+   PROFILE COMPLETION
+========================================================= */
+
+function getIncompleteProfileItems(
+  account: ProfileUser,
+  profile: MyAllocatProfile,
+): IncompleteProfileItem[] {
+  const items: IncompleteProfileItem[] = [];
+
+  if (!profile.title?.trim()) {
+    items.push({
+      key: "title",
+      label: "professional title",
+      section: "about",
+    });
+  }
+
+  if (!profile.bio?.trim()) {
+    items.push({
+      key: "bio",
+      label: "professional bio",
+      section: "about",
+    });
+  }
+
+  if (!profile.idNumber?.trim()) {
+    items.push({
+      key: "id-number",
+      label: "ID number",
+      section: "about",
+    });
+  }
+
+  if (profile.skills.length === 0) {
+    items.push({
+      key: "skills",
+      label: "skills",
+      section: "skills",
+    });
+  }
+
+  if (profile.yearsExperience == null) {
+    items.push({
+      key: "experience",
+      label: "years of experience",
+      section: "work",
+    });
+  }
+
+  if (profile.hourlyRate == null || profile.hourlyRate <= 0) {
+    items.push({
+      key: "rate",
+      label: "hourly rate",
+      section: "work",
+    });
+  }
+
+  if (!account.location?.trim()) {
+    items.push({
+      key: "location",
+      label: "location",
+      section: "account",
+    });
+  }
+
+  if (!account.phoneNumber?.trim()) {
+    items.push({
+      key: "phone",
+      label: "phone number",
+      section: "account",
+    });
+  }
+
+  return items;
+}
+
+/* =========================================================
    DRAFT HELPERS
 ========================================================= */
 
 function toAccountDraft(account: ProfileUser): AccountDraft {
   return {
     fullName: account.fullName ?? "",
-
     phoneNumber: account.phoneNumber ?? "",
-
     location: account.location ?? "",
   };
 }
@@ -2803,21 +2938,13 @@ function toAccountDraft(account: ProfileUser): AccountDraft {
 function toProfessionalDraft(profile: MyAllocatProfile): ProfessionalDraft {
   return {
     idNumber: profile.idNumber ?? "",
-
     title: profile.title ?? "",
-
     headline: profile.headline ?? "",
-
     bio: profile.bio ?? "",
-
     availability: profile.availabilityStatus,
-
     hourlyRate: profile.hourlyRate?.toString() ?? "",
-
     currency: profile.currency || "USD",
-
     yearsExperience: profile.yearsExperience?.toString() ?? "",
-
     skillIds: profile.skills.map((skill) => skill.id),
   };
 }
@@ -2831,21 +2958,13 @@ function buildProfessionalPayload(
 ): UpdateAllocatProfilePayload {
   return {
     idNumber: draft.idNumber.trim(),
-
     title: cleanOptional(draft.title),
-
     headline: cleanOptional(draft.headline),
-
     bio: cleanOptional(draft.bio),
-
     hourlyRate: parseNullableNumber(draft.hourlyRate),
-
     currency: draft.currency.trim().toUpperCase(),
-
     availability: draft.availability,
-
     yearsExperience: parseNullableInteger(draft.yearsExperience),
-
     skillIds: draft.skillIds,
   };
 }
@@ -2863,7 +2982,10 @@ function validateProfessionalDraft(draft: ProfessionalDraft) {
     return "Select at least one skill.";
   }
 
-  if (!/^[A-Za-z]{3}$/.test(draft.currency.trim())) {
+  if (
+    draft.currency.trim().length !== 3 ||
+    !/^[A-Za-z]{3}$/.test(draft.currency.trim())
+  ) {
     return "Currency must use a three-letter code such as USD.";
   }
 

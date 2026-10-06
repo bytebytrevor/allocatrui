@@ -1,10 +1,7 @@
 import { type ReactNode } from "react";
 import { Link } from "react-router-dom";
 
-import {
-  motion,
-  useReducedMotion,
-} from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 
 import {
   ArrowRightIcon,
@@ -31,28 +28,6 @@ import SiteHeader from "@/components/SiteHeader";
 import { Button } from "@/components/ui/button";
 
 /* =========================================================
-   BRAND
-========================================================= */
-
-const lime = "#DEDA00";
-const green = "#38D200";
-const amber = "#F0A23A";
-
-const primaryButton = [
-  "bg-[#303030] text-white",
-  "hover:bg-[#202020] hover:text-white",
-  "dark:bg-[#DEDA00] dark:text-[#202020]",
-  "dark:hover:bg-[#d3cf00] dark:hover:text-[#202020]",
-].join(" ");
-
-const outlineButton = [
-  "border-black/[0.13] bg-white text-[#303030]",
-  "hover:border-black/[0.20] hover:bg-[#f5f5f2]",
-  "dark:border-white/[0.11] dark:bg-white/[0.025] dark:text-white",
-  "dark:hover:border-white/[0.18] dark:hover:bg-white/[0.05]",
-].join(" ");
-
-/* =========================================================
    VIDEOS
 ========================================================= */
 
@@ -63,10 +38,78 @@ const videos = {
 };
 
 /* =========================================================
+   TYPES
+========================================================= */
+
+type StepTone = "primary" | "pending" | "success" | "neutral";
+
+/* =========================================================
+   THEME
+========================================================= */
+
+const primaryButton = [
+  "border border-brand-secondary-highlight/15 bg-brand-secondary-highlight text-primary-foreground shadow-none",
+  "transition-opacity duration-150",
+  "hover:border-brand-secondary-highlight/15 hover:bg-brand-secondary-highlight hover:text-primary-foreground hover:opacity-90",
+  "focus-visible:ring-2 focus-visible:ring-brand-secondary-highlight/20 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+  "dark:border-secondary/10 dark:bg-secondary dark:text-secondary-foreground",
+  "dark:hover:border-secondary/10 dark:hover:bg-secondary dark:hover:text-secondary-foreground dark:hover:opacity-90",
+  "dark:focus-visible:ring-secondary/20",
+].join(" ");
+
+const secondaryButton = [
+  "border border-border/65 bg-surface-2/35 text-foreground/75 shadow-none",
+  "transition-opacity duration-150",
+  "hover:border-border/65 hover:bg-surface-2/35 hover:text-foreground/75 hover:opacity-75",
+  "focus-visible:ring-2 focus-visible:ring-brand-secondary-highlight/15 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+  "dark:border-border dark:bg-surface-2/65 dark:text-foreground/75",
+  "dark:hover:border-border dark:hover:bg-surface-2/65 dark:hover:text-foreground/75 dark:hover:opacity-75",
+  "dark:focus-visible:ring-secondary/15",
+].join(" ");
+
+const cardSurface = "border-border/55 bg-card dark:border-border dark:bg-card";
+
+const quietSurface =
+  "border-border/55 bg-surface-2/30 dark:border-border dark:bg-surface-2/55";
+
+const accentIconSurface = [
+  "bg-brand-secondary-highlight/[0.08] text-brand-secondary-highlight ring-1 ring-inset ring-brand-secondary-highlight/10",
+  "dark:bg-secondary/[0.07] dark:text-secondary dark:ring-secondary/10",
+].join(" ");
+
+const contrastSurface = [
+  "border-primary/20 bg-primary text-primary-foreground",
+  "dark:border-brand-secondary-highlight/25 dark:bg-brand-secondary dark:text-white",
+].join(" ");
+
+function toneIconClass(tone: StepTone) {
+  switch (tone) {
+    case "success":
+      return "bg-status-complete/[0.09] text-status-complete-foreground";
+
+    case "pending":
+      return "bg-status-pending/[0.10] text-status-pending-foreground";
+
+    case "neutral":
+      return "bg-surface-3/70 text-muted-foreground dark:bg-surface-2";
+
+    default:
+      return accentIconSurface;
+  }
+}
+
+/* =========================================================
    DATA
 ========================================================= */
 
-const processSteps = [
+const processSteps: {
+  number: string;
+  label: string;
+  title: string;
+  description: string;
+  icon: LucideIcon;
+  tone: StepTone;
+}[] = [
   {
     number: "01",
     label: "Create",
@@ -74,9 +117,7 @@ const processSteps = [
     description:
       "Describe the work, expected outcome, schedule and skills the project needs before anybody is brought into it.",
     icon: FileTextIcon,
-    accent: lime,
-    iconClass:
-      "bg-[#DEDA00]/[0.13] text-[#666300] dark:text-[#DEDA00]",
+    tone: "primary",
   },
   {
     number: "02",
@@ -85,9 +126,7 @@ const processSteps = [
     description:
       "Discover professionals whose experience matches the project and invite the right people into the shared workspace.",
     icon: UsersIcon,
-    accent: lime,
-    iconClass:
-      "bg-[#DEDA00]/[0.13] text-[#666300] dark:text-[#DEDA00]",
+    tone: "primary",
   },
   {
     number: "03",
@@ -96,9 +135,7 @@ const processSteps = [
     description:
       "Accepted Allocats manage operational tasks while progress remains visible to everybody involved in the project.",
     icon: WrenchIcon,
-    accent: amber,
-    iconClass:
-      "bg-[#F0A23A]/[0.11] text-[#8c5800] dark:text-[#F0A23A]",
+    tone: "pending",
   },
   {
     number: "04",
@@ -107,9 +144,7 @@ const processSteps = [
     description:
       "When the work is ready, the Allocat submits the project back to the client rather than closing it automatically.",
     icon: SendIcon,
-    accent: lime,
-    iconClass:
-      "bg-[#DEDA00]/[0.13] text-[#666300] dark:text-[#DEDA00]",
+    tone: "primary",
   },
   {
     number: "05",
@@ -118,9 +153,7 @@ const processSteps = [
     description:
       "The client reviews the finished outcome and either confirms completion or returns the project for more work.",
     icon: ClipboardCheckIcon,
-    accent: green,
-    iconClass:
-      "bg-[#38D200]/[0.10] text-[#247e08] dark:text-[#38D200]",
+    tone: "success",
   },
 ];
 
@@ -199,20 +232,27 @@ const allocatActions = [
   "Submit finished work for client review",
 ];
 
-const completionSteps = [
+const completionSteps: {
+  number: string;
+  title: string;
+  description: string;
+  icon: LucideIcon;
+  tone: StepTone;
+}[] = [
   {
     number: "01",
     title: "Tasks complete",
     description:
       "The required operational work reaches the end of the task board.",
     icon: CheckCircle2Icon,
+    tone: "success",
   },
   {
     number: "02",
     title: "Submit for confirmation",
-    description:
-      "The Allocat sends the finished project back to the client.",
+    description: "The Allocat sends the finished project back to the client.",
     icon: SendIcon,
+    tone: "primary",
   },
   {
     number: "03",
@@ -220,6 +260,7 @@ const completionSteps = [
     description:
       "The client checks the finished outcome against the project requirements.",
     icon: EyeIcon,
+    tone: "neutral",
   },
   {
     number: "04",
@@ -227,6 +268,7 @@ const completionSteps = [
     description:
       "The client closes the project or sends it back for additional work.",
     icon: ClipboardCheckIcon,
+    tone: "pending",
   },
 ];
 
@@ -237,35 +279,21 @@ const completionSteps = [
 function HowItWorksPage() {
   const { user } = useAuth();
 
-  const postProjectHref = user
-    ? "/projects/new"
-    : "/register";
+  const postProjectHref = user ? "/projects/new" : "/register";
 
-  const allocatHref = user?.isAllocat
-    ? "/projects"
-    : "/become-an-allocat";
-
-  const allocatLabel = user?.isAllocat
-    ? "View my work"
-    : "Become an Allocat";
+  const allocatHref = user?.isAllocat ? "/projects" : "/become-an-allocat";
+  const allocatLabel = user?.isAllocat ? "View my work" : "Become an Allocat";
 
   return (
     <>
       <SiteHeader />
 
-      <main className="min-w-0 overflow-x-hidden bg-[#f7f7f4] text-[#303030] dark:bg-[#080808] dark:text-white">
-        <HeroSection
-          postProjectHref={postProjectHref}
-        />
-
+      <main className="min-w-0 overflow-x-hidden bg-background text-foreground">
+        <HeroSection postProjectHref={postProjectHref} />
         <ProcessSection />
-
         <GuidesSection />
-
         <WorkspaceSection />
-
         <ResponsibilitiesSection />
-
         <CompletionSection />
 
         <FinalCta
@@ -284,64 +312,37 @@ function HowItWorksPage() {
    HERO
 ========================================================= */
 
-function HeroSection({
-  postProjectHref,
-}: {
-  postProjectHref: string;
-}) {
+function HeroSection({ postProjectHref }: { postProjectHref: string }) {
   return (
-    <section className="relative overflow-hidden border-b border-black/[0.08] bg-[#f7f7f4] pb-20 pt-28 dark:border-white/[0.06] dark:bg-[#080808] sm:pt-32 lg:pb-28 lg:pt-40">
-      <HeroAtmosphere />
+    <section className="border-b border-border/55 bg-background pb-16 pt-24 sm:pt-28 lg:pb-24 lg:pt-32">
+      <div className="container mx-auto px-4 sm:px-6 md:px-8">
+        <div className="grid items-center gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16 xl:gap-20">
+          <Reveal>
+            <SectionEyebrow>How Allocatr works</SectionEyebrow>
 
-      <div className="container relative mx-auto px-4 sm:px-6 md:px-8">
-        <div className="grid items-center gap-14 lg:grid-cols-[0.9fr_1.1fr] lg:gap-20">
-          <motion.div
-            initial={{
-              opacity: 0,
-              y: 20,
-            }}
-            animate={{
-              opacity: 1,
-              y: 0,
-            }}
-            transition={{
-              duration: 0.6,
-              ease: "easeOut",
-            }}
-          >
-            <SectionEyebrow>
-              How Allocatr works
-            </SectionEyebrow>
-
-            <h1 className="mt-7 max-w-[11ch] text-5xl font-black leading-[0.9] tracking-[-0.055em] text-[#303030] sm:text-6xl md:text-7xl lg:text-[5rem] xl:text-[5.6rem] dark:text-white">
+            <h1 className="mt-5 max-w-[12ch] text-4xl font-semibold leading-[0.98] tracking-[-0.045em] text-foreground/95 sm:text-5xl lg:text-[3.7rem]">
               From project brief to{" "}
-
-              <HeadlineAccent>
-                final approval.
-              </HeadlineAccent>
+              <HeadlineAccent>final approval.</HeadlineAccent>
             </h1>
 
-            <p className="mt-7 max-w-xl text-base leading-8 text-[#5f5f59] sm:text-lg dark:text-white/48">
+            <p className="mt-5 max-w-xl text-sm leading-7 text-muted-foreground sm:text-base sm:leading-8">
               Find the skills your project needs, bring the right people into
               the work and keep everything connected from creation through
               execution and completion.
             </p>
 
-            <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Button
                 asChild
+                variant="ghost"
                 className={[
-                  "group h-12 rounded-lg px-7 text-xs font-bold shadow-none",
+                  "h-11 rounded-lg px-6 text-xs font-semibold",
                   primaryButton,
                 ].join(" ")}
               >
                 <Link to={postProjectHref}>
                   Start a project
-
-                  <ArrowRightIcon
-                    size={15}
-                    className="transition-transform duration-200 group-hover:translate-x-0.5"
-                  />
+                  <ArrowRightIcon size={14} />
                 </Link>
               </Button>
 
@@ -349,108 +350,53 @@ function HeroSection({
                 asChild
                 variant="outline"
                 className={[
-                  "h-12 rounded-lg px-7 text-xs font-semibold shadow-none",
-                  outlineButton,
+                  "h-11 rounded-lg px-6 text-xs font-semibold",
+                  secondaryButton,
                 ].join(" ")}
               >
-                <Link to="/discover">
-                  Find an Allocat
-                </Link>
+                <Link to="/discover">Find an Allocat</Link>
               </Button>
             </div>
 
-            <div className="mt-8 flex flex-wrap gap-x-5 gap-y-3">
-              <HeroFact>
-                Find by project skill
-              </HeroFact>
-
-              <HeroFact>
-                Shared project workspace
-              </HeroFact>
-
-              <HeroFact>
-                Client confirmation
-              </HeroFact>
+            <div className="mt-7 flex flex-wrap gap-x-5 gap-y-3">
+              <HeroFact>Find by project skill</HeroFact>
+              <HeroFact>Shared project workspace</HeroFact>
+              <HeroFact>Client confirmation</HeroFact>
             </div>
-          </motion.div>
+          </Reveal>
 
-          <OverviewVideo />
+          <Reveal delay={0.08}>
+            <OverviewVideo />
+          </Reveal>
         </div>
       </div>
     </section>
   );
 }
 
-function HeroAtmosphere() {
-  return (
-    <div
-      aria-hidden
-      className="pointer-events-none absolute inset-0 overflow-hidden"
-    >
-      <div className="absolute -right-48 top-[8%] h-[34rem] w-[34rem] rounded-full bg-black/[0.025] blur-[125px] dark:bg-white/[0.018]" />
-
-      <div className="absolute left-[42%] top-[74%] h-52 w-[42rem] -translate-x-1/2 rounded-[50%] bg-[#DEDA00]/[0.025] blur-[110px] dark:bg-[#DEDA00]/[0.018]" />
-
-      <div className="absolute left-[6%] top-[20%] h-px w-[28rem] bg-gradient-to-r from-transparent via-black/[0.055] to-transparent dark:via-white/[0.035]" />
-    </div>
-  );
-}
-
 function OverviewVideo() {
   return (
-    <motion.div
-      initial={{
-        opacity: 0,
-        y: 24,
-      }}
-      animate={{
-        opacity: 1,
-        y: 0,
-      }}
-      transition={{
-        delay: 0.12,
-        duration: 0.65,
-      }}
-      className="relative"
+    <div
+      className={["overflow-hidden rounded-2xl border", cardSurface].join(" ")}
     >
-      <div className="absolute -bottom-4 left-8 right-8 h-20 rounded-[50%] bg-black/[0.08] blur-3xl dark:bg-black/40" />
+      <VideoCardHeader label="Product overview" icon={LayoutDashboardIcon} />
 
-      <div className="relative overflow-hidden rounded-[1.55rem] border border-black/[0.10] bg-white shadow-[0_28px_80px_-52px_rgba(0,0,0,0.30)] dark:border-white/[0.08] dark:bg-[#141414] dark:shadow-2xl dark:shadow-black/30">
-        <div className="flex items-center justify-between border-b border-black/[0.08] px-5 py-4 dark:border-white/[0.07] sm:px-6">
-          <div className="flex items-center gap-2.5">
-            <span className="relative flex h-2 w-2">
-              <span className="absolute inset-0 animate-ping rounded-full bg-[#303030] opacity-10 dark:bg-[#DEDA00] dark:opacity-20" />
+      <YouTubeVideo
+        url={videos.overview}
+        title="See the complete Allocatr workflow"
+      />
 
-              <span className="relative h-2 w-2 rounded-full bg-[#303030] dark:bg-[#DEDA00]" />
-            </span>
+      <div className="border-t border-border/55 px-5 py-5 sm:px-6">
+        <h3 className="text-lg font-semibold tracking-[-0.025em] text-foreground">
+          The complete workflow
+        </h3>
 
-            <span className="text-[0.55rem] font-semibold uppercase tracking-[0.16em] text-[#60605a] dark:text-white/38">
-              Product overview
-            </span>
-          </div>
-
-          <span className="hidden text-[0.52rem] text-[#777771] sm:block dark:text-white/24">
-            Allocatr
-          </span>
-        </div>
-
-        <YouTubeVideo
-          url={videos.overview}
-          title="See the complete Allocatr workflow"
-        />
-
-        <div className="border-t border-black/[0.08] px-5 py-5 dark:border-white/[0.07] sm:px-6">
-          <h3 className="text-lg font-black tracking-[-0.025em] text-[#303030] dark:text-white">
-            The complete workflow
-          </h3>
-
-          <p className="mt-2 max-w-xl text-sm leading-7 text-[#60605a] dark:text-white/40">
-            From creating the project and finding Allocats to managing work and
-            confirming the finished outcome.
-          </p>
-        </div>
+        <p className="mt-2 max-w-xl text-sm leading-7 text-muted-foreground">
+          From creating the project and finding Allocats to managing work and
+          confirming the finished outcome.
+        </p>
       </div>
-    </motion.div>
+    </div>
   );
 }
 
@@ -460,25 +406,19 @@ function OverviewVideo() {
 
 function ProcessSection() {
   return (
-    <section className="relative overflow-hidden border-b border-black/[0.08] bg-white py-24 dark:border-white/[0.06] dark:bg-[#111111] lg:py-32">
-      <div className="container relative mx-auto px-4 sm:px-6 md:px-8">
-        <div className="mx-auto max-w-4xl text-center">
-          <SectionEyebrow center>
-            The process
-          </SectionEyebrow>
+    <section className="border-b border-border/55 bg-card py-20 lg:py-28">
+      <div className="container mx-auto px-4 sm:px-6 md:px-8">
+        <div className="mx-auto max-w-3xl text-center">
+          <SectionEyebrow center>The process</SectionEyebrow>
 
           <SectionTitle center>
-            One project.{" "}
-
-            <HeadlineAccent>
-              One continuous path.
-            </HeadlineAccent>
+            One project. <HeadlineAccent>One continuous path.</HeadlineAccent>
           </SectionTitle>
 
-          <p className="mx-auto mt-6 max-w-2xl text-sm leading-7 text-[#5f5f59] sm:text-base sm:leading-8 dark:text-white/42">
-            Finding the right person is one stage in a larger workflow.
-            Allocatr keeps the project structured from the first brief to the
-            final decision.
+          <p className="mx-auto mt-5 max-w-2xl text-sm leading-7 text-muted-foreground sm:text-base sm:leading-8">
+            Finding the right person is one stage in a larger workflow. Allocatr
+            keeps the project structured from the first brief to the final
+            decision.
           </p>
         </div>
 
@@ -488,55 +428,18 @@ function ProcessSection() {
   );
 }
 
-/* =========================================================
-   PROCESS GRAPH
-========================================================= */
-
 function ProcessTimeline() {
-  const reduceMotion =
-    useReducedMotion();
-
   return (
-    <div className="relative mx-auto mt-16 max-w-5xl sm:mt-20">
+    <div className="relative mx-auto mt-14 max-w-5xl sm:mt-16">
       <div
         aria-hidden
-        className="absolute bottom-10 left-[21px] top-10 w-px bg-black/[0.10] dark:bg-white/[0.08] sm:left-[27px] lg:left-1/2 lg:-translate-x-1/2"
+        className="absolute bottom-8 left-[21px] top-8 w-px bg-border/80 sm:left-[27px] lg:left-1/2 lg:-translate-x-1/2"
       />
 
-      <motion.div
-        aria-hidden
-        initial={{
-          scaleY: reduceMotion ? 1 : 0,
-        }}
-        whileInView={{
-          scaleY: 1,
-        }}
-        viewport={{
-          once: true,
-          amount: 0.12,
-        }}
-        transition={{
-          duration: 1.4,
-          ease: "easeOut",
-        }}
-        className={[
-          "absolute bottom-10 left-[21px] top-10 w-px origin-top",
-          "bg-[#303030]/65 dark:bg-[#DEDA00]/70",
-          "sm:left-[27px]",
-          "lg:left-1/2 lg:-translate-x-1/2",
-        ].join(" ")}
-      />
-
-      <div className="relative space-y-4 sm:space-y-5 lg:space-y-7">
-        {processSteps.map(
-          (step, index) => (
-            <ProcessStep
-              key={step.number}
-              step={step}
-              index={index}
-            />
-          ),
-        )}
+      <div className="relative space-y-4 sm:space-y-5 lg:space-y-6">
+        {processSteps.map((step, index) => (
+          <ProcessStep key={step.number} step={step} index={index} />
+        ))}
       </div>
     </div>
   );
@@ -550,214 +453,123 @@ function ProcessStep({
   index: number;
 }) {
   const Icon = step.icon;
-
-  const isRight =
-    index % 2 !== 0;
+  const isRight = index % 2 !== 0;
 
   return (
-    <motion.article
-      initial={{
-        opacity: 0,
-        y: 18,
-      }}
-      whileInView={{
-        opacity: 1,
-        y: 0,
-      }}
-      viewport={{
-        once: true,
-        amount: 0.28,
-      }}
-      transition={{
-        delay: index * 0.055,
-        duration: 0.48,
-      }}
-      className={[
-        "relative grid",
-        "grid-cols-[44px_minmax(0,1fr)] gap-4",
-        "sm:grid-cols-[56px_minmax(0,1fr)] sm:gap-6",
-        "lg:grid-cols-[1fr_76px_1fr] lg:gap-0",
-      ].join(" ")}
-    >
-      <div
+    <Reveal delay={index * 0.04}>
+      <article
         className={[
-          "hidden lg:block",
-          isRight
-            ? "lg:col-start-1"
-            : "lg:col-start-3",
-        ].join(" ")}
-      />
-
-      <div className="relative z-10 flex justify-center pt-6 lg:col-start-2 lg:row-start-1">
-        <motion.span
-          whileHover={{
-            scale: 1.06,
-          }}
-          className={[
-            "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl",
-            "border-[5px] border-white",
-            "shadow-[0_0_0_1px_rgba(0,0,0,0.08)]",
-            "dark:border-[#111111]",
-            "dark:shadow-[0_0_0_1px_rgba(255,255,255,0.08)]",
-            step.iconClass,
-          ].join(" ")}
-        >
-          <Icon size={16} />
-        </motion.span>
-      </div>
-
-      <div
-        className={[
-          "relative min-w-0 rounded-[1.35rem]",
-          "border border-black/[0.09] bg-[#fafaf8]",
-          "p-5 sm:p-6 lg:p-7",
-          "dark:border-white/[0.07] dark:bg-[#161616]",
-          "lg:row-start-1",
-          isRight
-            ? "lg:col-start-3 lg:ml-0"
-            : "lg:col-start-1 lg:mr-0",
+          "relative grid grid-cols-[44px_minmax(0,1fr)] gap-4",
+          "sm:grid-cols-[56px_minmax(0,1fr)] sm:gap-6",
+          "lg:grid-cols-[1fr_76px_1fr] lg:gap-0",
         ].join(" ")}
       >
-        <ProcessConnector
-          side={
-            isRight
-              ? "left"
-              : "right"
-          }
+        <div
+          className={[
+            "hidden lg:block",
+            isRight ? "lg:col-start-1" : "lg:col-start-3",
+          ].join(" ")}
         />
 
-        <div className="flex items-start justify-between gap-5">
-          <div>
-            <p className="text-[0.54rem] font-semibold uppercase tracking-[0.17em] text-[#64645e] dark:text-white/34">
-              {step.label}
-            </p>
+        <div className="relative z-10 flex justify-center pt-6 lg:col-start-2 lg:row-start-1">
+          <span
+            className={[
+              "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl",
+              "border-[5px] border-card dark:border-card",
+              toneIconClass(step.tone),
+            ].join(" ")}
+          >
+            <Icon size={16} />
+          </span>
+        </div>
 
-            <h3 className="mt-2 text-xl font-black leading-[1.04] tracking-[-0.03em] text-[#303030] sm:text-2xl dark:text-white">
-              {step.title}
-            </h3>
+        <div
+          className={[
+            "relative min-w-0 rounded-2xl border p-5 sm:p-6 lg:p-7",
+            quietSurface,
+            "lg:row-start-1",
+            isRight ? "lg:col-start-3" : "lg:col-start-1",
+          ].join(" ")}
+        >
+          <ProcessConnector side={isRight ? "left" : "right"} />
+
+          <div className="flex items-start justify-between gap-5">
+            <div>
+              <p className="text-[0.52rem] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
+                {step.label}
+              </p>
+
+              <h3 className="mt-2 text-xl font-semibold tracking-[-0.025em] text-foreground sm:text-2xl">
+                {step.title}
+              </h3>
+            </div>
+
+            <span className="shrink-0 text-[0.56rem] font-semibold tracking-[0.14em] text-muted-foreground/65">
+              {step.number}
+            </span>
           </div>
 
-          <span className="shrink-0 text-[0.58rem] font-black tracking-[0.14em] text-[#85857e] dark:text-white/20">
-            {step.number}
-          </span>
+          <p className="mt-4 max-w-xl text-sm leading-7 text-muted-foreground">
+            {step.description}
+          </p>
+
+          <div className="mt-5 flex items-center gap-2 border-t border-border/45 pt-4">
+            <span className="h-1.5 w-6 rounded-full bg-brand-secondary-highlight dark:bg-secondary" />
+
+            <span className="text-[0.52rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+              Project continues
+            </span>
+          </div>
         </div>
-
-        <p className="mt-4 max-w-xl text-sm leading-7 text-[#62625c] dark:text-white/40">
-          {step.description}
-        </p>
-
-        <div className="mt-5 flex items-center gap-2 border-t border-black/[0.07] pt-4 dark:border-white/[0.06]">
-          <ProcessSignalDot
-            accent={step.accent}
-          />
-
-          <span className="text-[0.53rem] font-semibold uppercase tracking-[0.12em] text-[#73736d] dark:text-white/26">
-            Project continues
-          </span>
-        </div>
-      </div>
-    </motion.article>
+      </article>
+    </Reveal>
   );
 }
 
-function ProcessSignalDot({
-  accent,
-}: {
-  accent: string;
-}) {
-  if (accent === lime) {
-    return (
-      <span className="h-1.5 w-1.5 rounded-full bg-[#303030] dark:bg-[#DEDA00]" />
-    );
-  }
-
-  return (
-    <span
-      className="h-1.5 w-1.5 rounded-full"
-      style={{
-        backgroundColor: accent,
-      }}
-    />
-  );
-}
-
-function ProcessConnector({
-  side,
-}: {
-  side: "left" | "right";
-}) {
+function ProcessConnector({ side }: { side: "left" | "right" }) {
   return (
     <span
       aria-hidden
       className={[
-        "absolute top-[48px] hidden h-px w-[38px]",
-        "bg-black/[0.10] dark:bg-white/[0.08]",
-        "lg:block",
-        side === "left"
-          ? "-left-[38px]"
-          : "-right-[38px]",
+        "absolute top-[48px] hidden h-px w-[38px] bg-border/80 lg:block",
+        side === "left" ? "-left-[38px]" : "-right-[38px]",
       ].join(" ")}
     />
   );
 }
 
 /* =========================================================
-   QUICK GUIDES
+   GUIDES
 ========================================================= */
 
 function GuidesSection() {
   return (
-    <section className="relative overflow-hidden border-b border-black/[0.08] bg-[#f3f3ef] py-24 dark:border-white/[0.06] dark:bg-[#080808] lg:py-32">
-      <SoftAtmosphere
-        side="right"
-        tone="neutral"
-      />
-
-      <div className="container relative mx-auto px-4 sm:px-6 md:px-8">
-        <div className="grid gap-12 lg:grid-cols-[0.7fr_1.3fr] lg:gap-16">
+    <section className="border-b border-border/55 bg-surface-2/30 py-20 dark:bg-surface-2/35 lg:py-28">
+      <div className="container mx-auto px-4 sm:px-6 md:px-8">
+        <div className="grid gap-12 lg:grid-cols-[0.72fr_1.28fr] lg:gap-16">
           <div className="lg:sticky lg:top-28 lg:self-start">
-            <SectionEyebrow>
-              Quick video guides
-            </SectionEyebrow>
+            <SectionEyebrow>Quick video guides</SectionEyebrow>
 
             <SectionTitle>
-              Learn exactly what{" "}
-
-              <HeadlineAccent>
-                you need.
-              </HeadlineAccent>
+              Learn exactly what <HeadlineAccent>you need.</HeadlineAccent>
             </SectionTitle>
 
-            <p className="mt-6 max-w-lg text-sm leading-7 text-[#5f5f59] sm:text-base sm:leading-8 dark:text-white/42">
+            <p className="mt-5 max-w-lg text-sm leading-7 text-muted-foreground sm:text-base sm:leading-8">
               Short walkthroughs for specific parts of the platform, so you do
               not have to watch the complete product overview every time.
             </p>
 
-            <div className="mt-8 hidden flex-wrap gap-2 sm:flex">
-              <GuideAudience>
-                For clients
-              </GuideAudience>
-
-              <GuideAudience>
-                For Allocats
-              </GuideAudience>
-
-              <GuideAudience>
-                For everyone
-              </GuideAudience>
+            <div className="mt-7 hidden flex-wrap gap-2 sm:flex">
+              <GuideAudience>For clients</GuideAudience>
+              <GuideAudience>For Allocats</GuideAudience>
+              <GuideAudience>For everyone</GuideAudience>
             </div>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            {videoGuides.map(
-              (guide, index) => (
-                <VideoGuideCard
-                  key={guide.title}
-                  guide={guide}
-                  index={index}
-                />
-              ),
-            )}
+            {videoGuides.map((guide, index) => (
+              <VideoGuideCard key={guide.title} guide={guide} index={index} />
+            ))}
           </div>
         </div>
       </div>
@@ -773,106 +585,82 @@ function VideoGuideCard({
   index: number;
 }) {
   const Icon = guide.icon;
-
-  const embedUrl =
-    getYouTubeEmbedUrl(
-      guide.url,
-    );
+  const embedUrl = getYouTubeEmbedUrl(guide.url);
 
   return (
-    <motion.article
-      initial={{
-        opacity: 0,
-        y: 16,
-      }}
-      whileInView={{
-        opacity: 1,
-        y: 0,
-      }}
-      viewport={{
-        once: true,
-        amount: 0.2,
-      }}
-      transition={{
-        delay: index * 0.04,
-        duration: 0.45,
-      }}
-      whileHover={{
-        y: -3,
-      }}
-      className={[
-        "group min-w-0 overflow-hidden rounded-[1.25rem]",
-        "border border-black/[0.09] bg-white",
-        "transition-shadow duration-300",
-        "hover:shadow-[0_20px_55px_-44px_rgba(0,0,0,0.32)]",
-        "dark:border-white/[0.07] dark:bg-[#151515]",
-        "dark:hover:shadow-none",
-      ].join(" ")}
-    >
-      <div className="relative aspect-video overflow-hidden bg-[#151515]">
-        {embedUrl ? (
-          <iframe
-            src={embedUrl}
-            title={guide.title}
-            loading="lazy"
-            className="h-full w-full"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            allowFullScreen
-          />
-        ) : (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[#DEDA00] text-[#202020] transition-transform duration-300 group-hover:scale-105">
-              <PlayIcon
-                size={17}
-                fill="currentColor"
-              />
-            </span>
-          </div>
-        )}
+    <Reveal delay={index * 0.035}>
+      <article
+        className={[
+          "group min-w-0 overflow-hidden rounded-2xl border",
+          cardSurface,
+        ].join(" ")}
+      >
+        <div className="relative aspect-video overflow-hidden bg-brand-charcoal">
+          {embedUrl ? (
+            <iframe
+              src={embedUrl}
+              title={guide.title}
+              loading="lazy"
+              className="h-full w-full"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+            />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-secondary text-secondary-foreground">
+                <PlayIcon size={16} fill="currentColor" />
+              </span>
+            </div>
+          )}
 
-        <span className="absolute left-3 top-3 rounded-md bg-black/55 px-2.5 py-1.5 text-[0.52rem] font-semibold text-white backdrop-blur-md">
-          {guide.audience}
-        </span>
-      </div>
-
-      <div className="p-5">
-        <div className="flex items-start justify-between gap-4">
-          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#eeeeea] text-[#55554f] dark:bg-white/[0.055] dark:text-white/58">
-            <Icon size={15} />
-          </span>
-
-          <span className="text-[0.5rem] font-black tracking-[0.14em] text-[#7d7d76] dark:text-white/22">
-            {guide.number}
+          <span className="absolute left-3 top-3 rounded-lg border border-white/[0.12] bg-brand-charcoal/80 px-2.5 py-1.5 text-[0.52rem] font-semibold text-white">
+            {guide.audience}
           </span>
         </div>
 
-        <h3 className="mt-5 text-lg font-black leading-[1.08] tracking-[-0.025em] text-[#303030] dark:text-white">
-          {guide.title}
-        </h3>
+        <div className="p-5">
+          <div className="flex items-start justify-between gap-4">
+            <span
+              className={[
+                "flex h-9 w-9 items-center justify-center rounded-lg",
+                accentIconSurface,
+              ].join(" ")}
+            >
+              <Icon size={15} />
+            </span>
 
-        <p className="mt-3 hidden text-xs leading-6 text-[#64645e] dark:text-white/36 sm:block">
-          {guide.description}
-        </p>
+            <span className="text-[0.5rem] font-semibold tracking-[0.14em] text-muted-foreground/65">
+              {guide.number}
+            </span>
+          </div>
 
-        <p className="mt-5 text-[0.52rem] font-semibold uppercase tracking-[0.12em] text-[#777771] dark:text-white/24">
-          {guide.url
-            ? "Watch guide"
-            : "Video coming soon"}
-        </p>
-      </div>
-    </motion.article>
+          <h3 className="mt-5 text-lg font-semibold leading-[1.1] tracking-[-0.025em] text-foreground">
+            {guide.title}
+          </h3>
+
+          <p className="mt-3 text-xs leading-6 text-muted-foreground">
+            {guide.description}
+          </p>
+
+          <p className="mt-5 text-[0.52rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+            {guide.url ? "Watch guide" : "Video coming soon"}
+          </p>
+        </div>
+      </article>
+    </Reveal>
   );
 }
 
-function GuideAudience({
-  children,
-}: {
-  children: ReactNode;
-}) {
+function GuideAudience({ children }: { children: ReactNode }) {
   return (
-    <span className="inline-flex items-center gap-2 rounded-lg border border-black/[0.10] bg-white px-3 py-2 text-[0.58rem] font-semibold text-[#5f5f59] dark:border-white/[0.08] dark:bg-white/[0.025] dark:text-white/40">
-      <span className="h-1.5 w-1.5 rounded-full bg-[#303030] dark:bg-[#DEDA00]" />
-
+    <span
+      className={[
+        "inline-flex items-center gap-2 rounded-lg border px-3 py-2",
+        "text-[0.58rem] font-semibold text-muted-foreground",
+        quietSurface,
+      ].join(" ")}
+    >
+      <span className="h-1.5 w-1.5 rounded-sm bg-brand-secondary-highlight dark:bg-secondary" />
       {children}
     </span>
   );
@@ -884,31 +672,26 @@ function GuideAudience({
 
 function WorkspaceSection() {
   return (
-    <section className="relative overflow-hidden border-b border-white/[0.06] bg-[#0b0b0b] py-24 text-white lg:py-32">
-      <WorkspaceAtmosphere />
-
-      <div className="container relative mx-auto px-4 sm:px-6 md:px-8">
+    <section className={["border-b py-20 lg:py-28", contrastSurface].join(" ")}>
+      <div className="container mx-auto px-4 sm:px-6 md:px-8">
         <div className="grid gap-14 lg:grid-cols-[0.72fr_1.28fr] lg:items-center lg:gap-20">
           <div>
-            <SectionEyebrow dark>
-              Project workspace
-            </SectionEyebrow>
+            <ContrastEyebrow>Project workspace</ContrastEyebrow>
 
-            <h2 className="mt-5 max-w-xl text-4xl font-black leading-[0.93] tracking-[-0.05em] text-white sm:text-5xl lg:text-6xl">
+            <h2 className="mt-5 max-w-xl text-3xl font-semibold leading-[1.02] tracking-[-0.04em] text-white sm:text-4xl lg:text-[2.75rem]">
               Everyone sees the work.{" "}
-
-              <span className="text-[#DEDA00]">
+              <span className="text-secondary">
                 Responsibilities stay clear.
               </span>
             </h2>
 
-            <p className="mt-6 max-w-lg text-sm leading-7 text-white/52 sm:text-base sm:leading-8">
+            <p className="mt-5 max-w-lg text-sm leading-7 text-white/65 sm:text-base sm:leading-8">
               Clients stay close to the project without becoming a second task
               manager. Allocats control execution while progress remains
               visible.
             </p>
 
-            <div className="mt-9 space-y-3">
+            <div className="mt-8 space-y-3">
               <DarkFact
                 icon={EyeIcon}
                 text="Clients can follow task status, deadlines and project progress."
@@ -933,98 +716,19 @@ function WorkspaceSection() {
   );
 }
 
-function WorkspaceAtmosphere() {
-  return (
-    <div
-      aria-hidden
-      className="pointer-events-none absolute inset-0 overflow-hidden"
-    >
-      <div className="absolute -right-[14rem] top-[8%] h-[36rem] w-[36rem] rounded-full bg-[#DEDA00]/[0.025] blur-[130px]" />
-
-      <div className="absolute -left-[18rem] bottom-[-6rem] h-[34rem] w-[34rem] rounded-full bg-white/[0.018] blur-[130px]" />
-
-      <SignalWave />
-    </div>
-  );
-}
-
-function SignalWave() {
-  const reduceMotion =
-    useReducedMotion();
-
-  return (
-    <div className="absolute -right-[22rem] top-[18%] h-[28rem] w-[70rem] text-[#DEDA00] opacity-[0.14]">
-      <motion.div
-        animate={
-          reduceMotion
-            ? undefined
-            : {
-                y: [0, -5, 0],
-              }
-        }
-        transition={{
-          duration: 9,
-          repeat: Infinity,
-          ease: "easeInOut",
-        }}
-        className="h-full w-full"
-      >
-        <svg
-          viewBox="0 0 1500 420"
-          preserveAspectRatio="none"
-          className="h-full w-full"
-          style={{
-            maskImage:
-              "linear-gradient(90deg, transparent 0%, black 18%, black 80%, transparent 100%)",
-            WebkitMaskImage:
-              "linear-gradient(90deg, transparent 0%, black 18%, black 80%, transparent 100%)",
-          }}
-        >
-          <g
-            fill="none"
-            stroke="currentColor"
-            strokeLinecap="round"
-          >
-            <path
-              d="M-120 285 C125 111 317 111 512 226 C709 343 885 340 1041 201 C1205 54 1371 86 1620 227"
-              strokeWidth="1"
-              opacity="0.72"
-            />
-
-            <path
-              d="M-140 331 C100 185 314 165 520 268 C717 367 905 350 1071 237 C1244 119 1399 132 1630 272"
-              strokeWidth="0.72"
-              opacity="0.28"
-            />
-
-            <path
-              d="M-110 233 C115 55 334 76 525 185 C716 295 889 292 1037 144 C1194 -13 1394 45 1610 166"
-              strokeWidth="0.62"
-              opacity="0.16"
-            />
-          </g>
-        </svg>
-      </motion.div>
-    </div>
-  );
-}
-
 function WorkspaceVideo() {
   return (
-    <div className="overflow-hidden rounded-[1.5rem] border border-white/[0.075] bg-[#141414] shadow-2xl shadow-black/30">
-      <div className="flex items-center justify-between border-b border-white/[0.065] px-5 py-4 sm:px-6">
+    <div className="overflow-hidden rounded-2xl border border-white/[0.12] bg-white/[0.04]">
+      <div className="flex items-center justify-between border-b border-white/[0.10] px-5 py-4 sm:px-6">
         <div className="flex items-center gap-2.5">
-          <span className="h-1.5 w-1.5 rounded-full bg-[#DEDA00]" />
+          <span className="h-1.5 w-6 rounded-full bg-secondary" />
 
-          <span className="text-[0.55rem] font-semibold uppercase tracking-[0.15em] text-white/38">
+          <span className="text-[0.52rem] font-semibold uppercase tracking-[0.15em] text-white/55">
             Workspace walkthrough
           </span>
         </div>
 
-        <LayoutDashboardIcon
-          size={14}
-          className="text-white/24"
-        />
+        <LayoutDashboardIcon size={14} className="text-white/45" />
       </div>
 
       <YouTubeVideo
@@ -1032,12 +736,12 @@ function WorkspaceVideo() {
         title="Watch a project move through the workspace"
       />
 
-      <div className="border-t border-white/[0.065] px-5 py-5 sm:px-6">
-        <h3 className="text-lg font-black text-white">
+      <div className="border-t border-white/[0.10] px-5 py-5 sm:px-6">
+        <h3 className="text-lg font-semibold tracking-[-0.025em] text-white">
           Watch a project move through the workspace
         </h3>
 
-        <p className="mt-2 max-w-xl text-sm leading-7 text-white/40">
+        <p className="mt-2 max-w-xl text-sm leading-7 text-white/60">
           See how tasks, people, comments and progress remain connected during
           execution.
         </p>
@@ -1052,28 +756,27 @@ function WorkspaceVideo() {
 
 function ResponsibilitiesSection() {
   return (
-    <section className="border-b border-black/[0.08] bg-white py-24 dark:border-white/[0.06] dark:bg-[#111111] lg:py-32">
+    <section className="border-b border-border/55 bg-card py-20 lg:py-28">
       <div className="container mx-auto px-4 sm:px-6 md:px-8">
-        <div className="mx-auto max-w-5xl text-center">
-          <SectionEyebrow center>
-            Clear responsibilities
-          </SectionEyebrow>
+        <div className="mx-auto max-w-3xl text-center">
+          <SectionEyebrow center>Clear responsibilities</SectionEyebrow>
 
           <SectionTitle center>
-            Same project.{" "}
-
-            <HeadlineAccent>
-              Different controls.
-            </HeadlineAccent>
+            Same project. <HeadlineAccent>Different controls.</HeadlineAccent>
           </SectionTitle>
 
-          <p className="mx-auto mt-6 max-w-2xl text-sm leading-7 text-[#5f5f59] sm:text-base sm:leading-8 dark:text-white/42">
+          <p className="mx-auto mt-5 max-w-2xl text-sm leading-7 text-muted-foreground sm:text-base sm:leading-8">
             Both sides work from the same project, while permissions and
             operational controls follow each person's role.
           </p>
         </div>
 
-        <div className="mt-14 overflow-hidden rounded-[1.5rem] border border-black/[0.09] bg-white dark:border-white/[0.045] dark:bg-[#111111] lg:grid lg:grid-cols-2">
+        <div
+          className={[
+            "mt-12 overflow-hidden rounded-2xl border lg:grid lg:grid-cols-2",
+            cardSurface,
+          ].join(" ")}
+        >
           <ResponsibilityPanel
             eyebrow="Client"
             title="Own the outcome."
@@ -1092,12 +795,17 @@ function ResponsibilitiesSection() {
           />
         </div>
 
-        <div className="mx-auto mt-8 flex max-w-2xl items-start justify-center gap-3 text-center">
-          <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#303030] text-white dark:bg-white/[0.06] dark:text-[#DEDA00]">
+        <div className="mx-auto mt-7 flex max-w-2xl items-start justify-center gap-3 text-center">
+          <span
+            className={[
+              "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
+              accentIconSurface,
+            ].join(" ")}
+          >
             <ShieldCheckIcon size={13} />
           </span>
 
-          <p className="text-xs leading-6 text-[#60605a] dark:text-white/38">
+          <p className="pt-1 text-xs leading-6 text-muted-foreground">
             The project remains shared while control stays with the person
             responsible for that part of the work.
           </p>
@@ -1123,82 +831,54 @@ function ResponsibilityPanel({
   allocat?: boolean;
 }) {
   return (
-    <motion.article
-      initial={{
-        opacity: 0,
-        y: 18,
-      }}
-      whileInView={{
-        opacity: 1,
-        y: 0,
-      }}
-      viewport={{
-        once: true,
-      }}
-      transition={{
-        duration: 0.5,
-      }}
+    <article
       className={[
         "relative p-6 sm:p-8 lg:p-10",
         allocat
-          ? [
-              "bg-[#f2f2ee]",
-              "dark:bg-[#0f0f0f]",
-              "lg:border-l lg:border-black/[0.07]",
-              "dark:lg:border-white/[0.04]",
-            ].join(" ")
-          : "bg-white dark:bg-[#151515]",
+          ? "border-t border-border/55 bg-surface-2/30 dark:bg-surface-2/45 lg:border-l lg:border-t-0"
+          : "bg-card",
       ].join(" ")}
     >
-      {allocat && (
+      <div className="flex items-center justify-between">
         <span
           className={[
-            "absolute bottom-8 left-0 top-8 hidden w-[2px] lg:block",
-            "bg-[#303030]/25 dark:bg-[#DEDA00]/70",
+            "flex h-10 w-10 items-center justify-center rounded-lg",
+            accentIconSurface,
           ].join(" ")}
-        />
-      )}
-
-      <div className="flex items-center justify-between">
-        <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#303030] text-white dark:bg-white/[0.06] dark:text-[#DEDA00]">
+        >
           <Icon size={17} />
         </span>
 
-        <span className="text-[0.52rem] font-semibold uppercase tracking-[0.16em] text-[#686862] dark:text-white/26">
+        <span className="text-[0.52rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
           {eyebrow}
         </span>
       </div>
 
-      <h3 className="mt-8 text-4xl font-black leading-[0.95] tracking-[-0.04em] text-[#303030] dark:text-white">
+      <h3 className="mt-7 text-2xl font-semibold tracking-[-0.035em] text-foreground sm:text-3xl">
         {title}
       </h3>
 
-      <p className="mt-5 max-w-md text-sm leading-7 text-[#5f5f59] dark:text-white/42">
+      <p className="mt-4 max-w-md text-sm leading-7 text-muted-foreground">
         {description}
       </p>
 
-      <div className="mt-8 border-t border-black/[0.08] pt-6 dark:border-white/[0.06]">
+      <div className="mt-7 border-t border-border/50 pt-6">
         <div className="grid gap-3">
-          {actions.map(
-            (action) => (
-              <div
-                key={action}
-                className="flex items-start gap-3"
-              >
-                <CheckCircle2Icon
-                  size={14}
-                  className="mt-1 shrink-0 text-[#55554f] dark:text-[#DEDA00]"
-                />
+          {actions.map((action) => (
+            <div key={action} className="flex items-start gap-3">
+              <CheckCircle2Icon
+                size={14}
+                className="mt-1 shrink-0 text-status-complete-foreground"
+              />
 
-                <span className="text-sm leading-6 text-[#5f5f59] dark:text-white/44">
-                  {action}
-                </span>
-              </div>
-            ),
-          )}
+              <span className="text-sm leading-6 text-muted-foreground">
+                {action}
+              </span>
+            </div>
+          ))}
         </div>
       </div>
-    </motion.article>
+    </article>
   );
 }
 
@@ -1208,28 +888,18 @@ function ResponsibilityPanel({
 
 function CompletionSection() {
   return (
-    <section className="relative overflow-hidden border-b border-black/[0.08] bg-[#f3f3ef] py-24 dark:border-white/[0.06] dark:bg-[#080808] lg:py-32">
-      <SoftAtmosphere
-        side="left"
-        tone="warm"
-      />
-
-      <div className="container relative mx-auto px-4 sm:px-6 md:px-8">
+    <section className="border-b border-border/55 bg-surface-2/30 py-20 dark:bg-surface-2/35 lg:py-28">
+      <div className="container mx-auto px-4 sm:px-6 md:px-8">
         <div className="grid gap-14 lg:grid-cols-[0.76fr_1.24fr] lg:items-center lg:gap-20">
           <div>
-            <SectionEyebrow>
-              Finishing the project
-            </SectionEyebrow>
+            <SectionEyebrow>Finishing the project</SectionEyebrow>
 
             <SectionTitle>
               Tasks finished.{" "}
-
-              <HeadlineAccent>
-                The outcome still needs approval.
-              </HeadlineAccent>
+              <HeadlineAccent>The outcome still needs approval.</HeadlineAccent>
             </SectionTitle>
 
-            <p className="mt-6 max-w-lg text-sm leading-7 text-[#5f5f59] sm:text-base sm:leading-8 dark:text-white/42">
+            <p className="mt-5 max-w-lg text-sm leading-7 text-muted-foreground sm:text-base sm:leading-8">
               Completing the final task does not automatically close the
               project. The Allocat submits the finished work and the client
               makes the final decision.
@@ -1247,41 +917,17 @@ function CompletionSection() {
 
 function CompletionSteps() {
   return (
-    <div className="mt-9 border-y border-black/[0.08] dark:border-white/[0.07]">
-      {completionSteps.map(
-        (step, index) => {
-          const Icon = step.icon;
+    <div className="mt-8 border-y border-border/55">
+      {completionSteps.map((step, index) => {
+        const Icon = step.icon;
 
-          return (
-            <motion.div
-              key={step.number}
-              initial={{
-                opacity: 0,
-                x: -12,
-              }}
-              whileInView={{
-                opacity: 1,
-                x: 0,
-              }}
-              viewport={{
-                once: true,
-              }}
-              transition={{
-                delay:
-                  index * 0.05,
-              }}
-              className="grid grid-cols-[38px_minmax(0,1fr)] gap-4 border-b border-black/[0.08] py-5 last:border-b-0 dark:border-white/[0.07]"
-            >
+        return (
+          <Reveal key={step.number} delay={index * 0.04}>
+            <div className="grid grid-cols-[38px_minmax(0,1fr)] gap-4 border-b border-border/55 py-5 last:border-b-0">
               <span
                 className={[
                   "flex h-9 w-9 items-center justify-center rounded-lg",
-                  index === 0
-                    ? "bg-[#38D200]/[0.10] text-[#247e08] dark:text-[#38D200]"
-                    : index === 1
-                      ? "bg-[#DEDA00]/[0.13] text-[#666300] dark:text-[#DEDA00]"
-                      : index === 2
-                        ? "bg-[#edede9] text-[#55554f] dark:bg-white/[0.055] dark:text-white/55"
-                        : "bg-[#303030] text-white dark:bg-[#DEDA00] dark:text-[#202020]",
+                  toneIconClass(step.tone),
                 ].join(" ")}
               >
                 <Icon size={14} />
@@ -1289,56 +935,49 @@ function CompletionSteps() {
 
               <div>
                 <div className="flex items-center gap-3">
-                  <span className="text-[0.5rem] font-black tracking-[0.12em] text-[#777771] dark:text-white/24">
+                  <span className="text-[0.5rem] font-semibold tracking-[0.12em] text-muted-foreground/65">
                     {step.number}
                   </span>
 
-                  <h3 className="text-sm font-black text-[#303030] dark:text-white">
+                  <h3 className="text-sm font-semibold text-foreground">
                     {step.title}
                   </h3>
                 </div>
 
-                <p className="mt-1.5 text-xs leading-6 text-[#64645e] dark:text-white/36">
+                <p className="mt-1.5 text-xs leading-6 text-muted-foreground">
                   {step.description}
                 </p>
               </div>
-            </motion.div>
-          );
-        },
-      )}
+            </div>
+          </Reveal>
+        );
+      })}
     </div>
   );
 }
 
 function CompletionVideo() {
   return (
-    <div className="overflow-hidden rounded-[1.5rem] border border-black/[0.09] bg-white shadow-[0_28px_80px_-55px_rgba(0,0,0,0.26)] dark:border-white/[0.075] dark:bg-[#141414] dark:shadow-none">
-      <div className="flex items-center justify-between border-b border-black/[0.08] px-5 py-4 dark:border-white/[0.065] sm:px-6">
-        <div className="flex items-center gap-2.5">
-          <span className="h-1.5 w-1.5 rounded-full bg-[#38D200]" />
-
-          <span className="text-[0.55rem] font-semibold uppercase tracking-[0.15em] text-[#60605a] dark:text-white/38">
-            Completion walkthrough
-          </span>
-        </div>
-
-        <ClipboardCheckIcon
-          size={14}
-          className="text-[#777771] dark:text-white/24"
-        />
-      </div>
+    <div
+      className={["overflow-hidden rounded-2xl border", cardSurface].join(" ")}
+    >
+      <VideoCardHeader
+        label="Completion walkthrough"
+        icon={ClipboardCheckIcon}
+        tone="success"
+      />
 
       <YouTubeVideo
         url={videos.completion}
         title="See how work moves into client review"
       />
 
-      <div className="border-t border-black/[0.08] px-5 py-5 dark:border-white/[0.065] sm:px-6">
-        <h3 className="text-lg font-black text-[#303030] dark:text-white">
+      <div className="border-t border-border/55 px-5 py-5 sm:px-6">
+        <h3 className="text-lg font-semibold tracking-[-0.025em] text-foreground">
           From completed tasks to confirmed project
         </h3>
 
-        <p className="mt-2 text-sm leading-7 text-[#60605a] dark:text-white/40">
+        <p className="mt-2 text-sm leading-7 text-muted-foreground">
           See how finished work is submitted and how the client makes the final
           completion decision.
         </p>
@@ -1361,43 +1000,33 @@ function FinalCta({
   allocatLabel: string;
 }) {
   return (
-    <section className="relative overflow-hidden bg-white py-24 dark:bg-[#111111] lg:py-32">
-      <FinalAtmosphere />
+    <section className="bg-background py-20 lg:py-28">
+      <div className="container mx-auto px-4 sm:px-6 md:px-8">
+        <div className="mx-auto max-w-4xl text-center">
+          <SectionEyebrow center>Ready to start?</SectionEyebrow>
 
-      <div className="container relative mx-auto px-4 sm:px-6 md:px-8">
-        <div className="mx-auto max-w-5xl text-center">
-          <SectionEyebrow center>
-            Ready to start?
-          </SectionEyebrow>
-
-          <h2 className="mx-auto mt-6 max-w-[13ch] text-5xl font-black leading-[0.9] tracking-[-0.055em] text-[#303030] sm:text-6xl lg:text-7xl dark:text-white">
+          <h2 className="mx-auto mt-5 max-w-[15ch] text-3xl font-semibold leading-[1.02] tracking-[-0.04em] text-foreground sm:text-4xl lg:text-[3rem]">
             Bring the right people into{" "}
-
-            <HeadlineAccent>
-              the right work.
-            </HeadlineAccent>
+            <HeadlineAccent>the right work.</HeadlineAccent>
           </h2>
 
-          <p className="mx-auto mt-7 max-w-xl text-sm leading-7 text-[#5f5f59] sm:text-base dark:text-white/42">
+          <p className="mx-auto mt-5 max-w-xl text-sm leading-7 text-muted-foreground sm:text-base">
             Start with the project, find the skills it needs and keep the work
             moving in one place.
           </p>
 
-          <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Button
               asChild
+              variant="ghost"
               className={[
-                "group h-12 rounded-lg px-7 text-xs font-bold shadow-none",
+                "h-11 rounded-lg px-6 text-xs font-semibold",
                 primaryButton,
               ].join(" ")}
             >
               <Link to={postProjectHref}>
                 Start a project
-
-                <ArrowRightIcon
-                  size={15}
-                  className="transition-transform duration-200 group-hover:translate-x-0.5"
-                />
+                <ArrowRightIcon size={14} />
               </Link>
             </Button>
 
@@ -1405,31 +1034,18 @@ function FinalCta({
               asChild
               variant="outline"
               className={[
-                "h-12 rounded-lg px-7 text-xs font-semibold shadow-none",
-                outlineButton,
+                "h-11 rounded-lg px-6 text-xs font-semibold",
+                secondaryButton,
               ].join(" ")}
             >
-              <Link to={allocatHref}>
-                {allocatLabel}
-              </Link>
+              <Link to={allocatHref}>{allocatLabel}</Link>
             </Button>
           </div>
 
-          <div className="mx-auto mt-14 grid max-w-3xl border-t border-black/[0.08] pt-7 dark:border-white/[0.07] sm:grid-cols-3">
-            <FinalMetric
-              number="01"
-              label="Create"
-            />
-
-            <FinalMetric
-              number="02"
-              label="Allocate"
-            />
-
-            <FinalMetric
-              number="03"
-              label="Complete"
-            />
+          <div className="mx-auto mt-12 grid max-w-3xl border-y border-border/55 sm:grid-cols-3">
+            <FinalMetric number="01" label="Create" />
+            <FinalMetric number="02" label="Allocate" divided />
+            <FinalMetric number="03" label="Complete" divided />
           </div>
         </div>
       </div>
@@ -1437,35 +1053,27 @@ function FinalCta({
   );
 }
 
-function FinalAtmosphere() {
-  return (
-    <div
-      aria-hidden
-      className="pointer-events-none absolute inset-0 overflow-hidden"
-    >
-      <div className="absolute left-1/2 top-[15%] h-[28rem] w-[54rem] -translate-x-1/2 rounded-[50%] bg-black/[0.025] blur-[125px] dark:bg-white/[0.014]" />
-
-      <div className="absolute inset-x-[15%] top-0 h-px bg-gradient-to-r from-transparent via-black/[0.055] to-transparent dark:via-white/[0.035]" />
-    </div>
-  );
-}
-
 function FinalMetric({
   number,
   label,
+  divided = false,
 }: {
   number: string;
   label: string;
+  divided?: boolean;
 }) {
   return (
-    <div className="border-b border-black/[0.07] py-4 last:border-b-0 dark:border-white/[0.06] sm:border-b-0 sm:border-r sm:py-0 sm:last:border-r-0">
-      <p className="text-[0.48rem] font-black tracking-[0.15em] text-[#777771] dark:text-[#DEDA00]">
+    <div
+      className={[
+        "py-4",
+        divided ? "border-t border-border/55 sm:border-l sm:border-t-0" : "",
+      ].join(" ")}
+    >
+      <p className="text-[0.5rem] font-semibold tracking-[0.15em] text-brand-secondary-highlight dark:text-secondary">
         {number}
       </p>
 
-      <p className="mt-1.5 text-sm font-bold text-[#303030] dark:text-white">
-        {label}
-      </p>
+      <p className="mt-1.5 text-sm font-semibold text-foreground">{label}</p>
     </div>
   );
 }
@@ -1474,20 +1082,42 @@ function FinalMetric({
    VIDEO
 ========================================================= */
 
-function YouTubeVideo({
-  url,
-  title,
+function VideoCardHeader({
+  label,
+  icon: Icon,
+  tone = "primary",
 }: {
-  url: string;
-  title: string;
+  label: string;
+  icon: LucideIcon;
+  tone?: StepTone;
 }) {
-  const embedUrl =
-    getYouTubeEmbedUrl(
-      url,
-    );
+  return (
+    <div className="flex items-center justify-between border-b border-border/55 px-5 py-4 sm:px-6">
+      <div className="flex items-center gap-2.5">
+        <span
+          className={[
+            "h-1.5 w-6 rounded-full",
+            tone === "success"
+              ? "bg-status-complete"
+              : "bg-brand-secondary-highlight dark:bg-secondary",
+          ].join(" ")}
+        />
+
+        <span className="text-[0.52rem] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
+          {label}
+        </span>
+      </div>
+
+      <Icon size={14} className="text-muted-foreground" />
+    </div>
+  );
+}
+
+function YouTubeVideo({ url, title }: { url: string; title: string }) {
+  const embedUrl = getYouTubeEmbedUrl(url);
 
   return (
-    <div className="relative aspect-video overflow-hidden bg-[#151515]">
+    <div className="relative aspect-video overflow-hidden bg-brand-charcoal">
       {embedUrl ? (
         <iframe
           src={embedUrl}
@@ -1500,14 +1130,11 @@ function YouTubeVideo({
       ) : (
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center">
-            <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#DEDA00] text-[#202020] transition-transform duration-300 hover:scale-105">
-              <PlayIcon
-                size={20}
-                fill="currentColor"
-              />
+            <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-secondary text-secondary-foreground">
+              <PlayIcon size={18} fill="currentColor" />
             </span>
 
-            <p className="mt-4 text-[0.58rem] font-semibold uppercase tracking-[0.14em] text-white/32">
+            <p className="mt-4 text-[0.56rem] font-semibold uppercase tracking-[0.14em] text-white/45">
               Video coming soon
             </p>
           </div>
@@ -1517,66 +1144,30 @@ function YouTubeVideo({
   );
 }
 
-function getYouTubeEmbedUrl(
-  url: string,
-) {
+function getYouTubeEmbedUrl(url: string) {
   if (!url) {
     return "";
   }
 
   try {
-    const parsedUrl =
-      new URL(url);
-
+    const parsedUrl = new URL(url);
     let videoId = "";
 
-    if (
-      parsedUrl.hostname.includes(
-        "youtu.be",
-      )
-    ) {
-      videoId =
-        parsedUrl.pathname.replace(
-          "/",
-          "",
-        );
+    if (parsedUrl.hostname.includes("youtu.be")) {
+      videoId = parsedUrl.pathname.replace("/", "");
     }
 
-    if (
-      parsedUrl.hostname.includes(
-        "youtube.com",
-      )
-    ) {
-      if (
-        parsedUrl.pathname ===
-        "/watch"
-      ) {
-        videoId =
-          parsedUrl.searchParams.get(
-            "v",
-          ) ?? "";
+    if (parsedUrl.hostname.includes("youtube.com")) {
+      if (parsedUrl.pathname === "/watch") {
+        videoId = parsedUrl.searchParams.get("v") ?? "";
       }
 
-      if (
-        parsedUrl.pathname.startsWith(
-          "/shorts/",
-        )
-      ) {
-        videoId =
-          parsedUrl.pathname.split(
-            "/",
-          )[2] ?? "";
+      if (parsedUrl.pathname.startsWith("/shorts/")) {
+        videoId = parsedUrl.pathname.split("/")[2] ?? "";
       }
 
-      if (
-        parsedUrl.pathname.startsWith(
-          "/embed/",
-        )
-      ) {
-        videoId =
-          parsedUrl.pathname.split(
-            "/",
-          )[2] ?? "";
+      if (parsedUrl.pathname.startsWith("/embed/")) {
+        videoId = parsedUrl.pathname.split("/")[2] ?? "";
       }
     }
 
@@ -1591,33 +1182,30 @@ function getYouTubeEmbedUrl(
 }
 
 /* =========================================================
-   BACKGROUND
+   MOTION
 ========================================================= */
 
-function SoftAtmosphere({
-  side,
-  tone,
+function Reveal({
+  children,
+  className = "",
+  delay = 0,
 }: {
-  side: "left" | "right";
-  tone: "neutral" | "warm";
+  children: ReactNode;
+  className?: string;
+  delay?: number;
 }) {
+  const reduceMotion = useReducedMotion();
+
   return (
-    <div
-      aria-hidden
-      className="pointer-events-none absolute inset-0 overflow-hidden"
+    <motion.div
+      initial={reduceMotion ? false : { opacity: 0, y: 14 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.16 }}
+      transition={{ duration: 0.45, delay, ease: "easeOut" }}
+      className={className}
     >
-      <div
-        className={[
-          "absolute top-[18%] h-[34rem] w-[34rem] rounded-full blur-[135px]",
-          side === "left"
-            ? "-left-[20rem]"
-            : "-right-[20rem]",
-          tone === "warm"
-            ? "bg-[#F0A23A]/[0.018] dark:bg-[#F0A23A]/[0.016]"
-            : "bg-black/[0.025] dark:bg-white/[0.015]",
-        ].join(" ")}
-      />
-    </div>
+      {children}
+    </motion.div>
   );
 }
 
@@ -1628,40 +1216,34 @@ function SoftAtmosphere({
 function SectionEyebrow({
   children,
   center = false,
-  dark = false,
 }: {
   children: ReactNode;
   center?: boolean;
-  dark?: boolean;
 }) {
   return (
     <div
       className={[
-        "inline-flex items-center gap-2.5",
-        center
-          ? "justify-center"
-          : "",
+        "flex items-center gap-2.5",
+        center ? "justify-center" : "",
       ].join(" ")}
     >
-      <span
-        className={[
-          "h-1.5 w-1.5 shrink-0 rounded-full",
-          dark
-            ? "bg-[#DEDA00]"
-            : "bg-[#303030] dark:bg-[#DEDA00]",
-        ].join(" ")}
-      />
+      <span className="h-1.5 w-6 rounded-full bg-brand-secondary-highlight dark:bg-secondary" />
 
-      <span
-        className={[
-          "text-[0.56rem] font-semibold uppercase tracking-[0.2em]",
-          dark
-            ? "text-white/38"
-            : "text-[#5e5e58] dark:text-white/32",
-        ].join(" ")}
-      >
+      <p className="text-[0.52rem] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
         {children}
-      </span>
+      </p>
+    </div>
+  );
+}
+
+function ContrastEyebrow({ children }: { children: ReactNode }) {
+  return (
+    <div className="flex items-center gap-2.5">
+      <span className="h-1.5 w-6 rounded-full bg-secondary" />
+
+      <p className="text-[0.52rem] font-semibold uppercase tracking-[0.15em] text-white/55">
+        {children}
+      </p>
     </div>
   );
 }
@@ -1676,13 +1258,9 @@ function SectionTitle({
   return (
     <h2
       className={[
-        "mt-5 max-w-5xl",
-        "text-4xl font-black leading-[0.92] tracking-[-0.05em]",
-        "text-[#303030] dark:text-white",
-        "sm:text-5xl lg:text-6xl",
-        center
-          ? "mx-auto"
-          : "",
+        "mt-4 max-w-4xl text-3xl font-semibold leading-[1.04] tracking-[-0.04em] text-foreground",
+        "sm:text-4xl lg:text-[2.75rem]",
+        center ? "mx-auto" : "",
       ].join(" ")}
     >
       {children}
@@ -1690,51 +1268,32 @@ function SectionTitle({
   );
 }
 
-function HeadlineAccent({
-  children,
-}: {
-  children: ReactNode;
-}) {
+function HeadlineAccent({ children }: { children: ReactNode }) {
   return (
-    <span className="text-[#303030] dark:text-[#DEDA00]">
+    <span className="text-brand-secondary-highlight dark:text-secondary">
       {children}
     </span>
   );
 }
 
-function HeroFact({
-  children,
-}: {
-  children: ReactNode;
-}) {
+function HeroFact({ children }: { children: ReactNode }) {
   return (
-    <span className="inline-flex items-center gap-2 text-[0.62rem] font-medium text-[#5f5f59] dark:text-white/36">
-      <CheckCircle2Icon
-        size={12}
-        className="text-[#247e08] dark:text-[#38D200]"
-      />
+    <span className="inline-flex items-center gap-2 text-[0.62rem] font-medium text-muted-foreground">
+      <CheckCircle2Icon size={12} className="text-status-complete-foreground" />
 
       {children}
     </span>
   );
 }
 
-function DarkFact({
-  icon: Icon,
-  text,
-}: {
-  icon: LucideIcon;
-  text: string;
-}) {
+function DarkFact({ icon: Icon, text }: { icon: LucideIcon; text: string }) {
   return (
     <div className="flex items-start gap-3">
-      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/[0.055] text-[#DEDA00]">
+      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/[0.08] text-secondary ring-1 ring-inset ring-white/[0.08]">
         <Icon size={14} />
       </span>
 
-      <p className="pt-1 text-sm leading-6 text-white/56">
-        {text}
-      </p>
+      <p className="pt-1 text-sm leading-6 text-white/70">{text}</p>
     </div>
   );
 }

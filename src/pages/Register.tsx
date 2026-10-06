@@ -12,22 +12,11 @@ import {
   UserIcon,
 } from "lucide-react";
 
-import {
-  useEffect,
-  useState,
-  type ComponentType,
-} from "react";
+import { useEffect, useState, type ComponentType } from "react";
 
-import {
-  Link,
-  useNavigate,
-  useSearchParams,
-} from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 
-import {
-  motion,
-  useReducedMotion,
-} from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
@@ -42,11 +31,7 @@ import allocatrLogoDark from "@/assets/allocatr-dark-02.svg";
 
 import { Button } from "@/components/ui/button";
 
-import {
-  Field,
-  FieldError,
-  FieldLabel,
-} from "@/components/ui/field";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 
 import { Input } from "@/components/ui/input";
 
@@ -88,12 +73,12 @@ const primaryButton = [
   "text-primary-foreground",
   "shadow-none",
 
-  "transition-[background-color,border-color,color,transform] duration-200",
+  "transition-opacity duration-150",
 
-  "hover:-translate-y-0.5",
-  "hover:border-brand-secondary-highlight/20",
-  "hover:bg-brand-secondary-highlight/90",
+  "hover:border-brand-secondary-highlight/15",
+  "hover:bg-brand-secondary-highlight",
   "hover:text-primary-foreground",
+  "hover:opacity-90",
 
   "focus-visible:ring-2",
   "focus-visible:ring-brand-secondary-highlight/15",
@@ -102,9 +87,10 @@ const primaryButton = [
   "dark:bg-secondary",
   "dark:text-secondary-foreground",
 
-  "dark:hover:border-secondary/15",
-  "dark:hover:bg-secondary/90",
+  "dark:hover:border-secondary/10",
+  "dark:hover:bg-secondary",
   "dark:hover:text-secondary-foreground",
+  "dark:hover:opacity-90",
 
   "dark:focus-visible:ring-secondary/15",
 ].join(" ");
@@ -112,12 +98,9 @@ const primaryButton = [
 const inputStyle = [
   "h-11 rounded-lg",
   "border-border/70",
-
   "bg-surface-2/35",
   "text-foreground",
-
   "shadow-none",
-
   "placeholder:text-muted-foreground/55",
 
   "transition-[background-color,border-color,box-shadow] duration-200",
@@ -149,9 +132,7 @@ export default function Register() {
 
   const [showPassword, setShowPassword] = useState(false);
 
-  const returnTo = getSafeReturnTo(
-    searchParams.get("returnTo"),
-  );
+  const returnTo = getSafeReturnTo(searchParams.get("returnTo"));
 
   const loginUrl = returnTo
     ? `/login?returnTo=${encodeURIComponent(returnTo)}`
@@ -172,11 +153,15 @@ export default function Register() {
 
   const { isSubmitting } = form.formState;
 
-  const serverError =
-    form.formState.errors.root?.server;
+  const serverError = form.formState.errors.root?.server;
 
   /* =======================================================
      AUTH REDIRECT
+
+     If someone is already authenticated and reaches the
+     register page, route them according to their account type.
+
+     Allocats go through initial professional setup first.
   ======================================================= */
 
   useEffect(() => {
@@ -184,7 +169,7 @@ export default function Register() {
       return;
     }
 
-    navigate(returnTo || "/projects", {
+    navigate(getPostRegisterPath(user.isAllocat, returnTo), {
       replace: true,
     });
   }, [user, returnTo, navigate]);
@@ -203,9 +188,7 @@ export default function Register() {
      SUBMIT
   ======================================================= */
 
-  async function handleRegister(
-    values: RegisterFormValues,
-  ) {
+  async function handleRegister(values: RegisterFormValues) {
     form.clearErrors("root.server");
 
     try {
@@ -216,7 +199,13 @@ export default function Register() {
         values.isAllocat,
       );
 
-      navigate(returnTo || "/projects", {
+      /*
+       * New Allocats must complete their professional profile
+       * before entering the normal project flow.
+       *
+       * Clients continue to returnTo or /projects.
+       */
+      navigate(getPostRegisterPath(values.isAllocat, returnTo), {
         replace: true,
       });
     } catch (error: unknown) {
@@ -271,10 +260,7 @@ export default function Register() {
             BACKGROUND DETAIL
         ================================================= */}
 
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0"
-        >
+        <div aria-hidden className="pointer-events-none absolute inset-0">
           <div
             className={[
               "absolute inset-x-0 top-0 hidden h-[420px]",
@@ -285,8 +271,7 @@ export default function Register() {
               backgroundImage:
                 "linear-gradient(to right, color-mix(in srgb, var(--border) 45%, transparent) 1px, transparent 1px), linear-gradient(to bottom, color-mix(in srgb, var(--border) 45%, transparent) 1px, transparent 1px)",
 
-              backgroundSize:
-                "44px 44px",
+              backgroundSize: "44px 44px",
 
               maskImage:
                 "linear-gradient(to bottom, black 0%, transparent 90%)",
@@ -299,11 +284,8 @@ export default function Register() {
           <PawPrintIcon
             className={[
               "absolute -right-12 top-[18%]",
-
               "hidden h-44 w-44 -rotate-12",
-
               "text-foreground/[0.012]",
-
               "lg:block",
             ].join(" ")}
           />
@@ -316,9 +298,7 @@ export default function Register() {
         <header
           className={[
             "relative z-30",
-
             "border-b border-border/50",
-
             "bg-background/88",
             "backdrop-blur-xl",
           ].join(" ")}
@@ -326,7 +306,6 @@ export default function Register() {
           <div
             className={[
               "mx-auto flex h-16 w-full max-w-7xl items-center justify-between",
-
               "px-4",
               "sm:px-6",
               "md:px-8",
@@ -339,12 +318,9 @@ export default function Register() {
               aria-label="Go to Allocatr home"
               className={[
                 "group inline-flex items-center rounded-md",
-
                 "outline-none",
-
                 "focus-visible:ring-2",
                 "focus-visible:ring-brand-secondary-highlight/20",
-
                 "dark:focus-visible:ring-secondary/20",
               ].join(" ")}
             >
@@ -353,11 +329,8 @@ export default function Register() {
                 alt="Allocatr"
                 className={[
                   "h-[24px] w-auto",
-
                   "transition-opacity duration-200",
-
                   "group-hover:opacity-75",
-
                   "dark:hidden",
                 ].join(" ")}
               />
@@ -367,11 +340,8 @@ export default function Register() {
                 alt="Allocatr"
                 className={[
                   "hidden h-[24px] w-auto",
-
                   "transition-opacity duration-200",
-
                   "group-hover:opacity-75",
-
                   "dark:block",
                 ].join(" ")}
               />
@@ -382,25 +352,16 @@ export default function Register() {
             <Link
               to="/"
               className={[
-                "group inline-flex h-9 items-center gap-2 rounded-lg px-2",
-
+                "inline-flex h-9 items-center gap-2 rounded-lg px-2",
                 "text-[0.68rem] font-medium",
-
                 "text-muted-foreground",
-
-                "transition-colors",
-
-                "hover:text-foreground",
+                "transition-opacity duration-150",
+                "hover:text-foreground hover:opacity-75",
               ].join(" ")}
             >
-              <ArrowLeftIcon
-                size={13}
-                className="transition-transform duration-200 group-hover:-translate-x-0.5"
-              />
+              <ArrowLeftIcon size={13} />
 
-              <span className="hidden sm:inline">
-                Back to website
-              </span>
+              <span className="hidden sm:inline">Back to website</span>
             </Link>
           </div>
         </header>
@@ -412,11 +373,8 @@ export default function Register() {
         <section
           className={[
             "relative z-10 flex flex-1 items-center justify-center",
-
             "px-4 py-10",
-
             "sm:px-6 sm:py-14",
-
             "md:px-8 md:py-16",
           ].join(" ")}
         >
@@ -450,28 +408,18 @@ export default function Register() {
                 to="/"
                 aria-label="Allocatr home"
                 className={[
-                  "group mx-auto flex h-12 w-12 items-center justify-center",
-
+                  "mx-auto flex h-12 w-12 items-center justify-center",
                   "rounded-xl border",
-
                   "border-border/65",
                   "bg-surface-2/55",
-
                   "ring-1 ring-inset ring-border/20",
-
-                  "transition-[background-color,border-color,transform] duration-200",
-
-                  "hover:-translate-y-0.5",
-                  "hover:border-border/85",
-                  "hover:bg-surface-3/60",
-
+                  "transition-opacity duration-150",
+                  "hover:opacity-75",
                   "focus-visible:outline-none",
                   "focus-visible:ring-2",
                   "focus-visible:ring-brand-secondary-highlight/15",
-
                   "dark:border-border",
                   "dark:bg-surface-2/70",
-
                   "dark:focus-visible:ring-secondary/15",
                 ].join(" ")}
               >
@@ -485,11 +433,8 @@ export default function Register() {
               <p
                 className={[
                   "mt-6",
-
                   "text-[0.5rem] font-semibold uppercase",
-
                   "tracking-[0.17em]",
-
                   "text-muted-foreground",
                 ].join(" ")}
               >
@@ -499,14 +444,10 @@ export default function Register() {
               <h1
                 className={[
                   "mt-3",
-
                   "text-[2rem] font-semibold",
-
                   "leading-[1.02]",
                   "tracking-[-0.04em]",
-
                   "text-foreground",
-
                   "sm:text-[2.3rem]",
                 ].join(" ")}
               >
@@ -527,15 +468,10 @@ export default function Register() {
             <div
               className={[
                 "rounded-[1.35rem] border",
-
                 "border-border/60",
-
                 "bg-card",
-
                 "px-5 py-6",
-
                 "sm:px-8 sm:py-8",
-
                 "dark:border-border",
                 "dark:bg-card",
               ].join(" ")}
@@ -552,12 +488,8 @@ export default function Register() {
                 <Controller
                   name="fullName"
                   control={form.control}
-                  render={({
-                    field,
-                    fieldState,
-                  }) => {
-                    const invalid =
-                      fieldState.invalid;
+                  render={({ field, fieldState }) => {
+                    const invalid = fieldState.invalid;
 
                     return (
                       <Field data-invalid={invalid}>
@@ -565,9 +497,7 @@ export default function Register() {
                           htmlFor="fullName"
                           className={[
                             "mb-2 block",
-
                             "text-[0.68rem] font-semibold",
-
                             "text-foreground/75",
                           ].join(" ")}
                         >
@@ -579,9 +509,7 @@ export default function Register() {
                             size={15}
                             className={[
                               "pointer-events-none",
-
                               "absolute left-3.5 top-1/2 z-10",
-
                               "-translate-y-1/2",
 
                               invalid
@@ -604,17 +532,13 @@ export default function Register() {
                             }}
                             className={[
                               "allocatr-auth-input",
-
                               inputStyle,
-
                               "pl-10 pr-4",
 
                               invalid
                                 ? [
                                     "border-destructive/65",
-
                                     "focus-visible:border-destructive",
-
                                     "focus-visible:ring-destructive/10",
                                   ].join(" ")
                                 : "",
@@ -638,12 +562,8 @@ export default function Register() {
                 <Controller
                   name="email"
                   control={form.control}
-                  render={({
-                    field,
-                    fieldState,
-                  }) => {
-                    const invalid =
-                      fieldState.invalid;
+                  render={({ field, fieldState }) => {
+                    const invalid = fieldState.invalid;
 
                     return (
                       <Field data-invalid={invalid}>
@@ -651,9 +571,7 @@ export default function Register() {
                           htmlFor="email"
                           className={[
                             "mb-2 block",
-
                             "text-[0.68rem] font-semibold",
-
                             "text-foreground/75",
                           ].join(" ")}
                         >
@@ -665,9 +583,7 @@ export default function Register() {
                             size={15}
                             className={[
                               "pointer-events-none",
-
                               "absolute left-3.5 top-1/2 z-10",
-
                               "-translate-y-1/2",
 
                               invalid
@@ -690,17 +606,13 @@ export default function Register() {
                             }}
                             className={[
                               "allocatr-auth-input",
-
                               inputStyle,
-
                               "pl-10 pr-4",
 
                               invalid
                                 ? [
                                     "border-destructive/65",
-
                                     "focus-visible:border-destructive",
-
                                     "focus-visible:ring-destructive/10",
                                   ].join(" ")
                                 : "",
@@ -724,12 +636,8 @@ export default function Register() {
                 <Controller
                   name="password"
                   control={form.control}
-                  render={({
-                    field,
-                    fieldState,
-                  }) => {
-                    const invalid =
-                      fieldState.invalid;
+                  render={({ field, fieldState }) => {
+                    const invalid = fieldState.invalid;
 
                     return (
                       <Field data-invalid={invalid}>
@@ -751,9 +659,7 @@ export default function Register() {
                             size={15}
                             className={[
                               "pointer-events-none",
-
                               "absolute left-3.5 top-1/2 z-10",
-
                               "-translate-y-1/2",
 
                               invalid
@@ -765,11 +671,7 @@ export default function Register() {
                           <Input
                             {...field}
                             id="password"
-                            type={
-                              showPassword
-                                ? "text"
-                                : "password"
-                            }
+                            type={showPassword ? "text" : "password"}
                             autoComplete="new-password"
                             placeholder="Create a password"
                             disabled={isSubmitting}
@@ -780,17 +682,13 @@ export default function Register() {
                             }}
                             className={[
                               "allocatr-auth-input",
-
                               inputStyle,
-
                               "pl-10 pr-11",
 
                               invalid
                                 ? [
                                     "border-destructive/65",
-
                                     "focus-visible:border-destructive",
-
                                     "focus-visible:ring-destructive/10",
                                   ].join(" ")
                                 : "",
@@ -800,32 +698,22 @@ export default function Register() {
                           <button
                             type="button"
                             onClick={() =>
-                              setShowPassword(
-                                (current) => !current,
-                              )
+                              setShowPassword((current) => !current)
                             }
                             disabled={isSubmitting}
                             className={[
                               "absolute right-3.5 top-1/2 z-10",
-
                               "-translate-y-1/2",
-
                               "text-muted-foreground",
-
-                              "transition-colors",
-
-                              "hover:text-foreground",
-
+                              "transition-opacity duration-150",
+                              "hover:text-foreground hover:opacity-75",
                               "focus-visible:outline-none",
                               "focus-visible:text-foreground",
-
                               "disabled:cursor-not-allowed",
                               "disabled:opacity-50",
                             ].join(" ")}
                             aria-label={
-                              showPassword
-                                ? "Hide password"
-                                : "Show password"
+                              showPassword ? "Hide password" : "Show password"
                             }
                           >
                             {showPassword ? (
@@ -905,12 +793,9 @@ export default function Register() {
                   <div
                     className={[
                       "rounded-lg border px-3.5 py-3",
-
                       "border-destructive/20",
                       "bg-destructive/[0.045]",
-
                       "text-[0.68rem] leading-5",
-
                       "text-destructive",
                     ].join(" ")}
                   >
@@ -927,30 +812,20 @@ export default function Register() {
                   variant="ghost"
                   disabled={isSubmitting}
                   className={[
-                    "group h-11 w-full rounded-lg",
-
+                    "h-11 w-full rounded-lg",
                     "text-xs font-semibold",
-
                     primaryButton,
                   ].join(" ")}
                 >
                   {isSubmitting ? (
                     <>
-                      <LoaderCircleIcon
-                        size={15}
-                        className="animate-spin"
-                      />
-
+                      <LoaderCircleIcon size={15} className="animate-spin" />
                       Creating account
                     </>
                   ) : (
                     <>
                       Create account
-
-                      <ArrowRightIcon
-                        size={14}
-                        className="transition-transform duration-200 group-hover:translate-x-0.5"
-                      />
+                      <ArrowRightIcon size={14} />
                     </>
                   )}
                 </Button>
@@ -961,18 +836,13 @@ export default function Register() {
 
                 <p className="text-center text-xs text-muted-foreground">
                   Already have an account?{" "}
-
                   <Link
                     to={loginUrl}
                     className={[
                       "font-semibold",
-
                       "text-brand-secondary-highlight",
-
                       "transition-opacity",
-
                       "hover:opacity-70",
-
                       "dark:text-secondary",
                     ].join(" ")}
                   >
@@ -988,19 +858,16 @@ export default function Register() {
 
             <p className="mx-auto mt-5 max-w-md text-center text-[0.6rem] leading-5 text-muted-foreground/70">
               By creating an account, you agree to our{" "}
-
               <Link
                 to="/terms"
-                className="underline underline-offset-2 transition-colors hover:text-foreground"
+                className="underline underline-offset-2 transition-opacity hover:opacity-70"
               >
                 Terms
-              </Link>
-
-              {" "}and{" "}
-
+              </Link>{" "}
+              and{" "}
               <Link
                 to="/privacy"
-                className="underline underline-offset-2 transition-colors hover:text-foreground"
+                className="underline underline-offset-2 transition-opacity hover:opacity-70"
               >
                 Privacy Policy
               </Link>
@@ -1009,7 +876,6 @@ export default function Register() {
 
             <div className="mt-4 flex items-center justify-center gap-2 text-[0.58rem] text-muted-foreground/65">
               <LockKeyholeIcon size={10} />
-
               Secure Allocatr registration
             </div>
           </motion.div>
@@ -1065,51 +931,33 @@ function AccountTypeOption({
       aria-pressed={selected}
       className={[
         "group relative flex min-h-[68px] items-center gap-3",
-
         "rounded-xl border px-3.5 py-3",
-
         "text-left",
-
         "transition-[background-color,border-color,color] duration-200",
-
         "focus-visible:outline-none",
         "focus-visible:ring-2",
         "focus-visible:ring-brand-secondary-highlight/15",
-
         "disabled:cursor-not-allowed",
         "disabled:opacity-50",
 
         selected
           ? [
               "border-brand-secondary-highlight/25",
-
               "bg-brand-secondary-highlight/[0.07]",
-
               "text-foreground",
-
               "dark:border-secondary/15",
-
               "dark:bg-secondary/[0.055]",
-
               "dark:focus-visible:ring-secondary/15",
             ].join(" ")
           : [
               "border-border/60",
-
               "bg-surface-2/25",
-
               "text-foreground/70",
-
               "hover:border-border/85",
-
               "hover:bg-surface-3/45",
-
               "hover:text-foreground",
-
               "dark:border-border",
-
               "dark:bg-surface-2/45",
-
               "dark:hover:bg-surface-3/60",
             ].join(" "),
       ].join(" ")}
@@ -1117,24 +965,19 @@ function AccountTypeOption({
       <span
         className={[
           "flex h-8 w-8 shrink-0 items-center justify-center",
-
           "rounded-lg",
-
           "transition-colors",
 
           selected
             ? [
                 "bg-brand-secondary-highlight/[0.10]",
                 "text-brand-secondary-highlight",
-
                 "dark:bg-secondary/[0.10]",
                 "dark:text-secondary",
               ].join(" ")
             : [
                 "bg-surface-3/70",
-
                 "text-muted-foreground",
-
                 "dark:bg-surface-2",
               ].join(" "),
         ].join(" ")}
@@ -1144,28 +987,20 @@ function AccountTypeOption({
 
       <span className="min-w-0 flex-1">
         <span className="flex items-center gap-1.5">
-          <span className="text-xs font-semibold">
-            {title}
-          </span>
+          <span className="text-xs font-semibold">{title}</span>
 
           {selected && (
             <span
               className={[
                 "flex h-4 w-4 items-center justify-center",
-
                 "rounded-full",
-
                 "bg-brand-secondary-highlight",
                 "text-primary-foreground",
-
                 "dark:bg-secondary",
                 "dark:text-secondary-foreground",
               ].join(" ")}
             >
-              <CheckIcon
-                size={9}
-                strokeWidth={3}
-              />
+              <CheckIcon size={9} strokeWidth={3} />
             </span>
           )}
         </span>
@@ -1179,12 +1014,22 @@ function AccountTypeOption({
 }
 
 /* =========================================================
+   POST REGISTER PATH
+========================================================= */
+
+function getPostRegisterPath(isAllocat: boolean, returnTo: string | null) {
+  if (isAllocat) {
+    return "/allocats/profile/create";
+  }
+
+  return returnTo || "/projects";
+}
+
+/* =========================================================
    RETURN PATH
 ========================================================= */
 
-function getSafeReturnTo(
-  value: string | null,
-): string | null {
+function getSafeReturnTo(value: string | null): string | null {
   if (!value) {
     return null;
   }
@@ -1214,17 +1059,11 @@ function getSafeReturnTo(
    REGISTER ERROR
 ========================================================= */
 
-function getRegisterErrorMessage(
-  error: unknown,
-): string {
+function getRegisterErrorMessage(error: unknown): string {
   const fallback =
     "We couldn’t create your account. Check your details and try again.";
 
-  if (
-    typeof error !== "object" ||
-    error === null ||
-    !("response" in error)
-  ) {
+  if (typeof error !== "object" || error === null || !("response" in error)) {
     return fallback;
   }
 
@@ -1238,15 +1077,13 @@ function getRegisterErrorMessage(
     }
   ).response;
 
-  const backendMessage =
-    response?.data?.message?.trim();
+  const backendMessage = response?.data?.message?.trim();
 
   if (!backendMessage) {
     return fallback;
   }
 
-  const normalizedMessage =
-    backendMessage.toLowerCase();
+  const normalizedMessage = backendMessage.toLowerCase();
 
   if (
     normalizedMessage.includes("duplicate email") ||

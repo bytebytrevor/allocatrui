@@ -1,1885 +1,42 @@
-// import {
-//   useState,
-//   type FormEvent,
-// } from "react";
-
-// import {
-//   BadgeCheckIcon,
-//   BriefcaseBusinessIcon,
-//   CheckCircle2Icon,
-//   FileTextIcon,
-//   GraduationCapIcon,
-//   LoaderCircleIcon,
-//   ShieldCheckIcon,
-//   SparklesIcon,
-//   UploadCloudIcon,
-//   UserRoundCheckIcon,
-//   WandSparklesIcon,
-//   XIcon,
-// } from "lucide-react";
-
-// import {
-//   useNavigate,
-// } from "react-router-dom";
-
-// import api from "@/api/axios";
-
-// import DashboardMainNav from "@/components/DashboardMainNav";
-
-// import {
-//   Button,
-// } from "@/components/ui/button";
-
-// import {
-//   Input,
-// } from "@/components/ui/input";
-
-// import {
-//   Label,
-// } from "@/components/ui/label";
-
-// import {
-//   Progress,
-// } from "@/components/ui/progress";
-
-// import {
-//   Textarea,
-// } from "@/components/ui/textarea";
-
-// /* =========================================================
-//    PAGE
-// ========================================================= */
-
-// function CreateAllocatProfile() {
-//   const navigate =
-//     useNavigate();
-
-//   const [
-//     skills,
-//     setSkills,
-//   ] =
-//     useState<string[]>([]);
-
-//   const [
-//     skillInput,
-//     setSkillInput,
-//   ] =
-//     useState("");
-
-//   const [
-//     hourlyRate,
-//     setHourlyRate,
-//   ] =
-//     useState(22);
-
-//   const [
-//     yearsExperience,
-//     setYearsExperience,
-//   ] =
-//     useState(3);
-
-//   const [
-//     bio,
-//     setBio,
-//   ] =
-//     useState("");
-
-//   const [
-//     idDocument,
-//     setIdDocument,
-//   ] =
-//     useState<File | null>(
-//       null,
-//     );
-
-//   const [
-//     credentialFiles,
-//     setCredentialFiles,
-//   ] =
-//     useState<File[]>([]);
-
-//   const [
-//     submitting,
-//     setSubmitting,
-//   ] =
-//     useState(false);
-
-//   /* =======================================================
-//      SKILLS
-//   ======================================================= */
-
-//   function addSkill(
-//     incoming?: string,
-//   ) {
-//     const value =
-//       (
-//         incoming ??
-//         skillInput
-//       )
-//         .trim()
-//         .replace(
-//           /\s+/g,
-//           " ",
-//         );
-
-//     if (!value) {
-//       return;
-//     }
-
-//     const exists =
-//       skills.some(
-//         (
-//           skill,
-//         ) =>
-//           skill.toLowerCase() ===
-//           value.toLowerCase(),
-//       );
-
-//     if (exists) {
-//       setSkillInput("");
-//       return;
-//     }
-
-//     setSkills(
-//       (
-//         current,
-//       ) => [
-//         ...current,
-//         value,
-//       ],
-//     );
-
-//     setSkillInput("");
-//   }
-
-//   function removeSkill(
-//     skill: string,
-//   ) {
-//     setSkills(
-//       (
-//         current,
-//       ) =>
-//         current.filter(
-//           (
-//             item,
-//           ) =>
-//             item !==
-//             skill,
-//         ),
-//     );
-//   }
-
-//   /* =======================================================
-//      CREDENTIALS
-//   ======================================================= */
-
-//   function addCredentialFiles(
-//     files: File[],
-//   ) {
-//     setCredentialFiles(
-//       (
-//         current,
-//       ) => {
-//         const next = [
-//           ...current,
-//         ];
-
-//         files.forEach(
-//           (
-//             incoming,
-//           ) => {
-//             const duplicate =
-//               next.some(
-//                 (
-//                   existing,
-//                 ) =>
-//                   existing.name ===
-//                     incoming.name &&
-//                   existing.size ===
-//                     incoming.size,
-//               );
-
-//             if (
-//               !duplicate
-//             ) {
-//               next.push(
-//                 incoming,
-//               );
-//             }
-//           },
-//         );
-
-//         return next;
-//       },
-//     );
-//   }
-
-//   function removeCredentialFile(
-//     index: number,
-//   ) {
-//     setCredentialFiles(
-//       (
-//         current,
-//       ) =>
-//         current.filter(
-//           (
-//             _,
-//             currentIndex,
-//           ) =>
-//             currentIndex !==
-//             index,
-//         ),
-//     );
-//   }
-
-//   /* =======================================================
-//      HELPERS
-//   ======================================================= */
-
-//   function formatFileSize(
-//     size: number,
-//   ) {
-//     if (
-//       size <
-//       1024 * 1024
-//     ) {
-//       return `${Math.max(
-//         1,
-//         Math.round(
-//           size / 1024,
-//         ),
-//       )} KB`;
-//     }
-
-//     return `${(
-//       size /
-//       (1024 * 1024)
-//     ).toFixed(
-//       1,
-//     )} MB`;
-//   }
-
-//   function getExperienceLevel(
-//     years: number,
-//   ) {
-//     if (
-//       years <= 2
-//     ) {
-//       return "Emerging";
-//     }
-
-//     if (
-//       years <= 5
-//     ) {
-//       return "Experienced";
-//     }
-
-//     if (
-//       years <= 10
-//     ) {
-//       return "Senior";
-//     }
-
-//     return "Specialist";
-//   }
-
-//   function getRateLabel(
-//     rate: number,
-//   ) {
-//     if (
-//       rate < 15
-//     ) {
-//       return "Entry";
-//     }
-
-//     if (
-//       rate < 35
-//     ) {
-//       return "Competitive";
-//     }
-
-//     if (
-//       rate < 75
-//     ) {
-//       return "Premium";
-//     }
-
-//     return "Specialist";
-//   }
-
-//   /* =======================================================
-//      COMPLETION
-//   ======================================================= */
-
-//   const completionItems = [
-//     {
-//       label:
-//         "Identity document",
-//       done:
-//         Boolean(
-//           idDocument,
-//         ),
-//     },
-
-//     {
-//       label:
-//         "Hourly rate",
-//       done:
-//         hourlyRate > 0,
-//     },
-
-//     {
-//       label:
-//         "Experience",
-//       done:
-//         yearsExperience >=
-//         0,
-//     },
-
-//     {
-//       label:
-//         "3+ skills",
-//       done:
-//         skills.length >=
-//         3,
-//     },
-
-//     {
-//       label:
-//         "Credentials",
-//       done:
-//         credentialFiles.length >
-//         0,
-//     },
-
-//     {
-//       label:
-//         "Bio",
-//       done:
-//         bio.trim().length >
-//         0,
-//     },
-//   ];
-
-//   const completed =
-//     completionItems.filter(
-//       (
-//         item,
-//       ) =>
-//         item.done,
-//     ).length;
-
-//   const completion =
-//     Math.round(
-//       (
-//         completed /
-//         completionItems.length
-//       ) *
-//         100,
-//     );
-
-//   /* =======================================================
-//      SUBMIT
-//   ======================================================= */
-
-//   async function handleSubmit(
-//     event: FormEvent<HTMLFormElement>,
-//   ) {
-//     event.preventDefault();
-
-//     if (
-//       submitting
-//     ) {
-//       return;
-//     }
-
-//     const form =
-//       new FormData(
-//         event.currentTarget,
-//       );
-
-//     const data =
-//       new FormData();
-
-//     data.append(
-//       "idNumber",
-//       String(
-//         form.get(
-//           "idNumber",
-//         ) ?? "",
-//       ).trim(),
-//     );
-
-//     data.append(
-//       "hourlyRate",
-//       hourlyRate.toString(),
-//     );
-
-//     data.append(
-//       "yearsExperience",
-//       yearsExperience.toString(),
-//     );
-
-//     data.append(
-//       "bio",
-//       bio.trim(),
-//     );
-
-//     skills.forEach(
-//       (
-//         skill,
-//       ) => {
-//         data.append(
-//           "skills",
-//           skill,
-//         );
-//       },
-//     );
-
-//     if (
-//       idDocument
-//     ) {
-//       data.append(
-//         "idDocument",
-//         idDocument,
-//       );
-//     }
-
-//     credentialFiles.forEach(
-//       (
-//         file,
-//       ) => {
-//         data.append(
-//           "credentialFiles",
-//           file,
-//         );
-//       },
-//     );
-
-//     try {
-//       setSubmitting(
-//         true,
-//       );
-
-//       await api.post(
-//         "/allocats/profiles/create",
-//         data,
-//         {
-//           withCredentials:
-//             true,
-//         },
-//       );
-
-//       navigate(
-//         "/allocats/profile",
-//       );
-//     } catch (
-//       error
-//     ) {
-//       console.error(
-//         "Could not create Allocat profile:",
-//         error,
-//       );
-//     } finally {
-//       setSubmitting(
-//         false,
-//       );
-//     }
-//   }
-
-//   return (
-//     <div className="min-h-screen bg-background text-foreground">
-
-//       {/* ===================================================
-//           NAV
-//       =================================================== */}
-
-//       <header className="sticky top-0 z-40 border-b border-border/60 bg-background/90 backdrop-blur-xl">
-//         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-//           <DashboardMainNav>
-//             <div>
-//               <p className="text-[0.58rem] font-medium uppercase tracking-[0.15em] text-muted-foreground">
-//                 Allocat
-//               </p>
-
-//               <p className="mt-0.5 text-xs font-semibold">
-//                 Create profile
-//               </p>
-//             </div>
-//           </DashboardMainNav>
-//         </div>
-//       </header>
-
-//       {/* ===================================================
-//           PAGE
-//       =================================================== */}
-
-//       <main className="container mx-auto px-5 py-8 md:px-8 lg:py-12">
-
-//         {/* =================================================
-//             HERO
-//         ================================================= */}
-
-//         <section className="relative overflow-hidden border-b border-border pb-10 pt-2">
-
-//           <div className="relative flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
-//             <div className="max-w-3xl">
-//               <div className="inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary/[0.045] px-3 py-1.5 text-primary">
-//                 <SparklesIcon
-//                   size={
-//                     12
-//                   }
-//                 />
-
-//                 <span className="text-[0.6rem] font-bold uppercase tracking-[0.17em]">
-//                   Become an Allocat
-//                 </span>
-//               </div>
-
-//               <h1 className="mt-5 max-w-3xl text-4xl font-black leading-[0.96] tracking-[-0.05em] sm:text-5xl lg:text-[3.6rem]">
-//                 Create your{" "}
-
-//                 <span className="text-primary">
-//                   allocat profile.
-//                 </span>
-//               </h1>
-
-//               <p className="mt-5 max-w-2xl text-sm leading-7 text-muted-foreground sm:text-base">
-//                 Show the work you do best, what you charge and why
-//                 clients should choose you for their next project.
-//               </p>
-//             </div>
-
-//             {/* Profile progress */}
-
-//             <div className="w-full max-w-[270px]">
-//               <div className="flex items-end justify-between gap-4">
-//                 <div>
-//                   <p className="text-[0.6rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-//                     Profile strength
-//                   </p>
-
-//                   <p className="mt-1 text-[0.68rem] text-muted-foreground">
-//                     {
-//                       completed
-//                     }{" "}
-//                     of{" "}
-//                     {
-//                       completionItems.length
-//                     }{" "}
-//                     essentials
-//                   </p>
-//                 </div>
-
-//                 <span className="text-3xl font-black tracking-[-0.05em] text-primary">
-//                   {
-//                     completion
-//                   }
-//                   %
-//                 </span>
-//               </div>
-
-//               <Progress
-//                 value={
-//                   completion
-//                 }
-//                 className="mt-3 h-1.5"
-//               />
-
-//               <p className="mt-2 text-[0.62rem] leading-5 text-muted-foreground">
-//                 Add useful detail so clients have enough context
-//                 before sending an invitation.
-//               </p>
-//             </div>
-//           </div>
-//         </section>
-
-//         {/* =================================================
-//             FORM + PREVIEW
-//         ================================================= */}
-
-//         <div className="grid items-start gap-12 xl:grid-cols-[minmax(0,1fr)_310px] xl:gap-16">
-
-//           {/* =================================================
-//               FORM
-//           ================================================= */}
-
-//           <form
-//             onSubmit={
-//               handleSubmit
-//             }
-//             className="min-w-0"
-//           >
-
-//             {/* =============================================
-//                 ABOUT
-//             ============================================= */}
-
-//             <ProfileSection
-//               icon={
-//                 UserRoundCheckIcon
-//               }
-//               title="About you"
-//               description="The essentials clients need to understand who you are professionally."
-//             >
-
-//               {/* ===========================================
-//                   VERIFICATION
-//               =========================================== */}
-
-//               <div className="rounded-2xl border border-border bg-muted/[0.14] p-5 sm:p-6">
-//                 <div className="flex items-start gap-3">
-//                   <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/[0.07] text-primary">
-//                     <ShieldCheckIcon
-//                       size={
-//                         16
-//                       }
-//                     />
-//                   </span>
-
-//                   <div>
-//                     <p className="text-xs font-bold">
-//                       Identity verification
-//                     </p>
-
-//                     <p className="mt-1 text-[0.68rem] leading-5 text-muted-foreground">
-//                       These details stay private and help verify your
-//                       professional account.
-//                     </p>
-//                   </div>
-//                 </div>
-
-//                 <div className="mt-5 grid gap-4 md:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
-
-//                   {/* ID number */}
-
-//                   <div>
-//                     <Label
-//                       htmlFor="idNumber"
-//                       className="text-xs font-semibold"
-//                     >
-//                       ID number
-//                     </Label>
-
-//                     <Input
-//                       id="idNumber"
-//                       name="idNumber"
-//                       required
-//                       disabled={
-//                         submitting
-//                       }
-//                       placeholder="00000000A00"
-//                       className={[
-//                         "mt-2 h-11 rounded-lg",
-//                         "border-border",
-//                         "!bg-transparent dark:!bg-transparent",
-//                         "px-3.5 shadow-none",
-//                         "focus-visible:border-primary/40",
-//                         "focus-visible:ring-1",
-//                         "focus-visible:ring-primary/30",
-//                       ].join(
-//                         " ",
-//                       )}
-//                     />
-
-//                     <p className="mt-2 text-[0.62rem] leading-5 text-muted-foreground">
-//                       Not visible to clients.
-//                     </p>
-//                   </div>
-
-//                   {/* ID document */}
-
-//                   <div>
-//                     <Label className="text-xs font-semibold">
-//                       Identity document
-//                     </Label>
-
-//                     <div
-//                       className={[
-//                         "mt-2 flex min-h-11 items-center gap-3",
-//                         "rounded-lg border border-border px-3",
-//                         "transition-colors",
-
-//                         idDocument
-//                           ? "bg-primary/[0.035]"
-//                           : "bg-background",
-//                       ].join(
-//                         " ",
-//                       )}
-//                     >
-//                       <span
-//                         className={[
-//                           "flex h-7 w-7 shrink-0 items-center justify-center rounded-md",
-
-//                           idDocument
-//                             ? "bg-primary/[0.09] text-primary"
-//                             : "bg-muted text-muted-foreground",
-//                         ].join(
-//                           " ",
-//                         )}
-//                       >
-//                         {idDocument ? (
-//                           <ShieldCheckIcon
-//                             size={
-//                               13
-//                             }
-//                           />
-//                         ) : (
-//                           <UploadCloudIcon
-//                             size={
-//                               13
-//                             }
-//                           />
-//                         )}
-//                       </span>
-
-//                       <div className="min-w-0 flex-1">
-//                         {idDocument ? (
-//                           <>
-//                             <p className="truncate text-xs font-semibold">
-//                               {
-//                                 idDocument.name
-//                               }
-//                             </p>
-
-//                             <p className="text-[0.58rem] text-muted-foreground">
-//                               {formatFileSize(
-//                                 idDocument.size,
-//                               )}
-//                             </p>
-//                           </>
-//                         ) : (
-//                           <>
-//                             <p className="text-xs font-medium">
-//                               Upload a document
-//                             </p>
-
-//                             <p className="mt-0.5 text-[0.58rem] text-muted-foreground">
-//                               PDF, PNG or JPG
-//                             </p>
-//                           </>
-//                         )}
-//                       </div>
-
-//                       {idDocument ? (
-//                         <button
-//                           type="button"
-//                           onClick={() =>
-//                             setIdDocument(
-//                               null,
-//                             )
-//                           }
-//                           className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-//                           aria-label="Remove document"
-//                         >
-//                           <XIcon
-//                             size={
-//                               12
-//                             }
-//                           />
-//                         </button>
-//                       ) : (
-//                         <Label
-//                           htmlFor="idDocument"
-//                           className="shrink-0"
-//                         >
-//                           <span className="cursor-pointer text-[0.68rem] font-semibold text-primary hover:underline">
-//                             Choose file
-//                           </span>
-//                         </Label>
-//                       )}
-
-//                       <Input
-//                         id="idDocument"
-//                         name="idDocument"
-//                         type="file"
-//                         accept=".pdf,.png,.jpg,.jpeg"
-//                         disabled={
-//                           submitting
-//                         }
-//                         className="hidden"
-//                         onChange={(event) => {
-//                           const selected =
-//                             event.target.files?.[0];
-
-//                           if (
-//                             selected
-//                           ) {
-//                             setIdDocument(
-//                               selected,
-//                             );
-//                           }
-//                         }}
-//                       />
-//                     </div>
-//                   </div>
-//                 </div>
-//               </div>
-
-//               {/* ===========================================
-//                   PROFESSIONAL DETAILS
-//               =========================================== */}
-
-//               <div className="mt-9">
-//                 <div className="flex items-center gap-2">
-//                   <BriefcaseBusinessIcon
-//                     size={
-//                       15
-//                     }
-//                     className="text-primary"
-//                   />
-
-//                   <p className="text-xs font-bold">
-//                     Professional details
-//                   </p>
-//                 </div>
-
-//                 <p className="mt-1 text-[0.68rem] leading-5 text-muted-foreground">
-//                   Set your experience and starting rate. You can edit
-//                   both later.
-//                 </p>
-
-//                 <div className="mt-6 grid gap-10 md:grid-cols-2">
-
-//                   {/* Experience */}
-
-//                   <ProfessionalRange
-//                     label="Experience"
-//                     display={
-//                       <>
-//                         {
-//                           yearsExperience
-//                         }
-
-//                         <span className="ml-1 text-sm font-medium tracking-normal text-muted-foreground">
-//                           {yearsExperience ===
-//                           1
-//                             ? "year"
-//                             : "years"}
-//                         </span>
-//                       </>
-//                     }
-//                     descriptor={getExperienceLevel(
-//                       yearsExperience,
-//                     )}
-//                   >
-//                     <input
-//                       id="yearsExperience"
-//                       name="yearsExperience"
-//                       type="range"
-//                       min="0"
-//                       max="20"
-//                       step="1"
-//                       value={
-//                         yearsExperience
-//                       }
-//                       disabled={
-//                         submitting
-//                       }
-//                       onChange={(event) =>
-//                         setYearsExperience(
-//                           Number(
-//                             event.target.value,
-//                           ),
-//                         )
-//                       }
-//                       className="w-full accent-primary"
-//                     />
-
-//                     <div className="mt-2 flex justify-between text-[0.6rem] text-muted-foreground">
-//                       <span>
-//                         New
-//                       </span>
-
-//                       <span>
-//                         10 yrs
-//                       </span>
-
-//                       <span>
-//                         20+
-//                       </span>
-//                     </div>
-//                   </ProfessionalRange>
-
-//                   {/* Rate */}
-
-//                   <ProfessionalRange
-//                     label="Hourly rate"
-//                     display={
-//                       <>
-//                         <span className="mr-1 text-lg font-black text-muted-foreground">
-//                           $
-//                         </span>
-
-//                         {
-//                           hourlyRate
-//                         }
-
-//                         <span className="ml-1 text-sm font-medium tracking-normal text-muted-foreground">
-//                           /hr
-//                         </span>
-//                       </>
-//                     }
-//                     descriptor={getRateLabel(
-//                       hourlyRate,
-//                     )}
-//                   >
-//                     <input
-//                       id="hourlyRate"
-//                       name="hourlyRate"
-//                       type="range"
-//                       min="5"
-//                       max="150"
-//                       step="1"
-//                       value={
-//                         hourlyRate
-//                       }
-//                       disabled={
-//                         submitting
-//                       }
-//                       onChange={(event) =>
-//                         setHourlyRate(
-//                           Number(
-//                             event.target.value,
-//                           ),
-//                         )
-//                       }
-//                       className="w-full accent-primary"
-//                     />
-
-//                     <div className="mt-2 flex justify-between text-[0.6rem] text-muted-foreground">
-//                       <span>
-//                         $5
-//                       </span>
-
-//                       <span>
-//                         $75
-//                       </span>
-
-//                       <span>
-//                         $150+
-//                       </span>
-//                     </div>
-//                   </ProfessionalRange>
-//                 </div>
-//               </div>
-//             </ProfileSection>
-
-//             {/* =============================================
-//                 SKILLS
-//             ============================================= */}
-
-//             <ProfileSection
-//               icon={
-//                 BriefcaseBusinessIcon
-//               }
-//               title="Your skills"
-//               description="Add the capabilities clients should find you for."
-//             >
-
-//               {/* Skill input */}
-
-//               <div>
-//                 <div className="flex items-center justify-between gap-4">
-//                   <div>
-//                     <Label
-//                       htmlFor="skill"
-//                       className="text-xs font-semibold"
-//                     >
-//                       Skills
-//                     </Label>
-
-//                     <p className="mt-1 text-[0.65rem] leading-5 text-muted-foreground">
-//                       Keep them specific and useful for project matching.
-//                     </p>
-//                   </div>
-
-//                   <span
-//                     className={[
-//                       "text-[0.62rem] font-medium",
-
-//                       skills.length >=
-//                       3
-//                         ? "text-emerald-600 dark:text-emerald-300"
-//                         : "text-muted-foreground",
-//                     ].join(
-//                       " ",
-//                     )}
-//                   >
-//                     {
-//                       skills.length
-//                     }{" "}
-//                     added
-//                   </span>
-//                 </div>
-
-//                 <div
-//                   className={[
-//                     "mt-3 flex min-h-12 flex-wrap items-center gap-1.5",
-//                     "rounded-xl border border-border",
-//                     "bg-muted/[0.12] px-2.5 py-2",
-//                     "transition-all",
-//                     "focus-within:border-primary/35",
-//                     "focus-within:bg-background",
-//                     "focus-within:ring-2 focus-within:ring-primary/[0.07]",
-//                   ].join(
-//                     " ",
-//                   )}
-//                 >
-//                   {skills.map(
-//                     (
-//                       skill,
-//                     ) => (
-//                       <span
-//                         key={
-//                           skill
-//                         }
-//                         className={[
-//                           "inline-flex h-7 items-center gap-1.5",
-//                           "rounded-full border border-primary/10",
-//                           "bg-primary/[0.065]",
-//                           "px-2.5",
-//                           "text-[0.66rem] font-semibold text-primary",
-//                         ].join(
-//                           " ",
-//                         )}
-//                       >
-//                         {
-//                           skill
-//                         }
-
-//                         <button
-//                           type="button"
-//                           disabled={
-//                             submitting
-//                           }
-//                           onClick={() =>
-//                             removeSkill(
-//                               skill,
-//                             )
-//                           }
-//                           className="text-primary/55 transition-colors hover:text-primary"
-//                           aria-label={`Remove ${skill}`}
-//                         >
-//                           <XIcon
-//                             size={
-//                               10
-//                             }
-//                           />
-//                         </button>
-//                       </span>
-//                     ),
-//                   )}
-
-//                   <input
-//                     id="skill"
-//                     value={
-//                       skillInput
-//                     }
-//                     disabled={
-//                       submitting
-//                     }
-//                     onChange={(event) =>
-//                       setSkillInput(
-//                         event.target.value,
-//                       )
-//                     }
-//                     onKeyDown={(event) => {
-//                       if (
-//                         event.key ===
-//                           "Enter" ||
-//                         event.key ===
-//                           ","
-//                       ) {
-//                         event.preventDefault();
-
-//                         addSkill();
-//                       }
-
-//                       if (
-//                         event.key ===
-//                           "Backspace" &&
-//                         !skillInput &&
-//                         skills.length >
-//                           0
-//                       ) {
-//                         setSkills(
-//                           (
-//                             current,
-//                           ) =>
-//                             current.slice(
-//                               0,
-//                               -1,
-//                             ),
-//                         );
-//                       }
-//                     }}
-//                     onBlur={() => {
-//                       if (
-//                         skillInput.trim()
-//                       ) {
-//                         addSkill();
-//                       }
-//                     }}
-//                     placeholder={
-//                       skills.length
-//                         ? "Add another skill"
-//                         : "e.g. React, Motion Design, Copywriting"
-//                     }
-//                     className="h-7 min-w-[190px] flex-1 bg-transparent px-1 text-sm outline-none placeholder:text-muted-foreground/65"
-//                   />
-//                 </div>
-
-//                 <div className="mt-2 flex items-center justify-between gap-4">
-//                   <p className="text-[0.62rem] text-muted-foreground">
-//                     Press Enter or comma after each skill.
-//                   </p>
-
-//                   <p className="text-[0.62rem] text-muted-foreground">
-//                     3 or more recommended
-//                   </p>
-//                 </div>
-//               </div>
-
-//               {/* Credentials */}
-
-//               <div className="mt-8 border-t border-border pt-7">
-//                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-//                   <div className="flex items-start gap-3">
-//                     <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/[0.07] text-primary">
-//                       <GraduationCapIcon
-//                         size={
-//                           15
-//                         }
-//                       />
-//                     </span>
-
-//                     <div>
-//                       <p className="text-xs font-bold">
-//                         Credentials
-//                       </p>
-
-//                       <p className="mt-1 text-[0.65rem] leading-5 text-muted-foreground">
-//                         Add certificates, degrees or relevant training.
-//                       </p>
-//                     </div>
-//                   </div>
-
-//                   <Label
-//                     htmlFor="credentialFiles"
-//                   >
-//                     <span className="inline-flex h-9 cursor-pointer items-center rounded-lg border border-border bg-background px-3 text-xs font-semibold transition-colors hover:bg-muted/40">
-//                       Add files
-//                     </span>
-//                   </Label>
-//                 </div>
-
-//                 <Input
-//                   id="credentialFiles"
-//                   name="credentialFiles"
-//                   type="file"
-//                   multiple
-//                   accept=".pdf,.png,.jpg,.jpeg"
-//                   disabled={
-//                     submitting
-//                   }
-//                   className="hidden"
-//                   onChange={(event) => {
-//                     addCredentialFiles(
-//                       Array.from(
-//                         event.target.files ??
-//                           [],
-//                       ),
-//                     );
-
-//                     event.target.value =
-//                       "";
-//                   }}
-//                 />
-
-//                 {credentialFiles.length >
-//                 0 ? (
-//                   <div className="mt-4 divide-y divide-border border-y border-border">
-//                     {credentialFiles.map(
-//                       (
-//                         file,
-//                         index,
-//                       ) => (
-//                         <div
-//                           key={`${file.name}-${file.size}-${index}`}
-//                           className="group flex items-center gap-3 py-3"
-//                         >
-//                           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-//                             <FileTextIcon
-//                               size={
-//                                 14
-//                               }
-//                             />
-//                           </span>
-
-//                           <div className="min-w-0 flex-1">
-//                             <p className="truncate text-xs font-semibold">
-//                               {
-//                                 file.name
-//                               }
-//                             </p>
-
-//                             <p className="mt-0.5 text-[0.6rem] text-muted-foreground">
-//                               {formatFileSize(
-//                                 file.size,
-//                               )}
-//                             </p>
-//                           </div>
-
-//                           <button
-//                             type="button"
-//                             disabled={
-//                               submitting
-//                             }
-//                             onClick={() =>
-//                               removeCredentialFile(
-//                                 index,
-//                               )
-//                             }
-//                             className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-//                             aria-label={`Remove ${file.name}`}
-//                           >
-//                             <XIcon
-//                               size={
-//                                 12
-//                               }
-//                             />
-//                           </button>
-//                         </div>
-//                       ),
-//                     )}
-//                   </div>
-//                 ) : (
-//                   <div className="mt-5 grid grid-cols-3 gap-2">
-//                     <CredentialType
-//                       icon={
-//                         FileTextIcon
-//                       }
-//                       label="Certificates"
-//                     />
-
-//                     <CredentialType
-//                       icon={
-//                         BadgeCheckIcon
-//                       }
-//                       label="Qualifications"
-//                     />
-
-//                     <CredentialType
-//                       icon={
-//                         BriefcaseBusinessIcon
-//                       }
-//                       label="Training"
-//                     />
-//                   </div>
-//                 )}
-//               </div>
-//             </ProfileSection>
-
-//             {/* =============================================
-//                 BIO
-//             ============================================= */}
-
-//             <ProfileSection
-//               icon={
-//                 WandSparklesIcon
-//               }
-//               title="Tell clients about your work"
-//               description="A short introduction can say more than another list of qualifications."
-//               last
-//             >
-//               <div className="flex items-center justify-between gap-4">
-//                 <Label
-//                   htmlFor="bio"
-//                   className="text-xs font-semibold"
-//                 >
-//                   Professional bio
-//                 </Label>
-
-//                 <span className="text-[0.62rem] tabular-nums text-muted-foreground">
-//                   {
-//                     bio.length
-//                   }
-//                   /500
-//                 </span>
-//               </div>
-
-//               <div
-//                 className={[
-//                   "mt-3 overflow-hidden rounded-xl border border-border",
-//                   "bg-muted/[0.08]",
-//                   "transition-all",
-//                   "focus-within:border-primary/35",
-//                   "focus-within:bg-background",
-//                   "focus-within:ring-2",
-//                   "focus-within:ring-primary/[0.07]",
-//                 ].join(
-//                   " ",
-//                 )}
-//               >
-//                 <Textarea
-//                   id="bio"
-//                   name="bio"
-//                   maxLength={
-//                     500
-//                   }
-//                   required
-//                   disabled={
-//                     submitting
-//                   }
-//                   value={
-//                     bio
-//                   }
-//                   onChange={(event) =>
-//                     setBio(
-//                       event.target.value,
-//                     )
-//                   }
-//                   placeholder="What do you do especially well? What kind of projects do you enjoy? What can clients expect when working with you?"
-//                   className={[
-//                     "min-h-[180px] resize-none",
-//                     "rounded-none border-0",
-//                     "!bg-transparent dark:!bg-transparent",
-//                     "px-4 py-4",
-//                     "text-sm leading-7",
-//                     "shadow-none",
-//                     "focus-visible:ring-0",
-//                   ].join(
-//                     " ",
-//                   )}
-//                 />
-
-//                 <div className="flex items-center gap-2 border-t border-border bg-background/50 px-4 py-3">
-//                   <SparklesIcon
-//                     size={
-//                       12
-//                     }
-//                     className="shrink-0 text-primary"
-//                   />
-
-//                   <p className="text-[0.62rem] leading-5 text-muted-foreground">
-//                     Clear and specific usually works better than long.
-//                   </p>
-//                 </div>
-//               </div>
-//             </ProfileSection>
-
-//             {/* =============================================
-//                 ACTION
-//             ============================================= */}
-
-//             <div className="mt-4 flex flex-col gap-4 border-t border-border pt-7 sm:flex-row sm:items-center sm:justify-between">
-//               <div>
-//                 <p className="text-xs font-semibold">
-//                   Ready when you are.
-//                 </p>
-
-//                 <p className="mt-1 max-w-md text-[0.65rem] leading-5 text-muted-foreground">
-//                   You can update your profile whenever your experience,
-//                   rate or skills change.
-//                 </p>
-//               </div>
-
-//               <Button
-//                 type="submit"
-//                 disabled={
-//                   submitting
-//                 }
-//                 className="h-11 rounded-lg px-6 text-xs shadow-none"
-//               >
-//                 {submitting ? (
-//                   <>
-//                     <LoaderCircleIcon
-//                       size={
-//                         14
-//                       }
-//                       className="animate-spin"
-//                     />
-
-//                     Creating profile
-//                   </>
-//                 ) : (
-//                   <>
-//                     Create profile
-
-//                     <SparklesIcon
-//                       size={
-//                         14
-//                       }
-//                     />
-//                   </>
-//                 )}
-//               </Button>
-//             </div>
-//           </form>
-
-//           {/* =================================================
-//               SIDEBAR / LIVE PREVIEW
-//           ================================================= */}
-
-//           <aside className="hidden xl:block">
-//             <div className="sticky top-24 pt-6">
-
-//               {/* Live preview label */}
-
-//               <div className="mb-3 flex items-center justify-between px-1">
-//                 <div>
-//                   <p className="text-[0.58rem] font-semibold uppercase tracking-[0.16em] text-primary">
-//                     Live preview
-//                   </p>
-
-//                   <p className="mt-1 text-xs text-muted-foreground">
-//                     Updates as you build your profile
-//                   </p>
-//                 </div>
-
-//                 <span className="flex items-center gap-1.5 rounded-full bg-emerald-400/[0.08] px-2.5 py-1 text-[0.58rem] font-semibold text-emerald-700 dark:text-emerald-300">
-//                   <span className="h-1.5 w-1.5 rounded-full bg-current" />
-
-//                   Live
-//                 </span>
-//               </div>
-
-//               {/* Preview */}
-
-//               <div
-//                 className={[
-//                   "relative overflow-hidden rounded-[1.4rem]",
-//                   "border border-border",
-//                   "bg-card p-5",
-//                   "shadow-lg shadow-black/[0.035]",
-//                   "dark:shadow-black/15",
-//                 ].join(
-//                   " ",
-//                 )}
-//               >
-//                 <div className="pointer-events-none absolute -right-20 -top-24 h-52 w-52 rounded-full bg-primary/[0.09] blur-3xl" />
-
-//                 <div className="relative">
-//                   <div className="flex items-start gap-3">
-//                     <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/[0.09] text-primary">
-//                       <UserRoundCheckIcon
-//                         size={
-//                           17
-//                         }
-//                       />
-//                     </span>
-
-//                     <div className="min-w-0 flex-1">
-//                       <p className="text-sm font-bold">
-//                         New Allocat
-//                       </p>
-
-//                       <p className="mt-0.5 text-[0.65rem] text-muted-foreground">
-//                         {getExperienceLevel(
-//                           yearsExperience,
-//                         )}{" "}
-//                         professional
-//                       </p>
-//                     </div>
-
-//                     <BadgeCheckIcon
-//                       size={
-//                         16
-//                       }
-//                       className={
-//                         idDocument
-//                           ? "shrink-0 text-emerald-600 dark:text-emerald-300"
-//                           : "shrink-0 text-muted-foreground/35"
-//                       }
-//                     />
-//                   </div>
-
-//                   <div className="mt-6 grid grid-cols-2 divide-x divide-border border-y border-border">
-//                     <div className="py-4 pr-4">
-//                       <p className="text-[0.58rem] uppercase tracking-[0.12em] text-muted-foreground">
-//                         Rate
-//                       </p>
-
-//                       <p className="mt-1 text-xl font-black tracking-[-0.03em]">
-//                         $
-//                         {
-//                           hourlyRate
-//                         }
-
-//                         <span className="ml-1 text-[0.6rem] font-normal text-muted-foreground">
-//                           /hr
-//                         </span>
-//                       </p>
-//                     </div>
-
-//                     <div className="py-4 pl-4">
-//                       <p className="text-[0.58rem] uppercase tracking-[0.12em] text-muted-foreground">
-//                         Experience
-//                       </p>
-
-//                       <p className="mt-1 text-xl font-black tracking-[-0.03em]">
-//                         {
-//                           yearsExperience
-//                         }
-
-//                         <span className="ml-1 text-[0.6rem] font-normal text-muted-foreground">
-//                           yrs
-//                         </span>
-//                       </p>
-//                     </div>
-//                   </div>
-
-//                   <div className="mt-5 flex flex-wrap gap-1.5">
-//                     {skills.length ? (
-//                       <>
-//                         {skills
-//                           .slice(
-//                             0,
-//                             5,
-//                           )
-//                           .map(
-//                             (
-//                               skill,
-//                             ) => (
-//                               <span
-//                                 key={
-//                                   skill
-//                                 }
-//                                 className="rounded-full bg-primary/[0.07] px-2.5 py-1 text-[0.6rem] font-semibold text-primary"
-//                               >
-//                                 {
-//                                   skill
-//                                 }
-//                               </span>
-//                             ),
-//                           )}
-
-//                         {skills.length >
-//                           5 && (
-//                           <span className="rounded-full bg-muted px-2.5 py-1 text-[0.6rem] font-semibold text-muted-foreground">
-//                             +
-//                             {skills.length -
-//                               5}
-//                           </span>
-//                         )}
-//                       </>
-//                     ) : (
-//                       <p className="text-[0.68rem] text-muted-foreground">
-//                         Your skills will appear here.
-//                       </p>
-//                     )}
-//                   </div>
-
-//                   <p className="mt-5 line-clamp-5 text-xs leading-6 text-muted-foreground">
-//                     {bio ||
-//                       "Your bio will begin shaping this preview as you write."}
-//                   </p>
-//                 </div>
-//               </div>
-
-//               {/* Verification */}
-
-//               <div className="mt-5 flex items-start gap-3 rounded-xl bg-muted/[0.22] p-4">
-//                 <span
-//                   className={[
-//                     "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
-
-//                     idDocument
-//                       ? "bg-emerald-400/[0.08] text-emerald-700 dark:text-emerald-300"
-//                       : "bg-background text-muted-foreground",
-//                   ].join(
-//                     " ",
-//                   )}
-//                 >
-//                   {idDocument ? (
-//                     <BadgeCheckIcon
-//                       size={
-//                         15
-//                       }
-//                     />
-//                   ) : (
-//                     <ShieldCheckIcon
-//                       size={
-//                         15
-//                       }
-//                     />
-//                   )}
-//                 </span>
-
-//                 <div>
-//                   <p className="text-xs font-semibold">
-//                     {idDocument
-//                       ? "Identity document added"
-//                       : "Build client trust"}
-//                   </p>
-
-//                   <p className="mt-1 text-[0.65rem] leading-5 text-muted-foreground">
-//                     {idDocument
-//                       ? "Your verification document is ready for submission."
-//                       : "Verification and credentials give clients more confidence in your profile."}
-//                   </p>
-//                 </div>
-//               </div>
-
-//               {/* Completion checklist */}
-
-//               <div className="mt-6 border-t border-border pt-5">
-//                 <p className="text-[0.58rem] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
-//                   Profile essentials
-//                 </p>
-
-//                 <div className="mt-4 space-y-3">
-//                   {completionItems.map(
-//                     (
-//                       item,
-//                     ) => (
-//                       <div
-//                         key={
-//                           item.label
-//                         }
-//                         className="flex items-center gap-2.5"
-//                       >
-//                         <span
-//                           className={[
-//                             "flex h-5 w-5 shrink-0 items-center justify-center rounded-full",
-
-//                             item.done
-//                               ? "bg-emerald-400/[0.08] text-emerald-600 dark:text-emerald-300"
-//                               : "bg-muted text-muted-foreground",
-//                           ].join(
-//                             " ",
-//                           )}
-//                         >
-//                           <CheckCircle2Icon
-//                             size={
-//                               11
-//                             }
-//                           />
-//                         </span>
-
-//                         <p
-//                           className={[
-//                             "text-[0.68rem]",
-
-//                             item.done
-//                               ? "font-medium text-foreground"
-//                               : "text-muted-foreground",
-//                           ].join(
-//                             " ",
-//                           )}
-//                         >
-//                           {
-//                             item.label
-//                           }
-//                         </p>
-//                       </div>
-//                     ),
-//                   )}
-//                 </div>
-//               </div>
-//             </div>
-//           </aside>
-//         </div>
-//       </main>
-//     </div>
-//   );
-// }
-
-// /* =========================================================
-//    PROFILE SECTION
-// ========================================================= */
-
-// function ProfileSection({
-//   icon: Icon,
-//   title,
-//   description,
-//   children,
-//   last = false,
-// }: {
-//   icon: React.ComponentType<{
-//     size?: number;
-//     className?: string;
-//   }>;
-
-//   title: string;
-
-//   description: string;
-
-//   children:
-//     React.ReactNode;
-
-//   last?: boolean;
-// }) {
-//   return (
-//     <section
-//       className={[
-//         "relative grid gap-6 py-10",
-//         "md:grid-cols-[52px_minmax(0,1fr)]",
-
-//         !last
-//           ? "border-b border-border"
-//           : "",
-//       ].join(
-//         " ",
-//       )}
-//     >
-//       <div>
-//         <span
-//           className={[
-//             "flex h-10 w-10 items-center justify-center",
-//             "rounded-xl border border-primary/10",
-//             "bg-primary/[0.065] text-primary",
-//             "shadow-sm shadow-primary/[0.03]",
-//           ].join(
-//             " ",
-//           )}
-//         >
-//           <Icon
-//             size={
-//               17
-//             }
-//           />
-//         </span>
-//       </div>
-
-//       <div className="min-w-0">
-//         <div className="mb-7 max-w-2xl">
-//           <h2 className="text-xl font-black tracking-[-0.025em] sm:text-2xl">
-//             {
-//               title
-//             }
-//           </h2>
-
-//           <p className="mt-2 max-w-xl text-sm leading-7 text-muted-foreground">
-//             {
-//               description
-//             }
-//           </p>
-//         </div>
-
-//         {
-//           children
-//         }
-//       </div>
-//     </section>
-//   );
-// }
-
-// /* =========================================================
-//    PROFESSIONAL RANGE
-// ========================================================= */
-
-// function ProfessionalRange({
-//   label,
-//   display,
-//   descriptor,
-//   children,
-// }: {
-//   label: string;
-
-//   display:
-//     React.ReactNode;
-
-//   descriptor:
-//     string;
-
-//   children:
-//     React.ReactNode;
-// }) {
-//   return (
-//     <div className="relative">
-//       <div className="flex items-center justify-between gap-4">
-//         <p className="text-xs font-semibold">
-//           {
-//             label
-//           }
-//         </p>
-
-//         <span className="rounded-full bg-primary/[0.065] px-2.5 py-1 text-[0.6rem] font-semibold text-primary">
-//           {
-//             descriptor
-//           }
-//         </span>
-//       </div>
-
-//       <div className="my-5">
-//         <p className="flex items-baseline text-4xl font-black tracking-[-0.055em] sm:text-[2.65rem]">
-//           {
-//             display
-//           }
-//         </p>
-//       </div>
-
-//       <div className="rounded-xl bg-muted/[0.2] px-3 py-4">
-//         {
-//           children
-//         }
-//       </div>
-//     </div>
-//   );
-// }
-
-// /* =========================================================
-//    CREDENTIAL TYPE
-// ========================================================= */
-
-// function CredentialType({
-//   icon: Icon,
-//   label,
-// }: {
-//   icon:
-//     React.ComponentType<{
-//       size?: number;
-//       className?: string;
-//     }>;
-
-//   label:
-//     string;
-// }) {
-//   return (
-//     <div className="rounded-lg border border-border/70 bg-muted/[0.1] px-2 py-3 text-center">
-//       <Icon
-//         size={
-//           14
-//         }
-//         className="mx-auto text-muted-foreground"
-//       />
-
-//       <p className="mt-1.5 text-[0.6rem] font-medium text-muted-foreground">
-//         {
-//           label
-//         }
-//       </p>
-//     </div>
-//   );
-// }
-
-// export default CreateAllocatProfile;
-
 import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
-  type FormEvent,
+  type ChangeEvent,
   type ReactNode,
 } from "react";
 
 import { isAxiosError } from "axios";
+import { Navigate, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+
 import {
+  AlertCircleIcon,
+  ArrowLeftIcon,
+  ArrowRightIcon,
+  BanknoteIcon,
   BriefcaseBusinessIcon,
-  CheckCircle2Icon,
+  CameraIcon,
+  CheckIcon,
   CircleDollarSignIcon,
+  FileBadgeIcon,
+  FileCheckIcon,
+  FileTextIcon,
+  GraduationCapIcon,
   IdCardIcon,
   LoaderCircleIcon,
+  MapPinIcon,
+  PhoneIcon,
+  SearchIcon,
+  ShieldCheckIcon,
   SparklesIcon,
-  UserRoundCheckIcon,
+  Trash2Icon,
   WandSparklesIcon,
+  XIcon,
   type LucideIcon,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
 
 import api from "@/api/axios";
 import { useAuth } from "@/auth/useAuth";
@@ -1887,217 +44,818 @@ import { useAuth } from "@/auth/useAuth";
 import type {
   AllocatAvailability,
   AllocatSkill,
-  CreateAllocatProfilePayload,
   MyAllocatProfile,
 } from "@/Types/allocatProfile";
 
-import DashboardMainNav from "@/components/DashboardMainNav";
-import SkillPicker from "@/components/allocat-profile/SkillPicker";
+import type { ProfileUser } from "@/Types/profileUser";
 
+import DashboardMainNav from "@/components/DashboardMainNav";
+
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Progress } from "@/components/ui/progress";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 
-type CreateProfileDraft = {
+/* =========================================================
+   ROUTES
+========================================================= */
+
+const CREATE_ALLOCAT_PROFILE_ENDPOINT = "/allocats/profiles";
+const ALLOCAT_PROFILE_ROUTE = "/allocats/profile";
+
+/* =========================================================
+   TYPES
+========================================================= */
+
+type CreateAllocatProfilePayload = {
   idNumber: string;
+  title: string | null;
+  headline: string | null;
+  bio: string | null;
+  hourlyRate: number | null;
+  currency: string;
+  availability: AllocatAvailability;
+  yearsExperience: number | null;
+  skillIds: string[];
+};
+
+type SupportedCountry = {
+  code: "ZW" | "ZA";
+  name: string;
+  currencyCode: "USD" | "ZAR";
+  currencyName: string;
+  currencySymbol: string;
+  cities: string[];
+};
+
+type FormState = {
   title: string;
   headline: string;
   bio: string;
+
+  countryCode: string;
+  city: string;
+  phoneNumber: string;
+
+  yearsExperience: string;
   availability: AllocatAvailability;
   hourlyRate: string;
-  currency: string;
-  yearsExperience: string;
+
+  skillIds: string[];
+
+  idNumber: string;
 };
 
-const initialDraft: CreateProfileDraft = {
-  idNumber: "",
+type VerificationDocumentType =
+  | "qualification"
+  | "certification"
+  | "professional-license"
+  | "training"
+  | "other";
+
+type VerificationDocumentDraft = {
+  id: string;
+  type: VerificationDocumentType;
+  file: File;
+};
+
+type StepDefinition = {
+  title: string;
+  shortTitle: string;
+  description: string;
+  icon: LucideIcon;
+};
+
+type ReviewRowProps = {
+  label: string;
+  value: ReactNode;
+  missing?: boolean;
+};
+
+/* =========================================================
+   TEMPORARY ALLOCAT LOCATION DATA
+========================================================= */
+
+const SUPPORTED_ALLOCAT_COUNTRIES: SupportedCountry[] = [
+  {
+    code: "ZW",
+    name: "Zimbabwe",
+    currencyCode: "USD",
+    currencyName: "United States Dollar",
+    currencySymbol: "$",
+    cities: [
+      "Harare",
+      "Bulawayo",
+      "Chitungwiza",
+      "Mutare",
+      "Gweru",
+      "Masvingo",
+      "Kwekwe",
+      "Kadoma",
+      "Victoria Falls",
+      "Marondera",
+    ],
+  },
+  {
+    code: "ZA",
+    name: "South Africa",
+    currencyCode: "ZAR",
+    currencyName: "South African Rand",
+    currencySymbol: "R",
+    cities: [
+      "Johannesburg",
+      "Cape Town",
+      "Pretoria",
+      "Durban",
+      "Gqeberha",
+      "Bloemfontein",
+      "East London",
+      "Polokwane",
+      "Mbombela",
+      "Kimberley",
+    ],
+  },
+];
+
+/* =========================================================
+   CONSTANTS
+========================================================= */
+
+const MAX_AVATAR_SIZE = 5 * 1024 * 1024;
+const MAX_ID_DOCUMENT_SIZE = 10 * 1024 * 1024;
+const MAX_DOCUMENT_SIZE = 10 * 1024 * 1024;
+const MAX_DOCUMENTS = 8;
+
+const ACCEPTED_AVATAR_TYPES = ["image/jpeg", "image/png", "image/webp"];
+
+const ACCEPTED_DOCUMENT_TYPES = [
+  "application/pdf",
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+];
+
+const STEPS: StepDefinition[] = [
+  {
+    title: "Introduce your work",
+    shortTitle: "Professional",
+    description:
+      "Give clients a clear picture of what you do and the kind of work you are best suited for.",
+    icon: BriefcaseBusinessIcon,
+  },
+  {
+    title: "Where are you based?",
+    shortTitle: "Location",
+    description:
+      "Allocats currently operate from supported regions. Your country also determines the currency used for your profile.",
+    icon: MapPinIcon,
+  },
+  {
+    title: "Set your working preferences",
+    shortTitle: "Work",
+    description:
+      "Tell clients about your experience, availability and starting hourly rate.",
+    icon: CircleDollarSignIcon,
+  },
+  {
+    title: "What can you do?",
+    shortTitle: "Skills",
+    description:
+      "Choose the skills that best represent the work you can confidently deliver.",
+    icon: SparklesIcon,
+  },
+  {
+    title: "Confirm your identity",
+    shortTitle: "Identity",
+    description:
+      "Your identification details stay private and help us verify that professional profiles belong to real people.",
+    icon: IdCardIcon,
+  },
+  {
+    title: "Add professional credentials",
+    shortTitle: "Credentials",
+    description:
+      "Qualifications and certifications help support verification. You can skip these during setup and add them later.",
+    icon: GraduationCapIcon,
+  },
+  {
+    title: "Review your profile",
+    shortTitle: "Review",
+    description:
+      "Check your information before creating your Allocat profile. You can continue improving it afterwards.",
+    icon: FileCheckIcon,
+  },
+];
+
+const initialForm: FormState = {
   title: "",
   headline: "",
   bio: "",
+
+  countryCode: "",
+  city: "",
+  phoneNumber: "",
+
+  yearsExperience: "",
   availability: "available",
   hourlyRate: "",
-  currency: "USD",
-  yearsExperience: "",
+
+  skillIds: [],
+
+  idNumber: "",
 };
 
+/* =========================================================
+   THEME
+========================================================= */
+
+const primaryButton = [
+  "border border-brand-secondary-highlight/15 bg-brand-secondary-highlight text-primary-foreground shadow-none",
+  "transition-opacity duration-150",
+  "hover:border-brand-secondary-highlight/15 hover:bg-brand-secondary-highlight hover:text-primary-foreground hover:opacity-90",
+  "focus-visible:ring-2 focus-visible:ring-brand-secondary-highlight/20 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+  "dark:border-secondary/10 dark:bg-secondary dark:text-secondary-foreground",
+  "dark:hover:border-secondary/10 dark:hover:bg-secondary dark:hover:text-secondary-foreground dark:hover:opacity-90",
+  "dark:focus-visible:ring-secondary/20",
+].join(" ");
+
+const secondaryButton = [
+  "border border-border/65 bg-surface-2/35 text-foreground/75 shadow-none",
+  "transition-opacity duration-150",
+  "hover:border-border/65 hover:bg-surface-2/35 hover:text-foreground/75 hover:opacity-75",
+  "focus-visible:ring-2 focus-visible:ring-brand-secondary-highlight/15 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+  "dark:border-border dark:bg-surface-2/65 dark:text-foreground/75",
+  "dark:hover:border-border dark:hover:bg-surface-2/65 dark:hover:text-foreground/75 dark:hover:opacity-75",
+  "dark:focus-visible:ring-secondary/15",
+].join(" ");
+
+const quietButton = [
+  "bg-transparent text-muted-foreground shadow-none transition-opacity duration-150",
+  "hover:bg-transparent hover:text-foreground hover:opacity-70",
+].join(" ");
+
+const fieldClass = [
+  "h-11 rounded-lg border-border/70 bg-surface-1/70 shadow-none",
+  "transition-[border-color,box-shadow,background-color]",
+  "focus-visible:border-brand-secondary-highlight/35 focus-visible:ring-1 focus-visible:ring-brand-secondary-highlight/20",
+  "dark:bg-surface-2/35 dark:focus-visible:border-secondary/25 dark:focus-visible:ring-secondary/15",
+].join(" ");
+
+const selectTriggerClass = [
+  "h-11 w-full rounded-lg border border-border/70 bg-surface-1/70 px-3.5 text-sm text-foreground shadow-none",
+  "transition-[border-color,box-shadow,background-color]",
+  "focus:border-brand-secondary-highlight/35 focus:ring-1 focus:ring-brand-secondary-highlight/20",
+  "focus-visible:ring-1 focus-visible:ring-brand-secondary-highlight/20",
+  "data-[placeholder]:text-muted-foreground",
+  "disabled:cursor-not-allowed disabled:opacity-60",
+  "dark:border-border dark:bg-surface-2/35",
+  "dark:focus:border-secondary/25 dark:focus:ring-secondary/15",
+  "dark:focus-visible:ring-secondary/15",
+].join(" ");
+
+const selectContentClass = [
+  "rounded-xl border border-border/70 bg-popover p-1.5 text-popover-foreground shadow-none",
+  "dark:border-border dark:bg-popover",
+].join(" ");
+
+const selectItemClass = [
+  "rounded-lg px-2.5 py-2 text-sm text-foreground/80",
+  "focus:bg-surface-3/60 focus:text-foreground",
+  "data-[highlighted]:bg-surface-3/60 data-[highlighted]:text-foreground",
+  "dark:focus:bg-surface-3/70 dark:focus:text-foreground",
+  "dark:data-[highlighted]:bg-surface-3/70 dark:data-[highlighted]:text-foreground",
+].join(" ");
+
+const cardSurface = "border-border/55 bg-card dark:border-border dark:bg-card";
+
+const quietSurface =
+  "border-border/55 bg-surface-2/30 dark:border-border dark:bg-surface-2/55";
+
+const accentIconSurface = [
+  "bg-brand-secondary-highlight/[0.08] text-brand-secondary-highlight ring-1 ring-inset ring-brand-secondary-highlight/10",
+  "dark:bg-secondary/[0.07] dark:text-secondary dark:ring-secondary/10",
+].join(" ");
+
+const skillTagClass = [
+  "inline-flex min-h-8 items-center gap-2 rounded-lg px-3 py-1.5",
+  "bg-brand-secondary-highlight/[0.08] text-brand-secondary-highlight",
+  "ring-1 ring-inset ring-brand-secondary-highlight/10",
+  "text-xs font-semibold",
+  "dark:bg-secondary/[0.08] dark:text-secondary dark:ring-secondary/10",
+].join(" ");
+
+/* =========================================================
+   PAGE
+========================================================= */
+
 function CreateAllocatProfile() {
-  const { user } = useAuth();
   const navigate = useNavigate();
+  const { user, refreshUser } = useAuth();
 
-  const [draft, setDraft] =
-    useState<CreateProfileDraft>(initialDraft);
+  const [accountProfile, setAccountProfile] = useState<ProfileUser | null>(
+    null,
+  );
+  const [skills, setSkills] = useState<AllocatSkill[]>([]);
 
-  const [skillOptions, setSkillOptions] =
-    useState<AllocatSkill[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadingSkills, setLoadingSkills] = useState(false);
+  const [pageError, setPageError] = useState<string | null>(null);
 
-  const [selectedSkills, setSelectedSkills] =
-    useState<AllocatSkill[]>([]);
+  const [step, setStep] = useState(0);
+  const [form, setForm] = useState<FormState>(initialForm);
+  const [stepError, setStepError] = useState<string | null>(null);
 
-  const [loadingSkills, setLoadingSkills] =
-    useState(true);
+  const [creating, setCreating] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
-  const [skillError, setSkillError] =
-    useState<string | null>(null);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const avatarInputRef = useRef<HTMLInputElement | null>(null);
 
-  const [formError, setFormError] =
-    useState<string | null>(null);
+  const [idDocument, setIdDocument] = useState<File | null>(null);
+  const idDocumentInputRef = useRef<HTMLInputElement | null>(null);
 
-  const [submitting, setSubmitting] =
-    useState(false);
+  const [documentType, setDocumentType] =
+    useState<VerificationDocumentType>("qualification");
+
+  const [verificationDocuments, setVerificationDocuments] = useState<
+    VerificationDocumentDraft[]
+  >([]);
+
+  const documentInputRef = useRef<HTMLInputElement | null>(null);
+
+  /* =======================================================
+     LOAD SKILLS
+  ======================================================= */
 
   const loadSkills = useCallback(async () => {
     try {
       setLoadingSkills(true);
-      setSkillError(null);
 
-      const response = await api.get<AllocatSkill[]>(
-        "/skills",
-        {
-          withCredentials: true,
-        },
+      const response = await api.get<AllocatSkill[]>("/skills", {
+        withCredentials: true,
+      });
+
+      setSkills(
+        [...response.data].sort((a, b) => a.name.localeCompare(b.name)),
       );
-
-      setSkillOptions(response.data);
     } catch (error) {
       console.error("Could not load skills:", error);
 
-      setSkillError(
-        getApiErrorMessage(
-          error,
-          "The skill catalogue could not be loaded.",
-        ),
+      setPageError(
+        getApiErrorMessage(error, "The skill catalogue could not be loaded."),
       );
     } finally {
       setLoadingSkills(false);
     }
   }, []);
 
-  useEffect(() => {
-    void loadSkills();
-  }, [loadSkills]);
+  /* =======================================================
+     INITIAL DATA
+  ======================================================= */
 
-  const completionItems = useMemo(
-    () => [
-      {
-        label: "Identity",
-        done: Boolean(draft.idNumber.trim()),
-      },
-      {
-        label: "Professional title",
-        done: Boolean(draft.title.trim()),
-      },
-      {
-        label: "Headline",
-        done: Boolean(draft.headline.trim()),
-      },
-      {
-        label: "Skills",
-        done: selectedSkills.length >= 3,
-      },
-      {
-        label: "Working details",
-        done:
-          draft.hourlyRate !== "" &&
-          draft.yearsExperience !== "",
-      },
-      {
-        label: "Bio",
-        done: Boolean(draft.bio.trim()),
-      },
-    ],
-    [draft, selectedSkills.length],
-  );
-
-  const completed = completionItems.filter(
-    (item) => item.done,
-  ).length;
-
-  const completion = Math.round(
-    (completed / completionItems.length) * 100,
-  );
-
-  function updateDraft<K extends keyof CreateProfileDraft>(
-    key: K,
-    value: CreateProfileDraft[K],
-  ) {
-    setDraft((current) => ({
-      ...current,
-      [key]: value,
-    }));
-  }
-
-  async function handleSubmit(
-    event: FormEvent<HTMLFormElement>,
-  ) {
-    event.preventDefault();
-
-    if (submitting) {
+  const loadPage = useCallback(async () => {
+    if (!user?.isAllocat) {
       return;
     }
 
-    setFormError(null);
+    try {
+      setLoading(true);
+      setPageError(null);
 
-    const validationError = validateDraft(
-      draft,
-      selectedSkills,
+      try {
+        await api.get<MyAllocatProfile>("/allocats/profiles/me", {
+          withCredentials: true,
+        });
+
+        navigate(ALLOCAT_PROFILE_ROUTE, {
+          replace: true,
+        });
+
+        return;
+      } catch (error) {
+        if (!isAxiosError(error) || error.response?.status !== 404) {
+          throw error;
+        }
+      }
+
+      const accountResponse = await api.get<ProfileUser>("/profiles/me", {
+        withCredentials: true,
+      });
+
+      const account = accountResponse.data;
+      const location = inferSupportedAllocatLocation(account.location);
+
+      setAccountProfile(account);
+
+      setForm((current) => ({
+        ...current,
+        phoneNumber: account.phoneNumber ?? "",
+        countryCode: location?.countryCode ?? "",
+        city: location?.city ?? "",
+      }));
+
+      await loadSkills();
+    } catch (error) {
+      console.error("Could not start Allocat setup:", error);
+
+      setPageError(
+        getApiErrorMessage(error, "Allocat setup could not be loaded."),
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, [user?.isAllocat, navigate, loadSkills]);
+
+  useEffect(() => {
+    if (!user?.isAllocat) {
+      return;
+    }
+
+    void loadPage();
+  }, [user?.isAllocat, loadPage]);
+
+  useEffect(() => {
+    return () => {
+      if (avatarPreview) {
+        URL.revokeObjectURL(avatarPreview);
+      }
+    };
+  }, [avatarPreview]);
+
+  /* =======================================================
+     DERIVED
+  ======================================================= */
+
+  const currentStep = STEPS[step];
+
+  const selectedCountry = useMemo(
+    () =>
+      SUPPORTED_ALLOCAT_COUNTRIES.find(
+        (country) => country.code === form.countryCode,
+      ) ?? null,
+    [form.countryCode],
+  );
+
+  const availableCities = selectedCountry?.cities ?? [];
+  const currencyCode = selectedCountry?.currencyCode ?? "USD";
+  const currencyName = selectedCountry?.currencyName ?? "United States Dollar";
+  const currencySymbol = selectedCountry?.currencySymbol ?? "$";
+
+  const formattedLocation =
+    selectedCountry && form.city ? `${form.city}, ${selectedCountry.name}` : "";
+
+  const selectedSkills = useMemo(
+    () =>
+      form.skillIds
+        .map((skillId) => skills.find((skill) => skill.id === skillId))
+        .filter((skill): skill is AllocatSkill => Boolean(skill)),
+    [form.skillIds, skills],
+  );
+
+  const initials = useMemo(
+    () => getInitials(accountProfile?.fullName),
+    [accountProfile?.fullName],
+  );
+
+  const progress = ((step + 1) / STEPS.length) * 100;
+
+  /* =======================================================
+     FIELD UPDATES
+  ======================================================= */
+
+  function updateField<K extends keyof FormState>(key: K, value: FormState[K]) {
+    setForm((current) => ({
+      ...current,
+      [key]: value,
+    }));
+
+    setStepError(null);
+    setSubmitError(null);
+  }
+
+  function handleCountryChange(countryCode: string) {
+    setForm((current) => ({
+      ...current,
+      countryCode,
+      city: "",
+    }));
+
+    setStepError(null);
+    setSubmitError(null);
+  }
+
+  /* =======================================================
+     STEP NAVIGATION
+  ======================================================= */
+
+  function goNext() {
+    const error = validateStep(step, form);
+
+    if (error) {
+      setStepError(error);
+      return;
+    }
+
+    setStepError(null);
+    setStep((current) => Math.min(current + 1, STEPS.length - 1));
+  }
+
+  function goBack() {
+    setStepError(null);
+    setStep((current) => Math.max(current - 1, 0));
+  }
+
+  /* =======================================================
+     PROFILE PICTURE
+  ======================================================= */
+
+  function handleAvatarChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0] ?? null;
+
+    setStepError(null);
+
+    if (!file) {
+      return;
+    }
+
+    if (!ACCEPTED_AVATAR_TYPES.includes(file.type)) {
+      setStepError("Choose a JPEG, PNG or WebP profile picture.");
+      event.target.value = "";
+      return;
+    }
+
+    if (file.size > MAX_AVATAR_SIZE) {
+      setStepError("Your profile picture must be smaller than 5 MB.");
+      event.target.value = "";
+      return;
+    }
+
+    if (avatarPreview) {
+      URL.revokeObjectURL(avatarPreview);
+    }
+
+    setAvatarFile(file);
+    setAvatarPreview(URL.createObjectURL(file));
+  }
+
+  function removeAvatar() {
+    if (avatarPreview) {
+      URL.revokeObjectURL(avatarPreview);
+    }
+
+    setAvatarFile(null);
+    setAvatarPreview(null);
+
+    if (avatarInputRef.current) {
+      avatarInputRef.current.value = "";
+    }
+  }
+
+  /* =======================================================
+     ID DOCUMENT
+  ======================================================= */
+
+  function handleIdDocumentChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0] ?? null;
+
+    setStepError(null);
+
+    if (!file) {
+      return;
+    }
+
+    if (!ACCEPTED_DOCUMENT_TYPES.includes(file.type)) {
+      setStepError("Your ID document must be a PDF, JPEG, PNG or WebP file.");
+      event.target.value = "";
+      return;
+    }
+
+    if (file.size > MAX_ID_DOCUMENT_SIZE) {
+      setStepError("Your ID document must be smaller than 10 MB.");
+      event.target.value = "";
+      return;
+    }
+
+    setIdDocument(file);
+  }
+
+  function removeIdDocument() {
+    setIdDocument(null);
+
+    if (idDocumentInputRef.current) {
+      idDocumentInputRef.current.value = "";
+    }
+  }
+
+  /* =======================================================
+     VERIFICATION DOCUMENTS
+  ======================================================= */
+
+  function handleVerificationFiles(event: ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(event.target.files ?? []);
+
+    setStepError(null);
+
+    if (files.length === 0) {
+      return;
+    }
+
+    if (verificationDocuments.length + files.length > MAX_DOCUMENTS) {
+      setStepError(
+        `You can add up to ${MAX_DOCUMENTS} verification documents.`,
+      );
+
+      event.target.value = "";
+      return;
+    }
+
+    for (const file of files) {
+      if (!ACCEPTED_DOCUMENT_TYPES.includes(file.type)) {
+        setStepError(
+          "Verification documents must be PDF, JPEG, PNG or WebP files.",
+        );
+
+        event.target.value = "";
+        return;
+      }
+
+      if (file.size > MAX_DOCUMENT_SIZE) {
+        setStepError("Each verification document must be smaller than 10 MB.");
+        event.target.value = "";
+        return;
+      }
+    }
+
+    const additions: VerificationDocumentDraft[] = files.map((file, index) => ({
+      id: `${Date.now()}-${index}-${file.name}`,
+      type: documentType,
+      file,
+    }));
+
+    setVerificationDocuments((current) => [...current, ...additions]);
+    event.target.value = "";
+  }
+
+  function removeVerificationDocument(id: string) {
+    setVerificationDocuments((current) =>
+      current.filter((document) => document.id !== id),
     );
+  }
 
-    if (validationError) {
-      setFormError(validationError);
+  /* =======================================================
+     CREATE
+  ======================================================= */
+
+  async function createProfile() {
+    const finalError = validateAll(form);
+
+    if (finalError) {
+      setSubmitError(finalError);
+      return;
+    }
+
+    if (!accountProfile || !selectedCountry || creating) {
       return;
     }
 
     const payload: CreateAllocatProfilePayload = {
-      idNumber: draft.idNumber.trim(),
-      title: cleanOptional(draft.title),
-      headline: cleanOptional(draft.headline),
-      bio: cleanOptional(draft.bio),
-      hourlyRate: parseNullableNumber(draft.hourlyRate),
-      currency: draft.currency.trim().toUpperCase(),
-      availability: draft.availability,
-      yearsExperience: parseNullableNumber(
-        draft.yearsExperience,
-      ),
-      skillIds: selectedSkills.map((skill) => skill.id),
+      idNumber: form.idNumber.trim(),
+      title: cleanOptional(form.title),
+      headline: cleanOptional(form.headline),
+      bio: cleanOptional(form.bio),
+      hourlyRate: parseNullableNumber(form.hourlyRate),
+      currency: selectedCountry.currencyCode,
+      availability: form.availability,
+      yearsExperience: parseNullableInteger(form.yearsExperience),
+      skillIds: form.skillIds,
     };
 
-    try {
-      setSubmitting(true);
+    setCreating(true);
+    setSubmitError(null);
 
+    try {
       await api.post<MyAllocatProfile>(
-        "/allocats/profiles",
+        CREATE_ALLOCAT_PROFILE_ENDPOINT,
         payload,
         {
           withCredentials: true,
         },
       );
-
-      toast.success("Allocat profile created", {
-        description:
-          "Your professional profile is ready.",
-      });
-
-      navigate("/allocats/profile", {
-        replace: true,
-      });
     } catch (error) {
-      console.error(
-        "Could not create Allocat profile:",
-        error,
+      console.error("Could not create Allocat profile:", error);
+
+      setSubmitError(
+        getApiErrorMessage(error, "Your Allocat profile could not be created."),
       );
 
-      setFormError(
-        getApiErrorMessage(
-          error,
-          "Your Allocat profile could not be created.",
-        ),
-      );
-    } finally {
-      setSubmitting(false);
+      setCreating(false);
+      return;
     }
+
+    const warnings: string[] = [];
+    const newLocation = `${form.city}, ${selectedCountry.name}`;
+
+    const accountChanged =
+      newLocation !== (accountProfile.location ?? "").trim() ||
+      form.phoneNumber.trim() !== (accountProfile.phoneNumber ?? "").trim();
+
+    if (accountChanged) {
+      try {
+        const response = await api.patch<ProfileUser>(
+          "/profiles/me",
+          {
+            fullName: accountProfile.fullName,
+            phoneNumber: form.phoneNumber.trim() || null,
+            location: newLocation,
+          },
+          {
+            withCredentials: true,
+          },
+        );
+
+        setAccountProfile(response.data);
+      } catch (error) {
+        console.error("Could not update account details:", error);
+        warnings.push("Your location or phone number could not be updated.");
+      }
+    }
+
+    if (avatarFile) {
+      try {
+        const data = new FormData();
+        data.append("file", avatarFile);
+
+        await api.post("/profiles/profile-picture", data, {
+          withCredentials: true,
+        });
+      } catch (error) {
+        console.error("Could not upload profile picture:", error);
+        warnings.push("Your profile picture could not be uploaded.");
+      }
+    }
+
+    /*
+     * ID document and credential uploads remain intentionally
+     * unwired until the verification backend is available.
+     */
+
+    try {
+      await refreshUser();
+    } catch (error) {
+      console.error("Could not refresh authenticated user:", error);
+    }
+
+    setCreating(false);
+
+    toast.success("Your Allocat profile is ready", {
+      description: "You can now review and manage your professional profile.",
+    });
+
+    if (warnings.length > 0) {
+      toast.warning("Some profile details need attention", {
+        description: warnings.join(" "),
+      });
+    }
+
+    navigate(ALLOCAT_PROFILE_ROUTE, {
+      replace: true,
+    });
   }
+
+  /* =======================================================
+     GUARD
+  ======================================================= */
+
+  if (user && !user.isAllocat) {
+    return <Navigate to="/projects" replace />;
+  }
+
+  if (!user || loading) {
+    return <CreateAllocatProfileSkeleton />;
+  }
+
+  if (pageError || !accountProfile) {
+    return (
+      <CreateAllocatProfileError
+        message={pageError ?? "Allocat setup could not be loaded."}
+        onRetry={loadPage}
+      />
+    );
+  }
+
+  /* =======================================================
+     RENDER
+  ======================================================= */
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -2105,621 +863,1749 @@ function CreateAllocatProfile() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <DashboardMainNav>
             <div>
-              <p className="text-[0.58rem] font-medium uppercase tracking-[0.15em] text-muted-foreground">
+              <p className="text-[0.52rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                 Allocat
               </p>
 
-              <p className="mt-0.5 text-xs font-semibold">
-                Create profile
+              <p className="mt-0.5 text-xs font-semibold text-foreground">
+                Profile setup
               </p>
             </div>
           </DashboardMainNav>
         </div>
       </header>
 
-      <main className="container mx-auto px-5 py-8 md:px-8 lg:py-12">
-        <section className="border-b border-border pb-10">
-          <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
-            <div className="max-w-3xl">
-              <div className="inline-flex items-center gap-2 rounded-lg bg-primary/[0.06] px-3 py-1.5 text-primary">
-                <SparklesIcon size={12} />
+      <main className="container mx-auto px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
+        <div className="mx-auto max-w-6xl">
+          <div className="max-w-3xl">
+            <div className="flex items-center gap-2.5">
+              <span className="h-1.5 w-6 rounded-full bg-brand-secondary-highlight dark:bg-secondary" />
 
-                <span className="text-[0.6rem] font-bold uppercase tracking-[0.17em]">
-                  Become an Allocat
-                </span>
-              </div>
-
-              <h1 className="mt-5 max-w-3xl text-4xl font-black leading-[0.96] tracking-[-0.05em] sm:text-5xl lg:text-[3.6rem]">
-                Build your professional profile.
-              </h1>
-
-              <p className="mt-5 max-w-2xl text-sm leading-7 text-muted-foreground sm:text-base">
-                Give clients enough context to understand your
-                experience, your skills and the kind of work you
-                are ready to take on.
+              <p className="text-[0.52rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                Become an Allocat
               </p>
             </div>
 
-            <div className="w-full max-w-[280px]">
-              <div className="flex items-end justify-between gap-5">
-                <div>
-                  <p className="text-[0.6rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                    Profile strength
-                  </p>
+            <h1 className="mt-5 text-3xl font-semibold leading-tight tracking-[-0.04em] text-foreground/95 sm:text-4xl lg:text-[2.75rem]">
+              Build your professional profile
+            </h1>
 
-                  <p className="mt-1 text-[0.68rem] text-muted-foreground">
-                    {completed} of {completionItems.length} essentials
-                  </p>
-                </div>
-
-                <span className="text-3xl font-black tracking-[-0.05em] text-primary">
-                  {completion}%
-                </span>
-              </div>
-
-              <Progress
-                value={completion}
-                className="mt-3 h-1.5"
-              />
-            </div>
+            <p className="mt-4 max-w-2xl text-sm leading-7 text-muted-foreground sm:text-base">
+              Tell us about the work you do, where you are based and how you
+              prefer to work. We’ll keep each step focused.
+            </p>
           </div>
-        </section>
 
-        <div className="grid items-start gap-12 xl:grid-cols-[minmax(0,1fr)_320px] xl:gap-16">
-          <form
-            onSubmit={handleSubmit}
-            className="min-w-0"
-          >
-            <ProfileFormSection
-              icon={IdCardIcon}
-              title="Identity"
-              description="Your identification details remain private and are used for your professional account."
-            >
-              <Field label="ID number" htmlFor="idNumber">
-                <Input
-                  id="idNumber"
-                  value={draft.idNumber}
-                  disabled={submitting}
-                  maxLength={50}
-                  placeholder="Enter your ID number"
-                  onChange={(event) =>
-                    updateDraft(
-                      "idNumber",
-                      event.target.value,
-                    )
-                  }
-                  className="h-11 rounded-lg !bg-transparent shadow-none"
-                />
+          <div className="mt-8 flex items-center justify-between gap-5">
+            <p className="text-xs font-semibold text-foreground">
+              Step {step + 1} of {STEPS.length}
+            </p>
 
-                <p className="mt-2 text-[0.62rem] leading-5 text-muted-foreground">
-                  This is not shown on your public profile.
-                </p>
-              </Field>
-            </ProfileFormSection>
+            <p className="text-xs text-muted-foreground">
+              {Math.round(progress)}% complete
+            </p>
+          </div>
 
-            <ProfileFormSection
-              icon={UserRoundCheckIcon}
-              title="Professional identity"
-              description="Describe what you do and how you want clients to understand your expertise."
-            >
-              <div className="grid gap-5 sm:grid-cols-2">
-                <Field
-                  label="Professional title"
-                  htmlFor="title"
+          <SetupProgress value={progress} className="mt-3" />
+
+          <div className="mt-8 grid items-start gap-8 lg:grid-cols-[250px_minmax(0,1fr)] lg:gap-12">
+            {/* =================================================
+                STEPPER
+            ================================================= */}
+
+            <aside className="hidden lg:block">
+              <div className="sticky top-28">
+                <nav
+                  aria-label="Allocat profile setup progress"
+                  className="space-y-1"
                 >
-                  <Input
-                    id="title"
-                    value={draft.title}
-                    disabled={submitting}
-                    maxLength={120}
-                    placeholder="e.g. Residential Electrician"
-                    onChange={(event) =>
-                      updateDraft(
-                        "title",
-                        event.target.value,
-                      )
-                    }
-                    className="h-11 rounded-lg !bg-transparent shadow-none"
-                  />
-                </Field>
+                  {STEPS.map((item, index) => {
+                    const Icon = item.icon;
+                    const active = index === step;
+                    const complete = index < step;
 
-                <Field
-                  label="Professional headline"
-                  htmlFor="headline"
-                >
-                  <Input
-                    id="headline"
-                    value={draft.headline}
-                    disabled={submitting}
-                    maxLength={180}
-                    placeholder="A short statement about your work"
-                    onChange={(event) =>
-                      updateDraft(
-                        "headline",
-                        event.target.value,
-                      )
-                    }
-                    className="h-11 rounded-lg !bg-transparent shadow-none"
-                  />
-                </Field>
-              </div>
-
-              <div className="mt-6">
-                <Field
-                  label="Professional bio"
-                  htmlFor="bio"
-                >
-                  <div className="overflow-hidden rounded-xl border border-border focus-within:border-primary/40">
-                    <Textarea
-                      id="bio"
-                      value={draft.bio}
-                      disabled={submitting}
-                      maxLength={500}
-                      placeholder="Tell clients about your experience, strengths and the kind of work you do best."
-                      onChange={(event) =>
-                        updateDraft(
-                          "bio",
-                          event.target.value,
-                        )
-                      }
-                      className={[
-                        "min-h-40 resize-none rounded-none border-0",
-                        "!bg-transparent px-4 py-4 leading-7",
-                        "shadow-none focus-visible:ring-0",
-                      ].join(" ")}
-                    />
-
-                    <div className="flex items-center justify-between border-t border-border px-4 py-2.5">
-                      <span className="text-[0.62rem] text-muted-foreground">
-                        Clear and specific works best.
-                      </span>
-
-                      <span className="text-[0.62rem] tabular-nums text-muted-foreground">
-                        {draft.bio.length}/500
-                      </span>
-                    </div>
-                  </div>
-                </Field>
-              </div>
-            </ProfileFormSection>
-
-            <ProfileFormSection
-              icon={BriefcaseBusinessIcon}
-              title="Skills"
-              description="Select the capabilities clients should be able to find you for."
-            >
-              <SkillPicker
-                options={skillOptions}
-                selected={selectedSkills}
-                onChange={setSelectedSkills}
-                loading={loadingSkills}
-                disabled={submitting}
-                error={skillError}
-              />
-
-              <div className="mt-3 flex items-center gap-2 text-[0.62rem] text-muted-foreground">
-                <CheckCircle2Icon
-                  size={12}
-                  className={
-                    selectedSkills.length >= 3
-                      ? "text-primary"
-                      : ""
-                  }
-                />
-
-                Three or more relevant skills gives clients
-                better context.
-              </div>
-            </ProfileFormSection>
-
-            <ProfileFormSection
-              icon={CircleDollarSignIcon}
-              title="Working details"
-              description="Set your current availability, experience and starting rate."
-              last
-            >
-              <div className="grid gap-5 sm:grid-cols-2">
-                <Field
-                  label="Availability"
-                  htmlFor="availability"
-                >
-                  <select
-                    id="availability"
-                    value={draft.availability}
-                    disabled={submitting}
-                    onChange={(event) =>
-                      updateDraft(
-                        "availability",
-                        event.target
-                          .value as AllocatAvailability,
-                      )
-                    }
-                    className={[
-                      "h-11 w-full rounded-lg border border-border",
-                      "bg-background px-3.5 text-sm outline-none",
-                      "focus:border-primary/40",
-                      "disabled:cursor-not-allowed disabled:opacity-60",
-                    ].join(" ")}
-                  >
-                    <option value="available">
-                      Available
-                    </option>
-                    <option value="busy">
-                      Busy
-                    </option>
-                    <option value="unavailable">
-                      Unavailable
-                    </option>
-                  </select>
-                </Field>
-
-                <Field
-                  label="Years of experience"
-                  htmlFor="yearsExperience"
-                >
-                  <Input
-                    id="yearsExperience"
-                    type="number"
-                    min={0}
-                    max={80}
-                    value={draft.yearsExperience}
-                    disabled={submitting}
-                    placeholder="e.g. 5"
-                    onChange={(event) =>
-                      updateDraft(
-                        "yearsExperience",
-                        event.target.value,
-                      )
-                    }
-                    className="h-11 rounded-lg !bg-transparent shadow-none"
-                  />
-                </Field>
-
-                <Field
-                  label="Hourly rate"
-                  htmlFor="hourlyRate"
-                >
-                  <Input
-                    id="hourlyRate"
-                    type="number"
-                    min={0}
-                    step="0.01"
-                    value={draft.hourlyRate}
-                    disabled={submitting}
-                    placeholder="e.g. 25"
-                    onChange={(event) =>
-                      updateDraft(
-                        "hourlyRate",
-                        event.target.value,
-                      )
-                    }
-                    className="h-11 rounded-lg !bg-transparent shadow-none"
-                  />
-                </Field>
-
-                <Field
-                  label="Currency"
-                  htmlFor="currency"
-                >
-                  <Input
-                    id="currency"
-                    value={draft.currency}
-                    disabled={submitting}
-                    maxLength={3}
-                    placeholder="USD"
-                    onChange={(event) =>
-                      updateDraft(
-                        "currency",
-                        event.target.value.toUpperCase(),
-                      )
-                    }
-                    className="h-11 rounded-lg !bg-transparent uppercase shadow-none"
-                  />
-                </Field>
-              </div>
-            </ProfileFormSection>
-
-            {formError && (
-              <InlineError message={formError} />
-            )}
-
-            <div className="mt-8 flex flex-col gap-4 border-t border-border pt-7 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p className="text-xs font-semibold">
-                  Ready when you are.
-                </p>
-
-                <p className="mt-1 max-w-md text-[0.65rem] leading-5 text-muted-foreground">
-                  You can continue improving these details after
-                  your profile has been created.
-                </p>
-              </div>
-
-              <Button
-                type="submit"
-                disabled={submitting || loadingSkills}
-                className="h-11 rounded-lg px-6 text-xs shadow-none"
-              >
-                {submitting ? (
-                  <>
-                    <LoaderCircleIcon
-                      size={14}
-                      className="animate-spin"
-                    />
-                    Creating profile
-                  </>
-                ) : (
-                  <>
-                    Create profile
-                    <SparklesIcon size={14} />
-                  </>
-                )}
-              </Button>
-            </div>
-          </form>
-
-          <aside className="hidden xl:block">
-            <div className="sticky top-24 pt-10">
-              <p className="text-[0.58rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                Live preview
-              </p>
-
-              <div className="mt-3 overflow-hidden rounded-2xl border border-border bg-card p-5">
-                <div className="flex items-start gap-3">
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/[0.08] text-primary">
-                    <UserRoundCheckIcon size={18} />
-                  </span>
-
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-bold">
-                      {user?.fullName || "New Allocat"}
-                    </p>
-
-                    <p className="mt-0.5 text-[0.65rem] text-muted-foreground">
-                      {draft.title.trim() ||
-                        "Professional title"}
-                    </p>
-                  </div>
-                </div>
-
-                <p className="mt-5 text-sm font-semibold leading-6">
-                  {draft.headline.trim() ||
-                    "Your professional headline will appear here."}
-                </p>
-
-                <div className="mt-5 grid grid-cols-2 gap-px overflow-hidden rounded-lg bg-border">
-                  <PreviewStat
-                    label="Rate"
-                    value={
-                      draft.hourlyRate
-                        ? formatMoney(
-                            Number(draft.hourlyRate),
-                            draft.currency,
-                          )
-                        : "Not set"
-                    }
-                  />
-
-                  <PreviewStat
-                    label="Experience"
-                    value={
-                      draft.yearsExperience
-                        ? `${draft.yearsExperience} yrs`
-                        : "Not set"
-                    }
-                  />
-                </div>
-
-                <div className="mt-5 flex flex-wrap gap-1.5">
-                  {selectedSkills.length > 0 ? (
-                    selectedSkills.slice(0, 5).map((skill) => (
-                      <span
-                        key={skill.id}
-                        className="rounded-md bg-primary/[0.07] px-2.5 py-1 text-[0.6rem] font-semibold text-primary"
-                      >
-                        {skill.name}
-                      </span>
-                    ))
-                  ) : (
-                    <p className="text-[0.68rem] text-muted-foreground">
-                      Your selected skills will appear here.
-                    </p>
-                  )}
-                </div>
-
-                <p className="mt-5 line-clamp-5 text-xs leading-6 text-muted-foreground">
-                  {draft.bio.trim() ||
-                    "Your professional bio will shape this preview as you write."}
-                </p>
-              </div>
-
-              <div className="mt-6 border-t border-border pt-5">
-                <p className="text-[0.58rem] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
-                  Profile essentials
-                </p>
-
-                <div className="mt-4 space-y-3">
-                  {completionItems.map((item) => (
-                    <div
-                      key={item.label}
-                      className="flex items-center gap-2.5"
-                    >
-                      <CheckCircle2Icon
-                        size={14}
-                        className={
-                          item.done
-                            ? "text-primary"
-                            : "text-muted-foreground/35"
-                        }
-                      />
-
-                      <span
+                    return (
+                      <div
+                        key={item.shortTitle}
                         className={[
-                          "text-[0.68rem]",
-                          item.done
-                            ? "font-medium text-foreground"
-                            : "text-muted-foreground",
+                          "flex items-center gap-3 rounded-xl px-3 py-3",
+                          active ? "bg-surface-2/55 dark:bg-surface-2/65" : "",
                         ].join(" ")}
                       >
-                        {item.label}
-                      </span>
-                    </div>
-                  ))}
+                        <span
+                          className={[
+                            "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
+                            complete
+                              ? "bg-brand-secondary-highlight text-primary-foreground dark:bg-secondary dark:text-secondary-foreground"
+                              : active
+                                ? accentIconSurface
+                                : "bg-surface-2/45 text-muted-foreground dark:bg-surface-2",
+                          ].join(" ")}
+                        >
+                          {complete ? (
+                            <CheckIcon size={13} />
+                          ) : (
+                            <Icon size={14} />
+                          )}
+                        </span>
+
+                        <div className="min-w-0">
+                          <p
+                            className={[
+                              "text-xs",
+                              active
+                                ? "font-semibold text-foreground"
+                                : "font-medium text-muted-foreground",
+                            ].join(" ")}
+                          >
+                            {item.shortTitle}
+                          </p>
+
+                          <p className="mt-0.5 text-[0.58rem] text-muted-foreground">
+                            Step {index + 1}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </nav>
+
+                <div className="mt-6 border-t border-border/50 pt-5">
+                  <div className="flex items-start gap-2.5">
+                    <ShieldCheckIcon
+                      size={14}
+                      className="mt-0.5 shrink-0 text-brand-secondary-highlight dark:text-secondary"
+                    />
+
+                    <p className="text-[0.62rem] leading-5 text-muted-foreground">
+                      Your identity information and verification documents are
+                      private and are never displayed to clients.
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-          </aside>
+            </aside>
+
+            {/* =================================================
+                FORM CARD
+            ================================================= */}
+
+            <section
+              className={[
+                "min-w-0 rounded-2xl border p-5 sm:p-7 lg:p-8",
+                cardSurface,
+              ].join(" ")}
+            >
+              <div className="flex items-start gap-4 border-b border-border/50 pb-6">
+                <span
+                  className={[
+                    "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg",
+                    accentIconSurface,
+                  ].join(" ")}
+                >
+                  <currentStep.icon size={17} />
+                </span>
+
+                <div className="min-w-0">
+                  <p className="text-[0.52rem] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
+                    Step {step + 1}
+                  </p>
+
+                  <h2 className="mt-1.5 text-xl font-semibold tracking-[-0.025em] text-foreground sm:text-2xl">
+                    {currentStep.title}
+                  </h2>
+
+                  <p className="mt-2 max-w-2xl text-xs leading-6 text-muted-foreground sm:text-sm">
+                    {currentStep.description}
+                  </p>
+                </div>
+              </div>
+
+              {/* =================================================
+                  STEP 1 — PROFESSIONAL
+              ================================================= */}
+
+              {step === 0 && (
+                <div className="mt-7 grid gap-6 sm:grid-cols-2">
+                  <ProfileField label="Professional title" hint="Optional">
+                    <Input
+                      value={form.title}
+                      maxLength={120}
+                      placeholder="e.g. Frontend Developer"
+                      onChange={(event) =>
+                        updateField("title", event.target.value)
+                      }
+                      className={fieldClass}
+                    />
+
+                    <FieldHelp>
+                      Use a title clients will immediately understand.
+                    </FieldHelp>
+                  </ProfileField>
+
+                  <ProfileField label="Headline" hint="Optional">
+                    <Input
+                      value={form.headline}
+                      maxLength={180}
+                      placeholder="e.g. Building fast, accessible web experiences"
+                      onChange={(event) =>
+                        updateField("headline", event.target.value)
+                      }
+                      className={fieldClass}
+                    />
+
+                    <FieldHelp>
+                      A short statement that gives clients a reason to look
+                      closer.
+                    </FieldHelp>
+                  </ProfileField>
+
+                  <div className="sm:col-span-2">
+                    <ProfileField label="Professional bio" hint="Optional">
+                      <Textarea
+                        value={form.bio}
+                        maxLength={500}
+                        placeholder="Tell clients about your experience, strengths and the kind of work you enjoy."
+                        onChange={(event) =>
+                          updateField("bio", event.target.value)
+                        }
+                        className={[
+                          "min-h-36 resize-none rounded-xl leading-7",
+                          "border-border/70 bg-surface-1/70 shadow-none",
+                          "focus-visible:border-brand-secondary-highlight/35 focus-visible:ring-1 focus-visible:ring-brand-secondary-highlight/20",
+                          "dark:bg-surface-2/35 dark:focus-visible:border-secondary/25 dark:focus-visible:ring-secondary/15",
+                        ].join(" ")}
+                      />
+
+                      <div className="flex items-center justify-between gap-4">
+                        <FieldHelp>
+                          Clear and specific usually works best.
+                        </FieldHelp>
+
+                        <p className="mt-2 text-[0.61rem] tabular-nums text-muted-foreground">
+                          {form.bio.length}/500
+                        </p>
+                      </div>
+                    </ProfileField>
+                  </div>
+                </div>
+              )}
+
+              {/* =================================================
+                  STEP 2 — LOCATION
+              ================================================= */}
+
+              {step === 1 && (
+                <div className="mt-7">
+                  <div className="grid gap-6 sm:grid-cols-2">
+                    <ProfileField label="Country">
+                      <Select
+                        value={form.countryCode}
+                        onValueChange={handleCountryChange}
+                      >
+                        <SelectTrigger className={selectTriggerClass}>
+                          <SelectValue placeholder="Select country" />
+                        </SelectTrigger>
+
+                        <SelectContent className={selectContentClass}>
+                          {SUPPORTED_ALLOCAT_COUNTRIES.map((country) => (
+                            <SelectItem
+                              key={country.code}
+                              value={country.code}
+                              className={selectItemClass}
+                            >
+                              {country.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+
+                      <FieldHelp>
+                        Allocats currently register from supported operating
+                        countries.
+                      </FieldHelp>
+                    </ProfileField>
+
+                    <ProfileField label="City">
+                      <Select
+                        value={form.city}
+                        disabled={!selectedCountry}
+                        onValueChange={(value) => updateField("city", value)}
+                      >
+                        <SelectTrigger className={selectTriggerClass}>
+                          <SelectValue
+                            placeholder={
+                              selectedCountry
+                                ? "Select city"
+                                : "Select a country first"
+                            }
+                          />
+                        </SelectTrigger>
+
+                        <SelectContent className={selectContentClass}>
+                          {availableCities.map((city) => (
+                            <SelectItem
+                              key={city}
+                              value={city}
+                              className={selectItemClass}
+                            >
+                              {city}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+
+                      <FieldHelp>
+                        Your public profile will show your city and country.
+                      </FieldHelp>
+                    </ProfileField>
+
+                    <ProfileField label="Phone number" hint="Optional">
+                      <div className="relative">
+                        <PhoneIcon
+                          size={15}
+                          className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground"
+                        />
+
+                        <Input
+                          type="tel"
+                          inputMode="tel"
+                          autoComplete="tel"
+                          maxLength={30}
+                          value={form.phoneNumber}
+                          placeholder={
+                            form.countryCode === "ZA" ? "+27..." : "+263..."
+                          }
+                          onChange={(event) =>
+                            updateField("phoneNumber", event.target.value)
+                          }
+                          className={[fieldClass, "pl-10"].join(" ")}
+                        />
+                      </div>
+
+                      <FieldHelp>
+                        Used for account contact and communication. It is not
+                        shown publicly by default.
+                      </FieldHelp>
+                    </ProfileField>
+                  </div>
+
+                  {selectedCountry && (
+                    <div
+                      className={[
+                        "mt-6 rounded-xl border p-4",
+                        quietSurface,
+                      ].join(" ")}
+                    >
+                      <div className="flex items-start gap-3">
+                        <span
+                          className={[
+                            "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
+                            accentIconSurface,
+                          ].join(" ")}
+                        >
+                          <BanknoteIcon size={15} />
+                        </span>
+
+                        <div>
+                          <p className="text-xs font-semibold text-foreground">
+                            Your profile currency will be{" "}
+                            {selectedCountry.currencyCode}
+                          </p>
+
+                          <p className="mt-1 text-[0.62rem] leading-5 text-muted-foreground">
+                            {selectedCountry.name} profiles use{" "}
+                            {selectedCountry.currencyName}. This is determined
+                            automatically from your operating location.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* =================================================
+                  STEP 3 — WORK
+              ================================================= */}
+
+              {step === 2 && (
+                <div className="mt-7">
+                  <div className="grid gap-6 sm:grid-cols-3">
+                    <ProfileField label="Years of experience" hint="Optional">
+                      <Input
+                        type="number"
+                        inputMode="numeric"
+                        min={0}
+                        max={80}
+                        step={1}
+                        value={form.yearsExperience}
+                        placeholder="e.g. 5"
+                        onChange={(event) =>
+                          updateField("yearsExperience", event.target.value)
+                        }
+                        className={fieldClass}
+                      />
+
+                      <FieldHelp>Use a whole number.</FieldHelp>
+                    </ProfileField>
+
+                    <ProfileField label="Availability">
+                      <Select
+                        value={form.availability}
+                        onValueChange={(value) =>
+                          updateField(
+                            "availability",
+                            value as AllocatAvailability,
+                          )
+                        }
+                      >
+                        <SelectTrigger className={selectTriggerClass}>
+                          <SelectValue />
+                        </SelectTrigger>
+
+                        <SelectContent className={selectContentClass}>
+                          <SelectItem
+                            value="available"
+                            className={selectItemClass}
+                          >
+                            Available
+                          </SelectItem>
+
+                          <SelectItem value="busy" className={selectItemClass}>
+                            Busy
+                          </SelectItem>
+
+                          <SelectItem
+                            value="unavailable"
+                            className={selectItemClass}
+                          >
+                            Unavailable
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+
+                      <FieldHelp>Your current capacity.</FieldHelp>
+                    </ProfileField>
+
+                    <ProfileField
+                      label={`Hourly rate (${currencyCode})`}
+                      hint="Optional"
+                    >
+                      <div className="relative">
+                        <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-semibold text-muted-foreground">
+                          {currencySymbol}
+                        </span>
+
+                        <Input
+                          type="number"
+                          min={0}
+                          max={1000000}
+                          step="0.01"
+                          value={form.hourlyRate}
+                          placeholder="0.00"
+                          onChange={(event) =>
+                            updateField("hourlyRate", event.target.value)
+                          }
+                          className={[fieldClass, "pl-9"].join(" ")}
+                        />
+                      </div>
+
+                      <FieldHelp>
+                        A starting rate, not a fixed project quote.
+                      </FieldHelp>
+                    </ProfileField>
+                  </div>
+
+                  <div className="mt-6 flex items-start gap-2.5 border-t border-border/50 pt-5">
+                    <BanknoteIcon
+                      size={14}
+                      className="mt-0.5 shrink-0 text-brand-secondary-highlight dark:text-secondary"
+                    />
+
+                    <p className="text-[0.62rem] leading-5 text-muted-foreground">
+                      Your rate is shown in{" "}
+                      <span className="font-semibold text-foreground">
+                        {currencyName} ({currencyCode})
+                      </span>{" "}
+                      because your selected operating country is{" "}
+                      <span className="font-semibold text-foreground">
+                        {selectedCountry?.name}
+                      </span>
+                      .
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* =================================================
+                  STEP 4 — SKILLS
+              ================================================= */}
+
+              {step === 3 && (
+                <div className="mt-7">
+                  <ProfileField
+                    label="Your skills"
+                    hint={`${form.skillIds.length}/20 selected`}
+                  >
+                    <ThemedSkillPicker
+                      options={skills}
+                      selected={selectedSkills}
+                      loading={loadingSkills}
+                      disabled={creating}
+                      max={20}
+                      onChange={(nextSkills) =>
+                        updateField(
+                          "skillIds",
+                          nextSkills.map((skill) => skill.id),
+                        )
+                      }
+                    />
+
+                    <FieldHelp>
+                      Choose at least one skill. Three or more relevant skills
+                      will give clients and matching tools better context.
+                    </FieldHelp>
+                  </ProfileField>
+                </div>
+              )}
+
+              {/* =================================================
+                  STEP 5 — IDENTITY
+              ================================================= */}
+
+              {step === 4 && (
+                <div className="mt-7">
+                  <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+                    <ProfileField label="ID number">
+                      <div className="relative">
+                        <IdCardIcon
+                          size={15}
+                          className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground"
+                        />
+
+                        <Input
+                          value={form.idNumber}
+                          maxLength={50}
+                          placeholder="Enter your ID number"
+                          autoComplete="off"
+                          onChange={(event) =>
+                            updateField("idNumber", event.target.value)
+                          }
+                          className={[fieldClass, "pl-10"].join(" ")}
+                        />
+                      </div>
+
+                      <FieldHelp>
+                        Private. Never displayed on your public profile.
+                      </FieldHelp>
+                    </ProfileField>
+
+                    <ProfileField
+                      label="Identity document"
+                      hint="For verification"
+                    >
+                      <input
+                        ref={idDocumentInputRef}
+                        type="file"
+                        accept=".pdf,image/jpeg,image/png,image/webp"
+                        onChange={handleIdDocumentChange}
+                        className="hidden"
+                      />
+
+                      {idDocument ? (
+                        <div
+                          className={[
+                            "flex min-h-28 items-center gap-3 rounded-xl border p-4",
+                            quietSurface,
+                          ].join(" ")}
+                        >
+                          <span
+                            className={[
+                              "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
+                              accentIconSurface,
+                            ].join(" ")}
+                          >
+                            <FileBadgeIcon size={15} />
+                          </span>
+
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-xs font-semibold text-foreground">
+                              {idDocument.name}
+                            </p>
+
+                            <p className="mt-1 text-[0.58rem] text-muted-foreground">
+                              {formatFileSize(idDocument.size)}
+                            </p>
+
+                            <button
+                              type="button"
+                              onClick={() =>
+                                idDocumentInputRef.current?.click()
+                              }
+                              className="mt-2 text-[0.62rem] font-semibold text-brand-secondary-highlight transition-opacity hover:opacity-70 dark:text-secondary"
+                            >
+                              Replace document
+                            </button>
+                          </div>
+
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={removeIdDocument}
+                            className={[
+                              "h-8 w-8 shrink-0 rounded-lg",
+                              quietButton,
+                            ].join(" ")}
+                            aria-label="Remove ID document"
+                          >
+                            <Trash2Icon size={13} />
+                          </Button>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => idDocumentInputRef.current?.click()}
+                          className={[
+                            "flex min-h-28 w-full items-center gap-3 rounded-xl border border-dashed px-4 text-left",
+                            "border-border/70 bg-surface-2/25",
+                            "transition-opacity duration-150 hover:opacity-75",
+                            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-secondary-highlight/20",
+                            "dark:bg-surface-2/40 dark:focus-visible:ring-secondary/20",
+                          ].join(" ")}
+                        >
+                          <span
+                            className={[
+                              "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
+                              accentIconSurface,
+                            ].join(" ")}
+                          >
+                            <FileBadgeIcon size={15} />
+                          </span>
+
+                          <span>
+                            <span className="block text-xs font-semibold text-foreground">
+                              Upload your ID
+                            </span>
+
+                            <span className="mt-1 block text-[0.61rem] leading-5 text-muted-foreground">
+                              PDF, JPEG, PNG or WebP. Max 10 MB.
+                            </span>
+                          </span>
+                        </button>
+                      )}
+
+                      <FieldHelp>
+                        Used to support identity verification. This document is
+                        never public.
+                      </FieldHelp>
+                    </ProfileField>
+
+                    <ProfileField label="Profile picture" hint="Optional">
+                      <div
+                        className={[
+                          "flex min-h-28 items-center gap-4 rounded-xl border p-4",
+                          quietSurface,
+                        ].join(" ")}
+                      >
+                        <Avatar className="h-14 w-14 shrink-0 border border-border/65">
+                          <AvatarImage
+                            src={
+                              avatarPreview ??
+                              accountProfile.avatarUrl ??
+                              undefined
+                            }
+                            className="object-cover"
+                          />
+
+                          <AvatarFallback
+                            className={[
+                              "font-semibold",
+                              "bg-brand-secondary-highlight/[0.08] text-brand-secondary-highlight",
+                              "dark:bg-secondary/[0.08] dark:text-secondary",
+                            ].join(" ")}
+                          >
+                            {initials}
+                          </AvatarFallback>
+                        </Avatar>
+
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs font-semibold text-foreground">
+                            {avatarFile
+                              ? avatarFile.name
+                              : accountProfile.avatarUrl
+                                ? "Current profile picture"
+                                : "Add a profile picture"}
+                          </p>
+
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => avatarInputRef.current?.click()}
+                              className={[
+                                "h-8 rounded-lg px-3 text-xs font-semibold",
+                                secondaryButton,
+                              ].join(" ")}
+                            >
+                              <CameraIcon size={13} />
+
+                              {avatarFile || accountProfile.avatarUrl
+                                ? "Change"
+                                : "Choose photo"}
+                            </Button>
+
+                            {avatarFile && (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                onClick={removeAvatar}
+                                className={[
+                                  "h-8 rounded-lg px-3 text-xs font-semibold",
+                                  quietButton,
+                                ].join(" ")}
+                              >
+                                <XIcon size={13} />
+                                Remove
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      <input
+                        ref={avatarInputRef}
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                        onChange={handleAvatarChange}
+                        className="hidden"
+                      />
+
+                      <FieldHelp>JPEG, PNG or WebP. Maximum 5 MB.</FieldHelp>
+                    </ProfileField>
+                  </div>
+
+                  <div className="mt-6 flex items-start gap-2.5 border-t border-border/50 pt-5">
+                    <ShieldCheckIcon
+                      size={14}
+                      className="mt-0.5 shrink-0 text-brand-secondary-highlight dark:text-secondary"
+                    />
+
+                    <p className="text-[0.62rem] leading-5 text-muted-foreground">
+                      Your ID number and identity document are private
+                      verification information. Clients only see your public
+                      professional details.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* =================================================
+                  STEP 6 — CREDENTIALS
+              ================================================= */}
+
+              {step === 5 && (
+                <div className="mt-7">
+                  <div
+                    className={[
+                      "mb-6 rounded-xl border p-4",
+                      quietSurface,
+                    ].join(" ")}
+                  >
+                    <div className="flex items-start gap-3">
+                      <span
+                        className={[
+                          "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
+                          accentIconSurface,
+                        ].join(" ")}
+                      >
+                        <ShieldCheckIcon size={15} />
+                      </span>
+
+                      <div>
+                        <p className="text-xs font-semibold text-foreground">
+                          Credentials are optional during setup
+                        </p>
+
+                        <p className="mt-1 text-xs leading-6 text-muted-foreground">
+                          Qualifications, certifications, professional licences
+                          and training can support verification. You can also
+                          submit them later from your profile.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid gap-6 sm:grid-cols-2">
+                    <ProfileField label="Document type">
+                      <Select
+                        value={documentType}
+                        onValueChange={(value) =>
+                          setDocumentType(value as VerificationDocumentType)
+                        }
+                      >
+                        <SelectTrigger className={selectTriggerClass}>
+                          <SelectValue />
+                        </SelectTrigger>
+
+                        <SelectContent className={selectContentClass}>
+                          <SelectItem
+                            value="qualification"
+                            className={selectItemClass}
+                          >
+                            Qualification
+                          </SelectItem>
+
+                          <SelectItem
+                            value="certification"
+                            className={selectItemClass}
+                          >
+                            Certification
+                          </SelectItem>
+
+                          <SelectItem
+                            value="professional-license"
+                            className={selectItemClass}
+                          >
+                            Professional licence
+                          </SelectItem>
+
+                          <SelectItem
+                            value="training"
+                            className={selectItemClass}
+                          >
+                            Training
+                          </SelectItem>
+
+                          <SelectItem value="other" className={selectItemClass}>
+                            Other professional document
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+
+                      <FieldHelp>
+                        Choose the category that best describes the files you
+                        are adding.
+                      </FieldHelp>
+                    </ProfileField>
+
+                    <ProfileField label="Credential files" hint="Optional">
+                      <button
+                        type="button"
+                        onClick={() => documentInputRef.current?.click()}
+                        className={[
+                          "flex min-h-28 w-full items-center gap-4 rounded-xl border border-dashed px-4 py-4 text-left",
+                          "border-border/70 bg-surface-2/25",
+                          "transition-opacity duration-150 hover:opacity-75",
+                          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-secondary-highlight/20",
+                          "dark:bg-surface-2/40 dark:focus-visible:ring-secondary/20",
+                        ].join(" ")}
+                      >
+                        <span
+                          className={[
+                            "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
+                            accentIconSurface,
+                          ].join(" ")}
+                        >
+                          <GraduationCapIcon size={15} />
+                        </span>
+
+                        <span>
+                          <span className="block text-xs font-semibold text-foreground">
+                            Choose documents
+                          </span>
+
+                          <span className="mt-1 block text-[0.61rem] leading-5 text-muted-foreground">
+                            PDF, JPEG, PNG or WebP. Up to 10 MB each.
+                          </span>
+                        </span>
+                      </button>
+
+                      <input
+                        ref={documentInputRef}
+                        type="file"
+                        multiple
+                        accept=".pdf,image/jpeg,image/png,image/webp"
+                        onChange={handleVerificationFiles}
+                        className="hidden"
+                      />
+                    </ProfileField>
+                  </div>
+
+                  {verificationDocuments.length > 0 && (
+                    <div className="mt-6 border-t border-border/50 pt-5">
+                      <div className="flex items-center justify-between gap-4">
+                        <p className="text-xs font-semibold text-foreground">
+                          Documents selected
+                        </p>
+
+                        <p className="text-[0.6rem] text-muted-foreground">
+                          {verificationDocuments.length}/{MAX_DOCUMENTS}
+                        </p>
+                      </div>
+
+                      <div className="mt-3 divide-y divide-border/45 border-y border-border/45">
+                        {verificationDocuments.map((document) => (
+                          <div
+                            key={document.id}
+                            className="flex items-center gap-3 py-3"
+                          >
+                            <span
+                              className={[
+                                "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
+                                accentIconSurface,
+                              ].join(" ")}
+                            >
+                              <FileTextIcon size={13} />
+                            </span>
+
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate text-xs font-semibold text-foreground">
+                                {document.file.name}
+                              </p>
+
+                              <p className="mt-0.5 text-[0.58rem] text-muted-foreground">
+                                {formatDocumentType(document.type)}
+                                {" · "}
+                                {formatFileSize(document.file.size)}
+                              </p>
+                            </div>
+
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              onClick={() =>
+                                removeVerificationDocument(document.id)
+                              }
+                              className={[
+                                "h-8 w-8 shrink-0 rounded-lg",
+                                quietButton,
+                              ].join(" ")}
+                              aria-label={`Remove ${document.file.name}`}
+                            >
+                              <Trash2Icon size={13} />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="mt-6 flex items-start gap-2.5 border-t border-border/50 pt-5">
+                    <AlertCircleIcon
+                      size={14}
+                      className="mt-0.5 shrink-0 text-muted-foreground"
+                    />
+
+                    <p className="text-[0.61rem] leading-5 text-muted-foreground">
+                      You can continue without credentials and complete
+                      professional verification later.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* =================================================
+                  STEP 7 — REVIEW
+              ================================================= */}
+
+              {step === 6 && (
+                <div className="mt-7">
+                  <div className="flex items-center gap-4 border-b border-border/50 pb-5">
+                    <Avatar className="h-14 w-14 border border-border/65">
+                      <AvatarImage
+                        src={
+                          avatarPreview ?? accountProfile.avatarUrl ?? undefined
+                        }
+                        className="object-cover"
+                      />
+
+                      <AvatarFallback
+                        className={[
+                          "font-semibold",
+                          "bg-brand-secondary-highlight/[0.08] text-brand-secondary-highlight",
+                          "dark:bg-secondary/[0.08] dark:text-secondary",
+                        ].join(" ")}
+                      >
+                        {initials}
+                      </AvatarFallback>
+                    </Avatar>
+
+                    <div className="min-w-0">
+                      <p className="truncate text-base font-semibold tracking-[-0.02em] text-foreground">
+                        {accountProfile.fullName}
+                      </p>
+
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {form.title.trim() || "Professional service provider"}
+                      </p>
+
+                      {formattedLocation && (
+                        <p className="mt-1 inline-flex items-center gap-1.5 text-[0.61rem] text-muted-foreground">
+                          <MapPinIcon size={11} />
+                          {formattedLocation}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  <ReviewGroup title="Professional profile">
+                    <ReviewRow
+                      label="Professional title"
+                      value={form.title.trim() || "Not added"}
+                      missing={!form.title.trim()}
+                    />
+
+                    <ReviewRow
+                      label="Headline"
+                      value={form.headline.trim() || "Not added"}
+                      missing={!form.headline.trim()}
+                    />
+
+                    <ReviewRow
+                      label="Bio"
+                      value={form.bio.trim() || "Not added"}
+                      missing={!form.bio.trim()}
+                    />
+
+                    <ReviewRow
+                      label="Skills"
+                      value={`${form.skillIds.length} selected`}
+                    />
+                  </ReviewGroup>
+
+                  <ReviewGroup title="Location & contact">
+                    <ReviewRow
+                      label="Country"
+                      value={selectedCountry?.name ?? "Not selected"}
+                    />
+
+                    <ReviewRow
+                      label="City"
+                      value={form.city || "Not selected"}
+                    />
+
+                    <ReviewRow
+                      label="Phone number"
+                      value={form.phoneNumber.trim() || "Not added"}
+                      missing={!form.phoneNumber.trim()}
+                    />
+
+                    <ReviewRow
+                      label="Profile currency"
+                      value={`${currencyCode} · ${currencyName}`}
+                    />
+                  </ReviewGroup>
+
+                  <ReviewGroup title="Working details">
+                    <ReviewRow
+                      label="Experience"
+                      value={
+                        form.yearsExperience.trim()
+                          ? `${form.yearsExperience} ${
+                              Number(form.yearsExperience) === 1
+                                ? "year"
+                                : "years"
+                            }`
+                          : "Not added"
+                      }
+                      missing={!form.yearsExperience.trim()}
+                    />
+
+                    <ReviewRow
+                      label="Availability"
+                      value={formatAvailability(form.availability)}
+                    />
+
+                    <ReviewRow
+                      label="Hourly rate"
+                      value={
+                        form.hourlyRate.trim()
+                          ? `${formatMoney(
+                              Number(form.hourlyRate),
+                              currencyCode,
+                            )}/hr`
+                          : "Not added"
+                      }
+                      missing={!form.hourlyRate.trim()}
+                    />
+                  </ReviewGroup>
+
+                  <ReviewGroup title="Identity & verification">
+                    <ReviewRow label="ID number" value="Provided privately" />
+
+                    <ReviewRow
+                      label="ID document"
+                      value={
+                        idDocument ? "Selected for verification" : "Add later"
+                      }
+                      missing={!idDocument}
+                    />
+
+                    <ReviewRow
+                      label="Professional credentials"
+                      value={
+                        verificationDocuments.length > 0
+                          ? `${verificationDocuments.length} selected`
+                          : "Complete later"
+                      }
+                      missing={verificationDocuments.length === 0}
+                    />
+
+                    <ReviewRow
+                      label="Verification status"
+                      value="Pending verification"
+                    />
+                  </ReviewGroup>
+
+                  <div
+                    className={[
+                      "mt-7 rounded-xl border p-4",
+                      quietSurface,
+                    ].join(" ")}
+                  >
+                    <div className="flex items-start gap-3">
+                      <span
+                        className={[
+                          "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
+                          accentIconSurface,
+                        ].join(" ")}
+                      >
+                        <WandSparklesIcon size={15} />
+                      </span>
+
+                      <div>
+                        <p className="text-xs font-semibold text-foreground">
+                          Your professional profile is ready to be created
+                        </p>
+
+                        <p className="mt-1 text-xs leading-6 text-muted-foreground">
+                          You can continue improving your profile afterwards.
+                          Identity and professional credentials will form part
+                          of the verification process once verification
+                          submission is connected to the backend.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {stepError && <InlineError message={stepError} />}
+              {submitError && <InlineError message={submitError} />}
+
+              <div className="mt-8 flex items-center justify-between gap-3 border-t border-border/50 pt-5">
+                {step > 0 ? (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={goBack}
+                    disabled={creating}
+                    className={[
+                      "h-10 rounded-lg px-4 text-xs font-semibold",
+                      quietButton,
+                    ].join(" ")}
+                  >
+                    <ArrowLeftIcon size={14} />
+                    Back
+                  </Button>
+                ) : (
+                  <div />
+                )}
+
+                {step < STEPS.length - 1 ? (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={goNext}
+                    className={[
+                      "h-10 rounded-lg px-4 text-xs font-semibold",
+                      primaryButton,
+                    ].join(" ")}
+                  >
+                    Continue
+                    <ArrowRightIcon size={14} />
+                  </Button>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => void createProfile()}
+                    disabled={creating}
+                    className={[
+                      "h-10 rounded-lg px-5 text-xs font-semibold",
+                      primaryButton,
+                    ].join(" ")}
+                  >
+                    {creating ? (
+                      <>
+                        <LoaderCircleIcon size={14} className="animate-spin" />
+                        Creating profile
+                      </>
+                    ) : (
+                      <>
+                        <CheckIcon size={14} />
+                        Create Allocat profile
+                      </>
+                    )}
+                  </Button>
+                )}
+              </div>
+            </section>
+          </div>
         </div>
       </main>
     </div>
   );
 }
 
-function ProfileFormSection({
-  icon: Icon,
-  title,
-  description,
-  children,
-  last = false,
+/* =========================================================
+   THEMED SKILL PICKER
+========================================================= */
+
+function ThemedSkillPicker({
+  options,
+  selected,
+  onChange,
+  loading = false,
+  disabled = false,
+  max = 20,
 }: {
-  icon: LucideIcon;
-  title: string;
-  description: string;
-  children: ReactNode;
-  last?: boolean;
+  options: AllocatSkill[];
+  selected: AllocatSkill[];
+  onChange: (skills: AllocatSkill[]) => void;
+  loading?: boolean;
+  disabled?: boolean;
+  max?: number;
 }) {
+  const [query, setQuery] = useState("");
+
+  const selectedIds = useMemo(
+    () => new Set(selected.map((skill) => skill.id)),
+    [selected],
+  );
+
+  const filteredOptions = useMemo(() => {
+    const search = query.trim().toLowerCase();
+
+    return options
+      .filter((skill) => !selectedIds.has(skill.id))
+      .filter((skill) => !search || skill.name.toLowerCase().includes(search))
+      .slice(0, 12);
+  }, [options, query, selectedIds]);
+
+  function addSkill(skill: AllocatSkill) {
+    if (disabled || selected.length >= max || selectedIds.has(skill.id)) {
+      return;
+    }
+
+    onChange([...selected, skill]);
+    setQuery("");
+  }
+
+  function removeSkill(skillId: string) {
+    if (disabled) {
+      return;
+    }
+
+    onChange(selected.filter((skill) => skill.id !== skillId));
+  }
+
   return (
-    <section
-      className={[
-        "grid gap-6 py-10 md:grid-cols-[48px_minmax(0,1fr)]",
-        !last ? "border-b border-border" : "",
-      ].join(" ")}
-    >
-      <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/[0.07] text-primary">
-        <Icon size={17} />
-      </span>
+    <div>
+      {selected.length > 0 && (
+        <div className="mb-3 flex flex-wrap gap-2">
+          {selected.map((skill) => (
+            <span key={skill.id} className={skillTagClass}>
+              <span>{skill.name}</span>
 
-      <div className="min-w-0">
-        <div className="mb-7 max-w-2xl">
-          <h2 className="text-xl font-black tracking-[-0.025em] sm:text-2xl">
-            {title}
-          </h2>
+              <button
+                type="button"
+                disabled={disabled}
+                onClick={() => removeSkill(skill.id)}
+                className={[
+                  "flex h-4 w-4 items-center justify-center rounded-md",
+                  "text-brand-secondary-highlight/65 transition-opacity hover:opacity-60",
+                  "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-secondary-highlight/25",
+                  "disabled:pointer-events-none disabled:opacity-50",
+                  "dark:text-secondary/70 dark:focus-visible:ring-secondary/25",
+                ].join(" ")}
+                aria-label={`Remove ${skill.name}`}
+              >
+                <XIcon size={10} />
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
 
-          <p className="mt-2 max-w-xl text-sm leading-7 text-muted-foreground">
-            {description}
-          </p>
+      <div
+        className={[
+          "overflow-hidden rounded-xl border border-border/70",
+          "bg-surface-1/70",
+          "focus-within:border-brand-secondary-highlight/35",
+          "focus-within:ring-1 focus-within:ring-brand-secondary-highlight/20",
+          "dark:bg-surface-2/35",
+          "dark:focus-within:border-secondary/25",
+          "dark:focus-within:ring-secondary/15",
+        ].join(" ")}
+      >
+        <div className="relative">
+          <SearchIcon
+            size={15}
+            className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground"
+          />
+
+          <input
+            value={query}
+            disabled={disabled || loading || selected.length >= max}
+            placeholder={
+              selected.length >= max
+                ? `Maximum ${max} skills selected`
+                : "Search skills"
+            }
+            onChange={(event) => setQuery(event.target.value)}
+            className={[
+              "h-11 w-full bg-transparent pl-10 pr-4 text-sm text-foreground outline-none",
+              "placeholder:text-muted-foreground/60",
+              "disabled:cursor-not-allowed disabled:opacity-60",
+            ].join(" ")}
+          />
         </div>
 
-        {children}
+        {(query.trim() || loading) && (
+          <div className="border-t border-border/55 p-1.5">
+            {loading ? (
+              <div className="flex items-center gap-2 px-3 py-3 text-xs text-muted-foreground">
+                <LoaderCircleIcon size={13} className="animate-spin" />
+                Loading skills
+              </div>
+            ) : filteredOptions.length > 0 ? (
+              <div className="max-h-60 overflow-y-auto">
+                {filteredOptions.map((skill) => (
+                  <button
+                    key={skill.id}
+                    type="button"
+                    disabled={disabled}
+                    onClick={() => addSkill(skill)}
+                    className={[
+                      "flex w-full items-center justify-between gap-4 rounded-lg px-3 py-2.5 text-left",
+                      "text-sm text-foreground/80",
+                      "transition-colors duration-150",
+                      "hover:bg-surface-3/60 hover:text-foreground",
+                      "focus-visible:outline-none focus-visible:bg-surface-3/60",
+                      "disabled:pointer-events-none disabled:opacity-50",
+                      "dark:hover:bg-surface-3/70",
+                      "dark:focus-visible:bg-surface-3/70",
+                    ].join(" ")}
+                  >
+                    <span className="truncate">{skill.name}</span>
+
+                    <PlusMark />
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <p className="px-3 py-3 text-xs text-muted-foreground">
+                No matching skills found.
+              </p>
+            )}
+          </div>
+        )}
       </div>
+
+      {selected.length === 0 && !query && (
+        <p className="mt-2 text-[0.61rem] text-muted-foreground">
+          Start typing to search the skill catalogue.
+        </p>
+      )}
+    </div>
+  );
+}
+
+function PlusMark() {
+  return (
+    <span
+      className={[
+        "flex h-6 w-6 shrink-0 items-center justify-center rounded-lg",
+        "bg-brand-secondary-highlight/[0.08] text-brand-secondary-highlight",
+        "dark:bg-secondary/[0.08] dark:text-secondary",
+      ].join(" ")}
+    >
+      <span className="text-sm leading-none">+</span>
+    </span>
+  );
+}
+
+/* =========================================================
+   PROGRESS
+========================================================= */
+
+function SetupProgress({
+  value,
+  className = "",
+}: {
+  value: number;
+  className?: string;
+}) {
+  const safeValue = Math.max(0, Math.min(100, value));
+
+  return (
+    <div
+      className={[
+        "h-1.5 w-full overflow-hidden rounded-full bg-surface-3/80 dark:bg-surface-2",
+        className,
+      ].join(" ")}
+      role="progressbar"
+      aria-label="Allocat profile setup progress"
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-valuenow={Math.round(safeValue)}
+    >
+      <div
+        className="h-full rounded-full bg-brand-secondary-highlight transition-[width] duration-300 ease-out dark:bg-secondary"
+        style={{
+          width: `${safeValue}%`,
+        }}
+      />
+    </div>
+  );
+}
+
+/* =========================================================
+   FIELD
+========================================================= */
+
+function ProfileField({
+  label,
+  hint,
+  children,
+}: {
+  label: string;
+  hint?: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="min-w-0">
+      <div className="flex items-center justify-between gap-3">
+        <Label className="text-xs font-semibold text-foreground">{label}</Label>
+
+        {hint && (
+          <span className="text-[0.58rem] font-medium text-muted-foreground">
+            {hint}
+          </span>
+        )}
+      </div>
+
+      <div className="mt-2">{children}</div>
+    </div>
+  );
+}
+
+function FieldHelp({ children }: { children: ReactNode }) {
+  return (
+    <p className="mt-2 text-[0.61rem] leading-5 text-muted-foreground">
+      {children}
+    </p>
+  );
+}
+
+/* =========================================================
+   REVIEW
+========================================================= */
+
+function ReviewGroup({
+  title,
+  children,
+}: {
+  title: string;
+  children: ReactNode;
+}) {
+  return (
+    <section className="border-b border-border/50 py-6 last:border-b-0">
+      <p className="text-[0.52rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+        {title}
+      </p>
+
+      <div className="mt-4 grid gap-x-8 gap-y-5 sm:grid-cols-2">{children}</div>
     </section>
   );
 }
 
-function Field({
-  label,
-  htmlFor,
-  children,
-}: {
-  label: string;
-  htmlFor: string;
-  children: ReactNode;
-}) {
+function ReviewRow({ label, value, missing = false }: ReviewRowProps) {
   return (
     <div>
-      <Label
-        htmlFor={htmlFor}
-        className="text-xs font-semibold"
-      >
-        {label}
-      </Label>
+      <p className="text-[0.6rem] text-muted-foreground">{label}</p>
 
-      <div className="mt-2">
-        {children}
+      <div className="mt-1.5">
+        {missing ? (
+          <span className="inline-flex items-center gap-2 text-xs font-medium text-status-pending-foreground">
+            <span className="h-1.5 w-1.5 rounded-full bg-status-pending" />
+            {value}
+          </span>
+        ) : (
+          <p className="text-xs font-semibold leading-5 text-foreground">
+            {value}
+          </p>
+        )}
       </div>
     </div>
   );
 }
 
-function PreviewStat({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="bg-background p-3.5">
-      <p className="text-[0.56rem] uppercase tracking-[0.12em] text-muted-foreground">
-        {label}
-      </p>
+/* =========================================================
+   ERROR
+========================================================= */
 
-      <p className="mt-1 truncate text-sm font-black">
-        {value}
-      </p>
-    </div>
-  );
-}
-
-function InlineError({
-  message,
-}: {
-  message: string;
-}) {
+function InlineError({ message }: { message: string }) {
   return (
     <div
-      className="mt-5 rounded-lg border border-destructive/20 bg-destructive/[0.05] px-4 py-3 text-xs leading-5 text-destructive"
+      className="mt-5 flex items-start gap-2.5 rounded-lg border border-destructive/20 bg-destructive/[0.05] px-3.5 py-3 text-xs text-destructive"
       role="alert"
     >
-      {message}
+      <AlertCircleIcon size={14} className="mt-0.5 shrink-0" />
+      <p className="leading-5">{message}</p>
     </div>
   );
 }
 
-function validateDraft(
-  draft: CreateProfileDraft,
-  selectedSkills: AllocatSkill[],
-) {
-  if (!draft.idNumber.trim()) {
-    return "Enter your ID number.";
-  }
+/* =========================================================
+   ERROR PAGE
+========================================================= */
 
-  if (!draft.title.trim()) {
-    return "Enter your professional title.";
-  }
+function CreateAllocatProfileError({
+  message,
+  onRetry,
+}: {
+  message: string;
+  onRetry: () => Promise<void>;
+}) {
+  return (
+    <div className="min-h-screen bg-background text-foreground">
+      <header className="sticky top-0 z-40 border-b border-border/60 bg-background/90 backdrop-blur-xl">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <DashboardMainNav />
+        </div>
+      </header>
 
-  if (selectedSkills.length === 0) {
-    return "Select at least one professional skill.";
-  }
+      <main className="container mx-auto px-4 py-20 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-md">
+          <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-destructive/[0.08] text-destructive">
+            <AlertCircleIcon size={18} />
+          </span>
 
-  if (
-    draft.currency.trim().length !== 3 ||
-    !/^[A-Za-z]{3}$/.test(draft.currency.trim())
-  ) {
-    return "Currency must use a three-letter code such as USD.";
-  }
+          <h1 className="mt-5 text-2xl font-semibold tracking-[-0.03em] text-foreground">
+            Could not start profile setup
+          </h1>
 
-  const hourlyRate = parseNullableNumber(
-    draft.hourlyRate,
+          <p className="mt-2 text-sm leading-7 text-muted-foreground">
+            {message}
+          </p>
+
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={() => void onRetry()}
+            className={[
+              "mt-6 h-10 rounded-lg px-5 text-xs font-semibold",
+              primaryButton,
+            ].join(" ")}
+          >
+            Try again
+          </Button>
+        </div>
+      </main>
+    </div>
   );
+}
 
-  if (hourlyRate !== null && hourlyRate < 0) {
-    return "Hourly rate cannot be negative.";
-  }
+/* =========================================================
+   SKELETON
+========================================================= */
 
-  const yearsExperience = parseNullableNumber(
-    draft.yearsExperience,
+function CreateAllocatProfileSkeleton() {
+  return (
+    <div className="min-h-screen bg-background text-foreground">
+      <header className="sticky top-0 z-40 border-b border-border/60 bg-background/90 backdrop-blur-xl">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <DashboardMainNav />
+        </div>
+      </header>
+
+      <main className="container mx-auto px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
+        <div className="mx-auto max-w-6xl">
+          <Skeleton className="h-3 w-28" />
+          <Skeleton className="mt-5 h-10 w-80 max-w-full" />
+          <Skeleton className="mt-4 h-5 w-[36rem] max-w-full" />
+          <Skeleton className="mt-9 h-1.5 w-full rounded-full" />
+
+          <div className="mt-8 grid gap-8 lg:grid-cols-[250px_minmax(0,1fr)] lg:gap-12">
+            <div className="hidden space-y-3 lg:block">
+              {Array.from({
+                length: 7,
+              }).map((_, index) => (
+                <Skeleton key={index} className="h-14 rounded-xl" />
+              ))}
+            </div>
+
+            <div className="rounded-2xl border border-border/55 p-6">
+              <div className="flex gap-4 border-b border-border/50 pb-6">
+                <Skeleton className="h-10 w-10 rounded-lg" />
+
+                <div className="flex-1">
+                  <Skeleton className="h-3 w-20" />
+                  <Skeleton className="mt-3 h-7 w-64" />
+                  <Skeleton className="mt-3 h-4 w-full max-w-xl" />
+                </div>
+              </div>
+
+              <div className="mt-7 grid gap-6 sm:grid-cols-2">
+                <Skeleton className="h-24 rounded-xl" />
+                <Skeleton className="h-24 rounded-xl" />
+                <Skeleton className="h-24 rounded-xl" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
   );
+}
 
-  if (
-    yearsExperience !== null &&
-    (yearsExperience < 0 || yearsExperience > 80)
-  ) {
-    return "Years of experience must be between 0 and 80.";
+/* =========================================================
+   VALIDATION
+========================================================= */
+
+function validateStep(step: number, form: FormState) {
+  switch (step) {
+    case 1: {
+      const country = SUPPORTED_ALLOCAT_COUNTRIES.find(
+        (item) => item.code === form.countryCode,
+      );
+
+      if (!country) {
+        return "Select the country where you are based.";
+      }
+
+      if (!form.city || !country.cities.includes(form.city)) {
+        return "Select your city.";
+      }
+
+      if (form.phoneNumber.trim().length > 30) {
+        return "Phone number is too long.";
+      }
+
+      return null;
+    }
+
+    case 2: {
+      if (form.yearsExperience.trim()) {
+        const years = Number(form.yearsExperience);
+
+        if (!Number.isInteger(years)) {
+          return "Years of experience must be a whole number.";
+        }
+
+        if (years < 0 || years > 80) {
+          return "Years of experience must be between 0 and 80.";
+        }
+      }
+
+      if (form.hourlyRate.trim()) {
+        const rate = Number(form.hourlyRate);
+
+        if (!Number.isFinite(rate)) {
+          return "Enter a valid hourly rate.";
+        }
+
+        if (rate < 0) {
+          return "Hourly rate cannot be negative.";
+        }
+
+        if (rate > 1_000_000) {
+          return "Hourly rate is outside the supported range.";
+        }
+      }
+
+      return null;
+    }
+
+    case 3: {
+      if (form.skillIds.length === 0) {
+        return "Select at least one skill before continuing.";
+      }
+
+      if (form.skillIds.length > 20) {
+        return "You can select up to 20 skills.";
+      }
+
+      return null;
+    }
+
+    case 4: {
+      if (!form.idNumber.trim()) {
+        return "Enter your ID number before continuing.";
+      }
+
+      if (form.idNumber.trim().length > 50) {
+        return "ID number cannot exceed 50 characters.";
+      }
+
+      return null;
+    }
+
+    default:
+      return null;
+  }
+}
+
+function validateAll(form: FormState) {
+  for (let step = 0; step < 6; step += 1) {
+    const error = validateStep(step, form);
+
+    if (error) {
+      return error;
+    }
   }
 
   return null;
 }
+
+/* =========================================================
+   LOCATION
+========================================================= */
+
+function inferSupportedAllocatLocation(location?: string | null): {
+  countryCode: string;
+  city: string;
+} | null {
+  if (!location?.trim()) {
+    return null;
+  }
+
+  const normalized = location.trim().toLowerCase();
+
+  for (const country of SUPPORTED_ALLOCAT_COUNTRIES) {
+    for (const city of country.cities) {
+      const expected = `${city}, ${country.name}`.toLowerCase();
+
+      if (normalized === expected) {
+        return {
+          countryCode: country.code,
+          city,
+        };
+      }
+    }
+  }
+
+  return null;
+}
+
+/* =========================================================
+   HELPERS
+========================================================= */
 
 function cleanOptional(value: string) {
   return value.trim() || null;
@@ -2732,61 +2618,92 @@ function parseNullableNumber(value: string) {
 
   const number = Number(value);
 
-  return Number.isFinite(number)
-    ? number
-    : null;
+  return Number.isFinite(number) ? number : null;
 }
 
-function formatMoney(
-  value: number,
-  currency: string,
-) {
-  const normalizedCurrency =
-    currency.trim().toUpperCase() || "USD";
+function parseNullableInteger(value: string) {
+  if (!value.trim()) {
+    return null;
+  }
 
+  const number = Number(value);
+
+  return Number.isInteger(number) ? number : null;
+}
+
+function getInitials(name?: string | null) {
+  if (!name?.trim()) {
+    return "A";
+  }
+
+  return name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part.charAt(0).toUpperCase())
+    .join("");
+}
+
+function formatAvailability(availability: AllocatAvailability) {
+  return availability.charAt(0).toUpperCase() + availability.slice(1);
+}
+
+function formatMoney(value: number, currency: string) {
   try {
     return new Intl.NumberFormat("en", {
       style: "currency",
-      currency: normalizedCurrency,
+      currency,
       maximumFractionDigits: 2,
     }).format(value);
   } catch {
-    return `${normalizedCurrency} ${value}`;
+    return `${currency} ${value}`;
   }
 }
 
-function getApiErrorMessage(
-  error: unknown,
-  fallback: string,
-) {
+function formatDocumentType(type: VerificationDocumentType) {
+  switch (type) {
+    case "qualification":
+      return "Qualification";
+
+    case "certification":
+      return "Certification";
+
+    case "professional-license":
+      return "Professional licence";
+
+    case "training":
+      return "Training";
+
+    default:
+      return "Other professional document";
+  }
+}
+
+function formatFileSize(bytes: number) {
+  if (bytes < 1024 * 1024) {
+    return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+  }
+
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function getApiErrorMessage(error: unknown, fallback: string) {
   if (!isAxiosError(error)) {
     return fallback;
   }
 
   const data = error.response?.data;
 
-  if (
-    data &&
-    typeof data === "object"
-  ) {
-    if (
-      "detail" in data &&
-      typeof data.detail === "string"
-    ) {
+  if (data && typeof data === "object") {
+    if ("detail" in data && typeof data.detail === "string") {
       return data.detail;
     }
 
-    if (
-      "message" in data &&
-      typeof data.message === "string"
-    ) {
+    if ("message" in data && typeof data.message === "string") {
       return data.message;
     }
 
-    if (
-      "title" in data &&
-      typeof data.title === "string"
-    ) {
+    if ("title" in data && typeof data.title === "string") {
       return data.title;
     }
   }

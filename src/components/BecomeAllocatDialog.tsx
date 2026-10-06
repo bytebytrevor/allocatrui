@@ -1,131 +1,11 @@
-// import { Link } from "react-router-dom";
-
-// import {
-//   ArrowRightIcon,
-//   BriefcaseBusinessIcon,
-//   CheckCircle2Icon,
-// } from "lucide-react";
-
-// import {
-//   Dialog,
-//   DialogContent,
-//   DialogDescription,
-//   DialogFooter,
-//   DialogHeader,
-//   DialogTitle,
-// } from "@/components/ui/dialog";
-
-// import { Button } from "@/components/ui/button";
-
-// type Props = {
-//   open: boolean;
-//   onOpenChange: (open: boolean) => void;
-// };
-
-// const benefits = [
-//   "Be discovered by clients looking for your skills.",
-//   "Receive invitations to client projects.",
-//   "Show your experience, skills and professional profile.",
-//   "Set your rate and availability.",
-// ];
-
-// export default function BecomeAllocatDialog({
-//   open,
-//   onOpenChange,
-// }: Props) {
-//   return (
-//     <Dialog
-//       open={open}
-//       onOpenChange={onOpenChange}
-//     >
-//       <DialogContent className="overflow-hidden rounded-[1.5rem] border-border bg-background p-0 text-foreground sm:max-w-lg">
-//         <DialogHeader className="border-b border-border px-6 pb-6 pt-7 text-left sm:px-8">
-//           <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/[0.08] text-primary">
-//             <BriefcaseBusinessIcon size={18} />
-//           </span>
-
-//           <div className="mt-5">
-//             <p className="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-primary">
-//               Professional profile
-//             </p>
-
-//             <DialogTitle className="mt-2 text-2xl font-black tracking-[-0.03em]">
-//               Become an Allocat
-//             </DialogTitle>
-
-//             <DialogDescription className="mt-3 max-w-md text-sm leading-7 text-muted-foreground">
-//               Create your professional profile and make your skills available
-//               to clients looking for the right person for their work.
-//             </DialogDescription>
-//           </div>
-//         </DialogHeader>
-
-//         <div className="px-6 py-6 sm:px-8">
-//           <p className="text-sm font-semibold">
-//             As an Allocat you can:
-//           </p>
-
-//           <div className="mt-5 divide-y divide-border border-y border-border">
-//             {benefits.map((benefit) => (
-//               <div
-//                 key={benefit}
-//                 className="flex items-start gap-3 py-3.5"
-//               >
-//                 <CheckCircle2Icon
-//                   size={16}
-//                   className="mt-0.5 shrink-0 text-primary"
-//                 />
-
-//                 <p className="text-sm leading-6 text-muted-foreground">
-//                   {benefit}
-//                 </p>
-//               </div>
-//             ))}
-//           </div>
-
-//           <p className="mt-5 text-xs leading-6 text-muted-foreground">
-//             You&apos;ll set up your professional details on the next page.
-//             Everything can be updated later from your profile.
-//           </p>
-//         </div>
-
-//         <DialogFooter className="border-t border-border px-6 py-5 sm:px-8">
-//           <Button
-//             type="button"
-//             variant="ghost"
-//             onClick={() => onOpenChange(false)}
-//             className="rounded-lg px-5 text-muted-foreground shadow-none"
-//           >
-//             Cancel
-//           </Button>
-
-//           <Button
-//             asChild
-//             className="group rounded-lg px-6 shadow-none"
-//           >
-//             <Link
-//               to="/allocats/profile/create"
-//               onClick={() => onOpenChange(false)}
-//             >
-//               Continue
-
-//               <ArrowRightIcon
-//                 size={15}
-//                 className="transition-transform group-hover:translate-x-0.5"
-//               />
-//             </Link>
-//           </Button>
-//         </DialogFooter>
-//       </DialogContent>
-//     </Dialog>
-//   );
-// }
+import { useNavigate } from "react-router-dom";
 
 import {
   ArrowRightIcon,
   BriefcaseBusinessIcon,
-  CheckCircle2Icon,
+  CheckIcon,
   LoaderCircleIcon,
+  ShieldCheckIcon,
 } from "lucide-react";
 
 import {
@@ -147,11 +27,79 @@ type Props = {
 };
 
 const benefits = [
-  "Be discovered by clients looking for your skills.",
-  "Receive invitations to client projects.",
-  "Show your experience, skills and professional profile.",
-  "Set your rate and availability.",
+  "Create a professional profile clients can discover.",
+  "Show the skills, experience and services you offer.",
+  "Set your rate and current availability.",
+  "Receive invitations to projects that match your work.",
 ];
+
+const primaryButton = [
+  "border border-brand-secondary-highlight/15",
+  "bg-brand-secondary-highlight",
+  "text-primary-foreground",
+  "shadow-none",
+  "transition-opacity duration-150",
+
+  "hover:border-brand-secondary-highlight/15",
+  "hover:bg-brand-secondary-highlight",
+  "hover:text-primary-foreground",
+  "hover:opacity-90",
+
+  "focus-visible:ring-2",
+  "focus-visible:ring-brand-secondary-highlight/20",
+  "focus-visible:ring-offset-2",
+  "focus-visible:ring-offset-background",
+
+  "dark:border-secondary/10",
+  "dark:bg-secondary",
+  "dark:text-secondary-foreground",
+
+  "dark:hover:border-secondary/10",
+  "dark:hover:bg-secondary",
+  "dark:hover:text-secondary-foreground",
+  "dark:hover:opacity-90",
+
+  "dark:focus-visible:ring-secondary/20",
+].join(" ");
+
+const secondaryButton = [
+  "border border-border/65",
+  "bg-surface-2/35",
+  "text-foreground/75",
+  "shadow-none",
+  "transition-opacity duration-150",
+
+  "hover:border-border/65",
+  "hover:bg-surface-2/35",
+  "hover:text-foreground/75",
+  "hover:opacity-75",
+
+  "focus-visible:ring-2",
+  "focus-visible:ring-brand-secondary-highlight/15",
+  "focus-visible:ring-offset-2",
+  "focus-visible:ring-offset-background",
+
+  "dark:border-border",
+  "dark:bg-surface-2/65",
+  "dark:text-foreground/75",
+
+  "dark:hover:border-border",
+  "dark:hover:bg-surface-2/65",
+  "dark:hover:text-foreground/75",
+  "dark:hover:opacity-75",
+
+  "dark:focus-visible:ring-secondary/15",
+].join(" ");
+
+const accentIconSurface = [
+  "bg-brand-secondary-highlight/[0.08]",
+  "text-brand-secondary-highlight",
+  "ring-1 ring-inset ring-brand-secondary-highlight/10",
+
+  "dark:bg-secondary/[0.07]",
+  "dark:text-secondary",
+  "dark:ring-secondary/10",
+].join(" ");
 
 export default function BecomeAllocatDialog({
   open,
@@ -159,6 +107,26 @@ export default function BecomeAllocatDialog({
   onContinue,
   loading = false,
 }: Props) {
+  const navigate = useNavigate();
+
+  async function handleContinue() {
+    if (loading) {
+      return;
+    }
+
+    /*
+     * onContinue handles any prerequisite account change,
+     * such as marking an existing user as an Allocat.
+     *
+     * Navigation only happens once that completes successfully.
+     */
+    await onContinue();
+
+    onOpenChange(false);
+
+    navigate("/allocats/profile/create");
+  }
+
   return (
     <Dialog
       open={open}
@@ -168,86 +136,143 @@ export default function BecomeAllocatDialog({
         }
       }}
     >
-      <DialogContent className="overflow-hidden rounded-[1.5rem] border-border bg-background p-0 text-foreground sm:max-w-lg">
-        <DialogHeader className="border-b border-border px-6 pb-6 pt-7 text-left sm:px-8">
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/[0.08] text-primary">
-            <BriefcaseBusinessIcon size={18} />
+      <DialogContent
+        className={[
+          "overflow-hidden p-0",
+          "rounded-2xl border border-border/55",
+          "bg-card text-card-foreground",
+          "shadow-none",
+          "sm:max-w-lg",
+          "dark:border-border dark:bg-card",
+        ].join(" ")}
+      >
+        {/* =================================================
+            HEADER
+        ================================================= */}
+
+        <DialogHeader className="border-b border-border/50 px-6 pb-6 pt-7 text-left sm:px-8">
+          <span
+            className={[
+              "flex h-10 w-10 items-center justify-center rounded-lg",
+              accentIconSurface,
+            ].join(" ")}
+          >
+            <BriefcaseBusinessIcon size={17} />
           </span>
 
           <div className="mt-5">
-            <p className="text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-primary">
-              Professional profile
-            </p>
+            <div className="flex items-center gap-2.5">
+              <span className="h-1.5 w-6 rounded-full bg-brand-secondary-highlight dark:bg-secondary" />
 
-            <DialogTitle className="mt-2 text-2xl font-black tracking-[-0.03em]">
+              <p className="text-[0.52rem] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
+                Professional profile
+              </p>
+            </div>
+
+            <DialogTitle className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-foreground">
               Become an Allocat
             </DialogTitle>
 
             <DialogDescription className="mt-3 max-w-md text-sm leading-7 text-muted-foreground">
-              Set up your professional profile so clients can discover your
-              skills and invite you to their projects.
+              Set up your professional profile and make your skills available to
+              clients looking for the right person for their work.
             </DialogDescription>
           </div>
         </DialogHeader>
 
+        {/* =================================================
+            BENEFITS
+        ================================================= */}
+
         <div className="px-6 py-6 sm:px-8">
-          <p className="text-sm font-semibold">
+          <p className="text-xs font-semibold text-foreground">
             As an Allocat you can:
           </p>
 
-          <div className="mt-5 divide-y divide-border border-y border-border">
+          <div className="mt-4 divide-y divide-border/45 border-y border-border/45">
             {benefits.map((benefit) => (
-              <div
-                key={benefit}
-                className="flex items-start gap-3 py-3.5"
-              >
-                <CheckCircle2Icon
-                  size={16}
-                  className="mt-0.5 shrink-0 text-primary"
-                />
+              <div key={benefit} className="flex items-start gap-3 py-3.5">
+                <span
+                  className={[
+                    "mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md",
+                    accentIconSurface,
+                  ].join(" ")}
+                >
+                  <CheckIcon size={11} />
+                </span>
 
-                <p className="text-sm leading-6 text-muted-foreground">
+                <p className="text-xs leading-6 text-muted-foreground">
                   {benefit}
                 </p>
               </div>
             ))}
           </div>
 
-          <p className="mt-5 text-xs leading-6 text-muted-foreground">
-            Next, you&apos;ll complete your first-time Allocat profile setup.
-            You can update your professional details later.
-          </p>
+          {/* =================================================
+              NEXT STEP
+          ================================================= */}
+
+          <div className="mt-5 flex items-start gap-3">
+            <span
+              className={[
+                "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
+                accentIconSurface,
+              ].join(" ")}
+            >
+              <ShieldCheckIcon size={14} />
+            </span>
+
+            <div>
+              <p className="text-xs font-semibold text-foreground">
+                Next, set up your Allocat profile
+              </p>
+
+              <p className="mt-1 text-[0.62rem] leading-5 text-muted-foreground">
+                We&apos;ll guide you through your professional details, skills,
+                rate, availability and identity information. Verification
+                documents are optional during setup and can be added later.
+              </p>
+            </div>
+          </div>
         </div>
 
-        <DialogFooter className="border-t border-border px-6 py-5 sm:px-8">
+        {/* =================================================
+            ACTIONS
+        ================================================= */}
+
+        <DialogFooter className="border-t border-border/50 px-6 py-5 sm:px-8">
           <Button
             type="button"
-            variant="ghost"
+            variant="outline"
             disabled={loading}
             onClick={() => onOpenChange(false)}
-            className="rounded-lg px-5 text-muted-foreground shadow-none"
+            className={[
+              "h-10 rounded-lg px-4 text-xs font-semibold",
+              secondaryButton,
+            ].join(" ")}
           >
             Cancel
           </Button>
 
           <Button
             type="button"
+            variant="ghost"
             disabled={loading}
-            onClick={() => void onContinue()}
-            className="min-w-36 rounded-lg px-6 shadow-none"
+            onClick={() => void handleContinue()}
+            className={[
+              "h-10 min-w-36 rounded-lg px-5 text-xs font-semibold",
+              primaryButton,
+            ].join(" ")}
           >
             {loading ? (
               <>
-                <LoaderCircleIcon
-                  size={15}
-                  className="animate-spin"
-                />
+                <LoaderCircleIcon size={14} className="animate-spin" />
                 Preparing profile
               </>
             ) : (
               <>
                 Continue
-                <ArrowRightIcon size={15} />
+                <ArrowRightIcon size={14} />
               </>
             )}
           </Button>
