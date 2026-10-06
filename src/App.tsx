@@ -19,6 +19,7 @@ import "./App.css";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 import Profile from "./pages/Profile";
+import PricingPage from "./pages/PricingPage";
 import AppToaster from "@/components/AppToaster";
 
 
@@ -71,7 +72,11 @@ function App() {
     {      
       path: "/how-it-works", Component: HowItWorksPage,
       errorElement: <NotFoundErrorPage />
-    },      
+    },
+    {      
+      path: "/plans", Component: PricingPage,
+      errorElement: <NotFoundErrorPage />
+    },        
 
     // PROTECTED ROUTES
     {
