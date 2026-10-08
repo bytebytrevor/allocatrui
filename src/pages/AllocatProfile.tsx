@@ -604,6 +604,13 @@ function AllocatProfilePage() {
     return getIncompleteProfileItems(accountProfile, allocatProfile);
   }, [accountProfile, allocatProfile]);
 
+  function isDocumentPreviewLoading(documentId: string) {
+    return (
+      documentPreview?.document.id === documentId &&
+      documentPreview.loading === true
+    );
+  }
+
   function updateProfessionalDraft<K extends keyof ProfessionalDraft>(
     key: K,
     value: ProfessionalDraft[K],
@@ -837,6 +844,12 @@ function AllocatProfilePage() {
       return;
     }
 
+    if (file.size <= 0) {
+      setAvatarError("Choose a non-empty image file.");
+      event.target.value = "";
+      return;
+    }
+
     if (!ACCEPTED_AVATAR_TYPES.includes(file.type)) {
       setAvatarError("Choose a JPEG, PNG or WebP image.");
       event.target.value = "";
@@ -953,6 +966,10 @@ function AllocatProfilePage() {
   }
 
   function validateSelectedDocument(file: File) {
+    if (file.size <= 0) {
+      return "Choose a non-empty document.";
+    }
+
     if (!ACCEPTED_DOCUMENT_TYPES.includes(file.type)) {
       return "Choose a PDF, JPEG, PNG or WebP file.";
     }
@@ -1016,6 +1033,7 @@ function AllocatProfilePage() {
     try {
       setUploadingIdentity(true);
       setIdentityError(null);
+      setDocumentsError(null);
       setIdentityProgress(0);
 
       const response = await api.post<ApiUserDocumentDto>(
@@ -1116,6 +1134,7 @@ function AllocatProfilePage() {
     try {
       setUploadingProfessionalDocument(true);
       setProfessionalDocumentError(null);
+      setDocumentsError(null);
       setProfessionalDocumentProgress(0);
 
       const response = await api.post<ApiUserDocumentDto>(
@@ -1160,11 +1179,12 @@ function AllocatProfilePage() {
   }
 
   async function getDocumentUrl(documentId: string) {
-    const response = await api.get<{
-      url: string;
-    }>(`/allocats/profiles/me/documents/${documentId}/download`, {
-      withCredentials: true,
-    });
+    const response = await api.get<{ url: string }>(
+      `/allocats/profiles/me/documents/${documentId}/download`,
+      {
+        withCredentials: true,
+      },
+    );
 
     if (!response.data.url) {
       throw new Error("The file URL could not be created.");
@@ -1218,14 +1238,6 @@ function AllocatProfilePage() {
     }
   }
 
-  function retryDocumentPreview() {
-    if (!documentPreview) {
-      return;
-    }
-
-    void previewDocument(documentPreview.document);
-  }
-
   async function downloadDocument(documentItem: UserDocumentDto) {
     if (downloadingDocumentId) {
       return;
@@ -1269,6 +1281,7 @@ function AllocatProfilePage() {
 
     try {
       setDeletingDocumentId(currentDocument.id);
+      setDocumentsError(null);
 
       await api.delete(
         `/allocats/profiles/me/documents/${currentDocument.id}`,
@@ -1281,9 +1294,9 @@ function AllocatProfilePage() {
         current.filter((document) => document.id !== currentDocument.id),
       );
 
-      if (documentPreview?.document.id === currentDocument.id) {
-        setDocumentPreview(null);
-      }
+      setDocumentPreview((current) =>
+        current?.document.id === currentDocument.id ? null : current,
+      );
 
       setDocumentToDelete(null);
 
@@ -1393,8 +1406,8 @@ function AllocatProfilePage() {
                       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-secondary-highlight/25",
                       "dark:bg-secondary dark:text-secondary-foreground dark:focus-visible:ring-secondary/25",
                     ].join(" ")}
-                    aria-label="Update profile picture"
-                    title="Update profile picture"
+                    aria-label="Change profile picture"
+                    title="Change profile picture"
                   >
                     <CameraIcon size={14} />
                   </button>
@@ -1804,10 +1817,9 @@ function AllocatProfilePage() {
                         uploading={uploadingIdentity}
                         uploadError={identityError}
                         previewing={
-                          Boolean(identityDocument) &&
-                          documentPreview?.document.id ===
-                            identityDocument?.id &&
-                          documentPreview.loading
+                          identityDocument
+                            ? isDocumentPreviewLoading(identityDocument.id)
+                            : false
                         }
                         downloading={
                           identityDocument
@@ -1889,10 +1901,9 @@ function AllocatProfilePage() {
                         uploading={uploadingIdentity}
                         uploadError={identityError}
                         previewing={
-                          Boolean(identityDocument) &&
-                          documentPreview?.document.id ===
-                            identityDocument?.id &&
-                          documentPreview.loading
+                          identityDocument
+                            ? isDocumentPreviewLoading(identityDocument.id)
+                            : false
                         }
                         downloading={
                           identityDocument
@@ -2244,8 +2255,8 @@ function AllocatProfilePage() {
                     </p>
 
                     <p className="mt-1 text-[0.61rem] text-muted-foreground">
-                      Preview your files here. Approved documents are locked
-                      after verification.
+                      Preview or download your files here. Approved documents
+                      are locked after verification.
                     </p>
                   </div>
 
@@ -2267,10 +2278,7 @@ function AllocatProfilePage() {
                         <DocumentRow
                           key={document.id}
                           document={document}
-                          previewing={
-                            documentPreview?.document.id === document.id &&
-                            documentPreview.loading
-                          }
+                          previewing={isDocumentPreviewLoading(document.id)}
                           downloading={downloadingDocumentId === document.id}
                           onPreview={() => void previewDocument(document)}
                           onDownload={() => void downloadDocument(document)}
@@ -2713,12 +2721,8 @@ function AllocatProfilePage() {
             : false
         }
         onClose={() => setDocumentPreview(null)}
-        onRetry={retryDocumentPreview}
-        onDownload={
-          documentPreview
-            ? () => void downloadDocument(documentPreview.document)
-            : () => undefined
-        }
+        onRetry={(document) => void previewDocument(document)}
+        onDownload={(document) => void downloadDocument(document)}
       />
 
       <CompletedProjectsDialog
@@ -2736,7 +2740,9 @@ function AllocatProfilePage() {
 
       <DeleteDocumentWarning
         document={documentToDelete}
-        loading={Boolean(deletingDocumentId)}
+        loading={
+          documentToDelete ? deletingDocumentId === documentToDelete.id : false
+        }
         onCancel={() => setDocumentToDelete(null)}
         onConfirm={() => void deleteDocument()}
       />
@@ -3054,7 +3060,7 @@ function ProfilePictureDialog({
               id="profile-picture-title"
               className="mt-2 text-xl font-semibold tracking-[-0.025em] text-foreground"
             >
-              Update profile picture
+              Change profile picture
             </h2>
 
             <p className="mt-2 text-xs leading-6 text-muted-foreground">
@@ -3242,8 +3248,8 @@ function DocumentPreviewDialog({
   preview: DocumentPreviewState | null;
   downloading: boolean;
   onClose: () => void;
-  onRetry: () => void;
-  onDownload: () => void;
+  onRetry: (document: UserDocumentDto) => void;
+  onDownload: (document: UserDocumentDto) => void;
 }) {
   if (!preview) {
     return null;
@@ -3315,6 +3321,7 @@ function DocumentPreviewDialog({
                 onClick={openExternally}
                 className={["h-8 w-8 rounded-lg", quietIconButton].join(" ")}
                 title="Open in new tab"
+                aria-label={`Open ${document.originalFileName} in new tab`}
               >
                 <ExternalLinkIcon size={14} />
               </Button>
@@ -3365,7 +3372,7 @@ function DocumentPreviewDialog({
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={onRetry}
+                  onClick={() => onRetry(document)}
                   className={[
                     "mt-5 h-9 rounded-lg px-4 text-xs font-semibold",
                     secondaryButton,
@@ -3453,7 +3460,7 @@ function DocumentPreviewDialog({
             <Button
               type="button"
               variant="ghost"
-              onClick={onDownload}
+              onClick={() => onDownload(document)}
               disabled={!url || downloading}
               className={[
                 "h-9 rounded-lg px-4 text-xs font-semibold",
@@ -3630,7 +3637,8 @@ function IdentityDocumentManager({
 
       {document && document.reviewStatus !== "Approved" && (
         <p className="mt-2 text-[0.59rem] leading-5 text-muted-foreground">
-          To replace this document, remove it first and upload the new copy.
+          Documents are not edited in place. Remove this file first if you need
+          to submit a different copy.
         </p>
       )}
 
@@ -3892,6 +3900,7 @@ function DeleteDocumentWarning({
   return (
     <div
       className="fixed inset-0 z-[110] flex items-center justify-center bg-foreground/35 px-4 backdrop-blur-[2px]"
+      role="presentation"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget && !loading) {
           onCancel();
@@ -3901,6 +3910,8 @@ function DeleteDocumentWarning({
       <div
         role="alertdialog"
         aria-modal="true"
+        aria-labelledby="delete-document-title"
+        aria-describedby="delete-document-description"
         className={[
           "w-full max-w-md rounded-2xl border p-5 sm:p-6",
           "border-border/65 bg-card text-card-foreground shadow-none",
@@ -3913,11 +3924,17 @@ function DeleteDocumentWarning({
           </span>
 
           <div className="min-w-0 flex-1">
-            <h2 className="text-lg font-semibold tracking-[-0.025em] text-foreground">
+            <h2
+              id="delete-document-title"
+              className="text-lg font-semibold tracking-[-0.025em] text-foreground"
+            >
               Remove this document?
             </h2>
 
-            <p className="mt-2 text-sm leading-7 text-muted-foreground">
+            <p
+              id="delete-document-description"
+              className="mt-2 text-sm leading-7 text-muted-foreground"
+            >
               <span className="font-medium text-foreground">
                 {document.originalFileName}
               </span>{" "}
@@ -4139,6 +4156,7 @@ function HideProfileWarning({
   return (
     <div
       className="fixed inset-0 z-[100] flex items-center justify-center bg-foreground/35 px-4 backdrop-blur-[2px]"
+      role="presentation"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget && !loading) {
           onCancel();
@@ -4146,6 +4164,10 @@ function HideProfileWarning({
       }}
     >
       <div
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="hide-profile-title"
+        aria-describedby="hide-profile-description"
         className={[
           "w-full max-w-md rounded-2xl border p-5 sm:p-6",
           "border-border/65 bg-card text-card-foreground shadow-none",
@@ -4157,11 +4179,17 @@ function HideProfileWarning({
           </span>
 
           <div>
-            <h2 className="text-lg font-semibold tracking-[-0.025em] text-foreground">
+            <h2
+              id="hide-profile-title"
+              className="text-lg font-semibold tracking-[-0.025em] text-foreground"
+            >
               Hide your professional profile?
             </h2>
 
-            <p className="mt-2 text-sm leading-7 text-muted-foreground">
+            <p
+              id="hide-profile-description"
+              className="mt-2 text-sm leading-7 text-muted-foreground"
+            >
               Clients will no longer be able to discover your Allocat profile.
               Your profile information and work history will remain saved.
             </p>
@@ -5152,6 +5180,10 @@ function getApiErrorMessage(error: unknown, fallback: string) {
   }
 
   const data = error.response?.data;
+
+  if (typeof data === "string" && data.trim()) {
+    return data;
+  }
 
   if (data && typeof data === "object") {
     if ("detail" in data && typeof data.detail === "string") {

@@ -65,16 +65,8 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 
-/* =========================================================
-   ROUTES
-========================================================= */
-
 const CREATE_ALLOCAT_PROFILE_ENDPOINT = "/allocats/profiles";
 const ALLOCAT_PROFILE_ROUTE = "/allocats/profile";
-
-/* =========================================================
-   TYPES
-========================================================= */
 
 type CreateAllocatProfilePayload = {
   idNumber: string;
@@ -115,16 +107,19 @@ type FormState = {
   idNumber: string;
 };
 
-type VerificationDocumentType =
-  | "qualification"
-  | "certification"
-  | "professional-license"
-  | "training"
-  | "other";
+type UserDocumentType =
+  | "Identity"
+  | "Qualification"
+  | "Certification"
+  | "ProfessionalLicense"
+  | "Training"
+  | "Other";
+
+type ProfessionalDocumentType = Exclude<UserDocumentType, "Identity">;
 
 type VerificationDocumentDraft = {
   id: string;
-  type: VerificationDocumentType;
+  type: ProfessionalDocumentType;
   file: File;
 };
 
@@ -140,10 +135,6 @@ type ReviewRowProps = {
   value: ReactNode;
   missing?: boolean;
 };
-
-/* =========================================================
-   TEMPORARY ALLOCAT LOCATION DATA
-========================================================= */
 
 const SUPPORTED_ALLOCAT_COUNTRIES: SupportedCountry[] = [
   {
@@ -185,10 +176,6 @@ const SUPPORTED_ALLOCAT_COUNTRIES: SupportedCountry[] = [
     ],
   },
 ];
-
-/* =========================================================
-   CONSTANTS
-========================================================= */
 
 const MAX_AVATAR_SIZE = 5 * 1024 * 1024;
 const MAX_ID_DOCUMENT_SIZE = 10 * 1024 * 1024;
@@ -274,10 +261,6 @@ const initialForm: FormState = {
   idNumber: "",
 };
 
-/* =========================================================
-   THEME
-========================================================= */
-
 const primaryButton = [
   "border border-brand-secondary-highlight/15 bg-brand-secondary-highlight text-primary-foreground shadow-none",
   "transition-opacity duration-150",
@@ -353,10 +336,6 @@ const skillTagClass = [
   "dark:bg-secondary/[0.08] dark:text-secondary dark:ring-secondary/10",
 ].join(" ");
 
-/* =========================================================
-   PAGE
-========================================================= */
-
 function CreateAllocatProfile() {
   const navigate = useNavigate();
   const { user, refreshUser } = useAuth();
@@ -364,6 +343,7 @@ function CreateAllocatProfile() {
   const [accountProfile, setAccountProfile] = useState<ProfileUser | null>(
     null,
   );
+
   const [skills, setSkills] = useState<AllocatSkill[]>([]);
 
   const [loading, setLoading] = useState(true);
@@ -376,6 +356,8 @@ function CreateAllocatProfile() {
 
   const [creating, setCreating] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitPhase, setSubmitPhase] = useState<string | null>(null);
+  const [submitProgress, setSubmitProgress] = useState(0);
 
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
@@ -385,17 +367,13 @@ function CreateAllocatProfile() {
   const idDocumentInputRef = useRef<HTMLInputElement | null>(null);
 
   const [documentType, setDocumentType] =
-    useState<VerificationDocumentType>("qualification");
+    useState<ProfessionalDocumentType>("Qualification");
 
   const [verificationDocuments, setVerificationDocuments] = useState<
     VerificationDocumentDraft[]
   >([]);
 
   const documentInputRef = useRef<HTMLInputElement | null>(null);
-
-  /* =======================================================
-     LOAD SKILLS
-  ======================================================= */
 
   const loadSkills = useCallback(async () => {
     try {
@@ -418,10 +396,6 @@ function CreateAllocatProfile() {
       setLoadingSkills(false);
     }
   }, []);
-
-  /* =======================================================
-     INITIAL DATA
-  ======================================================= */
 
   const loadPage = useCallback(async () => {
     if (!user?.isAllocat) {
@@ -492,10 +466,6 @@ function CreateAllocatProfile() {
     };
   }, [avatarPreview]);
 
-  /* =======================================================
-     DERIVED
-  ======================================================= */
-
   const currentStep = STEPS[step];
 
   const selectedCountry = useMemo(
@@ -529,10 +499,6 @@ function CreateAllocatProfile() {
 
   const progress = ((step + 1) / STEPS.length) * 100;
 
-  /* =======================================================
-     FIELD UPDATES
-  ======================================================= */
-
   function updateField<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((current) => ({
       ...current,
@@ -554,11 +520,11 @@ function CreateAllocatProfile() {
     setSubmitError(null);
   }
 
-  /* =======================================================
-     STEP NAVIGATION
-  ======================================================= */
-
   function goNext() {
+    if (creating) {
+      return;
+    }
+
     const error = validateStep(step, form);
 
     if (error) {
@@ -571,13 +537,13 @@ function CreateAllocatProfile() {
   }
 
   function goBack() {
+    if (creating) {
+      return;
+    }
+
     setStepError(null);
     setStep((current) => Math.max(current - 1, 0));
   }
-
-  /* =======================================================
-     PROFILE PICTURE
-  ======================================================= */
 
   function handleAvatarChange(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0] ?? null;
@@ -609,6 +575,10 @@ function CreateAllocatProfile() {
   }
 
   function removeAvatar() {
+    if (creating) {
+      return;
+    }
+
     if (avatarPreview) {
       URL.revokeObjectURL(avatarPreview);
     }
@@ -621,10 +591,6 @@ function CreateAllocatProfile() {
     }
   }
 
-  /* =======================================================
-     ID DOCUMENT
-  ======================================================= */
-
   function handleIdDocumentChange(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0] ?? null;
 
@@ -634,14 +600,10 @@ function CreateAllocatProfile() {
       return;
     }
 
-    if (!ACCEPTED_DOCUMENT_TYPES.includes(file.type)) {
-      setStepError("Your ID document must be a PDF, JPEG, PNG or WebP file.");
-      event.target.value = "";
-      return;
-    }
+    const error = validateDocumentFile(file, MAX_ID_DOCUMENT_SIZE);
 
-    if (file.size > MAX_ID_DOCUMENT_SIZE) {
-      setStepError("Your ID document must be smaller than 10 MB.");
+    if (error) {
+      setStepError(error);
       event.target.value = "";
       return;
     }
@@ -650,16 +612,16 @@ function CreateAllocatProfile() {
   }
 
   function removeIdDocument() {
+    if (creating) {
+      return;
+    }
+
     setIdDocument(null);
 
     if (idDocumentInputRef.current) {
       idDocumentInputRef.current.value = "";
     }
   }
-
-  /* =======================================================
-     VERIFICATION DOCUMENTS
-  ======================================================= */
 
   function handleVerificationFiles(event: ChangeEvent<HTMLInputElement>) {
     const files = Array.from(event.target.files ?? []);
@@ -672,7 +634,7 @@ function CreateAllocatProfile() {
 
     if (verificationDocuments.length + files.length > MAX_DOCUMENTS) {
       setStepError(
-        `You can add up to ${MAX_DOCUMENTS} verification documents.`,
+        `You can add up to ${MAX_DOCUMENTS} professional documents.`,
       );
 
       event.target.value = "";
@@ -680,17 +642,10 @@ function CreateAllocatProfile() {
     }
 
     for (const file of files) {
-      if (!ACCEPTED_DOCUMENT_TYPES.includes(file.type)) {
-        setStepError(
-          "Verification documents must be PDF, JPEG, PNG or WebP files.",
-        );
+      const error = validateDocumentFile(file, MAX_DOCUMENT_SIZE);
 
-        event.target.value = "";
-        return;
-      }
-
-      if (file.size > MAX_DOCUMENT_SIZE) {
-        setStepError("Each verification document must be smaller than 10 MB.");
+      if (error) {
+        setStepError(error);
         event.target.value = "";
         return;
       }
@@ -707,14 +662,38 @@ function CreateAllocatProfile() {
   }
 
   function removeVerificationDocument(id: string) {
+    if (creating) {
+      return;
+    }
+
     setVerificationDocuments((current) =>
       current.filter((document) => document.id !== id),
     );
   }
 
-  /* =======================================================
-     CREATE
-  ======================================================= */
+  async function uploadProfilePicture(file: File) {
+    const data = new FormData();
+
+    data.append("file", file);
+
+    await api.post("/profiles/profile-picture", data, {
+      withCredentials: true,
+    });
+  }
+
+  async function uploadUserDocument(
+    documentType: UserDocumentType,
+    file: File,
+  ) {
+    const data = new FormData();
+
+    data.append("documentType", documentType);
+    data.append("file", file);
+
+    await api.post("/allocats/profiles/me/documents", data, {
+      withCredentials: true,
+    });
+  }
 
   async function createProfile() {
     const finalError = validateAll(form);
@@ -742,6 +721,8 @@ function CreateAllocatProfile() {
 
     setCreating(true);
     setSubmitError(null);
+    setSubmitProgress(0);
+    setSubmitPhase("Creating your professional profile");
 
     try {
       await api.post<MyAllocatProfile>(
@@ -758,6 +739,7 @@ function CreateAllocatProfile() {
         getApiErrorMessage(error, "Your Allocat profile could not be created."),
       );
 
+      setSubmitPhase(null);
       setCreating(false);
       return;
     }
@@ -769,7 +751,11 @@ function CreateAllocatProfile() {
       newLocation !== (accountProfile.location ?? "").trim() ||
       form.phoneNumber.trim() !== (accountProfile.phoneNumber ?? "").trim();
 
+    setSubmitProgress(20);
+
     if (accountChanged) {
+      setSubmitPhase("Saving your location and contact details");
+
       try {
         const response = await api.patch<ProfileUser>(
           "/profiles/me",
@@ -786,28 +772,92 @@ function CreateAllocatProfile() {
         setAccountProfile(response.data);
       } catch (error) {
         console.error("Could not update account details:", error);
-        warnings.push("Your location or phone number could not be updated.");
+
+        warnings.push(
+          "Your location or phone number could not be updated. You can correct it from your profile.",
+        );
       }
     }
+
+    setSubmitProgress(35);
 
     if (avatarFile) {
-      try {
-        const data = new FormData();
-        data.append("file", avatarFile);
+      setSubmitPhase("Uploading your profile picture");
 
-        await api.post("/profiles/profile-picture", data, {
-          withCredentials: true,
-        });
+      try {
+        await uploadProfilePicture(avatarFile);
       } catch (error) {
         console.error("Could not upload profile picture:", error);
-        warnings.push("Your profile picture could not be uploaded.");
+
+        warnings.push(
+          "Your profile picture could not be uploaded. You can add it from your profile.",
+        );
       }
     }
 
-    /*
-     * ID document and credential uploads remain intentionally
-     * unwired until the verification backend is available.
-     */
+    setSubmitProgress(50);
+
+    if (idDocument) {
+      setSubmitPhase("Uploading your identity document");
+
+      try {
+        await uploadUserDocument("Identity", idDocument);
+      } catch (error) {
+        console.error("Could not upload identity document:", error);
+
+        warnings.push(
+          getApiErrorMessage(
+            error,
+            "Your identity document could not be uploaded. You can submit it from your profile.",
+          ),
+        );
+      }
+    }
+
+    setSubmitProgress(65);
+
+    let failedProfessionalDocuments = 0;
+
+    for (let index = 0; index < verificationDocuments.length; index += 1) {
+      const document = verificationDocuments[index];
+
+      setSubmitPhase(
+        `Uploading professional document ${index + 1} of ${
+          verificationDocuments.length
+        }`,
+      );
+
+      try {
+        await uploadUserDocument(document.type, document.file);
+      } catch (error) {
+        console.error(
+          `Could not upload professional document ${document.file.name}:`,
+          error,
+        );
+
+        failedProfessionalDocuments += 1;
+      }
+
+      const credentialProgress =
+        verificationDocuments.length > 0
+          ? ((index + 1) / verificationDocuments.length) * 25
+          : 25;
+
+      setSubmitProgress(Math.round(65 + credentialProgress));
+    }
+
+    if (failedProfessionalDocuments > 0) {
+      warnings.push(
+        `${failedProfessionalDocuments} ${
+          failedProfessionalDocuments === 1
+            ? "professional document"
+            : "professional documents"
+        } could not be uploaded. You can add them from your profile.`,
+      );
+    }
+
+    setSubmitProgress(92);
+    setSubmitPhase("Finishing your profile");
 
     try {
       await refreshUser();
@@ -815,10 +865,13 @@ function CreateAllocatProfile() {
       console.error("Could not refresh authenticated user:", error);
     }
 
-    setCreating(false);
+    setSubmitProgress(100);
 
     toast.success("Your Allocat profile is ready", {
-      description: "You can now review and manage your professional profile.",
+      description:
+        idDocument || verificationDocuments.length > 0
+          ? "Your selected verification documents have been submitted for review."
+          : "You can now review and manage your professional profile.",
     });
 
     if (warnings.length > 0) {
@@ -831,10 +884,6 @@ function CreateAllocatProfile() {
       replace: true,
     });
   }
-
-  /* =======================================================
-     GUARD
-  ======================================================= */
 
   if (user && !user.isAllocat) {
     return <Navigate to="/projects" replace />;
@@ -852,10 +901,6 @@ function CreateAllocatProfile() {
       />
     );
   }
-
-  /* =======================================================
-     RENDER
-  ======================================================= */
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -909,10 +954,6 @@ function CreateAllocatProfile() {
           <SetupProgress value={progress} className="mt-3" />
 
           <div className="mt-8 grid items-start gap-8 lg:grid-cols-[250px_minmax(0,1fr)] lg:gap-12">
-            {/* =================================================
-                STEPPER
-            ================================================= */}
-
             <aside className="hidden lg:block">
               <div className="sticky top-28">
                 <nav
@@ -986,10 +1027,6 @@ function CreateAllocatProfile() {
               </div>
             </aside>
 
-            {/* =================================================
-                FORM CARD
-            ================================================= */}
-
             <section
               className={[
                 "min-w-0 rounded-2xl border p-5 sm:p-7 lg:p-8",
@@ -1021,10 +1058,6 @@ function CreateAllocatProfile() {
                 </div>
               </div>
 
-              {/* =================================================
-                  STEP 1 — PROFESSIONAL
-              ================================================= */}
-
               {step === 0 && (
                 <div className="mt-7 grid gap-6 sm:grid-cols-2">
                   <ProfileField label="Professional title" hint="Optional">
@@ -1032,6 +1065,7 @@ function CreateAllocatProfile() {
                       value={form.title}
                       maxLength={120}
                       placeholder="e.g. Frontend Developer"
+                      disabled={creating}
                       onChange={(event) =>
                         updateField("title", event.target.value)
                       }
@@ -1048,6 +1082,7 @@ function CreateAllocatProfile() {
                       value={form.headline}
                       maxLength={180}
                       placeholder="e.g. Building fast, accessible web experiences"
+                      disabled={creating}
                       onChange={(event) =>
                         updateField("headline", event.target.value)
                       }
@@ -1065,6 +1100,7 @@ function CreateAllocatProfile() {
                       <Textarea
                         value={form.bio}
                         maxLength={500}
+                        disabled={creating}
                         placeholder="Tell clients about your experience, strengths and the kind of work you enjoy."
                         onChange={(event) =>
                           updateField("bio", event.target.value)
@@ -1091,16 +1127,13 @@ function CreateAllocatProfile() {
                 </div>
               )}
 
-              {/* =================================================
-                  STEP 2 — LOCATION
-              ================================================= */}
-
               {step === 1 && (
                 <div className="mt-7">
                   <div className="grid gap-6 sm:grid-cols-2">
                     <ProfileField label="Country">
                       <Select
                         value={form.countryCode}
+                        disabled={creating}
                         onValueChange={handleCountryChange}
                       >
                         <SelectTrigger className={selectTriggerClass}>
@@ -1129,7 +1162,7 @@ function CreateAllocatProfile() {
                     <ProfileField label="City">
                       <Select
                         value={form.city}
-                        disabled={!selectedCountry}
+                        disabled={!selectedCountry || creating}
                         onValueChange={(value) => updateField("city", value)}
                       >
                         <SelectTrigger className={selectTriggerClass}>
@@ -1172,6 +1205,7 @@ function CreateAllocatProfile() {
                           inputMode="tel"
                           autoComplete="tel"
                           maxLength={30}
+                          disabled={creating}
                           value={form.phoneNumber}
                           placeholder={
                             form.countryCode === "ZA" ? "+27..." : "+263..."
@@ -1225,10 +1259,6 @@ function CreateAllocatProfile() {
                 </div>
               )}
 
-              {/* =================================================
-                  STEP 3 — WORK
-              ================================================= */}
-
               {step === 2 && (
                 <div className="mt-7">
                   <div className="grid gap-6 sm:grid-cols-3">
@@ -1239,6 +1269,7 @@ function CreateAllocatProfile() {
                         min={0}
                         max={80}
                         step={1}
+                        disabled={creating}
                         value={form.yearsExperience}
                         placeholder="e.g. 5"
                         onChange={(event) =>
@@ -1253,6 +1284,7 @@ function CreateAllocatProfile() {
                     <ProfileField label="Availability">
                       <Select
                         value={form.availability}
+                        disabled={creating}
                         onValueChange={(value) =>
                           updateField(
                             "availability",
@@ -1302,6 +1334,7 @@ function CreateAllocatProfile() {
                           min={0}
                           max={1000000}
                           step="0.01"
+                          disabled={creating}
                           value={form.hourlyRate}
                           placeholder="0.00"
                           onChange={(event) =>
@@ -1338,10 +1371,6 @@ function CreateAllocatProfile() {
                 </div>
               )}
 
-              {/* =================================================
-                  STEP 4 — SKILLS
-              ================================================= */}
-
               {step === 3 && (
                 <div className="mt-7">
                   <ProfileField
@@ -1370,10 +1399,6 @@ function CreateAllocatProfile() {
                 </div>
               )}
 
-              {/* =================================================
-                  STEP 5 — IDENTITY
-              ================================================= */}
-
               {step === 4 && (
                 <div className="mt-7">
                   <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
@@ -1389,6 +1414,7 @@ function CreateAllocatProfile() {
                           maxLength={50}
                           placeholder="Enter your ID number"
                           autoComplete="off"
+                          disabled={creating}
                           onChange={(event) =>
                             updateField("idNumber", event.target.value)
                           }
@@ -1408,8 +1434,9 @@ function CreateAllocatProfile() {
                       <input
                         ref={idDocumentInputRef}
                         type="file"
-                        accept=".pdf,image/jpeg,image/png,image/webp"
+                        accept="application/pdf,image/jpeg,image/png,image/webp"
                         onChange={handleIdDocumentChange}
+                        disabled={creating}
                         className="hidden"
                       />
 
@@ -1440,12 +1467,13 @@ function CreateAllocatProfile() {
 
                             <button
                               type="button"
+                              disabled={creating}
                               onClick={() =>
                                 idDocumentInputRef.current?.click()
                               }
-                              className="mt-2 text-[0.62rem] font-semibold text-brand-secondary-highlight transition-opacity hover:opacity-70 dark:text-secondary"
+                              className="mt-2 text-[0.62rem] font-semibold text-brand-secondary-highlight transition-opacity hover:opacity-70 disabled:pointer-events-none disabled:opacity-50 dark:text-secondary"
                             >
-                              Replace document
+                              Choose another
                             </button>
                           </div>
 
@@ -1453,6 +1481,7 @@ function CreateAllocatProfile() {
                             type="button"
                             variant="ghost"
                             size="icon"
+                            disabled={creating}
                             onClick={removeIdDocument}
                             className={[
                               "h-8 w-8 shrink-0 rounded-lg",
@@ -1466,12 +1495,14 @@ function CreateAllocatProfile() {
                       ) : (
                         <button
                           type="button"
+                          disabled={creating}
                           onClick={() => idDocumentInputRef.current?.click()}
                           className={[
                             "flex min-h-28 w-full items-center gap-3 rounded-xl border border-dashed px-4 text-left",
                             "border-border/70 bg-surface-2/25",
                             "transition-opacity duration-150 hover:opacity-75",
                             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-secondary-highlight/20",
+                            "disabled:pointer-events-none disabled:opacity-50",
                             "dark:bg-surface-2/40 dark:focus-visible:ring-secondary/20",
                           ].join(" ")}
                         >
@@ -1531,7 +1562,7 @@ function CreateAllocatProfile() {
                         </Avatar>
 
                         <div className="min-w-0 flex-1">
-                          <p className="text-xs font-semibold text-foreground">
+                          <p className="truncate text-xs font-semibold text-foreground">
                             {avatarFile
                               ? avatarFile.name
                               : accountProfile.avatarUrl
@@ -1543,6 +1574,7 @@ function CreateAllocatProfile() {
                             <Button
                               type="button"
                               variant="outline"
+                              disabled={creating}
                               onClick={() => avatarInputRef.current?.click()}
                               className={[
                                 "h-8 rounded-lg px-3 text-xs font-semibold",
@@ -1552,7 +1584,7 @@ function CreateAllocatProfile() {
                               <CameraIcon size={13} />
 
                               {avatarFile || accountProfile.avatarUrl
-                                ? "Change"
+                                ? "Choose another"
                                 : "Choose photo"}
                             </Button>
 
@@ -1560,6 +1592,7 @@ function CreateAllocatProfile() {
                               <Button
                                 type="button"
                                 variant="ghost"
+                                disabled={creating}
                                 onClick={removeAvatar}
                                 className={[
                                   "h-8 rounded-lg px-3 text-xs font-semibold",
@@ -1578,6 +1611,7 @@ function CreateAllocatProfile() {
                         ref={avatarInputRef}
                         type="file"
                         accept="image/jpeg,image/png,image/webp"
+                        disabled={creating}
                         onChange={handleAvatarChange}
                         className="hidden"
                       />
@@ -1600,10 +1634,6 @@ function CreateAllocatProfile() {
                   </div>
                 </div>
               )}
-
-              {/* =================================================
-                  STEP 6 — CREDENTIALS
-              ================================================= */}
 
               {step === 5 && (
                 <div className="mt-7">
@@ -1641,8 +1671,9 @@ function CreateAllocatProfile() {
                     <ProfileField label="Document type">
                       <Select
                         value={documentType}
+                        disabled={creating}
                         onValueChange={(value) =>
-                          setDocumentType(value as VerificationDocumentType)
+                          setDocumentType(value as ProfessionalDocumentType)
                         }
                       >
                         <SelectTrigger className={selectTriggerClass}>
@@ -1651,34 +1682,34 @@ function CreateAllocatProfile() {
 
                         <SelectContent className={selectContentClass}>
                           <SelectItem
-                            value="qualification"
+                            value="Qualification"
                             className={selectItemClass}
                           >
                             Qualification
                           </SelectItem>
 
                           <SelectItem
-                            value="certification"
+                            value="Certification"
                             className={selectItemClass}
                           >
                             Certification
                           </SelectItem>
 
                           <SelectItem
-                            value="professional-license"
+                            value="ProfessionalLicense"
                             className={selectItemClass}
                           >
                             Professional licence
                           </SelectItem>
 
                           <SelectItem
-                            value="training"
+                            value="Training"
                             className={selectItemClass}
                           >
                             Training
                           </SelectItem>
 
-                          <SelectItem value="other" className={selectItemClass}>
+                          <SelectItem value="Other" className={selectItemClass}>
                             Other professional document
                           </SelectItem>
                         </SelectContent>
@@ -1693,12 +1724,17 @@ function CreateAllocatProfile() {
                     <ProfileField label="Credential files" hint="Optional">
                       <button
                         type="button"
+                        disabled={
+                          creating ||
+                          verificationDocuments.length >= MAX_DOCUMENTS
+                        }
                         onClick={() => documentInputRef.current?.click()}
                         className={[
                           "flex min-h-28 w-full items-center gap-4 rounded-xl border border-dashed px-4 py-4 text-left",
                           "border-border/70 bg-surface-2/25",
                           "transition-opacity duration-150 hover:opacity-75",
                           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-secondary-highlight/20",
+                          "disabled:pointer-events-none disabled:opacity-50",
                           "dark:bg-surface-2/40 dark:focus-visible:ring-secondary/20",
                         ].join(" ")}
                       >
@@ -1713,7 +1749,9 @@ function CreateAllocatProfile() {
 
                         <span>
                           <span className="block text-xs font-semibold text-foreground">
-                            Choose documents
+                            {verificationDocuments.length >= MAX_DOCUMENTS
+                              ? "Document limit reached"
+                              : "Choose documents"}
                           </span>
 
                           <span className="mt-1 block text-[0.61rem] leading-5 text-muted-foreground">
@@ -1726,7 +1764,11 @@ function CreateAllocatProfile() {
                         ref={documentInputRef}
                         type="file"
                         multiple
-                        accept=".pdf,image/jpeg,image/png,image/webp"
+                        accept="application/pdf,image/jpeg,image/png,image/webp"
+                        disabled={
+                          creating ||
+                          verificationDocuments.length >= MAX_DOCUMENTS
+                        }
                         onChange={handleVerificationFiles}
                         className="hidden"
                       />
@@ -1776,6 +1818,7 @@ function CreateAllocatProfile() {
                               type="button"
                               variant="ghost"
                               size="icon"
+                              disabled={creating}
                               onClick={() =>
                                 removeVerificationDocument(document.id)
                               }
@@ -1806,10 +1849,6 @@ function CreateAllocatProfile() {
                   </div>
                 </div>
               )}
-
-              {/* =================================================
-                  STEP 7 — REVIEW
-              ================================================= */}
 
               {step === 6 && (
                 <div className="mt-7">
@@ -1937,9 +1976,11 @@ function CreateAllocatProfile() {
                     <ReviewRow label="ID number" value="Provided privately" />
 
                     <ReviewRow
-                      label="ID document"
+                      label="Identity document"
                       value={
-                        idDocument ? "Selected for verification" : "Add later"
+                        idDocument
+                          ? "Will be submitted for review"
+                          : "Add later"
                       }
                       missing={!idDocument}
                     />
@@ -1948,15 +1989,26 @@ function CreateAllocatProfile() {
                       label="Professional credentials"
                       value={
                         verificationDocuments.length > 0
-                          ? `${verificationDocuments.length} selected`
+                          ? `${verificationDocuments.length} ${
+                              verificationDocuments.length === 1
+                                ? "document"
+                                : "documents"
+                            } ready to submit`
                           : "Complete later"
                       }
                       missing={verificationDocuments.length === 0}
                     />
 
                     <ReviewRow
-                      label="Verification status"
-                      value="Pending verification"
+                      label="Verification"
+                      value={
+                        idDocument || verificationDocuments.length > 0
+                          ? "Documents will be submitted for review"
+                          : "Not started"
+                      }
+                      missing={
+                        !idDocument && verificationDocuments.length === 0
+                      }
                     />
                   </ReviewGroup>
 
@@ -1976,17 +2028,42 @@ function CreateAllocatProfile() {
                         <WandSparklesIcon size={15} />
                       </span>
 
-                      <div>
+                      <div className="min-w-0 flex-1">
                         <p className="text-xs font-semibold text-foreground">
                           Your professional profile is ready to be created
                         </p>
 
                         <p className="mt-1 text-xs leading-6 text-muted-foreground">
-                          You can continue improving your profile afterwards.
-                          Identity and professional credentials will form part
-                          of the verification process once verification
-                          submission is connected to the backend.
+                          Selected identity and professional documents will be
+                          uploaded securely after your profile is created and
+                          submitted for review.
                         </p>
+
+                        {creating && (
+                          <div className="mt-4">
+                            <div className="flex items-center justify-between gap-4">
+                              <div className="flex min-w-0 items-center gap-2">
+                                <LoaderCircleIcon
+                                  size={13}
+                                  className="shrink-0 animate-spin text-brand-secondary-highlight dark:text-secondary"
+                                />
+
+                                <p className="truncate text-[0.61rem] font-medium text-muted-foreground">
+                                  {submitPhase ?? "Finishing profile setup"}
+                                </p>
+                              </div>
+
+                              <span className="shrink-0 text-[0.58rem] font-medium tabular-nums text-muted-foreground">
+                                {submitProgress}%
+                              </span>
+                            </div>
+
+                            <UploadProgress
+                              value={submitProgress}
+                              className="mt-2.5"
+                            />
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -2020,6 +2097,7 @@ function CreateAllocatProfile() {
                     type="button"
                     variant="ghost"
                     onClick={goNext}
+                    disabled={creating}
                     className={[
                       "h-10 rounded-lg px-4 text-xs font-semibold",
                       primaryButton,
@@ -2060,10 +2138,6 @@ function CreateAllocatProfile() {
     </div>
   );
 }
-
-/* =========================================================
-   THEMED SKILL PICKER
-========================================================= */
 
 function ThemedSkillPicker({
   options,
@@ -2202,7 +2276,6 @@ function ThemedSkillPicker({
                     ].join(" ")}
                   >
                     <span className="truncate">{skill.name}</span>
-
                     <PlusMark />
                   </button>
                 ))}
@@ -2239,10 +2312,6 @@ function PlusMark() {
   );
 }
 
-/* =========================================================
-   PROGRESS
-========================================================= */
-
 function SetupProgress({
   value,
   className = "",
@@ -2274,9 +2343,40 @@ function SetupProgress({
   );
 }
 
-/* =========================================================
-   FIELD
-========================================================= */
+function UploadProgress({
+  value,
+  className = "",
+}: {
+  value: number;
+  className?: string;
+}) {
+  const safeValue = Math.max(
+    0,
+    Math.min(100, Number.isFinite(value) ? value : 0),
+  );
+
+  return (
+    <div
+      className={[
+        "h-1.5 w-full overflow-hidden rounded-full",
+        "bg-brand-secondary-highlight/[0.10] dark:bg-secondary/[0.10]",
+        className,
+      ].join(" ")}
+      role="progressbar"
+      aria-label="Profile creation progress"
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-valuenow={Math.round(safeValue)}
+    >
+      <div
+        className="h-full rounded-full bg-brand-secondary-highlight transition-[width] duration-300 ease-out dark:bg-secondary"
+        style={{
+          width: `${safeValue}%`,
+        }}
+      />
+    </div>
+  );
+}
 
 function ProfileField({
   label,
@@ -2311,10 +2411,6 @@ function FieldHelp({ children }: { children: ReactNode }) {
     </p>
   );
 }
-
-/* =========================================================
-   REVIEW
-========================================================= */
 
 function ReviewGroup({
   title,
@@ -2355,10 +2451,6 @@ function ReviewRow({ label, value, missing = false }: ReviewRowProps) {
   );
 }
 
-/* =========================================================
-   ERROR
-========================================================= */
-
 function InlineError({ message }: { message: string }) {
   return (
     <div
@@ -2370,10 +2462,6 @@ function InlineError({ message }: { message: string }) {
     </div>
   );
 }
-
-/* =========================================================
-   ERROR PAGE
-========================================================= */
 
 function CreateAllocatProfileError({
   message,
@@ -2421,10 +2509,6 @@ function CreateAllocatProfileError({
   );
 }
 
-/* =========================================================
-   SKELETON
-========================================================= */
-
 function CreateAllocatProfileSkeleton() {
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -2443,9 +2527,7 @@ function CreateAllocatProfileSkeleton() {
 
           <div className="mt-8 grid gap-8 lg:grid-cols-[250px_minmax(0,1fr)] lg:gap-12">
             <div className="hidden space-y-3 lg:block">
-              {Array.from({
-                length: 7,
-              }).map((_, index) => (
+              {Array.from({ length: 7 }).map((_, index) => (
                 <Skeleton key={index} className="h-14 rounded-xl" />
               ))}
             </div>
@@ -2473,10 +2555,6 @@ function CreateAllocatProfileSkeleton() {
     </div>
   );
 }
-
-/* =========================================================
-   VALIDATION
-========================================================= */
 
 function validateStep(step: number, form: FormState) {
   switch (step) {
@@ -2573,9 +2651,17 @@ function validateAll(form: FormState) {
   return null;
 }
 
-/* =========================================================
-   LOCATION
-========================================================= */
+function validateDocumentFile(file: File, maxSize: number) {
+  if (!ACCEPTED_DOCUMENT_TYPES.includes(file.type)) {
+    return "Documents must be PDF, JPEG, PNG or WebP files.";
+  }
+
+  if (file.size > maxSize) {
+    return "Documents cannot exceed 10 MB.";
+  }
+
+  return null;
+}
 
 function inferSupportedAllocatLocation(location?: string | null): {
   countryCode: string;
@@ -2602,10 +2688,6 @@ function inferSupportedAllocatLocation(location?: string | null): {
 
   return null;
 }
-
-/* =========================================================
-   HELPERS
-========================================================= */
 
 function cleanOptional(value: string) {
   return value.trim() || null;
@@ -2660,18 +2742,18 @@ function formatMoney(value: number, currency: string) {
   }
 }
 
-function formatDocumentType(type: VerificationDocumentType) {
+function formatDocumentType(type: ProfessionalDocumentType) {
   switch (type) {
-    case "qualification":
+    case "Qualification":
       return "Qualification";
 
-    case "certification":
+    case "Certification":
       return "Certification";
 
-    case "professional-license":
+    case "ProfessionalLicense":
       return "Professional licence";
 
-    case "training":
+    case "Training":
       return "Training";
 
     default:
@@ -2680,8 +2762,16 @@ function formatDocumentType(type: VerificationDocumentType) {
 }
 
 function formatFileSize(bytes: number) {
+  if (!Number.isFinite(bytes) || bytes <= 0) {
+    return "0 KB";
+  }
+
+  if (bytes < 1024) {
+    return `${bytes} B`;
+  }
+
   if (bytes < 1024 * 1024) {
-    return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+    return `${(bytes / 1024).toFixed(1)} KB`;
   }
 
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;

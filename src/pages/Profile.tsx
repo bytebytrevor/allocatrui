@@ -1,20 +1,25 @@
-import api from "@/api/axios";
-import { useAuth } from "@/auth/useAuth";
+import {
+  type ChangeEvent,
+  type FormEvent,
+  type ReactNode,
+  type RefObject,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
-import DashboardMainNav from "@/components/DashboardMainNav";
-
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Progress } from "@/components/ui/progress";
-import { Skeleton } from "@/components/ui/skeleton";
+import { isAxiosError } from "axios";
+import { Navigate } from "react-router-dom";
+import { toast } from "sonner";
 
 import {
   AlertCircleIcon,
   BadgeCheckIcon,
   CameraIcon,
+  CheckIcon,
+  CircleIcon,
   Clock3Icon,
   ImageIcon,
   LoaderCircleIcon,
@@ -28,29 +33,23 @@ import {
   ShieldCheckIcon,
   Trash2Icon,
   UserRoundIcon,
+  XIcon,
+  type LucideIcon,
 } from "lucide-react";
 
-import { isAxiosError } from "axios";
-import { Navigate } from "react-router-dom";
-import { toast } from "sonner";
-
-import {
-  type ChangeEvent,
-  type ComponentType,
-  type FormEvent,
-  type ReactNode,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import api from "@/api/axios";
+import { useAuth } from "@/auth/useAuth";
 
 import type { ProfileUser } from "@/Types/profileUser";
 
-/* =========================================================
-   TYPES
-========================================================= */
+import DashboardMainNav from "@/components/DashboardMainNav";
+
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type ProfileForm = {
   fullName: string;
@@ -58,19 +57,13 @@ type ProfileForm = {
   location: string;
 };
 
-/* =========================================================
-   CONSTANTS
-========================================================= */
+type VerificationTrigger = "banner" | "field";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 const EMAIL_VERIFICATION_ENDPOINT = "/profiles/me/email-verification";
 const ALLOCAT_PROFILE_ROUTE = "/allocats/profile";
-
-/* =========================================================
-   THEME
-========================================================= */
 
 const primaryButton = [
   "border border-brand-secondary-highlight/15 bg-brand-secondary-highlight text-primary-foreground shadow-none",
@@ -120,116 +113,54 @@ const accentIconSurface = [
   "dark:bg-secondary/[0.07] dark:text-secondary dark:ring-secondary/10",
 ].join(" ");
 
-const progressClass = [
-  "h-1.5",
-  "[&_[data-slot=progress-indicator]]:bg-brand-secondary-highlight",
-  "dark:[&_[data-slot=progress-indicator]]:bg-secondary",
+const pageCanvas = "bg-surface-2/20 dark:bg-background";
+
+const profileSurface = [
+  "rounded-2xl border border-border/60 bg-card",
+  "dark:border-border dark:bg-card",
 ].join(" ");
 
-/* =========================================================
-   HELPERS
-========================================================= */
+const sectionSurface = [
+  "rounded-2xl border border-border/60 bg-card",
+  "dark:border-border dark:bg-card",
+].join(" ");
 
-function getInitials(name?: string | null) {
-  if (!name?.trim()) {
-    return "U";
-  }
-
-  return name
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((part) => part.charAt(0).toUpperCase())
-    .join("");
-}
-
-function formatDate(date?: string | null) {
-  if (!date) {
-    return "Not available";
-  }
-
-  const parsedDate = new Date(date);
-
-  if (Number.isNaN(parsedDate.getTime())) {
-    return "Not available";
-  }
-
-  return new Intl.DateTimeFormat("en", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  }).format(parsedDate);
-}
-
-function formatDateShort(date?: string | null) {
-  if (!date) {
-    return "Not available";
-  }
-
-  const parsedDate = new Date(date);
-
-  if (Number.isNaN(parsedDate.getTime())) {
-    return "Not available";
-  }
-
-  return new Intl.DateTimeFormat("en", {
-    month: "short",
-    year: "numeric",
-  }).format(parsedDate);
-}
-
-function getApiErrorMessage(error: unknown, fallback: string) {
-  if (
-    isAxiosError(error) &&
-    typeof error.response?.data?.message === "string"
-  ) {
-    return error.response.data.message;
-  }
-
-  return fallback;
-}
-
-/* =========================================================
-   PAGE
-========================================================= */
+const accountCompletionSurface = [
+  "border-primary/20 bg-primary text-primary-foreground",
+  "dark:border-brand-secondary-highlight/25 dark:bg-brand-secondary dark:text-white",
+].join(" ");
 
 export default function Profile() {
   const { user, refreshUser } = useAuth();
 
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const avatarInputRef = useRef<HTMLInputElement | null>(null);
 
   const [profileUser, setProfileUser] = useState<ProfileUser | null>(null);
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [profileLoadError, setProfileLoadError] = useState<string | null>(null);
 
-  const [file, setFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
-  const [uploading, setUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
+  const [avatarEditorOpen, setAvatarEditorOpen] = useState(false);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [avatarProgress, setAvatarProgress] = useState(0);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [avatarError, setAvatarError] = useState<string | null>(null);
 
   const [savingProfile, setSavingProfile] = useState(false);
   const [sendingVerification, setSendingVerification] = useState(false);
 
-  const [pictureError, setPictureError] = useState<string | null>(null);
   const [profileError, setProfileError] = useState<string | null>(null);
   const [verificationError, setVerificationError] = useState<string | null>(
     null,
   );
+  const [verificationErrorSource, setVerificationErrorSource] =
+    useState<VerificationTrigger | null>(null);
 
   const [profileForm, setProfileForm] = useState<ProfileForm>({
     fullName: "",
     phoneNumber: "",
     location: "",
   });
-
-  /* =======================================================
-     LOAD PROFILE
-
-     This page belongs only to regular client accounts.
-
-     An Allocat must use /allocats/profile instead, so do not
-     load the regular profile page data for an Allocat.
-  ======================================================= */
 
   const fetchProfile = useCallback(async () => {
     if (!user || user.isAllocat) {
@@ -267,10 +198,6 @@ export default function Profile() {
     void fetchProfile();
   }, [user, fetchProfile]);
 
-  /* =======================================================
-     SYNC FORM
-  ======================================================= */
-
   useEffect(() => {
     if (!profileUser) {
       return;
@@ -283,31 +210,31 @@ export default function Profile() {
     });
   }, [profileUser]);
 
-  /* =======================================================
-     PREVIEW CLEANUP
-  ======================================================= */
-
   useEffect(() => {
     return () => {
-      if (preview) {
-        URL.revokeObjectURL(preview);
+      if (avatarPreview) {
+        URL.revokeObjectURL(avatarPreview);
       }
     };
-  }, [preview]);
+  }, [avatarPreview]);
 
-  /* =======================================================
-     DERIVED VALUES
-  ======================================================= */
-
-  const displayedImage = preview ?? profileUser?.avatarUrl ?? undefined;
-
-  const fileSize = useMemo(() => {
-    if (!file) {
-      return null;
+  useEffect(() => {
+    if (!avatarEditorOpen) {
+      return;
     }
 
-    return `${(file.size / (1024 * 1024)).toFixed(2)} MB`;
-  }, [file]);
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape" && !uploadingAvatar) {
+        closeAvatarEditor();
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [avatarEditorOpen, uploadingAvatar]);
 
   const profileHasChanges =
     profileForm.fullName.trim() !== (profileUser?.fullName ?? "").trim() ||
@@ -334,71 +261,81 @@ export default function Profile() {
     return Math.round((completed / requirements.length) * 100);
   }, [profileUser]);
 
-  /* =======================================================
-     PROFILE PICTURE
-  ======================================================= */
-
-  function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
-    const selectedFile = event.target.files?.[0] ?? null;
-
-    setPictureError(null);
-
-    if (!selectedFile) {
-      return;
-    }
-
-    if (!ACCEPTED_IMAGE_TYPES.includes(selectedFile.type)) {
-      setPictureError("Choose a JPEG, PNG or WebP image.");
-      event.target.value = "";
-      return;
-    }
-
-    if (selectedFile.size > MAX_FILE_SIZE) {
-      setPictureError("The image must be smaller than 5 MB.");
-      event.target.value = "";
-      return;
-    }
-
-    if (preview) {
-      URL.revokeObjectURL(preview);
-    }
-
-    setFile(selectedFile);
-    setPreview(URL.createObjectURL(selectedFile));
-    setUploadProgress(0);
+  function openAvatarEditor() {
+    setAvatarError(null);
+    setAvatarEditorOpen(true);
   }
 
-  function clearSelectedFile() {
-    if (preview) {
-      URL.revokeObjectURL(preview);
+  function closeAvatarEditor() {
+    if (uploadingAvatar) {
+      return;
     }
 
-    setFile(null);
-    setPreview(null);
-    setUploadProgress(0);
-    setPictureError(null);
+    clearAvatarSelection();
+    setAvatarEditorOpen(false);
+  }
 
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
+  function handleAvatarChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0] ?? null;
+
+    setAvatarError(null);
+
+    if (!file) {
+      return;
+    }
+
+    if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
+      setAvatarError("Choose a JPEG, PNG or WebP image.");
+      event.target.value = "";
+      return;
+    }
+
+    if (file.size > MAX_FILE_SIZE) {
+      setAvatarError("The profile picture cannot exceed 5 MB.");
+      event.target.value = "";
+      return;
+    }
+
+    if (avatarPreview) {
+      URL.revokeObjectURL(avatarPreview);
+    }
+
+    setAvatarFile(file);
+    setAvatarPreview(URL.createObjectURL(file));
+    setAvatarProgress(0);
+  }
+
+  function clearAvatarSelection() {
+    if (avatarPreview) {
+      URL.revokeObjectURL(avatarPreview);
+    }
+
+    setAvatarFile(null);
+    setAvatarPreview(null);
+    setAvatarProgress(0);
+    setAvatarError(null);
+
+    if (avatarInputRef.current) {
+      avatarInputRef.current.value = "";
     }
   }
 
   async function uploadProfilePicture() {
-    if (!file || uploading) {
+    if (!avatarFile || uploadingAvatar || !profileUser) {
       return;
     }
 
-    setUploading(true);
-    setUploadProgress(0);
-    setPictureError(null);
+    const previousAvatar = profileUser.avatarUrl ?? null;
 
     const formData = new FormData();
-    formData.append("file", file);
+    formData.append("file", avatarFile);
 
     try {
-      const response = await api.post<{
-        avatarUrl: string;
-      }>("/profiles/profile-picture", formData, {
+      setUploadingAvatar(true);
+      setAvatarProgress(0);
+      setAvatarError(null);
+
+      await api.post("/profiles/profile-picture", formData, {
         withCredentials: true,
 
         onUploadProgress: (event) => {
@@ -406,43 +343,50 @@ export default function Profile() {
             return;
           }
 
-          setUploadProgress(Math.round((event.loaded * 100) / event.total));
+          setAvatarProgress(Math.round((event.loaded * 100) / event.total));
         },
       });
 
-      setProfileUser((current) =>
-        current
-          ? {
-              ...current,
-              avatarUrl: response.data.avatarUrl,
-            }
-          : current,
-      );
+      const response = await api.get<ProfileUser>("/profiles/me", {
+        withCredentials: true,
+      });
 
+      const nextAvatar = response.data.avatarUrl;
+
+      if (!nextAvatar || nextAvatar === previousAvatar) {
+        throw new Error(
+          "The upload completed, but the new profile picture was not saved.",
+        );
+      }
+
+      setProfileUser(response.data);
       await refreshUser();
 
-      clearSelectedFile();
+      clearAvatarSelection();
+      setAvatarEditorOpen(false);
 
-      toast.success("Profile picture updated", {
-        description: "Your new picture is now visible across Allocatr.",
-      });
+      toast.success("Profile picture updated");
     } catch (error) {
       console.error("Could not upload profile picture:", error);
 
-      setPictureError(
-        getApiErrorMessage(
-          error,
-          "The image could not be uploaded. Please try again.",
-        ),
-      );
+      if (
+        error instanceof Error &&
+        error.message ===
+          "The upload completed, but the new profile picture was not saved."
+      ) {
+        setAvatarError(error.message);
+      } else {
+        setAvatarError(
+          getApiErrorMessage(
+            error,
+            "The image could not be uploaded. Please try again.",
+          ),
+        );
+      }
     } finally {
-      setUploading(false);
+      setUploadingAvatar(false);
     }
   }
-
-  /* =======================================================
-     PROFILE DETAILS
-  ======================================================= */
 
   function handleProfileFieldChange(event: ChangeEvent<HTMLInputElement>) {
     const { name, value } = event.target;
@@ -458,16 +402,15 @@ export default function Profile() {
   async function saveProfile(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    setProfileError(null);
-
     if (!profileForm.fullName.trim()) {
       setProfileError("Enter your full name before saving.");
       return;
     }
 
-    setSavingProfile(true);
-
     try {
+      setSavingProfile(true);
+      setProfileError(null);
+
       const response = await api.patch<ProfileUser>(
         "/profiles/me",
         {
@@ -501,11 +444,7 @@ export default function Profile() {
     }
   }
 
-  /* =======================================================
-     EMAIL VERIFICATION
-  ======================================================= */
-
-  async function sendVerificationEmail() {
+  async function sendVerificationEmail(source: VerificationTrigger) {
     if (
       !profileUser?.email ||
       profileUser.emailConfirmed ||
@@ -514,10 +453,11 @@ export default function Profile() {
       return;
     }
 
-    setSendingVerification(true);
-    setVerificationError(null);
-
     try {
+      setSendingVerification(true);
+      setVerificationError(null);
+      setVerificationErrorSource(source);
+
       await api.post(
         EMAIL_VERIFICATION_ENDPOINT,
         {},
@@ -525,6 +465,9 @@ export default function Profile() {
           withCredentials: true,
         },
       );
+
+      setVerificationError(null);
+      setVerificationErrorSource(null);
 
       toast.success("Verification email sent", {
         description: `Check ${profileUser.email} for your verification link.`,
@@ -538,22 +481,13 @@ export default function Profile() {
           "We could not send the verification email. Please try again.",
         ),
       );
+
+      setVerificationErrorSource(source);
     } finally {
       setSendingVerification(false);
     }
   }
 
-  /* =======================================================
-     ACCESS + PAGE STATES
-  ======================================================= */
-
-  /*
-   * The regular profile belongs only to clients.
-   *
-   * An Allocat manually entering /profile should never see
-   * this page. Their Allocat profile already includes their
-   * basic account information.
-   */
   if (user?.isAllocat) {
     return <Navigate to={ALLOCAT_PROFILE_ROUTE} replace />;
   }
@@ -571,12 +505,10 @@ export default function Profile() {
     );
   }
 
-  /* =======================================================
-     RENDER
-  ======================================================= */
+  const initials = getInitials(profileUser.fullName);
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className={["min-h-screen text-foreground", pageCanvas].join(" ")}>
       <header className="sticky top-0 z-40 border-b border-border/60 bg-background/90 backdrop-blur-xl">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <DashboardMainNav>
@@ -593,62 +525,138 @@ export default function Profile() {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8 sm:px-6 md:px-8 lg:py-12">
-        <section className="pb-8 sm:pb-10">
-          <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
-            <div className="min-w-0 max-w-2xl">
-              <div className="flex items-center gap-3">
-                <span
-                  className={[
-                    "flex h-9 w-9 items-center justify-center rounded-lg",
-                    accentIconSurface,
-                  ].join(" ")}
-                >
-                  <UserRoundIcon size={15} />
-                </span>
+      <main className="container mx-auto px-4 py-6 sm:px-6 md:px-8 lg:py-8">
+        <section className={["overflow-hidden", profileSurface].join(" ")}>
+          <div className="p-5 sm:p-6 lg:p-7">
+            <div className="flex flex-col gap-7 lg:flex-row lg:items-end lg:justify-between">
+              <div className="flex min-w-0 flex-col gap-5 sm:flex-row sm:items-center">
+                <div className="relative w-fit shrink-0">
+                  <Avatar className="h-24 w-24 border border-border/70 bg-transparent sm:h-28 sm:w-28">
+                    <AvatarImage
+                      key={profileUser.avatarUrl ?? "avatar"}
+                      src={profileUser.avatarUrl ?? undefined}
+                      alt={`${profileUser.fullName}'s profile`}
+                      className="object-cover"
+                    />
 
-                <p className="text-[0.54rem] font-semibold uppercase tracking-[0.17em] text-muted-foreground">
-                  Your account
-                </p>
+                    <AvatarFallback
+                      className={[
+                        "bg-brand-secondary-highlight/[0.08] text-2xl font-semibold text-brand-secondary-highlight",
+                        "dark:bg-secondary/[0.08] dark:text-secondary",
+                      ].join(" ")}
+                    >
+                      {initials}
+                    </AvatarFallback>
+                  </Avatar>
+
+                  <button
+                    type="button"
+                    onClick={openAvatarEditor}
+                    className={[
+                      "absolute -left-1 -top-1 flex h-8 w-8 items-center justify-center rounded-lg border-[3px] border-card",
+                      "bg-brand-secondary-highlight text-primary-foreground",
+                      "transition-opacity duration-150 hover:opacity-85",
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-secondary-highlight/25",
+                      "dark:bg-secondary dark:text-secondary-foreground dark:focus-visible:ring-secondary/25",
+                    ].join(" ")}
+                    aria-label="Update profile picture"
+                    title="Update profile picture"
+                  >
+                    <CameraIcon size={14} />
+                  </button>
+
+                  {profileUser.emailConfirmed && (
+                    <span
+                      className={[
+                        "absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-lg border-[3px] border-card",
+                        "bg-brand-secondary-highlight text-primary-foreground",
+                        "dark:bg-secondary dark:text-secondary-foreground",
+                      ].join(" ")}
+                      title="Verified account email"
+                    >
+                      <BadgeCheckIcon size={14} />
+                    </span>
+                  )}
+                </div>
+
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="text-[0.54rem] font-semibold uppercase tracking-[0.17em] text-brand-secondary-highlight dark:text-secondary">
+                      Client profile
+                    </p>
+
+                    <Badge
+                      variant="outline"
+                      className={[
+                        "h-6 rounded-md px-2 text-[0.56rem] font-semibold shadow-none",
+                        "border-border/55 bg-surface-2/35 text-muted-foreground",
+                        "dark:bg-surface-2/55",
+                      ].join(" ")}
+                    >
+                      Client account
+                    </Badge>
+                  </div>
+
+                  <h1 className="mt-2 break-words text-3xl font-semibold leading-[1.02] tracking-[-0.04em] text-foreground/95 sm:text-4xl lg:text-[2.75rem]">
+                    {profileUser.fullName}
+                  </h1>
+
+                  <div className="mt-3 flex min-w-0 items-center gap-2">
+                    <MailIcon
+                      size={13}
+                      className="shrink-0 text-muted-foreground"
+                    />
+
+                    <p className="truncate text-sm text-muted-foreground">
+                      {profileUser.email || "No email available"}
+                    </p>
+
+                    {profileUser.emailConfirmed && (
+                      <BadgeCheckIcon
+                        size={13}
+                        className="shrink-0 text-status-complete-foreground"
+                      />
+                    )}
+                  </div>
+
+                  <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-muted-foreground">
+                    <span className="inline-flex items-center gap-1.5">
+                      <MapPinIcon size={13} />
+                      {profileUser.location || "Location not added"}
+                    </span>
+
+                    <span className="inline-flex items-center gap-1.5">
+                      <Clock3Icon size={13} />
+                      Joined {formatDateShort(profileUser.createdAt)}
+                    </span>
+                  </div>
+                </div>
               </div>
 
-              <h1 className="mt-5 text-3xl font-semibold leading-tight tracking-[-0.04em] text-foreground/95 sm:text-4xl lg:text-[2.75rem]">
-                Profile
-              </h1>
+              <div
+                className={[
+                  "inline-flex w-fit items-center gap-2 rounded-lg border px-3 py-2",
+                  profileUser.emailConfirmed
+                    ? "border-status-complete/15 bg-status-complete/[0.055] text-status-complete-foreground"
+                    : "border-status-pending/20 bg-status-pending/[0.055] text-status-pending-foreground",
+                ].join(" ")}
+              >
+                {profileUser.emailConfirmed ? (
+                  <BadgeCheckIcon size={13} />
+                ) : (
+                  <MailCheckIcon size={13} />
+                )}
 
-              <p className="mt-3 max-w-xl text-sm leading-7 text-muted-foreground">
-                Manage the personal information connected to your Allocatr
-                account.
-              </p>
+                <span className="text-xs font-semibold">
+                  {profileUser.emailConfirmed
+                    ? "Email verified"
+                    : "Email verification pending"}
+                </span>
+              </div>
             </div>
-
-            <Badge
-              variant="outline"
-              className={[
-                "h-8 w-fit rounded-lg px-3",
-                "border-border/60 bg-surface-2/40",
-                "text-[0.66rem] font-semibold text-foreground/70",
-                "shadow-none dark:bg-surface-2/65",
-              ].join(" ")}
-            >
-              <UserRoundIcon
-                size={12}
-                className="text-brand-secondary-highlight dark:text-secondary"
-              />
-              Client account
-            </Badge>
           </div>
 
-          {!profileUser.emailConfirmed && (
-            <EmailVerificationWarning
-              email={profileUser.email}
-              sending={sendingVerification}
-              error={verificationError}
-              onVerify={sendVerificationEmail}
-            />
-          )}
-
-          <div className="mt-8 border-y border-border/55">
+          <div className="border-t border-border/55">
             <div className="grid sm:grid-cols-3">
               <SummaryStat
                 label="Profile"
@@ -671,268 +679,27 @@ export default function Profile() {
           </div>
         </section>
 
-        <div className="grid min-w-0 items-start gap-10 border-t border-border/40 pt-8 lg:grid-cols-[300px_minmax(0,1fr)] xl:grid-cols-[320px_minmax(0,1fr)] xl:gap-14">
-          <aside className="min-w-0">
-            <section
-              className={["rounded-2xl border p-5 sm:p-6", cardSurface].join(
-                " ",
-              )}
+        {!profileUser.emailConfirmed && (
+          <div className="mt-4">
+            <EmailVerificationWarning
+              email={profileUser.email}
+              sending={sendingVerification}
+              error={
+                verificationErrorSource === "banner" ? verificationError : null
+              }
+              onVerify={() => sendVerificationEmail("banner")}
+            />
+          </div>
+        )}
+
+        <div className="mt-5 grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_300px]">
+          <div className="min-w-0 space-y-5">
+            <ProfileSection
+              eyebrow="Personal details"
+              title="Your information"
+              description="The basic information connected to your Allocatr account."
             >
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <p className="text-[0.52rem] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
-                    Identity
-                  </p>
-
-                  <p className="mt-1.5 text-xs font-semibold text-foreground">
-                    Profile picture
-                  </p>
-                </div>
-
-                <span className="text-[0.58rem] text-muted-foreground">
-                  Max 5 MB
-                </span>
-              </div>
-
-              <div className="mt-7 flex flex-col items-center text-center">
-                <div className="relative">
-                  <Avatar className="h-28 w-28 border border-border/70 bg-transparent">
-                    <AvatarImage
-                      src={displayedImage}
-                      alt={
-                        profileUser.fullName
-                          ? `${profileUser.fullName}'s profile`
-                          : "User profile"
-                      }
-                      className="object-cover"
-                    />
-
-                    <AvatarFallback
-                      className={[
-                        "bg-brand-secondary-highlight/[0.08] text-2xl font-semibold text-brand-secondary-highlight",
-                        "dark:bg-secondary/[0.08] dark:text-secondary",
-                      ].join(" ")}
-                    >
-                      {getInitials(profileUser.fullName)}
-                    </AvatarFallback>
-                  </Avatar>
-
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={uploading}
-                    className={[
-                      "absolute -bottom-1 -right-1 flex h-9 w-9 items-center justify-center",
-                      "rounded-lg border-4 border-card",
-                      "bg-brand-secondary-highlight text-primary-foreground",
-                      "transition-opacity duration-150 hover:opacity-85",
-                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-secondary-highlight/25",
-                      "disabled:pointer-events-none disabled:opacity-60",
-                      "dark:bg-secondary dark:text-secondary-foreground dark:focus-visible:ring-secondary/25",
-                    ].join(" ")}
-                    aria-label="Choose profile picture"
-                  >
-                    <CameraIcon size={15} />
-                  </button>
-                </div>
-
-                <h2 className="mt-5 max-w-full break-words text-lg font-semibold tracking-[-0.025em] text-foreground">
-                  {profileUser.fullName}
-                </h2>
-
-                <div className="mt-1.5 flex max-w-full items-center justify-center gap-1.5">
-                  <p className="min-w-0 truncate text-xs text-muted-foreground">
-                    {profileUser.email || "No email available"}
-                  </p>
-
-                  {profileUser.emailConfirmed && (
-                    <BadgeCheckIcon
-                      size={12}
-                      className="shrink-0 text-status-complete-foreground"
-                    />
-                  )}
-                </div>
-
-                <div className="mt-4 inline-flex items-center gap-1.5 rounded-lg border border-border/55 bg-surface-2/30 px-2.5 py-1.5 text-[0.63rem] text-muted-foreground dark:bg-surface-2/55">
-                  <MapPinIcon size={11} />
-                  {profileUser.location || "Location not added"}
-                </div>
-              </div>
-
-              <input
-                ref={fileInputRef}
-                id="profile-picture"
-                name="file"
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                className="hidden"
-                onChange={handleFileChange}
-                disabled={uploading}
-              />
-
-              {file && (
-                <div className="mt-6 border-t border-border/55 pt-5">
-                  <div className="flex items-center gap-3">
-                    <span
-                      className={[
-                        "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
-                        accentIconSurface,
-                      ].join(" ")}
-                    >
-                      <ImageIcon size={15} />
-                    </span>
-
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-xs font-semibold text-foreground">
-                        {file.name}
-                      </p>
-
-                      <p className="mt-0.5 text-[0.63rem] text-muted-foreground">
-                        {fileSize}
-                      </p>
-                    </div>
-
-                    {!uploading && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className={["h-8 w-8 rounded-lg", quietIconButton].join(
-                          " ",
-                        )}
-                        onClick={clearSelectedFile}
-                        aria-label="Remove selected image"
-                      >
-                        <Trash2Icon size={14} />
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {uploading && (
-                <div className="mt-5">
-                  <div className="mb-2 flex items-center justify-between text-[0.66rem]">
-                    <span className="font-medium text-foreground">
-                      Uploading image
-                    </span>
-
-                    <span className="tabular-nums text-muted-foreground">
-                      {uploadProgress}%
-                    </span>
-                  </div>
-
-                  <Progress value={uploadProgress} className={progressClass} />
-                </div>
-              )}
-
-              {pictureError && <InlineError message={pictureError} />}
-
-              <div className="mt-6 grid gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  className={[
-                    "h-10 rounded-lg text-xs font-semibold",
-                    secondaryButton,
-                  ].join(" ")}
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={uploading}
-                >
-                  <CameraIcon size={14} />
-
-                  {file
-                    ? "Choose another"
-                    : profileUser.avatarUrl
-                      ? "Change picture"
-                      : "Choose image"}
-                </Button>
-
-                {file && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    className={[
-                      "h-10 rounded-lg text-xs font-semibold",
-                      primaryButton,
-                    ].join(" ")}
-                    onClick={() => void uploadProfilePicture()}
-                    disabled={uploading}
-                  >
-                    {uploading ? (
-                      <>
-                        <LoaderCircleIcon size={14} className="animate-spin" />
-                        Uploading
-                      </>
-                    ) : (
-                      <>
-                        <SaveIcon size={14} />
-                        Save picture
-                      </>
-                    )}
-                  </Button>
-                )}
-              </div>
-
-              <p className="mt-4 text-center text-[0.61rem] leading-5 text-muted-foreground">
-                JPEG, PNG or WebP.
-              </p>
-
-              <div className="mt-7 border-t border-border/55 pt-5">
-                <div className="flex items-end justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-semibold text-foreground">
-                      Profile completeness
-                    </p>
-
-                    <p className="mt-1 text-[0.61rem] leading-5 text-muted-foreground">
-                      Complete and verify your account details.
-                    </p>
-                  </div>
-
-                  <span className="text-lg font-semibold tracking-[-0.035em] text-foreground">
-                    {profileCompletion}%
-                  </span>
-                </div>
-
-                <Progress
-                  value={profileCompletion}
-                  className={["mt-3", progressClass].join(" ")}
-                />
-              </div>
-            </section>
-
-            <section
-              className={[
-                "mt-5 flex items-start gap-3 rounded-xl border px-4 py-4",
-                "border-brand-secondary-highlight/10 bg-brand-secondary-highlight/[0.035]",
-                "dark:border-secondary/10 dark:bg-secondary/[0.035]",
-              ].join(" ")}
-            >
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-status-complete/[0.08] text-status-complete-foreground">
-                <ShieldCheckIcon size={15} />
-              </span>
-
-              <div>
-                <p className="text-xs font-semibold text-foreground">
-                  Keep your details current
-                </p>
-
-                <p className="mt-1 text-[0.64rem] leading-5 text-muted-foreground">
-                  Accurate and verified information improves account security
-                  and keeps project communication reliable.
-                </p>
-              </div>
-            </section>
-          </aside>
-
-          <div className="min-w-0">
-            <form onSubmit={saveProfile}>
-              <ProfileSection
-                eyebrow="Personal details"
-                title="Your information"
-                description="The basic information shown throughout your workspace."
-              >
+              <form onSubmit={saveProfile}>
                 <div className="grid gap-6">
                   <ProfileField
                     label="Full name"
@@ -958,7 +725,7 @@ export default function Profile() {
 
                   <ProfileField
                     label="Email address"
-                    description="Your sign-in email is tied to your account and cannot be changed from this page."
+                    description="Your sign-in email is tied to your account and cannot be changed here."
                   >
                     <div className="flex flex-col gap-2.5 sm:flex-row">
                       <div className="relative min-w-0 flex-1">
@@ -998,11 +765,16 @@ export default function Profile() {
                         <VerificationButton
                           sending={sendingVerification}
                           disabled={!profileUser.email}
-                          onVerify={sendVerificationEmail}
+                          onVerify={() => sendVerificationEmail("field")}
                           size="field"
                         />
                       )}
                     </div>
+
+                    {verificationErrorSource === "field" &&
+                      verificationError && (
+                        <FieldError message={verificationError} />
+                      )}
                   </ProfileField>
 
                   <div className="grid gap-6 sm:grid-cols-2">
@@ -1049,7 +821,7 @@ export default function Profile() {
 
                 {profileError && <InlineError message={profileError} />}
 
-                <div className="mt-8 flex flex-col gap-3 border-t border-border/45 pt-6 sm:flex-row sm:items-center sm:justify-between">
+                <div className="mt-7 flex flex-col gap-3 border-t border-border/45 pt-5 sm:flex-row sm:items-center sm:justify-between">
                   <p
                     className={[
                       "text-[0.66rem]",
@@ -1068,7 +840,7 @@ export default function Profile() {
                     variant="ghost"
                     disabled={!profileHasChanges || savingProfile}
                     className={[
-                      "h-10 rounded-lg px-5 text-xs font-semibold",
+                      "h-9 rounded-lg px-4 text-xs font-semibold",
                       primaryButton,
                       "disabled:border-border/50 disabled:bg-surface-3 disabled:text-muted-foreground disabled:opacity-60",
                       "dark:disabled:bg-surface-2",
@@ -1076,26 +848,24 @@ export default function Profile() {
                   >
                     {savingProfile ? (
                       <>
-                        <LoaderCircleIcon size={14} className="animate-spin" />
+                        <LoaderCircleIcon size={13} className="animate-spin" />
                         Saving
                       </>
                     ) : (
                       <>
-                        <SaveIcon size={14} />
+                        <SaveIcon size={13} />
                         Save changes
                       </>
                     )}
                   </Button>
                 </div>
-              </ProfileSection>
-            </form>
+              </form>
+            </ProfileSection>
 
             <ProfileSection
               eyebrow="Account"
               title="Account status"
-              description="A quick overview of your current account."
-              divided
-              last
+              description="A quick overview of your current client account."
             >
               <div className="grid gap-3 sm:grid-cols-2">
                 <AccountItem
@@ -1123,21 +893,478 @@ export default function Profile() {
 
                 <AccountItem
                   icon={LockKeyholeIcon}
-                  label="Profile visibility"
-                  value="Private account"
+                  label="Account profile"
+                  value="Private"
                 />
               </div>
             </ProfileSection>
           </div>
+
+          <aside className="min-w-0 space-y-5 xl:sticky xl:top-24">
+            <section
+              className={[
+                "rounded-2xl border p-5",
+                accountCompletionSurface,
+              ].join(" ")}
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-[0.52rem] font-semibold uppercase tracking-[0.15em] text-white/55">
+                    Account completion
+                  </p>
+
+                  <h2 className="mt-2 text-lg font-semibold tracking-[-0.025em] text-white">
+                    {getCompletionLabel(profileCompletion)}
+                  </h2>
+                </div>
+
+                <p className="shrink-0 text-3xl font-semibold tracking-[-0.04em] text-white">
+                  {profileCompletion}
+                  <span className="ml-0.5 text-sm font-medium text-white/55">
+                    %
+                  </span>
+                </p>
+              </div>
+
+              <ContrastProgress value={profileCompletion} className="mt-5" />
+
+              <p className="mt-4 text-xs leading-6 text-white/65">
+                Complete your account information and verify your email to keep
+                your profile ready for projects.
+              </p>
+            </section>
+
+            <ProfileChecklist profile={profileUser} />
+
+            <section
+              className={["rounded-2xl border p-5", quietSurface].join(" ")}
+            >
+              <div className="flex items-start gap-3">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-status-complete/[0.08] text-status-complete-foreground">
+                  <ShieldCheckIcon size={15} />
+                </span>
+
+                <div>
+                  <p className="text-xs font-semibold text-foreground">
+                    Keep your details current
+                  </p>
+
+                  <p className="mt-1 text-[0.62rem] leading-5 text-muted-foreground">
+                    Accurate and verified information improves account security
+                    and keeps project communication reliable.
+                  </p>
+                </div>
+              </div>
+            </section>
+          </aside>
         </div>
       </main>
+
+      <ProfilePictureDialog
+        open={avatarEditorOpen}
+        currentAvatar={profileUser.avatarUrl ?? undefined}
+        preview={avatarPreview}
+        initials={initials}
+        file={avatarFile}
+        progress={avatarProgress}
+        uploading={uploadingAvatar}
+        error={avatarError}
+        inputRef={avatarInputRef}
+        onClose={closeAvatarEditor}
+        onChoose={() => avatarInputRef.current?.click()}
+        onChange={handleAvatarChange}
+        onClear={clearAvatarSelection}
+        onUpload={() => void uploadProfilePicture()}
+      />
     </div>
   );
 }
 
-/* =========================================================
-   EMAIL VERIFICATION WARNING
-========================================================= */
+function ProfilePictureDialog({
+  open,
+  currentAvatar,
+  preview,
+  initials,
+  file,
+  progress,
+  uploading,
+  error,
+  inputRef,
+  onClose,
+  onChoose,
+  onChange,
+  onClear,
+  onUpload,
+}: {
+  open: boolean;
+  currentAvatar?: string;
+  preview: string | null;
+  initials: string;
+  file: File | null;
+  progress: number;
+  uploading: boolean;
+  error: string | null;
+  inputRef: RefObject<HTMLInputElement | null>;
+  onClose: () => void;
+  onChoose: () => void;
+  onChange: (event: ChangeEvent<HTMLInputElement>) => void;
+  onClear: () => void;
+  onUpload: () => void;
+}) {
+  if (!open) {
+    return null;
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-[120] flex items-center justify-center bg-foreground/35 px-4 backdrop-blur-[2px]"
+      role="presentation"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget && !uploading) {
+          onClose();
+        }
+      }}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="profile-picture-title"
+        className={[
+          "w-full max-w-md rounded-2xl border p-5 sm:p-6",
+          "border-border/65 bg-card text-card-foreground shadow-none",
+          "dark:border-border dark:bg-card",
+        ].join(" ")}
+      >
+        <div className="flex items-start justify-between gap-5">
+          <div>
+            <p className="text-[0.52rem] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
+              Profile image
+            </p>
+
+            <h2
+              id="profile-picture-title"
+              className="mt-2 text-xl font-semibold tracking-[-0.025em] text-foreground"
+            >
+              Update profile picture
+            </h2>
+
+            <p className="mt-2 text-xs leading-6 text-muted-foreground">
+              Choose a JPEG, PNG or WebP image up to 5 MB.
+            </p>
+          </div>
+
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={onClose}
+            disabled={uploading}
+            className={["h-8 w-8 shrink-0 rounded-lg", quietIconButton].join(
+              " ",
+            )}
+            aria-label="Close profile picture editor"
+          >
+            <XIcon size={14} />
+          </Button>
+        </div>
+
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          className="hidden"
+          onChange={onChange}
+          disabled={uploading}
+        />
+
+        <div className="mt-6 flex flex-col items-center">
+          <div className="relative">
+            <Avatar className="h-28 w-28 border border-border/70 bg-transparent">
+              <AvatarImage
+                src={preview ?? currentAvatar}
+                className="object-cover"
+              />
+
+              <AvatarFallback
+                className={[
+                  "bg-brand-secondary-highlight/[0.08] text-2xl font-semibold text-brand-secondary-highlight",
+                  "dark:bg-secondary/[0.08] dark:text-secondary",
+                ].join(" ")}
+              >
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+
+            <button
+              type="button"
+              onClick={onChoose}
+              disabled={uploading}
+              className={[
+                "absolute -bottom-1 -right-1 flex h-9 w-9 items-center justify-center rounded-lg border-[3px] border-card",
+                "bg-brand-secondary-highlight text-primary-foreground transition-opacity duration-150 hover:opacity-85",
+                "disabled:pointer-events-none disabled:opacity-60",
+                "dark:bg-secondary dark:text-secondary-foreground",
+              ].join(" ")}
+              aria-label="Choose profile picture"
+            >
+              <CameraIcon size={15} />
+            </button>
+          </div>
+
+          {file ? (
+            <div
+              className={[
+                "mt-5 w-full rounded-xl border px-4 py-3.5",
+                quietSurface,
+              ].join(" ")}
+            >
+              <div className="flex items-center gap-3">
+                <span
+                  className={[
+                    "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
+                    accentIconSurface,
+                  ].join(" ")}
+                >
+                  <ImageIcon size={14} />
+                </span>
+
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-xs font-semibold text-foreground">
+                    {file.name}
+                  </p>
+
+                  <p className="mt-0.5 text-[0.61rem] text-muted-foreground">
+                    {formatFileSize(file.size)}
+                  </p>
+                </div>
+
+                {!uploading && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={onClear}
+                    className={["h-8 w-8 rounded-lg", quietIconButton].join(
+                      " ",
+                    )}
+                    aria-label="Clear selected image"
+                  >
+                    <Trash2Icon size={13} />
+                  </Button>
+                )}
+              </div>
+
+              {uploading && (
+                <div className="mt-3">
+                  <div className="mb-2 flex items-center justify-between gap-3">
+                    <p className="text-[0.6rem] font-medium text-muted-foreground">
+                      Uploading image
+                    </p>
+
+                    <p className="text-[0.58rem] tabular-nums text-muted-foreground">
+                      {progress}%
+                    </p>
+                  </div>
+
+                  <ThemeProgress value={progress} />
+                </div>
+              )}
+            </div>
+          ) : (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onChoose}
+              disabled={uploading}
+              className={[
+                "mt-5 h-10 rounded-lg px-4 text-xs font-semibold",
+                secondaryButton,
+              ].join(" ")}
+            >
+              <CameraIcon size={14} />
+              Choose image
+            </Button>
+          )}
+
+          {error && (
+            <div className="w-full">
+              <InlineError message={error} />
+            </div>
+          )}
+        </div>
+
+        <div className="mt-6 flex justify-end gap-2 border-t border-border/45 pt-5">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onClose}
+            disabled={uploading}
+            className={[
+              "h-10 rounded-lg px-4 text-xs font-semibold",
+              secondaryButton,
+            ].join(" ")}
+          >
+            Cancel
+          </Button>
+
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={onUpload}
+            disabled={!file || uploading}
+            className={[
+              "h-10 rounded-lg px-4 text-xs font-semibold",
+              primaryButton,
+            ].join(" ")}
+          >
+            {uploading ? (
+              <>
+                <LoaderCircleIcon size={14} className="animate-spin" />
+                Uploading
+              </>
+            ) : (
+              <>
+                <SaveIcon size={14} />
+                Save picture
+              </>
+            )}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ProfileChecklist({ profile }: { profile: ProfileUser }) {
+  const items = [
+    {
+      label: "Full name",
+      description: profile.fullName?.trim()
+        ? profile.fullName
+        : "Add your full name",
+      complete: Boolean(profile.fullName?.trim()),
+    },
+    {
+      label: "Email address",
+      description: profile.email?.trim()
+        ? profile.email
+        : "Email not available",
+      complete: Boolean(profile.email?.trim()),
+    },
+    {
+      label: "Email verification",
+      description: profile.emailConfirmed
+        ? "Verified"
+        : "Verification required",
+      complete: Boolean(profile.emailConfirmed),
+    },
+    {
+      label: "Phone number",
+      description: profile.phoneNumber?.trim()
+        ? profile.phoneNumber
+        : "Add your phone number",
+      complete: Boolean(profile.phoneNumber?.trim()),
+    },
+    {
+      label: "Location",
+      description: profile.location?.trim()
+        ? profile.location
+        : "Add your location",
+      complete: Boolean(profile.location?.trim()),
+    },
+    {
+      label: "Profile picture",
+      description: profile.avatarUrl ? "Added" : "Add a profile picture",
+      complete: Boolean(profile.avatarUrl),
+    },
+  ];
+
+  const completeCount = items.filter((item) => item.complete).length;
+
+  return (
+    <section
+      className={["overflow-hidden rounded-2xl border", cardSurface].join(" ")}
+    >
+      <div className="flex items-center justify-between gap-4 border-b border-border/55 px-5 py-4">
+        <div className="flex items-center gap-3">
+          <span
+            className={[
+              "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
+              accentIconSurface,
+            ].join(" ")}
+          >
+            <CheckIcon size={14} />
+          </span>
+
+          <div>
+            <p className="text-xs font-semibold text-foreground">
+              Profile checklist
+            </p>
+
+            <p className="mt-0.5 text-[0.6rem] text-muted-foreground">
+              Account essentials
+            </p>
+          </div>
+        </div>
+
+        <span className="text-[0.6rem] font-semibold text-muted-foreground">
+          {completeCount}/{items.length}
+        </span>
+      </div>
+
+      <div className="divide-y divide-border/45 px-5">
+        {items.map((item) => (
+          <ChecklistItem
+            key={item.label}
+            label={item.label}
+            description={item.description}
+            complete={item.complete}
+          />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function ChecklistItem({
+  label,
+  description,
+  complete,
+}: {
+  label: string;
+  description: string;
+  complete: boolean;
+}) {
+  return (
+    <div className="flex items-center gap-3 py-3.5">
+      <span
+        className={[
+          "flex h-7 w-7 shrink-0 items-center justify-center rounded-lg",
+          complete
+            ? "bg-status-complete/[0.08] text-status-complete-foreground"
+            : "bg-surface-3/70 text-muted-foreground dark:bg-surface-2",
+        ].join(" ")}
+      >
+        {complete ? <CheckIcon size={12} /> : <CircleIcon size={11} />}
+      </span>
+
+      <div className="min-w-0 flex-1">
+        <p className="text-[0.61rem] font-medium text-muted-foreground">
+          {label}
+        </p>
+
+        <p
+          className={[
+            "mt-0.5 truncate text-xs font-semibold",
+            complete ? "text-foreground" : "text-status-pending-foreground",
+          ].join(" ")}
+        >
+          {description}
+        </p>
+      </div>
+    </div>
+  );
+}
 
 function EmailVerificationWarning({
   email,
@@ -1152,10 +1379,7 @@ function EmailVerificationWarning({
 }) {
   return (
     <section
-      className={[
-        "mt-7 rounded-xl border px-4 py-4 sm:px-5",
-        "border-status-pending/20 bg-status-pending/[0.045]",
-      ].join(" ")}
+      className="rounded-xl border border-status-pending/20 bg-status-pending/[0.045] px-4 py-4 sm:px-5"
       aria-label="Email verification required"
     >
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
@@ -1202,10 +1426,6 @@ function EmailVerificationWarning({
   );
 }
 
-/* =========================================================
-   VERIFICATION BUTTON
-========================================================= */
-
 function VerificationButton({
   sending,
   disabled,
@@ -1245,9 +1465,70 @@ function VerificationButton({
   );
 }
 
-/* =========================================================
-   SUMMARY STAT
-========================================================= */
+function ThemeProgress({
+  value,
+  className = "",
+}: {
+  value: number;
+  className?: string;
+}) {
+  const safeValue = Math.max(
+    0,
+    Math.min(100, Number.isFinite(value) ? value : 0),
+  );
+
+  return (
+    <div
+      className={[
+        "h-1.5 w-full overflow-hidden rounded-full",
+        "bg-brand-secondary-highlight/[0.10] dark:bg-secondary/[0.10]",
+        className,
+      ].join(" ")}
+      role="progressbar"
+      aria-label="Progress"
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-valuenow={Math.round(safeValue)}
+    >
+      <div
+        className="h-full rounded-full bg-brand-secondary-highlight transition-[width] duration-200 ease-out dark:bg-secondary"
+        style={{ width: `${safeValue}%` }}
+      />
+    </div>
+  );
+}
+
+function ContrastProgress({
+  value,
+  className = "",
+}: {
+  value: number;
+  className?: string;
+}) {
+  const safeValue = Math.max(
+    0,
+    Math.min(100, Number.isFinite(value) ? value : 0),
+  );
+
+  return (
+    <div
+      className={[
+        "h-1.5 w-full overflow-hidden rounded-full bg-white/[0.12]",
+        className,
+      ].join(" ")}
+      role="progressbar"
+      aria-label="Account completion"
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-valuenow={Math.round(safeValue)}
+    >
+      <div
+        className="h-full rounded-full bg-secondary transition-[width] duration-300 ease-out"
+        style={{ width: `${safeValue}%` }}
+      />
+    </div>
+  );
+}
 
 function SummaryStat({
   label,
@@ -1286,58 +1567,43 @@ function SummaryStat({
   );
 }
 
-/* =========================================================
-   PROFILE SECTION
-========================================================= */
-
 function ProfileSection({
   eyebrow,
   title,
   description,
   children,
-  divided = false,
-  last = false,
 }: {
   eyebrow: string;
   title: string;
   description: string;
   children: ReactNode;
-  divided?: boolean;
-  last?: boolean;
 }) {
   return (
-    <section
-      className={[
-        divided ? "border-t border-border/50 pt-9" : "",
-        !last ? "pb-10" : "",
-      ].join(" ")}
-    >
-      <div className="mb-7 max-w-2xl">
-        <div className="flex items-center gap-2.5">
-          <span className="h-1.5 w-6 rounded-full bg-brand-secondary-highlight dark:bg-secondary" />
+    <section className={sectionSurface}>
+      <div className="p-5 sm:p-6">
+        <div className="mb-7 max-w-2xl">
+          <div className="flex items-center gap-2.5">
+            <span className="h-1.5 w-5 rounded-full bg-brand-secondary-highlight dark:bg-secondary" />
 
-          <p className="text-[0.52rem] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
-            {eyebrow}
+            <p className="text-[0.52rem] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
+              {eyebrow}
+            </p>
+          </div>
+
+          <h2 className="mt-2.5 text-xl font-semibold tracking-[-0.025em] text-foreground sm:text-2xl">
+            {title}
+          </h2>
+
+          <p className="mt-2 text-sm leading-7 text-muted-foreground">
+            {description}
           </p>
         </div>
 
-        <h2 className="mt-3 text-xl font-semibold tracking-[-0.025em] text-foreground sm:text-2xl">
-          {title}
-        </h2>
-
-        <p className="mt-2 text-sm leading-7 text-muted-foreground">
-          {description}
-        </p>
+        {children}
       </div>
-
-      {children}
     </section>
   );
 }
-
-/* =========================================================
-   PROFILE FIELD
-========================================================= */
 
 function ProfileField({
   label,
@@ -1365,20 +1631,13 @@ function ProfileField({
   );
 }
 
-/* =========================================================
-   ACCOUNT ITEM
-========================================================= */
-
 function AccountItem({
   icon: Icon,
   label,
   value,
   status,
 }: {
-  icon: ComponentType<{
-    size?: number;
-    className?: string;
-  }>;
+  icon: LucideIcon;
   label: string;
   value: string;
   status?: "success" | "pending";
@@ -1390,7 +1649,14 @@ function AccountItem({
         quietSurface,
       ].join(" ")}
     >
-      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-surface-3/70 text-muted-foreground ring-1 ring-inset ring-border/35 dark:bg-surface-2">
+      <span
+        className={[
+          "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
+          status === "success"
+            ? accentIconSurface
+            : "bg-surface-3/70 text-muted-foreground ring-1 ring-inset ring-border/35 dark:bg-surface-2",
+        ].join(" ")}
+      >
         <Icon size={14} />
       </span>
 
@@ -1420,9 +1686,17 @@ function AccountItem({
   );
 }
 
-/* =========================================================
-   INLINE ERROR
-========================================================= */
+function FieldError({ message }: { message: string }) {
+  return (
+    <div
+      className="flex items-start gap-2 text-xs text-destructive"
+      role="alert"
+    >
+      <AlertCircleIcon size={13} className="mt-0.5 shrink-0" />
+      <p className="leading-5">{message}</p>
+    </div>
+  );
+}
 
 function InlineError({ message }: { message: string }) {
   return (
@@ -1430,35 +1704,35 @@ function InlineError({ message }: { message: string }) {
       className="mt-4 flex items-start gap-2.5 rounded-lg border border-destructive/20 bg-destructive/[0.05] px-3.5 py-3 text-xs text-destructive"
       role="alert"
     >
-      <AlertCircleIcon size={15} className="mt-0.5 shrink-0" />
+      <AlertCircleIcon size={14} className="mt-0.5 shrink-0" />
       <p className="leading-5">{message}</p>
     </div>
   );
 }
 
-/* =========================================================
-   LOADING
-========================================================= */
-
 function ProfileLoading() {
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className={["min-h-screen text-foreground", pageCanvas].join(" ")}>
       <header className="sticky top-0 z-40 border-b border-border/60 bg-background/90 backdrop-blur-xl">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <DashboardMainNav />
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8 sm:px-6 md:px-8 lg:py-12">
-        <div className="max-w-xl">
-          <Skeleton className="h-9 w-9 rounded-lg" />
-          <Skeleton className="mt-5 h-10 w-48" />
-          <Skeleton className="mt-4 h-4 w-full" />
-          <Skeleton className="mt-2 h-4 w-4/5" />
-        </div>
+      <main className="container mx-auto px-4 py-6 sm:px-6 md:px-8 lg:py-8">
+        <div className={[profileSurface, "overflow-hidden"].join(" ")}>
+          <div className="flex items-center gap-5 p-6">
+            <Skeleton className="h-24 w-24 rounded-full" />
 
-        <div className="mt-8 border-y border-border/55">
-          <div className="grid sm:grid-cols-3">
+            <div className="min-w-0 flex-1 space-y-3">
+              <Skeleton className="h-3 w-28" />
+              <Skeleton className="h-8 w-64 max-w-full" />
+              <Skeleton className="h-4 w-80 max-w-full" />
+              <Skeleton className="h-3 w-48 max-w-full" />
+            </div>
+          </div>
+
+          <div className="grid border-t border-border/55 sm:grid-cols-3">
             {Array.from({ length: 3 }).map((_, index) => (
               <div
                 key={index}
@@ -1476,37 +1750,22 @@ function ProfileLoading() {
           </div>
         </div>
 
-        <div className="mt-8 grid gap-10 border-t border-border/40 pt-8 lg:grid-cols-[300px_minmax(0,1fr)] xl:grid-cols-[320px_minmax(0,1fr)]">
-          <Skeleton className="h-[520px] rounded-2xl" />
+        <div className="mt-5 grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_300px]">
+          <div className="space-y-5">
+            <Skeleton className="h-96 rounded-2xl" />
+            <Skeleton className="h-60 rounded-2xl" />
+          </div>
 
-          <div>
-            <Skeleton className="h-3 w-24" />
-            <Skeleton className="mt-3 h-7 w-48" />
-            <Skeleton className="mt-3 h-4 w-80 max-w-full" />
-
-            <div className="mt-8 space-y-6">
-              <Skeleton className="h-11 w-full rounded-lg" />
-
-              <div className="flex gap-3">
-                <Skeleton className="h-11 flex-1 rounded-lg" />
-                <Skeleton className="h-11 w-28 rounded-lg" />
-              </div>
-
-              <div className="grid gap-6 sm:grid-cols-2">
-                <Skeleton className="h-11 rounded-lg" />
-                <Skeleton className="h-11 rounded-lg" />
-              </div>
-            </div>
+          <div className="hidden space-y-5 xl:block">
+            <Skeleton className="h-48 rounded-2xl" />
+            <Skeleton className="h-96 rounded-2xl" />
+            <Skeleton className="h-36 rounded-2xl" />
           </div>
         </div>
       </main>
     </div>
   );
 }
-
-/* =========================================================
-   ERROR PAGE
-========================================================= */
 
 function ProfileErrorPage({
   message,
@@ -1516,7 +1775,7 @@ function ProfileErrorPage({
   onRetry: () => Promise<void>;
 }) {
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className={["min-h-screen text-foreground", pageCanvas].join(" ")}>
       <header className="sticky top-0 z-40 border-b border-border/60 bg-background/90 backdrop-blur-xl">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <DashboardMainNav />
@@ -1524,7 +1783,7 @@ function ProfileErrorPage({
       </header>
 
       <main className="container mx-auto px-4 py-20 sm:px-6 md:px-8">
-        <div className="max-w-md">
+        <div className={["max-w-md p-5 sm:p-6", profileSurface].join(" ")}>
           <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-destructive/[0.08] text-destructive">
             <AlertCircleIcon size={19} />
           </span>
@@ -1553,4 +1812,108 @@ function ProfileErrorPage({
       </main>
     </div>
   );
+}
+
+function getInitials(name?: string | null) {
+  if (!name?.trim()) {
+    return "U";
+  }
+
+  return name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part.charAt(0).toUpperCase())
+    .join("");
+}
+
+function getCompletionLabel(score: number) {
+  if (score >= 100) {
+    return "Profile complete";
+  }
+
+  if (score >= 80) {
+    return "Almost complete";
+  }
+
+  if (score >= 50) {
+    return "Good progress";
+  }
+
+  return "Complete your profile";
+}
+
+function formatDate(date?: string | null) {
+  if (!date) {
+    return "Not available";
+  }
+
+  const parsedDate = new Date(date);
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return "Not available";
+  }
+
+  return new Intl.DateTimeFormat("en", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(parsedDate);
+}
+
+function formatDateShort(date?: string | null) {
+  if (!date) {
+    return "Not available";
+  }
+
+  const parsedDate = new Date(date);
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return "Not available";
+  }
+
+  return new Intl.DateTimeFormat("en", {
+    month: "short",
+    year: "numeric",
+  }).format(parsedDate);
+}
+
+function formatFileSize(bytes: number) {
+  if (!Number.isFinite(bytes) || bytes <= 0) {
+    return "0 KB";
+  }
+
+  if (bytes < 1024) {
+    return `${bytes} B`;
+  }
+
+  if (bytes < 1024 * 1024) {
+    return `${(bytes / 1024).toFixed(1)} KB`;
+  }
+
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function getApiErrorMessage(error: unknown, fallback: string) {
+  if (!isAxiosError(error)) {
+    return fallback;
+  }
+
+  const data = error.response?.data;
+
+  if (data && typeof data === "object") {
+    if ("detail" in data && typeof data.detail === "string") {
+      return data.detail;
+    }
+
+    if ("message" in data && typeof data.message === "string") {
+      return data.message;
+    }
+
+    if ("title" in data && typeof data.title === "string") {
+      return data.title;
+    }
+  }
+
+  return fallback;
 }

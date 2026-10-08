@@ -924,8 +924,8 @@ function WorkspaceMasthead({
 
           <p className="mt-1.5 hidden max-w-xl text-xs leading-6 text-muted-foreground md:block">
             {workspaceSection === "projects"
-              ? "Keep the work moving. Everything you own, everything waiting and everything finished lives here."
-              : "Your client work, active jobs and invitations — without the noise."}
+              ? "Your active, pending and completed projects."
+              : "Your client work, active jobs and invitations."}
           </p>
         </div>
 
