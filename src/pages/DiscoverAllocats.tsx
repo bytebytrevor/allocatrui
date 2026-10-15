@@ -1,6 +1,6 @@
 import { type ReactNode, useEffect, useMemo, useState } from "react";
 
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 import {
   BadgeCheckIcon,
@@ -280,7 +280,9 @@ export default function Discover() {
 
   const [allocats, setAllocats] = useState<FilterableAllocat[]>([]);
 
-  const [search, setSearch] = useState(DEFAULT_SEARCH);
+  // const [search, setSearch] = useState(DEFAULT_SEARCH);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const search = searchParams.get("search") ?? DEFAULT_SEARCH;
   const [category, setCategory] = useState(DEFAULT_CATEGORY);
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const [skillSearch, setSkillSearch] = useState("");
@@ -613,6 +615,23 @@ export default function Discover() {
 
   function handleStartProject(allocatId: string) {
     navigate(`/projects/new?allocat=${encodeURIComponent(allocatId)}`);
+  }
+
+  function setSearch(nextSearch: string) {
+    setSearchParams(
+      (currentParams) => {
+        const nextParams = new URLSearchParams(currentParams);
+
+        if (nextSearch) {
+          nextParams.set("search", nextSearch);
+        } else {
+          nextParams.delete("search");
+        }
+
+        return nextParams;
+      },
+      { replace: true },
+    );
   }
 
   /* =======================================================

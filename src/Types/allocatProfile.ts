@@ -37,10 +37,7 @@
 //   projects: AllocatProjectSummary[];
 // };
 
-export type AllocatAvailability =
-  | "available"
-  | "busy"
-  | "unavailable";
+export type AllocatAvailability = "available" | "busy" | "unavailable";
 
 export type AllocatSkill = {
   id: string;
@@ -90,10 +87,7 @@ export type AllocatProfile = {
   projects: AllocatProjectSummary[];
 };
 
-export type MyAllocatProfile = Omit<
-  AllocatProfile,
-  "skills"
-> & {
+export type MyAllocatProfile = Omit<AllocatProfile, "skills"> & {
   email: string;
   idNumber: string | null;
 
@@ -128,5 +122,4 @@ export type CreateAllocatProfilePayload = {
   skillIds: string[];
 };
 
-export type UpdateAllocatProfilePayload =
-  CreateAllocatProfilePayload;
+export type UpdateAllocatProfilePayload = CreateAllocatProfilePayload;

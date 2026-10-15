@@ -1,254 +1,165 @@
-import type { ReactNode } from "react";
-
+import {
+  createContext,
+  useContext,
+  type CSSProperties,
+  type ReactNode,
+} from "react";
 import { Link, useLocation } from "react-router-dom";
-
 import { ArrowRightIcon, PawPrintIcon } from "lucide-react";
 
 import allocatrLogoLight from "@/assets/allocatr-neg-light.svg";
 import allocatrLogoDark from "@/assets/allocatr-dark-02.svg";
-
 import { useAuth } from "@/auth/useAuth";
 
-/* =========================================================
-   LINKS
-========================================================= */
+type FooterLinkItem = { label: string; href: string; badge?: string };
 
-const productLinks = [
-  {
-    label: "Find Allocats",
-    href: "/discover",
-  },
-  {
-    label: "How it works",
-    href: "/how-it-works",
-  },
+const platformLinks: FooterLinkItem[] = [
+  { label: "How it works", href: "/how-it-works" },
+  { label: "Project workspace", href: "/platform/workspace" },
+  { label: "Project management", href: "/platform/project-management" },
+  { label: "Review & approval", href: "/platform/review-and-approval" },
+];
+const resourceLinks: FooterLinkItem[] = [
+  { label: "Getting started", href: "/getting-started" },
+  { label: "Help Centre", href: "/help" },
+  { label: "FAQs", href: "/faq" },
+  { label: "Trust & verification", href: "/trust" },
+  { label: "Safety", href: "/safety" },
+];
+const companyLinks: FooterLinkItem[] = [
+  { label: "About Allocatr", href: "/about" },
+  { label: "Contact", href: "/contact" },
+];
+const legalLinks: FooterLinkItem[] = [
+  { label: "Terms", href: "/terms" },
+  { label: "Privacy", href: "/privacy" },
 ];
 
-const companyLinks = [
-  {
-    label: "About Allocatr",
-    href: "/about",
-  },
-  {
-    label: "Contact",
-    href: "/contact",
-  },
-];
+// The landing footer matches the hero/nav, independent of the app's theme.
+const LANDING_FOOTER_TOKENS = {
+  colorScheme: "dark",
+  "--footer-canvas":
+    "var(--landing-hero-bg, color-mix(in srgb, var(--brand-charcoal) 34%, black))",
+  "--background": "var(--footer-canvas)",
+  "--foreground": "var(--primary-foreground)",
+  "--surface-1": "var(--footer-canvas)",
+  "--surface-2":
+    "color-mix(in srgb, var(--footer-canvas) 92%, var(--primary-foreground))",
+  "--muted-foreground":
+    "color-mix(in srgb, var(--primary-foreground) 68%, var(--footer-canvas))",
+  "--border":
+    "color-mix(in srgb, var(--primary-foreground) 16%, var(--footer-canvas))",
+  "--ring": "var(--brand-primary)",
+} as CSSProperties;
+const FooterThemeContext = createContext(false);
 
-const legalLinks = [
-  {
-    label: "Terms",
-    href: "/terms",
-  },
-  {
-    label: "Privacy",
-    href: "/privacy",
-  },
-];
-
-/* =========================================================
-   FOOTER
-========================================================= */
-
-function SiteFooter() {
+export default function SiteFooter() {
   const { user } = useAuth();
-
-  const location = useLocation();
-
-  const isLandingPage = location.pathname === "/";
-
-  const postProjectHref = user ? "/projects/new" : "/register";
-
-  const allocatHref = user?.isAllocat ? "/projects" : "/become-an-allocat";
-
-  const allocatLabel = user?.isAllocat ? "View my work" : "Become an Allocat";
-
+  const { pathname } = useLocation();
+  const landing = pathname === "/";
+  const startLinks: FooterLinkItem[] = [
+    { label: "Find Allocats", href: "/discover" },
+    { label: "Post a project", href: user ? "/projects/new" : "/register" },
+    {
+      label: user?.isAllocat ? "View my work" : "Become an Allocat",
+      href: user?.isAllocat ? "/projects" : "/become-an-allocat",
+    },
+    { label: "For clients", href: "/for-clients" },
+    { label: "Allocatr Pro", href: "/pro", badge: "Coming soon" },
+  ];
   return (
-    <footer
-      className={[
-        "relative overflow-hidden",
-
-        "border-t border-border/55",
-
-        "bg-surface-1",
-
-        "text-foreground",
-
-        "dark:bg-sidebar",
-      ].join(" ")}
-    >
-      {isLandingPage && <LandingFooterAtmosphere />}
-
-      <div className="container relative mx-auto px-4 sm:px-5 md:px-8">
-        {/* =================================================
-            MAIN FOOTER
-        ================================================= */}
-
+    <FooterThemeContext.Provider value={landing}>
+      <footer
+        style={landing ? LANDING_FOOTER_TOKENS : undefined}
+        className={`relative isolate overflow-hidden border-t border-border/55 text-foreground ${landing ? "bg-background" : "bg-surface-1 dark:bg-sidebar"}`}
+      >
+        {landing && <FooterAtmosphere />}
         <div
-          className={[
-            "grid grid-cols-2 gap-x-8 gap-y-11",
-
-            "py-12",
-
-            "sm:gap-x-12",
-
-            "sm:gap-y-14",
-
-            "sm:py-16",
-
-            "lg:grid-cols-[1.45fr_0.7fr_0.85fr_0.7fr_0.7fr]",
-
-            "lg:gap-12",
-
-            "lg:py-20",
-          ].join(" ")}
+          className={`relative mx-auto w-full ${landing ? "max-w-[1440px] px-5 sm:px-8 lg:px-14 xl:px-20" : "max-w-7xl px-4 sm:px-6 md:px-8 xl:px-10"}`}
         >
-          {/* ===============================================
-              BRAND
-          =============================================== */}
-
-          <div className="col-span-2 max-w-md lg:col-span-1">
-            <Link
-              to="/"
-              aria-label="Allocatr home"
-              className={[
-                "inline-block rounded-sm",
-
-                "focus-visible:outline-none",
-
-                "focus-visible:ring-2",
-
-                "focus-visible:ring-ring/30",
-
-                "focus-visible:ring-offset-4",
-
-                "focus-visible:ring-offset-surface-1",
-
-                "dark:focus-visible:ring-offset-sidebar",
-              ].join(" ")}
-            >
-              <img
-                src={allocatrLogoDark}
-                alt="Allocatr"
-                className="h-8 w-auto object-contain dark:hidden sm:h-9"
-              />
-
-              <img
-                src={allocatrLogoLight}
-                alt="Allocatr"
-                className="hidden h-8 w-auto object-contain dark:block sm:h-9"
-              />
-            </Link>
-
-            <p className="mt-5 max-w-sm text-sm leading-7 text-muted-foreground sm:mt-6">
-              Bring the right capability around the work and keep projects
-              connected from brief to delivery.
-            </p>
-
-            <div className="mt-6 flex items-center gap-3">
-              <FooterPawMark />
-
-              <p className="text-[0.52rem] font-semibold uppercase tracking-[0.17em] text-muted-foreground">
-                Work, properly allocated
+          <div className="grid grid-cols-2 gap-x-7 gap-y-9 py-12 sm:gap-x-10 sm:py-16 lg:grid-cols-[1.4fr_repeat(4,minmax(0,1fr))] lg:gap-8 lg:py-16 xl:gap-10">
+            <div className="col-span-2 max-w-sm lg:col-span-1">
+              <Link
+                to="/"
+                aria-label="Allocatr home"
+                className="inline-flex rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:ring-offset-4 focus-visible:ring-offset-background"
+              >
+                {landing ? (
+                  <img
+                    src={allocatrLogoLight}
+                    alt="Allocatr"
+                    className="h-7 w-auto object-contain"
+                  />
+                ) : (
+                  <>
+                    <img
+                      src={allocatrLogoDark}
+                      alt="Allocatr"
+                      className="h-7 w-auto object-contain dark:hidden"
+                    />
+                    <img
+                      src={allocatrLogoLight}
+                      alt="Allocatr"
+                      className="hidden h-7 w-auto object-contain dark:block"
+                    />
+                  </>
+                )}
+              </Link>
+              <p className="mt-5 max-w-[290px] text-[13px] leading-7 text-muted-foreground">
+                Find the right capability. Bring people together. Keep the work
+                connected from brief to delivery.
               </p>
+              <div className="mt-6 flex items-center gap-2.5">
+                <FooterPawMark />
+                <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
+                  Work, properly allocated
+                </p>
+              </div>
             </div>
+            <FooterColumn
+              title="Platform"
+              links={platformLinks}
+              currentPath={pathname}
+            />
+            <FooterColumn
+              title="Get started"
+              links={startLinks}
+              currentPath={pathname}
+            />
+            <FooterColumn
+              title="Resources"
+              links={resourceLinks}
+              currentPath={pathname}
+            />
+            <FooterColumn
+              title="Company"
+              links={companyLinks}
+              currentPath={pathname}
+            />
           </div>
-
-          {/* ===============================================
-              PRODUCT
-          =============================================== */}
-
-          <FooterColumn
-            title="Product"
-            links={productLinks}
-            currentPath={location.pathname}
-          />
-
-          {/* ===============================================
-              GET STARTED
-          =============================================== */}
-
-          <div>
-            <FooterHeading>Get started</FooterHeading>
-
+          <div className="flex flex-col gap-4 border-t border-border/50 py-5 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
+            <p className="text-[11px] leading-6 text-muted-foreground">
+              © {new Date().getFullYear()} Allocatr. All rights reserved.
+            </p>
             <nav
-              aria-label="Get started"
-              className="mt-5 flex flex-col items-start gap-3.5"
+              aria-label="Legal"
+              className="flex flex-wrap items-center gap-x-6 gap-y-1"
             >
-              <FooterLink
-                href={postProjectHref}
-                label="Post a project"
-                currentPath={location.pathname}
-              />
-
-              <FooterLink
-                href={allocatHref}
-                label={allocatLabel}
-                currentPath={location.pathname}
-              />
+              {legalLinks.map((item) => (
+                <FooterLink
+                  key={item.href}
+                  {...item}
+                  currentPath={pathname}
+                  compact
+                />
+              ))}
             </nav>
           </div>
-
-          {/* ===============================================
-              COMPANY
-          =============================================== */}
-
-          <FooterColumn
-            title="Company"
-            links={companyLinks}
-            currentPath={location.pathname}
-          />
-
-          {/* ===============================================
-              LEGAL
-          =============================================== */}
-
-          <FooterColumn
-            title="Legal"
-            links={legalLinks}
-            currentPath={location.pathname}
-          />
         </div>
-
-        {/* =================================================
-            BOTTOM
-        ================================================= */}
-
-        <div
-          className={[
-            "flex flex-col gap-3",
-
-            "border-t border-border/55",
-
-            "py-6",
-
-            "text-[0.68rem] text-muted-foreground",
-
-            "sm:flex-row",
-
-            "sm:items-center",
-
-            "sm:justify-between",
-
-            "sm:gap-6",
-          ].join(" ")}
-        >
-          <p>© {new Date().getFullYear()} Allocatr. All rights reserved.</p>
-
-          <div className="flex items-center gap-2.5 sm:justify-end">
-            <span className="h-1.5 w-1.5 rounded-full bg-brand-secondary-highlight dark:bg-secondary" />
-
-            <p>Work, properly allocated.</p>
-          </div>
-        </div>
-      </div>
-    </footer>
+      </footer>
+    </FooterThemeContext.Provider>
   );
 }
-
-/* =========================================================
-   COLUMN
-========================================================= */
 
 function FooterColumn({
   title,
@@ -256,208 +167,94 @@ function FooterColumn({
   currentPath,
 }: {
   title: string;
-
-  links: {
-    label: string;
-    href: string;
-  }[];
-
+  links: FooterLinkItem[];
   currentPath: string;
 }) {
   return (
     <div>
       <FooterHeading>{title}</FooterHeading>
-
       <nav
         aria-label={title}
-        className="mt-5 flex flex-col items-start gap-3.5"
+        className="mt-3 flex flex-col items-start gap-1 sm:mt-4"
       >
-        {links.map((link) => (
-          <FooterLink
-            key={link.href}
-            href={link.href}
-            label={link.label}
-            currentPath={currentPath}
-          />
+        {links.map((item) => (
+          <FooterLink key={item.href} {...item} currentPath={currentPath} />
         ))}
       </nav>
     </div>
   );
 }
 
-/* =========================================================
-   HEADING
-========================================================= */
-
 function FooterHeading({ children }: { children: ReactNode }) {
   return (
-    <p className="text-[0.55rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground/75">
+    <h2 className="text-[11px] font-medium uppercase tracking-[0.12em] text-foreground/85">
       {children}
-    </p>
+    </h2>
   );
 }
-
-/* =========================================================
-   LINK
-========================================================= */
 
 function FooterLink({
   href,
   label,
+  badge,
   currentPath,
-}: {
-  href: string;
-  label: string;
+  compact = false,
+}: FooterLinkItem & {
   currentPath: string;
+  compact?: boolean;
 }) {
-  const active =
-    href === "/"
-      ? currentPath === "/"
-      : currentPath === href || currentPath.startsWith(`${href}/`);
-
+  const landing = useContext(FooterThemeContext);
+  const active = currentPath === href;
   return (
     <Link
       to={href}
       aria-current={active ? "page" : undefined}
-      className={[
-        "group inline-flex items-center gap-1.5 rounded-sm",
-
-        "text-sm font-medium",
-
-        "transition-colors duration-200",
-
-        active ? "text-foreground" : "text-foreground/60",
-
-        "hover:text-foreground",
-
-        "focus-visible:text-foreground",
-
-        "focus-visible:outline-none",
-      ].join(" ")}
+      className={`group inline-flex min-h-9 max-w-full items-center gap-1.5 rounded-md font-normal transition-colors duration-150 hover:text-foreground focus-visible:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35 focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transition-none ${compact ? "text-[11px]" : "text-[13px]"} ${active ? "text-foreground" : "text-muted-foreground"}`}
     >
-      {label}
-
+      <span>{label}</span>
+      {badge && (
+        <span className="shrink-0 rounded border border-border/60 px-1.5 py-0.5 text-[8px] font-medium text-muted-foreground">
+          {badge}
+        </span>
+      )}
       <ArrowRightIcon
         size={11}
-        className={[
-          "transition-[transform,opacity] duration-200",
-
-          "text-brand-secondary-highlight",
-
-          active ? "translate-x-0 opacity-50" : "-translate-x-1 opacity-0",
-
-          "group-hover:translate-x-0",
-
-          "group-hover:opacity-100",
-
-          "group-focus-visible:translate-x-0",
-
-          "group-focus-visible:opacity-100",
-
-          "dark:text-secondary",
-        ].join(" ")}
+        aria-hidden="true"
+        className={`shrink-0 transition-[transform,opacity] duration-150 group-hover:translate-x-0 group-hover:opacity-100 group-focus-visible:translate-x-0 group-focus-visible:opacity-100 motion-reduce:transition-none ${active ? "translate-x-0 opacity-70" : "-translate-x-1 opacity-0"} ${landing ? "text-brand-primary" : "text-brand-secondary-highlight dark:text-secondary"}`}
       />
     </Link>
   );
 }
 
-/* =========================================================
-   LANDING ATMOSPHERE
-========================================================= */
-
-function LandingFooterAtmosphere() {
+function FooterAtmosphere() {
   return (
     <div
-      aria-hidden
-      className="pointer-events-none absolute inset-0 overflow-hidden"
+      aria-hidden="true"
+      className="pointer-events-none absolute inset-0 select-none"
     >
-      {/* ===============================================
-          QUIET ROUTE LANGUAGE
-      =============================================== */}
-
-      <svg
-        viewBox="0 0 1440 640"
-        preserveAspectRatio="none"
-        className="absolute inset-0 h-full w-full"
-      >
-        <path
-          d="M-120 470 C180 330 410 310 650 390 C900 472 1140 420 1540 170"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1"
-          className="text-border/22"
-        />
-
-        <path
-          d="M-120 530 C200 390 440 365 690 440 C930 513 1170 430 1540 250"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1"
-          strokeDasharray="5 13"
-          className="text-border/12"
-        />
-      </svg>
-
-      {/* ===============================================
-          SMALL ACCENT DETAILS
-      =============================================== */}
-
-      <span className="absolute right-[9%] top-[16%] h-1.5 w-10 rounded-full bg-brand-secondary-highlight/[0.08] dark:bg-secondary/[0.08]" />
-
-      <span className="absolute bottom-[18%] right-[20%] h-1.5 w-1.5 rounded-full bg-brand-secondary-highlight/20 dark:bg-secondary/20" />
-
-      <span className="absolute left-[7%] top-[17%] h-2 w-2 rounded-full border border-border/50" />
-
-      {/* ===============================================
-          LARGE PAW WATERMARK
-      =============================================== */}
-
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(ellipse at 0% 100%, color-mix(in srgb, var(--brand-secondary) 12%, transparent), transparent 65%)",
+        }}
+      />
       <PawPrintIcon
-        className={[
-          "absolute -bottom-20 -left-16",
-
-          "hidden h-56 w-56",
-
-          "-rotate-12",
-
-          "text-foreground/[0.018]",
-
-          "sm:block",
-
-          "dark:text-foreground/[0.014]",
-        ].join(" ")}
+        strokeWidth={1}
+        className="absolute -bottom-14 -left-12 hidden h-64 w-64 -rotate-12 text-foreground/[0.025] sm:block"
       />
     </div>
   );
 }
 
-/* =========================================================
-   BRAND MARK
-========================================================= */
-
 function FooterPawMark() {
+  const landing = useContext(FooterThemeContext);
   return (
     <span
-      aria-hidden
-      className={[
-        "flex h-7 w-7 shrink-0 items-center justify-center",
-
-        "rounded-lg",
-
-        "border border-border/55",
-
-        "bg-surface-2/55",
-
-        "text-brand-secondary-highlight",
-
-        "dark:bg-surface-2/65",
-
-        "dark:text-secondary",
-      ].join(" ")}
+      aria-hidden="true"
+      className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-surface-2 ${landing ? "text-brand-primary" : "text-brand-secondary-highlight dark:text-secondary"}`}
     >
-      <PawPrintIcon size={12} strokeWidth={1.8} className="-rotate-6" />
+      <PawPrintIcon size={13} strokeWidth={1.8} className="-rotate-6" />
     </span>
   );
 }
-
-export default SiteFooter;

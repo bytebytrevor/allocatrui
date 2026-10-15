@@ -1,24 +1,16 @@
-import type { CSSProperties } from "react";
-
+import { GripVerticalIcon } from "lucide-react";
 import { useDraggable } from "@dnd-kit/core";
 
 import type { Task } from "@/Types/task";
-
 import TaskCard from "./TaskCard";
+import type { WorkflowStatus } from "./workspace-utils";
 
-type WorkflowStatus = "pending" | "active" | "complete";
-
-type DraggableTaskProps = {
+type Props = {
   task: Task;
   disabled?: boolean;
-
-  onMoveTask?: (
-    taskId: string,
-    status: WorkflowStatus,
-  ) => void | Promise<void>;
-
+  onMoveTask?: (taskId: string, status: WorkflowStatus) => void | Promise<void>;
   onEditTask?: (task: Task) => void;
-  onDeleteTask?: (task: Task) => void;
+  onDeleteTask?: (task: Task) => void | Promise<void>;
 };
 
 export function DraggableTask({
@@ -27,47 +19,46 @@ export function DraggableTask({
   onMoveTask,
   onEditTask,
   onDeleteTask,
-}: DraggableTaskProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    isDragging,
-  } = useDraggable({
-    id: task.id,
-    disabled,
-    data: { task },
-  });
-
-  const style: CSSProperties = {
-    transform:
-      !disabled && transform
-        ? `translate3d(${transform.x}px, ${transform.y}px, 0)`
-        : undefined,
-
-    opacity: isDragging ? 0 : 1,
-  };
+}: Props) {
+  const { setNodeRef, setActivatorNodeRef, listeners, attributes, isDragging } =
+    useDraggable({
+      id: task.id,
+      disabled,
+    });
 
   return (
     <div
       ref={setNodeRef}
-      style={style}
-      {...(!disabled ? attributes : {})}
-      {...(!disabled ? listeners : {})}
-      className={[
-        "transition-opacity",
-        !disabled
-          ? "cursor-grab touch-none active:cursor-grabbing"
-          : "",
-      ].join(" ")}
+      className="min-w-0"
+      style={{ opacity: isDragging ? 0.35 : 1 }}
     >
       <TaskCard
         task={task}
         canManageTasks={!disabled}
-        onMoveTask={disabled ? undefined : onMoveTask}
-        onEditTask={disabled ? undefined : onEditTask}
-        onDeleteTask={disabled ? undefined : onDeleteTask}
+        onMoveTask={onMoveTask}
+        onEditTask={onEditTask}
+        onDeleteTask={onDeleteTask}
+        dragHandle={
+          !disabled ? (
+            <button
+              ref={setActivatorNodeRef}
+              type="button"
+              {...attributes}
+              {...listeners}
+              aria-label={`Drag task ${task.title}`}
+              title="Drag task"
+              className={[
+                "flex h-8 w-6 touch-none items-center justify-center",
+                "rounded-md text-muted-foreground/65",
+                "hover:text-foreground",
+                "focus-visible:outline-none",
+                "focus-visible:ring-2 focus-visible:ring-ring/35",
+              ].join(" ")}
+            >
+              <GripVerticalIcon size={14} aria-hidden="true" />
+            </button>
+          ) : undefined
+        }
       />
     </div>
   );

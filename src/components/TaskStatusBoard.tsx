@@ -1,18 +1,11 @@
-import { CircleDotIcon, ListTodoIcon, PlusIcon } from "lucide-react";
-
+import { ListTodoIcon, PlusIcon } from "lucide-react";
 import { useDroppable } from "@dnd-kit/core";
-
 import type { Project } from "@/Types/project";
 import type { Task } from "@/Types/task";
-
 import CreateTaskDialog from "./CreateTaskDialogue";
 import { DraggableTask } from "./DraggableTask";
-
-/* =========================================================
-   TYPES
-========================================================= */
-
-type WorkflowStatus = "pending" | "active" | "complete";
+import { laneAppearance, quietAction } from "./workspace-ui";
+import type { WorkflowStatus } from "./workspace-utils";
 
 type Props = {
   status: WorkflowStatus;
@@ -20,73 +13,16 @@ type Props = {
   description: string;
   tasks?: Task[];
   project?: Project;
-  onTaskCreated?: () => void;
+  onTaskCreated?: () => void | Promise<void>;
   canManageTasks?: boolean;
   className?: string;
   onTaskMove?: (taskId: string, status: WorkflowStatus) => void | Promise<void>;
   onTaskEdit?: (task: Task) => void;
-  onTaskDelete?: (task: Task) => void;
+  onTaskDelete?: (task: Task) => void | Promise<void>;
+  busyTaskIds?: ReadonlySet<string>;
+  filtering?: boolean;
 };
-
-type StatusAppearance = {
-  dot: string;
-  text: string;
-  line: string;
-  surface: string;
-};
-
-/* =========================================================
-   STATUS APPEARANCE
-========================================================= */
-
-const statusAppearance: Record<WorkflowStatus, StatusAppearance> = {
-  pending: {
-    dot: "bg-[#B98645] dark:bg-[#F0A23A]",
-    text: "text-[#8A632F] dark:text-[#F0A23A]",
-    line: "bg-[#B98645] dark:bg-[#F0A23A]",
-    surface: "bg-[#B98645]/[0.035] dark:bg-[#F0A23A]/[0.025]",
-  },
-
-  active: {
-    dot: "bg-[#315E6C] dark:bg-[#DEDA00]",
-    text: "text-[#315E6C] dark:text-[#DEDA00]",
-    line: "bg-[#315E6C] dark:bg-[#DEDA00]",
-    surface: "bg-[#315E6C]/[0.025] dark:bg-[#DEDA00]/[0.02]",
-  },
-
-  complete: {
-    dot: "bg-[#568B5E] dark:bg-[#38D200]",
-    text: "text-[#477A4F] dark:text-[#38D200]",
-    line: "bg-[#568B5E] dark:bg-[#38D200]",
-    surface: "bg-[#568B5E]/[0.035] dark:bg-[#38D200]/[0.02]",
-  },
-};
-
-const emptyLaneMessages: Record<
-  WorkflowStatus,
-  { manage: string; view: string }
-> = {
-  pending: {
-    manage: "Create a task or move one here.",
-    view: "Pending tasks will appear here.",
-  },
-
-  active: {
-    manage: "Move tasks in progress here.",
-    view: "Tasks in progress will appear here.",
-  },
-
-  complete: {
-    manage: "Move completed tasks here.",
-    view: "Completed tasks will appear here.",
-  },
-};
-
-/* =========================================================
-   TASK STATUS BOARD
-========================================================= */
-
-function TaskStatusBoard({
+export default function TaskStatusBoard({
   status,
   title,
   description,
@@ -94,183 +30,91 @@ function TaskStatusBoard({
   project,
   onTaskCreated,
   canManageTasks = false,
-  className,
+  className = "",
   onTaskMove,
   onTaskEdit,
   onTaskDelete,
+  busyTaskIds,
+  filtering = false,
 }: Props) {
   const { setNodeRef, isOver } = useDroppable({
     id: status,
     disabled: !canManageTasks,
   });
-
-  const appearance = statusAppearance[status];
-  const canCreateTask = canManageTasks && Boolean(project?.id);
-
+  const appearance = laneAppearance[status];
+  const Icon = appearance.icon;
   return (
     <section
       ref={setNodeRef}
-      className={[
-        "group relative flex min-h-[420px] w-full min-w-[280px] flex-col overflow-hidden",
-        "max-h-[calc(100vh-245px)] rounded-[1.15rem] border",
-        "border-border/80 bg-background",
-        "transition-[background-color,border-color,box-shadow] duration-200",
-        canManageTasks && isOver
-          ? [
-              "border-[#315E6C]/20 bg-[#315E6C]/[0.015]",
-              "ring-2 ring-[#315E6C]/[0.05]",
-              "dark:border-[#DEDA00]/15 dark:bg-[#DEDA00]/[0.012]",
-              "dark:ring-[#DEDA00]/[0.045]",
-            ].join(" ")
-          : "",
-        className ?? "",
-      ].join(" ")}
+      aria-label={`${title}: ${tasks.length} tasks`}
+      className={`flex min-w-0 flex-col overflow-hidden rounded-xl border bg-surface-2/55 transition-[border-color] duration-150 motion-reduce:transition-none ${isOver && canManageTasks ? "border-ring/60" : "border-border/70"} ${className}`}
     >
-      <span
-        className={[
-          "absolute left-4 top-0 h-[2px] w-10 rounded-full",
-          appearance.line,
-        ].join(" ")}
-      />
-
-      <div className="shrink-0 px-4 pb-3 pt-4">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex min-w-0 items-center gap-2.5">
-            <span
-              className={[
-                "h-1.5 w-1.5 shrink-0 rounded-full",
-                appearance.dot,
-              ].join(" ")}
-            />
-
-            <h3 className="truncate text-sm font-semibold tracking-[-0.01em] text-foreground">
-              {title}
-            </h3>
-
-            <span
-              className={[
-                "inline-flex h-5 min-w-5 items-center justify-center rounded-md",
-                "bg-muted px-1.5 text-[0.6rem] font-semibold text-muted-foreground",
-              ].join(" ")}
-            >
-              {tasks.length}
-            </span>
-          </div>
-
-          {canCreateTask && project?.id && (
-            <CreateTaskDialog
-              projectId={project.id}
-              onCreated={onTaskCreated}
-              trigger={
-                <button
-                  type="button"
-                  className={[
-                    "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
-                    "text-muted-foreground transition-colors",
-                    "hover:bg-muted hover:text-[#315E6C]",
-                    "dark:hover:text-[#DEDA00]",
-                  ].join(" ")}
-                  aria-label={`Add task to ${title}`}
-                >
-                  <PlusIcon size={14} />
-                </button>
-              }
-            />
-          )}
+      <header className="flex shrink-0 items-center justify-between gap-3 border-b border-border/65 px-4 py-3.5">
+        <div className="flex min-w-0 items-center gap-2">
+          <Icon size={16} aria-hidden="true" className={appearance.text} />
+          <h3 className="truncate text-xs font-medium text-foreground">
+            {title}
+          </h3>
+          <span className="text-[11px] tabular-nums text-muted-foreground">
+            {tasks.length}
+          </span>
         </div>
-
-        <div className="mt-3 h-px overflow-hidden bg-border/70">
-          <div className={["h-px w-10", appearance.line].join(" ")} />
-        </div>
-      </div>
-
-      <div className="flex min-h-0 flex-1 flex-col px-3 pb-3">
-        {tasks.length === 0 ? (
-          <EmptyLane
-            status={status}
-            emptyTitle={description}
-            canManageTasks={canManageTasks}
+        {canManageTasks && status === "pending" && project?.id && (
+          <CreateTaskDialog
+            projectId={project.id}
+            onCreated={onTaskCreated}
+            trigger={
+              <button
+                type="button"
+                aria-label="Create task"
+                className={`${quietAction} h-8 min-h-8 w-8 px-0`}
+              >
+                <PlusIcon size={15} aria-hidden="true" />
+              </button>
+            }
           />
-        ) : (
-          <div className="flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto pr-1 scrollbar-thin">
+        )}
+      </header>
+      <div className="min-h-0 overflow-y-auto p-3">
+        {tasks.length ? (
+          <div className="space-y-3">
             {tasks.map((task) => (
               <DraggableTask
                 key={task.id}
                 task={task}
-                disabled={!canManageTasks}
+                disabled={!canManageTasks || Boolean(busyTaskIds?.has(task.id))}
                 onMoveTask={onTaskMove}
                 onEditTask={onTaskEdit}
                 onDeleteTask={onTaskDelete}
               />
             ))}
-
             {canManageTasks && (
               <div
-                className={[
-                  "min-h-10 rounded-xl border border-dashed border-transparent",
-                  "transition-[background-color,border-color] duration-200",
-                  isOver
-                    ? "border-[#315E6C]/15 bg-[#315E6C]/[0.02] dark:border-[#DEDA00]/15 dark:bg-[#DEDA00]/[0.015]"
-                    : "",
-                ].join(" ")}
+                aria-hidden="true"
+                className={`h-9 rounded-lg border border-dashed ${isOver ? "border-ring/45 bg-accent/40" : "border-transparent"}`}
               />
             )}
+          </div>
+        ) : (
+          <div className="flex min-h-[220px] flex-col items-center justify-center px-5 py-8 text-center">
+            <ListTodoIcon
+              size={23}
+              aria-hidden="true"
+              className="text-muted-foreground/70"
+            />
+            <p className="mt-4 text-xs font-medium">{description}</p>
+            <p className="mt-1.5 max-w-[210px] text-[11px] leading-6 text-muted-foreground">
+              {filtering
+                ? "Change or clear the board filters to see more work."
+                : canManageTasks
+                  ? status === "pending"
+                    ? "Create the first task when you’re ready."
+                    : "Move a task here as the work progresses."
+                  : "Tasks in this stage will appear here."}
+            </p>
           </div>
         )}
       </div>
     </section>
   );
 }
-
-/* =========================================================
-   EMPTY LANE
-========================================================= */
-
-function EmptyLane({
-  status,
-  emptyTitle,
-  canManageTasks,
-}: {
-  status: WorkflowStatus;
-  emptyTitle: string;
-  canManageTasks: boolean;
-}) {
-  const appearance = statusAppearance[status];
-
-  const message = canManageTasks
-    ? emptyLaneMessages[status].manage
-    : emptyLaneMessages[status].view;
-
-  return (
-    <div
-      className={[
-        "flex min-h-[260px] flex-1 flex-col items-center justify-center",
-        "rounded-xl border border-dashed border-border/70",
-        "px-5 py-8 text-center",
-        appearance.surface,
-      ].join(" ")}
-    >
-      <span
-        className={[
-          "flex h-9 w-9 items-center justify-center rounded-lg",
-          "bg-background/75",
-          appearance.text,
-        ].join(" ")}
-      >
-        {status === "active" ? (
-          <CircleDotIcon size={16} />
-        ) : (
-          <ListTodoIcon size={16} />
-        )}
-      </span>
-
-      <p className="mt-3 text-xs font-semibold text-foreground">{emptyTitle}</p>
-
-      <p className="mt-1 max-w-[190px] text-[0.66rem] leading-5 text-muted-foreground dark:text-[#94A3B8]">
-        {message}
-      </p>
-    </div>
-  );
-}
-
-export default TaskStatusBoard;

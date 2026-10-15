@@ -1,12 +1,16 @@
 import {
+  animate,
   motion,
   useInView,
+  useMotionValue,
+  useMotionValueEvent,
   useReducedMotion,
   useScroll,
   useTransform,
 } from "framer-motion";
 import {
   useEffect,
+  useId,
   useRef,
   useState,
   type CSSProperties,
@@ -21,7 +25,6 @@ import {
   CircleCheckBigIcon,
   FileCheck2Icon,
   FileTextIcon,
-  Layers3Icon,
   MessageSquareIcon,
   UsersIcon,
   HardHatIcon,
@@ -29,6 +32,7 @@ import {
   ShieldCheckIcon,
   ZapIcon,
   PawPrintIcon,
+  CalendarDaysIcon,
   type LucideIcon,
 } from "lucide-react";
 
@@ -122,14 +126,14 @@ const HERO_TOKENS = {
   "--brand-secondary-highlight": "var(--brand-primary)",
 } as CSSProperties;
 const CONTAINER =
-  "mx-auto w-full max-w-[1440px] px-5 sm:px-8 lg:px-14 xl:px-20";
+  "mx-auto w-full max-w-[1440px] px-4 sm:px-8 lg:px-14 xl:px-20";
 const HEADING =
   "text-[clamp(1.7rem,2.8vw,2.85rem)] font-medium leading-[1.16] tracking-[-0.035em]";
 const ACCENT = "text-brand-secondary-highlight ";
 const DEMO_CARD =
-  "rounded-xl border border-primary/15 bg-primary p-5 text-primary-foreground shadow-none    sm:p-6";
+  "rounded-xl border border-primary/15 bg-primary p-4 text-primary-foreground shadow-none sm:p-5 lg:p-6";
 const PAPER_CARD =
-  "rounded-xl border border-border/55 bg-card p-5 text-card-foreground shadow-none  sm:p-6";
+  "rounded-xl border border-border/55 bg-card p-4 text-card-foreground shadow-none sm:p-5 lg:p-6";
 const ACTION_BASE =
   "inline-flex min-h-11 items-center justify-center gap-3 rounded-lg border px-5 py-2.5 text-[13px] font-medium shadow-none pointer-events-auto relative z-10 transition-opacity duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-background";
 const PRIMARY_BUTTON =
@@ -143,7 +147,7 @@ export default function LandingPage() {
   const { user } = useAuth();
   const pageRef = useRef<HTMLDivElement | null>(null);
   const headerRef = useRef<HTMLDivElement | null>(null);
-  const [headerHeight, setHeaderHeight] = useState(80);
+  const [headerHeight, setHeaderHeight] = useState(64);
 
   useEffect(() => {
     const header = headerRef.current;
@@ -152,7 +156,7 @@ export default function LandingPage() {
       const childHeight =
         header.firstElementChild?.getBoundingClientRect().height ?? 0;
       setHeaderHeight(
-        Math.ceil(header.getBoundingClientRect().height || childHeight || 80),
+        Math.ceil(header.getBoundingClientRect().height || childHeight || 64),
       );
     };
     const observer = new ResizeObserver(measure);
@@ -334,7 +338,7 @@ function ActionLink({
   return (
     <Link
       to={to}
-      className={`${ACTION_BASE} ${onTeal ? TEAL_BUTTON : onDark ? "border-primary-foreground/25 bg-primary-foreground/[0.04] text-primary-foreground hover:opacity-80 focus-visible:ring-brand-primary/30" : secondary ? SECONDARY_BUTTON : PRIMARY_BUTTON}`}
+      className={`${ACTION_BASE} w-full sm:w-auto ${onTeal ? TEAL_BUTTON : onDark ? "border-primary-foreground/25 bg-primary-foreground/[0.04] text-primary-foreground hover:opacity-80 focus-visible:ring-brand-primary/30" : secondary ? SECONDARY_BUTTON : PRIMARY_BUTTON}`}
     >
       {children}
       <ArrowRightIcon size={17} aria-hidden="true" />
@@ -381,7 +385,7 @@ function HeroPanel({ postProjectHref }: { postProjectHref: string }) {
           initial={reducedMotion ? false : { opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-          className="relative mt-5 max-w-[1000px] text-[clamp(2.25rem,4.5vw,4.5rem)] font-medium leading-[1.06] tracking-[-0.035em]"
+          className="relative mt-5 max-w-[1000px] text-[clamp(2rem,4.5vw,4.5rem)] font-medium leading-[1.06] tracking-[-0.035em]"
         >
           Good work starts
           <br className="hidden sm:block" /> with the right
@@ -401,15 +405,15 @@ function HeroPanel({ postProjectHref }: { postProjectHref: string }) {
           Find experienced professionals, skilled tradespeople and specialists.
           Bring the right capability together around the work that needs doing.
         </p>
-        <div className="mt-8 flex flex-wrap justify-center gap-3">
+        <div className="mt-6 flex w-full flex-col gap-2.5 sm:mt-8 sm:w-auto sm:flex-row sm:flex-wrap sm:justify-center sm:gap-3">
           <ActionLink to={postProjectHref} onTeal>
             Post a project
           </ActionLink>
           <ActionLink to={ROUTES.discover} onDark>
-            Discover Allocats
+            Browse all Allocats
           </ActionLink>
         </div>
-        <div className="mt-8 grid w-full max-w-[850px] gap-3 text-left sm:grid-cols-3 lg:mt-10">
+        <div className="mt-8 hidden w-full max-w-[850px] gap-3 text-left sm:grid sm:grid-cols-3 lg:mt-10">
           <HeroBenefit
             icon={BriefcaseBusinessIcon}
             title="Professional expertise"
@@ -531,7 +535,7 @@ function BlankSpacePaws({
 
     // Rectangles also exclude pointer-events:none photo compositions.
     const blocked =
-      "a,button,input,textarea,select,label,nav,header,footer,h1,h2,h3,h4,p,li,article,img,[role='progressbar'],[data-paw-block]";
+      "a,button,input,textarea,select,label,form,nav,header,footer,h1,h2,h3,h4,p,li,article,img,[role='progressbar'],[data-paw-block]";
     let rects: DOMRect[] = [];
     let lastMeasure = 0;
     let timer: number | undefined;
@@ -689,7 +693,7 @@ function AdventurePanel({
   allocatLabel: string;
 }) {
   return (
-    <div className={`${CONTAINER} py-14 sm:py-20`}>
+    <div className={`${CONTAINER} py-12 sm:py-16 lg:py-20`}>
       <div className="text-center">
         <Eyebrow>Two ways to start</Eyebrow>
         <h2 className={`${HEADING} mt-4`}>Choose your path</h2>
@@ -762,8 +766,8 @@ function ChoiceCard({
 }) {
   return (
     <article className="grid h-full overflow-hidden rounded-xl border border-border/55 bg-card text-card-foreground  sm:grid-cols-[1.12fr_0.88fr]">
-      <div className="flex flex-col items-start p-6 sm:p-7 xl:p-8">
-        <h3 className="text-xl font-medium tracking-[-0.025em] sm:text-2xl">
+      <div className="flex flex-col items-start p-5 sm:p-6 xl:p-8">
+        <h3 className="text-lg font-medium tracking-[-0.025em] sm:text-2xl">
           {title}
         </h3>
         <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
@@ -780,11 +784,11 @@ function ChoiceCard({
             </li>
           ))}
         </ul>
-        <div className="mt-auto">
+        <div className="mt-auto w-full sm:w-auto">
           <ActionLink to={href}>{action}</ActionLink>
         </div>
       </div>
-      <div className="relative min-h-[260px] sm:min-h-[390px]">
+      <div className="relative hidden sm:block sm:min-h-[360px]">
         <img
           src={image}
           alt={imageAlt}
@@ -827,47 +831,193 @@ const OPERATING_STAGES = [
     title: "Start with the outcome.",
     copy: "Set the scope and expectations before looking for people.",
     icon: FileTextIcon,
+    color: "var(--brand-secondary-highlight)",
+    ink: "var(--brand-secondary-highlight)",
   },
   {
     label: "Shape",
     title: "Identify the capability.",
     copy: "Understand the practical skills and expertise the work requires.",
     icon: WrenchIcon,
+    color: "var(--brand-amber)",
+    ink: "color-mix(in srgb, var(--brand-amber) 60%, var(--brand-charcoal))",
   },
   {
     label: "Allocate",
     title: "Find the right fit.",
     copy: "Bring in skilled people who can take responsibility.",
     icon: UsersIcon,
+    color: "var(--brand-cyan)",
+    ink: "color-mix(in srgb, var(--brand-cyan) 60%, var(--brand-charcoal))",
   },
   {
     label: "Deliver",
     title: "Keep the work connected.",
     copy: "Follow the tasks, decisions and completion together.",
     icon: CircleCheckBigIcon,
+    color: "var(--brand-green)",
+    ink: "color-mix(in srgb, var(--brand-green) 60%, var(--brand-charcoal))",
   },
 ];
 
+type TimelinePoint = { x: number; y: number };
+type TimelineSegment = { from: TimelinePoint; to: TimelinePoint };
+
+function insetTimelinePoint(
+  from: TimelinePoint,
+  to: TimelinePoint,
+  distance: number,
+): TimelinePoint {
+  const length = Math.hypot(to.x - from.x, to.y - from.y);
+  if (!length) return from;
+  const offset = Math.min(distance, length / 2) / length;
+  return {
+    x: from.x + (to.x - from.x) * offset,
+    y: from.y + (to.y - from.y) * offset,
+  };
+}
+
+// One marker follows the same path in either orientation, hiding behind nodes.
+function timelineMarker(phase: number, segments: TimelineSegment[]) {
+  if (!segments.length) return { x: 0, y: 0, opacity: 0 };
+  const last = segments.length - 1;
+  const stops = [
+    insetTimelinePoint(segments[0].from, segments[0].to, 4),
+    ...segments.slice(0, last).map((segment, index) => ({
+      x: (segment.to.x + segments[index + 1].from.x) / 2,
+      y: (segment.to.y + segments[index + 1].from.y) / 2,
+    })),
+    insetTimelinePoint(segments[last].to, segments[last].from, 4),
+  ];
+  const position = Math.max(0, Math.min(segments.length, phase));
+  const index = Math.min(last, Math.floor(position));
+  const progress = position - index;
+  const point = {
+    x: stops[index].x + (stops[index + 1].x - stops[index].x) * progress,
+    y: stops[index].y + (stops[index + 1].y - stops[index].y) * progress,
+  };
+  let opacity = 0;
+  for (const segment of segments) {
+    const dx = segment.to.x - segment.from.x;
+    const dy = segment.to.y - segment.from.y;
+    const length = Math.hypot(dx, dy);
+    if (!length) continue;
+    const along =
+      ((point.x - segment.from.x) * dx + (point.y - segment.from.y) * dy) /
+      length;
+    const across =
+      Math.abs(
+        (point.x - segment.from.x) * dy - (point.y - segment.from.y) * dx,
+      ) / length;
+    if (across < 0.5 && along >= 0 && along <= length) {
+      opacity = Math.max(0, Math.min(1, along / 4, (length - along) / 4));
+      break;
+    }
+  }
+  return { ...point, opacity };
+}
+
 function OperatingTimeline() {
+  const timelineId = useId().replace(/[^a-zA-Z0-9_-]/g, "");
   const ref = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const iconRefs = useRef<Array<HTMLDivElement | null>>([]);
   const visible = useInView(ref, { amount: 0.25 });
   const reducedMotion = useReducedMotion();
+  const phase = useMotionValue(0);
   const [active, setActive] = useState(0);
-  useEffect(() => {
-    if (!visible || reducedMotion) return;
-    const timer = window.setInterval(
-      () => setActive((current) => (current + 1) % OPERATING_STAGES.length),
-      2200,
+  const [segments, setSegments] = useState<TimelineSegment[]>([]);
+  const markerX = useTransform(
+    phase,
+    (value) => timelineMarker(value, segments).x,
+  );
+  const markerY = useTransform(
+    phase,
+    (value) => timelineMarker(value, segments).y,
+  );
+  const markerOpacity = useTransform(
+    phase,
+    (value) => timelineMarker(value, segments).opacity,
+  );
+
+  useMotionValueEvent(phase, "change", (value) => {
+    const next = Math.min(
+      OPERATING_STAGES.length - 1,
+      Math.max(0, Math.round(value)),
     );
-    return () => window.clearInterval(timer);
-  }, [visible, reducedMotion]);
+    setActive((current) => (current === next ? current : next));
+  });
+
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track) return;
+    function measure() {
+      const horizontal = window.innerWidth >= 1024;
+      const bounds = track!.getBoundingClientRect();
+      const icons = iconRefs.current.map((element) =>
+        element?.getBoundingClientRect(),
+      );
+      const next: TimelineSegment[] = [];
+      for (let index = 0; index < OPERATING_STAGES.length - 1; index += 1) {
+        const from = icons[index];
+        const to = icons[index + 1];
+        if (!from || !to) return;
+        if (horizontal) {
+          const x1 = from.right - bounds.left + 10;
+          const x2 = to.left - bounds.left - 10;
+          if (x2 <= x1) return;
+          const y = from.top - bounds.top + from.height / 2;
+          next.push({ from: { x: x1, y }, to: { x: x2, y } });
+        } else {
+          const y1 = from.bottom - bounds.top + 10;
+          const y2 = to.top - bounds.top - 10;
+          if (y2 <= y1) return;
+          const x = from.left - bounds.left + from.width / 2;
+          next.push({ from: { x, y: y1 }, to: { x, y: y2 } });
+        }
+      }
+      setSegments((current) =>
+        JSON.stringify(current) === JSON.stringify(next) ? current : next,
+      );
+    }
+    const observer = new ResizeObserver(measure);
+    observer.observe(track);
+    iconRefs.current.forEach((icon) => {
+      if (icon) observer.observe(icon);
+    });
+    window.addEventListener("resize", measure);
+    measure();
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", measure);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!visible || reducedMotion) {
+      phase.set(0);
+      return;
+    }
+    phase.set(0);
+    // 2.2 seconds per forward stage, then 0.4 seconds per reverse stage.
+    // Easing is applied independently between each pair of icon positions.
+    const playback = animate(phase, [0, 1, 2, 3, 2, 1, 0], {
+      duration: 7.8,
+      times: [0, 2.2 / 7.8, 4.4 / 7.8, 6.6 / 7.8, 7 / 7.8, 7.4 / 7.8, 1],
+      repeat: Infinity,
+      repeatDelay: 0.25,
+      ease: "easeInOut",
+    });
+    return () => playback.stop();
+  }, [visible, reducedMotion, phase]);
+
   return (
     <div ref={ref} className={`${CONTAINER} py-12 sm:py-16`}>
       <Reveal>
         <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
           <div>
             <Eyebrow>From brief to delivery</Eyebrow>
-            <h2 className="mt-3 text-xl font-medium tracking-[-0.025em] sm:text-2xl">
+            <h2 className="mt-3 text-lg font-medium tracking-[-0.025em] sm:text-2xl">
               Different expertise. One shared outcome.
             </h2>
           </div>
@@ -881,59 +1031,112 @@ function OperatingTimeline() {
         </div>
         <div
           data-paw-block="true"
-          className="relative rounded-xl border border-border/55 bg-card p-5 sm:p-8"
+          className="rounded-xl border border-border/55 bg-card p-5 sm:p-8"
         >
-          <ol className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8">
-            {OPERATING_STAGES.map(
-              ({ label, title, copy, icon: Icon }, index) => (
-                <li key={label} className="relative">
-                  {index < OPERATING_STAGES.length - 1 && (
+          <div ref={trackRef} className="relative">
+            {segments.length > 0 && (
+              <svg
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 h-full w-full overflow-visible"
+              >
+                <defs>
+                  {segments.map((segment, index) => (
+                    <linearGradient
+                      key={index}
+                      id={`${timelineId}-connector-${index}`}
+                      gradientUnits="userSpaceOnUse"
+                      x1={segment.from.x}
+                      y1={segment.from.y}
+                      x2={segment.to.x}
+                      y2={segment.to.y}
+                    >
+                      <stop
+                        offset="0%"
+                        stopColor={OPERATING_STAGES[index].color}
+                      />
+                      <stop
+                        offset="100%"
+                        stopColor={OPERATING_STAGES[index + 1].color}
+                      />
+                    </linearGradient>
+                  ))}
+                </defs>
+                {segments.map((segment, index) => (
+                  <line
+                    key={index}
+                    x1={segment.from.x}
+                    x2={segment.to.x}
+                    y1={segment.from.y}
+                    y2={segment.to.y}
+                    stroke={`url(#${timelineId}-connector-${index})`}
+                    strokeWidth={1.5}
+                    strokeOpacity={0.35}
+                    strokeLinecap="round"
+                  />
+                ))}
+                {!reducedMotion && (
+                  <motion.circle
+                    r={4}
+                    cx={markerX}
+                    cy={markerY}
+                    fill="var(--brand-secondary-highlight)"
+                    style={{ opacity: markerOpacity }}
+                  />
+                )}
+              </svg>
+            )}
+            <ol className="grid grid-cols-1 gap-9 lg:grid-cols-4 lg:gap-8">
+              {OPERATING_STAGES.map(
+                ({ label, title, copy, icon: Icon, color, ink }, index) => (
+                  <li
+                    key={label}
+                    className="relative grid grid-cols-[48px_minmax(0,1fr)] items-start gap-x-5 lg:block"
+                  >
                     <div
-                      aria-hidden="true"
-                      className="pointer-events-none absolute left-[64px] top-6 hidden h-px bg-border lg:block"
-                      style={{ width: "calc(100% + 32px - 76px)" }}
+                      ref={(element) => {
+                        iconRefs.current[index] = element;
+                      }}
+                      className="relative z-10 h-12 w-12 rounded-full bg-card"
                     >
                       <motion.span
-                        className="absolute -top-1 h-2 w-2 rounded-full bg-brand-secondary-highlight"
-                        initial={false}
                         animate={{
-                          left: active === index ? "100%" : "0%",
-                          opacity: active === index ? 1 : 0,
+                          scale: !reducedMotion && active === index ? 1.05 : 1,
                         }}
-                        transition={{
-                          duration: reducedMotion ? 0 : 1.3,
-                          ease: "easeInOut",
+                        transition={{ duration: reducedMotion ? 0 : 0.45 }}
+                        style={{
+                          backgroundColor: `color-mix(in srgb, ${color} ${active === index ? 16 : 9}%, var(--card))`,
+                          color: ink,
+                          borderColor: `color-mix(in srgb, ${color} 24%, var(--card))`,
                         }}
-                      />
+                        className="flex h-12 w-12 items-center justify-center rounded-full border"
+                      >
+                        <Icon size={20} aria-hidden="true" />
+                      </motion.span>
                     </div>
-                  )}
-                  <div className="relative z-10 w-fit rounded-xl bg-card">
-                    <motion.span
-                      animate={{
-                        scale: !reducedMotion && active === index ? 1.04 : 1,
-                      }}
-                      transition={{ duration: 0.5 }}
-                      className={`flex h-12 w-12 items-center justify-center rounded-xl ring-1 ring-inset ${active === index ? "bg-brand-secondary-highlight/[0.12] text-brand-secondary-highlight ring-brand-secondary-highlight/20" : "bg-surface-2 text-muted-foreground ring-border"}`}
-                    >
-                      <Icon size={20} aria-hidden="true" />
-                    </motion.span>
-                  </div>
-                  <div className="mt-6 flex items-center justify-between gap-3">
-                    <p className="text-[10px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
-                      {label}
-                    </p>
-                    <span className={`text-xs font-medium ${ACCENT}`}>
-                      0{index + 1}
-                    </span>
-                  </div>
-                  <h3 className="mt-2 text-sm font-medium">{title}</h3>
-                  <p className="mt-2 text-xs leading-6 text-muted-foreground">
-                    {copy}
-                  </p>
-                </li>
-              ),
-            )}
-          </ol>
+                    <div className="min-w-0 pb-1 lg:mt-6 lg:pb-0">
+                      <div className="flex items-center justify-between gap-3">
+                        <p className="text-[10px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
+                          {label}
+                        </p>
+                        <span
+                          className="text-xs font-semibold"
+                          style={{
+                            color: `color-mix(in srgb, ${color} 25%, var(--brand-charcoal))`,
+                          }}
+                        >
+                          0{index + 1}
+                        </span>
+                      </div>
+                      <h3 className="mt-2 text-sm font-medium">{title}</h3>
+                      <p className="mt-2 text-xs leading-6 text-muted-foreground">
+                        {copy}
+                      </p>
+                    </div>
+                  </li>
+                ),
+              )}
+            </ol>
+          </div>
         </div>
         <div className="mt-6 flex flex-wrap gap-2 text-xs text-muted-foreground">
           {(
@@ -969,7 +1172,7 @@ function ConnectedWorkPanel() {
   ];
   return (
     <div
-      className={`${CONTAINER} grid items-center gap-10 py-14 sm:py-20 lg:grid-cols-[0.95fr_1.05fr] lg:gap-16`}
+      className={`${CONTAINER} grid items-center gap-7 sm:gap-10 py-12 sm:py-16 lg:py-20 lg:grid-cols-[0.95fr_1.05fr] lg:gap-16`}
     >
       <div>
         <Eyebrow>How it works</Eyebrow>
@@ -996,14 +1199,14 @@ function ConnectedWorkPanel() {
       </div>
       <div
         data-paw-block="true"
-        className="pointer-events-none relative pb-14 pl-4 pt-5 sm:pl-10"
+        className="pointer-events-none relative grid min-w-0 gap-3 lg:block lg:pb-14 lg:pl-10 lg:pt-5"
       >
         <Photo src={IMAGES.connected} alt="People collaborating on a project" />
         <div
-          className={`absolute bottom-0 left-0 w-[min(82%,320px)] ${DEMO_CARD}`}
+          className={`w-full lg:absolute lg:bottom-0 lg:left-0 lg:w-[min(82%,320px)] ${DEMO_CARD}`}
         >
           <ProgressBar label="Office fit-out" value={68} />
-          <ul className="mt-5 space-y-3 text-xs">
+          <ul className="mt-4 space-y-2.5 text-xs sm:mt-5 sm:space-y-3">
             {[
               "Site assessment",
               "Electrical works",
@@ -1017,7 +1220,7 @@ function ConnectedWorkPanel() {
           </ul>
           <DemoCaption />
         </div>
-        <Floating className="absolute right-0 top-0 max-w-[230px]">
+        <Floating className="absolute right-0 top-0 hidden max-w-[230px] lg:block">
           <CommentCard
             name="Daniel"
             text="The site assessment is complete. Ready for the next stage."
@@ -1031,7 +1234,7 @@ function ConnectedWorkPanel() {
 function Photo({ src, alt }: { src: string; alt: string }) {
   const reducedMotion = useReducedMotion();
   return (
-    <div className="aspect-[1.12] overflow-hidden rounded-xl bg-muted">
+    <div className="aspect-[16/10] overflow-hidden lg:aspect-[1.12] rounded-xl bg-muted">
       <motion.img
         src={src}
         alt={alt}
@@ -1128,7 +1331,7 @@ function CommentCard({
 function ExecutionPanel() {
   return (
     <div
-      className={`${CONTAINER} grid items-center gap-10 py-14 sm:py-20 lg:grid-cols-[0.95fr_1.05fr] lg:gap-16`}
+      className={`${CONTAINER} grid items-center gap-7 sm:gap-10 py-12 sm:py-16 lg:py-20 lg:grid-cols-[0.95fr_1.05fr] lg:gap-16`}
     >
       <div>
         <Eyebrow dark>Built for real projects</Eyebrow>
@@ -1148,19 +1351,16 @@ function ExecutionPanel() {
       </div>
       <div
         data-paw-block="true"
-        className="pointer-events-none relative pb-12 pl-5 pt-7 sm:pl-12"
+        className="pointer-events-none relative grid min-w-0 gap-3 lg:block lg:pb-12 lg:pl-12 lg:pt-7"
       >
         <Photo
           src={IMAGES.delivery}
           alt="Skilled expert carrying out commercial project work"
         />
+        <ProjectResponsibilityCard />
         <div
-          className={`absolute left-0 top-0 w-[min(78%,280px)] ${DEMO_CARD}`}
+          className={`absolute bottom-0 left-0 hidden lg:block ${PAPER_CARD}`}
         >
-          <ProgressBar label="Task completion" value={83} />
-          <DemoCaption />
-        </div>
-        <div className={`absolute bottom-0 left-0 ${PAPER_CARD}`}>
           <div className="grid gap-3 text-xs">
             {(
               [
@@ -1177,7 +1377,10 @@ function ExecutionPanel() {
             ))}
           </div>
         </div>
-        <Floating className="absolute bottom-5 right-0 max-w-[220px]" delay={1}>
+        <Floating
+          className="absolute bottom-5 right-0 hidden max-w-[220px] lg:block"
+          delay={1}
+        >
           <CommentCard
             name="Alex"
             text="The team is ready for the site handover."
@@ -1188,21 +1391,63 @@ function ExecutionPanel() {
   );
 }
 
+function ProjectResponsibilityCard() {
+  return (
+    <div
+      className={`relative w-full lg:absolute lg:left-0 lg:top-0 lg:z-20 lg:w-[min(82%,300px)] ${PAPER_CARD}`}
+    >
+      <div className="flex items-center gap-3">
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-secondary/[0.07] text-brand-secondary sm:h-9 sm:w-9">
+          <UsersIcon size={17} aria-hidden="true" />
+        </span>
+        <div className="min-w-0">
+          <p className="text-xs font-medium">Clear responsibility</p>
+          <p className="mt-1 text-[10px] text-muted-foreground">
+            Commercial installation
+          </p>
+        </div>
+      </div>
+      <div className="mt-3 grid gap-3 border-t border-border/55 pt-3 sm:grid-cols-2 lg:mt-4 lg:grid-cols-1 lg:gap-4 lg:pt-4">
+        <div>
+          <p className="text-[10px] text-muted-foreground">Assigned expert</p>
+          <p className="mt-1 text-xs font-medium leading-5">
+            Tariro M. · Site coordinator
+          </p>
+        </div>
+        <div className="flex items-start gap-2.5">
+          <CalendarDaysIcon
+            size={15}
+            className="mt-0.5 shrink-0 text-brand-secondary"
+            aria-hidden="true"
+          />
+          <div>
+            <p className="text-[10px] text-muted-foreground">Next milestone</p>
+            <p className="mt-1 text-xs leading-5">
+              Site inspection and handover
+            </p>
+          </div>
+        </div>
+      </div>
+      <DemoCaption />
+    </div>
+  );
+}
+
 function ProfilePanel({ allocatHref }: { allocatHref: string }) {
   return (
     <div
-      className={`${CONTAINER} grid items-center gap-12 py-14 sm:py-20 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16`}
+      className={`${CONTAINER} grid items-center gap-8 sm:gap-12 py-12 sm:py-16 lg:py-20 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16`}
     >
       <div
         data-paw-block="true"
-        className="pointer-events-none relative pb-14 pr-5 pt-4 sm:pr-16"
+        className="pointer-events-none relative order-2 grid min-w-0 gap-3 lg:order-1 lg:block lg:pb-14 lg:pr-16 lg:pt-4"
       >
         <Photo
           src={IMAGES.profile}
           alt="Professionals coordinating project delivery"
         />
         <div
-          className={`absolute right-0 top-0 w-[min(78%,280px)] ${PAPER_CARD}`}
+          className={`relative w-full lg:absolute lg:right-0 lg:top-0 lg:w-[min(78%,280px)] ${PAPER_CARD}`}
         >
           <div className="flex items-center gap-3">
             <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand-secondary-highlight/[0.07] text-sm font-medium text-brand-secondary-highlight  ">
@@ -1215,7 +1460,7 @@ function ProfilePanel({ allocatHref }: { allocatHref: string }) {
               </p>
             </div>
           </div>
-          <div className="mt-5 flex flex-wrap gap-2">
+          <div className="mt-3 flex flex-wrap gap-1.5 sm:mt-5 sm:gap-2">
             {["Coordination", "Site delivery", "Planning"].map((skill) => (
               <span
                 key={skill}
@@ -1230,7 +1475,7 @@ function ProfilePanel({ allocatHref }: { allocatHref: string }) {
           </p>
         </div>
         <div
-          className={`absolute bottom-0 right-0 w-[min(82%,290px)] ${PAPER_CARD}`}
+          className={`absolute bottom-0 right-0 hidden w-[min(82%,290px)] lg:block ${PAPER_CARD}`}
         >
           <p className="text-xs font-medium leading-5">Project context</p>
           <div className="mt-4 space-y-4">
@@ -1251,7 +1496,7 @@ function ProfilePanel({ allocatHref }: { allocatHref: string }) {
           </div>
         </div>
       </div>
-      <div>
+      <div className="order-1 min-w-0 lg:order-2">
         <Eyebrow>Your story</Eyebrow>
         <h2 className={`${HEADING} mt-4`}>
           Let good work build your professional story.
@@ -1307,7 +1552,7 @@ function FaqPanel() {
 
   return (
     <div
-      className={`${CONTAINER} grid gap-9 py-14 sm:py-20 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16`}
+      className={`${CONTAINER} grid gap-9 py-12 sm:py-16 lg:py-20 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16`}
     >
       <div>
         <Eyebrow>FAQ</Eyebrow>
@@ -1383,7 +1628,7 @@ function FaqPanel() {
 
 function ClosingPanel({ postProjectHref }: { postProjectHref: string }) {
   return (
-    <div className={`${CONTAINER} py-14 sm:py-20`}>
+    <div className={`${CONTAINER} py-12 sm:py-16 lg:py-20`}>
       <div className="flex flex-col items-center text-center">
         <Eyebrow>Get started today</Eyebrow>
         <h2 className={`${HEADING} mt-4 max-w-[1000px]`}>
@@ -1395,7 +1640,7 @@ function ClosingPanel({ postProjectHref }: { postProjectHref: string }) {
           Post a project, find the right capability and keep everything
           connected from start to finish.
         </p>
-        <div className="mt-8 flex flex-wrap justify-center gap-3">
+        <div className="mt-6 flex w-full flex-col gap-2.5 sm:mt-8 sm:w-auto sm:flex-row sm:flex-wrap sm:justify-center sm:gap-3">
           <ActionLink to={postProjectHref}>Post a project</ActionLink>
           <ActionLink to={ROUTES.discover} secondary>
             Browse Allocats

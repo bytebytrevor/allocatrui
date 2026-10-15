@@ -1,45 +1,18 @@
-// export type Task = {
-//     id: string,
-//     title: string,
-//     description?: string,
-//     status: "pending" | "active" | "complete" | "overdue";
-//     priority?: "low" | "medium" | "high" | "urgent",
-//     order: number,
-//     createdAt: string,
-//     dueDate?: string,
-//     UpdatedAt: string,
-//     completedAt: string,
-//     comments: Comment[],
-//     createdByUserId: string,
-//     projectId: string,
-// }
-
 export type Task = {
   id: string;
   title: string;
-  description?: string;
+  description?: string | null;
 
-  status:
-    | "pending"
-    | "active"
-    | "complete"
-    | "overdue";
+  status: "pending" | "active" | "complete" | "overdue";
 
-  priority?:
-    | "low"
-    | "medium"
-    | "high"
-    | "urgent";
+  priority: "standard" | "low" | "medium" | "high" | "urgent";
 
-  order: number;
+  dueDate?: string | null;
 
-  createdAt: string;
-  dueDate?: string;
-  UpdatedAt: string;
-  completedAt: string;
-
-  comments: Comment[];
+  assignedToId?: string | null;
+  assignedToName?: string | null;
+  assignedToAvatarUrl?: string | null;
 
   createdByUserId: string;
-  projectId: string;
+  createdByName?: string | null;
 };

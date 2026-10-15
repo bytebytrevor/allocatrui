@@ -1,14 +1,19 @@
-import { useEffect, useMemo, useState, type ComponentType } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
+import { createPortal } from "react-dom";
 import { Link, useParams } from "react-router-dom";
 
 import {
-  ArrowLeftIcon,
   CalendarDaysIcon,
   CopyIcon,
   EyeIcon,
   FolderOpenIcon,
   PlusIcon,
+  RefreshCwIcon,
+  SearchIcon,
+  SlidersHorizontalIcon,
   TriangleAlertIcon,
+  XIcon,
 } from "lucide-react";
 
 import {
@@ -31,16 +36,41 @@ import type { Task } from "@/Types/task";
 import LoadingState from "./LoadingState";
 import TaskCard from "./TaskCard";
 import TaskStatusBoard from "./TaskStatusBoard";
+import CreateTaskDialog from "./CreateTaskDialogue";
 
-import { Button } from "./ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "./ui/dialog";
+
+import {
+  BusyIcon,
+  laneAppearance,
+  primaryAction,
+  ProjectStatus,
+  quietAction,
+  secondaryAction,
+} from "./workspace-ui";
+
+import {
+  formatDate,
+  formatStatus,
+  getAssignedName,
+  getWorkflowStatus,
+  isTaskOverdue,
+  isWorkflowStatus,
+  projectCode,
+  projectProgress,
+  WORKFLOW_STATUSES,
+  type WorkflowStatus,
+} from "./workspace-utils";
 
 /* =========================================================
    TYPES
 ========================================================= */
-
-const WORKFLOW_STATUSES = ["pending", "active", "complete"] as const;
-
-type WorkflowStatus = (typeof WORKFLOW_STATUSES)[number];
 
 type ProjectPermissions = {
   isOwner: boolean;
@@ -48,304 +78,354 @@ type ProjectPermissions = {
   canManageTasks: boolean;
 };
 
-type UpdateTaskStatusResult = {
+type StatusResult = {
   task: Task;
   project: Project;
 };
 
-type ProjectStatusAppearance = {
-  label: string;
-  dot: string;
-  text: string;
-  surface: string;
-};
-
-/* =========================================================
-   PROJECT STATUS
-========================================================= */
-
-const projectStatusAppearance: Record<string, ProjectStatusAppearance> = {
-  pending: {
-    label: "Pending",
-    dot: "bg-status-pending",
-    text: "text-status-pending-foreground",
-    surface: "bg-status-pending/[0.08] dark:bg-status-pending/[0.11]",
-  },
-
-  active: {
-    label: "Active",
-    dot: "bg-status-active",
-    text: "text-status-active-foreground",
-    surface: "bg-status-active/[0.07] dark:bg-status-active/[0.09]",
-  },
-
-  completionrequested: {
-    label: "Awaiting confirmation",
-    dot: "bg-status-pending",
-    text: "text-status-pending-foreground",
-    surface: "bg-status-pending/[0.08] dark:bg-status-pending/[0.11]",
-  },
-
-  paused: {
-    label: "Paused",
-    dot: "bg-muted-foreground/65",
-    text: "text-muted-foreground",
-    surface: "bg-muted/60 dark:bg-surface-3/55",
-  },
-
-  onhold: {
-    label: "On hold",
-    dot: "bg-muted-foreground/65",
-    text: "text-muted-foreground",
-    surface: "bg-muted/60 dark:bg-surface-3/55",
-  },
-
-  complete: {
-    label: "Completed",
-    dot: "bg-status-complete",
-    text: "text-status-complete-foreground",
-    surface: "bg-status-complete/[0.07] dark:bg-status-complete/[0.10]",
-  },
-
-  completed: {
-    label: "Completed",
-    dot: "bg-status-complete",
-    text: "text-status-complete-foreground",
-    surface: "bg-status-complete/[0.07] dark:bg-status-complete/[0.10]",
-  },
-
-  closed: {
-    label: "Completed",
-    dot: "bg-status-complete",
-    text: "text-status-complete-foreground",
-    surface: "bg-status-complete/[0.07] dark:bg-status-complete/[0.10]",
-  },
-
-  cancelled: {
-    label: "Cancelled",
-    dot: "bg-status-overdue",
-    text: "text-status-overdue-foreground",
-    surface: "bg-status-overdue/[0.06] dark:bg-status-overdue/[0.10]",
-  },
-
-  canceled: {
-    label: "Cancelled",
-    dot: "bg-status-overdue",
-    text: "text-status-overdue-foreground",
-    surface: "bg-status-overdue/[0.06] dark:bg-status-overdue/[0.10]",
-  },
+type DragSize = {
+  width: number;
+  height: number;
 };
 
 /* =========================================================
    PROJECT MANAGER
 ========================================================= */
 
-function ProjectManager() {
+export default function ProjectManager() {
   const { projectId } = useParams();
 
   const [project, setProject] = useState<Project>();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [permissions, setPermissions] = useState<ProjectPermissions>();
+
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+  const [error, setError] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [loadVersion, setLoadVersion] = useState(0);
+
   const [activeTaskId, setActiveTaskId] = useState<string | null>(null);
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: { distance: 8 },
-    }),
-  );
+  const [dragSize, setDragSize] = useState<DragSize | null>(null);
+
+  const [busyTaskIds, setBusyTaskIds] = useState<Set<string>>(new Set());
+
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const [overdueOnly, setOverdueOnly] = useState(false);
+
+  const [selectedLane, setSelectedLane] = useState<WorkflowStatus>("pending");
+
+  const [wideBoard, setWideBoard] = useState(false);
+  const [now, setNow] = useState(Date.now);
+
+  const boardRef = useRef<HTMLDivElement>(null);
+  const routeRef = useRef(projectId);
+  const mountedRef = useRef(true);
+  const scopeRef = useRef(0);
+  const operationsRef = useRef(new Set<string>());
+  const reconcileRef = useRef(false);
+  const refreshRef = useRef(0);
+
+  routeRef.current = projectId;
 
   const canManageTasks = permissions?.canManageTasks === true;
 
-  /* =======================================================
-     TASK HELPERS
-  ======================================================= */
-
-  function isWorkflowStatus(value: unknown): value is WorkflowStatus {
-    return (
-      typeof value === "string" &&
-      (WORKFLOW_STATUSES as readonly string[]).includes(value)
-    );
-  }
-
-  function getWorkflowStatus(task: Task): WorkflowStatus {
-    const status = String(task.status ?? "")
-      .trim()
-      .toLowerCase()
-      .replace(/[\s_-]/g, "");
-
-    if (status === "complete" || status === "completed") {
-      return "complete";
-    }
-
-    if (status === "active") {
-      return "active";
-    }
-
-    return "pending";
-  }
-
-  function isTaskOverdue(task: Task) {
-    if (getWorkflowStatus(task) === "complete" || !task.dueDate) {
-      return false;
-    }
-
-    const dueDate = new Date(task.dueDate);
-
-    if (Number.isNaN(dueDate.getTime())) {
-      return false;
-    }
-
-    return dueDate.getTime() < Date.now();
-  }
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+  );
 
   /* =======================================================
-     REFRESH
-  ======================================================= */
-
-  async function refreshProject() {
-    if (!projectId) return;
-
-    const response = await api.get<Project>(`/projects/${projectId}`, {
-      withCredentials: true,
-    });
-
-    setProject(response.data);
-  }
-
-  async function refreshTasks() {
-    if (!projectId) return;
-
-    const response = await api.get<Task[]>(`/projects/tasks/${projectId}`, {
-      withCredentials: true,
-    });
-
-    setTasks(Array.isArray(response.data) ? response.data : []);
-  }
-
-  async function handleTaskCreated() {
-    try {
-      await Promise.all([refreshTasks(), refreshProject()]);
-    } catch (error) {
-      console.error("Could not refresh workspace after creating task:", error);
-
-      toast.error(
-        "The task was created, but the workspace could not be refreshed.",
-      );
-    }
-  }
-
-  /* =======================================================
-     LOAD WORKSPACE
+     MOUNT STATE
   ======================================================= */
 
   useEffect(() => {
-    if (!projectId) return;
+    mountedRef.current = true;
 
+    return () => {
+      mountedRef.current = false;
+      scopeRef.current += 1;
+    };
+  }, []);
+
+  /* =======================================================
+     OVERDUE CLOCK
+  ======================================================= */
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 60000);
+
+    return () => window.clearInterval(timer);
+  }, []);
+
+  /* =======================================================
+     LOAD PROJECT
+  ======================================================= */
+
+  useEffect(() => {
+    const scope = ++scopeRef.current;
     let cancelled = false;
 
-    async function loadWorkspace() {
-      try {
-        setLoading(true);
-        setError(null);
+    setLoading(true);
+    setRefreshing(false);
+    setError(false);
 
-        const [projectResponse, tasksResponse, permissionsResponse] =
-          await Promise.all([
-            api.get<Project>(`/projects/${projectId}`, {
-              withCredentials: true,
-            }),
-            api.get<Task[]>(`/projects/tasks/${projectId}`, {
-              withCredentials: true,
-            }),
-            api.get<ProjectPermissions>(`/projects/${projectId}/permissions`, {
-              withCredentials: true,
-            }),
-          ]);
+    setPermissions(undefined);
+    setProject(undefined);
+    setTasks([]);
 
-        if (cancelled) return;
+    setSearch("");
+    setOverdueOnly(false);
+    setSelectedLane("pending");
 
-        setProject(projectResponse.data);
-        setTasks(Array.isArray(tasksResponse.data) ? tasksResponse.data : []);
-        setPermissions(permissionsResponse.data);
-      } catch (err: unknown) {
-        if (cancelled) return;
+    setActiveTaskId(null);
+    setDragSize(null);
+    setDetailsOpen(false);
 
-        setError(
-          err instanceof Error
-            ? err
-            : new Error("Could not load project workspace."),
-        );
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
+    operationsRef.current.clear();
+    setBusyTaskIds(new Set());
+
+    reconcileRef.current = false;
+    refreshRef.current += 1;
+
+    if (!projectId) {
+      setLoading(false);
+      setError(true);
+      return;
     }
 
-    void loadWorkspace();
+    void Promise.all([
+      api.get<Project>(`/projects/${projectId}`, {
+        withCredentials: true,
+      }),
+
+      api.get<Task[]>(`/projects/tasks/${projectId}`, {
+        withCredentials: true,
+      }),
+
+      api.get<ProjectPermissions>(`/projects/${projectId}/permissions`, {
+        withCredentials: true,
+      }),
+    ])
+      .then(([projectResponse, tasksResponse, permissionsResponse]) => {
+        if (cancelled || scope !== scopeRef.current) return;
+
+        setProject(projectResponse.data);
+
+        setTasks(Array.isArray(tasksResponse.data) ? tasksResponse.data : []);
+
+        setPermissions(permissionsResponse.data);
+      })
+      .catch(() => {
+        if (!cancelled && scope === scopeRef.current) {
+          setError(true);
+        }
+      })
+      .finally(() => {
+        if (!cancelled && scope === scopeRef.current) {
+          setLoading(false);
+        }
+      });
 
     return () => {
       cancelled = true;
     };
+  }, [projectId, loadVersion]);
+
+  /* =======================================================
+     RESPONSIVE BOARD
+  ======================================================= */
+
+  useEffect(() => {
+    const board = boardRef.current;
+
+    if (!board) return;
+
+    const measure = () => {
+      setWideBoard(board.getBoundingClientRect().width >= 900);
+    };
+
+    const observer = new ResizeObserver(measure);
+
+    observer.observe(board);
+    measure();
+
+    return () => observer.disconnect();
+  }, [loading, error]);
+
+  /* =======================================================
+     REFRESH WORKSPACE
+  ======================================================= */
+
+  const refreshWorkspace = useCallback(async () => {
+    if (!projectId) return;
+
+    if (operationsRef.current.size > 0) {
+      reconcileRef.current = true;
+      return;
+    }
+
+    const scope = scopeRef.current;
+    const request = ++refreshRef.current;
+
+    setRefreshing(true);
+
+    try {
+      const [projectResponse, taskResponse, permissionsResponse] =
+        await Promise.all([
+          api.get<Project>(`/projects/${projectId}`, {
+            withCredentials: true,
+          }),
+
+          api.get<Task[]>(`/projects/tasks/${projectId}`, {
+            withCredentials: true,
+          }),
+
+          api.get<ProjectPermissions>(`/projects/${projectId}/permissions`, {
+            withCredentials: true,
+          }),
+        ]);
+
+      if (
+        !mountedRef.current ||
+        routeRef.current !== projectId ||
+        scope !== scopeRef.current ||
+        request !== refreshRef.current
+      ) {
+        return;
+      }
+
+      // A task mutation may have started during this read.
+      if (operationsRef.current.size > 0) {
+        reconcileRef.current = true;
+        return;
+      }
+
+      setProject(projectResponse.data);
+
+      setTasks(Array.isArray(taskResponse.data) ? taskResponse.data : []);
+
+      setPermissions(permissionsResponse.data);
+    } catch {
+      if (
+        mountedRef.current &&
+        routeRef.current === projectId &&
+        scope === scopeRef.current
+      ) {
+        toast.error(
+          "The workspace could not be refreshed. Your current view has been kept.",
+        );
+      }
+    } finally {
+      if (
+        mountedRef.current &&
+        routeRef.current === projectId &&
+        scope === scopeRef.current &&
+        request === refreshRef.current
+      ) {
+        setRefreshing(false);
+      }
+    }
   }, [projectId]);
 
   /* =======================================================
-     UPDATE TASK STATUS
+     COMPLETE TASK OPERATION
   ======================================================= */
 
-  async function updateTaskStatus(taskId: string, status: WorkflowStatus) {
-    const response = await api.patch<UpdateTaskStatusResult>(
-      `/projects/tasks/task/${taskId}/status`,
-      { status },
-      { withCredentials: true },
-    );
+  async function finishOperation(taskId: string, scope: number) {
+    if (
+      !mountedRef.current ||
+      routeRef.current !== projectId ||
+      scope !== scopeRef.current
+    ) {
+      return;
+    }
 
-    return response.data;
+    operationsRef.current.delete(taskId);
+    setBusyTaskIds(new Set(operationsRef.current));
+
+    if (operationsRef.current.size === 0 && reconcileRef.current) {
+      reconcileRef.current = false;
+      await refreshWorkspace();
+    }
   }
 
   /* =======================================================
      MOVE TASK
   ======================================================= */
 
-  async function moveTask(taskId: string, newStatus: WorkflowStatus) {
-    if (!canManageTasks) return;
+  async function moveTask(taskId: string, status: WorkflowStatus) {
+    if (
+      !canManageTasks ||
+      !isWorkflowStatus(status) ||
+      operationsRef.current.has(taskId)
+    ) {
+      return;
+    }
 
-    const currentTask = tasks.find((task) => task.id === taskId);
+    const original = tasks.find((task) => String(task.id) === taskId);
 
-    if (!currentTask) return;
+    if (!original || getWorkflowStatus(original) === status) {
+      return;
+    }
 
-    const currentStatus = getWorkflowStatus(currentTask);
+    const scope = scopeRef.current;
 
-    if (currentStatus === newStatus) return;
+    operationsRef.current.add(taskId);
+    setBusyTaskIds(new Set(operationsRef.current));
 
-    const previousTasks = tasks;
-
-    setTasks((currentTasks) =>
-      currentTasks.map((task) =>
-        task.id === taskId ? { ...task, status: newStatus } : task,
+    setTasks((current) =>
+      current.map((task) =>
+        String(task.id) === taskId ? { ...task, status } : task,
       ),
     );
 
     try {
-      const result = await updateTaskStatus(taskId, newStatus);
+      const response = await api.patch<StatusResult>(
+        `/projects/tasks/task/${taskId}/status`,
+        { status },
+        { withCredentials: true },
+      );
 
-      setTasks((currentTasks) =>
-        currentTasks.map((task) =>
-          task.id === taskId ? { ...task, ...result.task } : task,
+      if (
+        !mountedRef.current ||
+        routeRef.current !== projectId ||
+        scope !== scopeRef.current
+      ) {
+        return;
+      }
+
+      setTasks((current) =>
+        current.map((task) =>
+          String(task.id) === taskId
+            ? { ...task, ...response.data.task }
+            : task,
         ),
       );
 
-      setProject(result.project);
-    } catch (error) {
-      setTasks(previousTasks);
+      setProject(response.data.project);
+      reconcileRef.current = true;
+    } catch {
+      if (
+        mountedRef.current &&
+        routeRef.current === projectId &&
+        scope === scopeRef.current
+      ) {
+        setTasks((current) =>
+          current.map((task) => (String(task.id) === taskId ? original : task)),
+        );
 
-      console.error("Could not move task:", error);
-
-      toast.error("Task could not be moved.", {
-        description:
-          "Your task permissions may have changed. Refresh the workspace and try again.",
-      });
+        toast.error("Task could not be moved.", {
+          description:
+            "Your permissions may have changed. Refresh the workspace and try again.",
+        });
+      }
+    } finally {
+      await finishOperation(taskId, scope);
     }
   }
 
@@ -354,90 +434,164 @@ function ProjectManager() {
   ======================================================= */
 
   async function deleteTask(task: Task) {
-    if (!canManageTasks) return;
+    const taskId = String(task.id);
 
-    const previousTasks = tasks;
+    if (!canManageTasks || operationsRef.current.has(taskId)) {
+      return;
+    }
 
-    setTasks((currentTasks) =>
-      currentTasks.filter((currentTask) => currentTask.id !== task.id),
-    );
+    const scope = scopeRef.current;
+
+    const index = tasks.findIndex((item) => String(item.id) === taskId);
+
+    if (index < 0) return;
+
+    operationsRef.current.add(taskId);
+    setBusyTaskIds(new Set(operationsRef.current));
+
+    setTasks((current) => current.filter((item) => String(item.id) !== taskId));
 
     try {
-      await api.delete(`/projects/tasks/task/${task.id}`, {
+      await api.delete(`/projects/tasks/task/${taskId}`, {
         withCredentials: true,
       });
 
+      if (
+        !mountedRef.current ||
+        routeRef.current !== projectId ||
+        scope !== scopeRef.current
+      ) {
+        return;
+      }
+
       toast.success("Task deleted.", {
-        id: `task-delete-${task.id}`,
+        id: `task-delete-${taskId}`,
       });
 
-      await refreshProject();
-    } catch (error) {
-      setTasks(previousTasks);
+      reconcileRef.current = true;
+    } catch (cause) {
+      if (
+        mountedRef.current &&
+        routeRef.current === projectId &&
+        scope === scopeRef.current
+      ) {
+        setTasks((current) =>
+          current.some((item) => String(item.id) === taskId)
+            ? current
+            : [...current.slice(0, index), task, ...current.slice(index)],
+        );
 
-      console.error("Could not delete task:", error);
+        toast.error("Task could not be deleted.", {
+          id: `task-delete-${taskId}`,
+        });
+      }
 
-      toast.error("Task could not be deleted.", {
-        id: `task-delete-${task.id}`,
-      });
-
-      throw error;
+      throw cause;
+    } finally {
+      await finishOperation(taskId, scope);
     }
   }
 
   /* =======================================================
-     COPY PROJECT ID
+     COPY PROJECT CODE
   ======================================================= */
 
-  async function copyProjectCode() {
+  async function copyCode() {
     if (!project?.projectCode) return;
 
     try {
       await navigator.clipboard.writeText(project.projectCode);
 
-      toast.success("Project ID copied.");
-    } catch (error) {
-      console.error("Could not copy project ID:", error);
-
-      toast.error("Project ID could not be copied.");
+      toast.success("Project code copied.");
+    } catch {
+      toast.error("Project code could not be copied.");
     }
   }
 
   /* =======================================================
-     ACTIVE TASK
-  ======================================================= */
-
-  const activeTask = useMemo(() => {
-    if (!activeTaskId || !canManageTasks) return null;
-
-    return tasks.find((task) => task.id === activeTaskId) ?? null;
-  }, [activeTaskId, canManageTasks, tasks]);
-
-  /* =======================================================
-     DRAG
+     DRAG HANDLERS
   ======================================================= */
 
   function handleDragStart(event: DragStartEvent) {
-    if (!canManageTasks) return;
+    const taskId = String(event.active.id);
 
-    setActiveTaskId(String(event.active.id));
+    if (!canManageTasks || operationsRef.current.has(taskId)) {
+      return;
+    }
+
+    const rect = event.active.rect.current.initial;
+
+    setDragSize(
+      rect
+        ? {
+            width: rect.width,
+            height: rect.height,
+          }
+        : null,
+    );
+
+    setActiveTaskId(taskId);
   }
 
   function handleDragCancel() {
     setActiveTaskId(null);
+    setDragSize(null);
   }
 
   async function handleDragEnd(event: DragEndEvent) {
     setActiveTaskId(null);
+    setDragSize(null);
 
-    if (!canManageTasks || !event.over) return;
-    if (!isWorkflowStatus(event.over.id)) return;
+    if (!canManageTasks || !event.over || !isWorkflowStatus(event.over.id)) {
+      return;
+    }
 
     await moveTask(String(event.active.id), event.over.id);
   }
 
   /* =======================================================
-     LOADING / ERROR
+     TASK GROUPS AND FILTERS
+  ======================================================= */
+
+  const activeTask = tasks.find((task) => String(task.id) === activeTaskId);
+
+  const groups = useMemo(
+    () =>
+      Object.fromEntries(
+        WORKFLOW_STATUSES.map((status) => [
+          status,
+          tasks.filter((task) => getWorkflowStatus(task) === status),
+        ]),
+      ) as Record<WorkflowStatus, Task[]>,
+    [tasks],
+  );
+
+  const overdueCount = tasks.filter((task) => isTaskOverdue(task, now)).length;
+
+  const filteredTasks = useMemo(() => {
+    const query = search.trim().toLowerCase();
+
+    return tasks.filter((task) => {
+      const searchableText = [
+        task.title,
+        task.description ?? "",
+        getAssignedName(task),
+      ]
+        .join(" ")
+        .toLowerCase();
+
+      const matches = searchableText.includes(query);
+
+      return matches && (!overdueOnly || isTaskOverdue(task, now));
+    });
+  }, [tasks, search, overdueOnly, now]);
+
+  const filtering = Boolean(search.trim() || overdueOnly);
+
+  const progress = projectProgress(project?.progress);
+
+  /* =======================================================
+     LOADING
   ======================================================= */
 
   if (loading) {
@@ -446,610 +600,530 @@ function ProjectManager() {
     );
   }
 
-  if (error || !project || !permissions) {
-    return <ProjectManagerError />;
-  }
-
   /* =======================================================
-     TASK GROUPS
+     ERROR
   ======================================================= */
 
-  const pendingTaskList = tasks.filter(
-    (task) => getWorkflowStatus(task) === "pending",
-  );
+  if (error || !project || !permissions) {
+    return (
+      <div className="flex min-h-[420px] items-center justify-center">
+        <div className="max-w-sm text-center">
+          <FolderOpenIcon
+            size={28}
+            aria-hidden="true"
+            className="mx-auto text-muted-foreground"
+          />
 
-  const activeTaskList = tasks.filter(
-    (task) => getWorkflowStatus(task) === "active",
-  );
+          <h1 className="mt-5 text-lg font-medium">Could not load project</h1>
 
-  const completedTaskList = tasks.filter(
-    (task) => getWorkflowStatus(task) === "complete",
-  );
+          <p className="mt-2 text-sm leading-7 text-muted-foreground">
+            Try loading the workspace again to confirm project details and
+            permissions.
+          </p>
 
-  const overdueTaskCount = tasks.filter(isTaskOverdue).length;
+          <div className="mt-5 flex justify-center gap-2">
+            <button
+              type="button"
+              onClick={() => setLoadVersion((value) => value + 1)}
+              className={secondaryAction}
+            >
+              <RefreshCwIcon size={14} aria-hidden="true" />
+              Try again
+            </button>
 
-  const progress = Math.min(
-    100,
-    Math.max(0, Math.round(project.progress ?? 0)),
-  );
+            <Link to="/projects" className={quietAction}>
+              All projects
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   /* =======================================================
      RENDER
   ======================================================= */
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col pb-5">
-      {/* ===================================================
-          PROJECT HEADER
-      =================================================== */}
+    <div className="min-w-0 pb-4">
+      {/* PROJECT HEADER */}
 
-      <section className="border-b border-border/50 pb-5 dark:border-border">
-        <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
+      <section
+        aria-labelledby="project-title"
+        className="border-b border-border/70 pb-6"
+      >
+        <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
           <div className="min-w-0">
-            <div className="flex items-start gap-4">
-              <span
-                className={[
-                  "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl",
+            <div className="flex flex-wrap items-center gap-2.5 text-[11px] text-muted-foreground">
+              <span>Project workspace</span>
+              <span aria-hidden="true">/</span>
 
-                  "bg-surface-3/80",
-                  "text-brand-secondary-highlight",
-
-                  "dark:bg-surface-2",
-                  "dark:text-brand-secondary-highlight",
-
-                  "dark:ring-1",
-                  "dark:ring-inset",
-                  "dark:ring-border",
-                ].join(" ")}
-              >
-                <FolderOpenIcon size={18} />
-              </span>
-
-              <div className="min-w-0 pt-0.5">
-                <p className="text-[0.56rem] font-semibold uppercase tracking-[0.17em] text-muted-foreground">
-                  Project workspace
-                </p>
-
-                <h1
-                  className={[
-                    "mt-1.5 max-w-4xl break-words",
-                    "text-2xl font-semibold leading-[1.08] tracking-[-0.03em]",
-                    "text-foreground/90 sm:text-3xl lg:text-[2rem]",
-                    "dark:text-foreground",
-                  ].join(" ")}
+              {project.projectCode && (
+                <button
+                  type="button"
+                  onClick={() => void copyCode()}
+                  title={`Copy ${project.projectCode}`}
+                  className="inline-flex items-center gap-1.5 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35"
                 >
-                  {project.title}
-                </h1>
+                  <span>{projectCode(project.projectCode)}</span>
 
-                {project.projectCode && (
-                  <button
-                    type="button"
-                    onClick={() => void copyProjectCode()}
-                    className={[
-                      "group mt-2 inline-flex items-center gap-1.5 rounded-md",
+                  <CopyIcon size={11} aria-hidden="true" />
+                </button>
+              )}
 
-                      "text-[0.64rem] font-medium",
-                      "text-muted-foreground",
-
-                      "transition-colors",
-
-                      "hover:text-foreground/80",
-                      "dark:hover:text-foreground",
-                    ].join(" ")}
-                    title={`Copy ${project.projectCode}`}
-                  >
-                    <span>{getProjectDisplayCode(project.projectCode)}</span>
-
-                    <CopyIcon
-                      size={11}
-                      className="opacity-50 transition-opacity group-hover:opacity-90"
-                    />
-                  </button>
-                )}
-              </div>
+              <ProjectStatus status={project.status} />
             </div>
+
+            <h1
+              id="project-title"
+              className="mt-3 max-w-4xl break-words text-2xl font-medium leading-tight tracking-[-0.035em] text-foreground sm:text-[1.85rem]"
+            >
+              {project.title}
+            </h1>
           </div>
 
-          {/* ACTIONS */}
-
-          <div className="flex shrink-0 flex-wrap gap-2">
-            <Button
+          <div className="flex flex-wrap gap-2">
+            <button
               type="button"
-              variant="outline"
-              className={[
-                "h-10 rounded-lg px-4 text-xs font-semibold shadow-none",
-
-                "border-border/70",
-                "bg-surface-2/35",
-                "text-muted-foreground",
-
-                "hover:border-border",
-                "hover:bg-surface-3/70",
-                "hover:text-foreground/85",
-
-                "dark:border-border",
-                "dark:bg-surface-2",
-                "dark:text-foreground/80",
-
-                "dark:hover:bg-surface-3",
-                "dark:hover:text-foreground",
-              ].join(" ")}
+              onClick={() => setDetailsOpen(true)}
+              className={secondaryAction}
             >
-              <EyeIcon size={14} />
-              View details
-            </Button>
+              <EyeIcon size={14} aria-hidden="true" />
+              Details
+            </button>
 
-            <Button
-              asChild
-              className={[
-                "h-10 rounded-lg px-4 text-xs font-semibold shadow-none",
-
-                "bg-brand-secondary-highlight",
-                "text-primary-foreground",
-
-                "hover:bg-brand-secondary-highlight/90",
-
-                "dark:bg-secondary",
-                "dark:text-secondary-foreground",
-
-                "dark:hover:bg-secondary/90",
-                "dark:hover:text-secondary-foreground",
-              ].join(" ")}
-            >
-              <Link to="/projects/new">
-                <PlusIcon size={14} />
-                New project
-              </Link>
-            </Button>
-          </div>
-        </div>
-
-        {/* =================================================
-            PROJECT SUMMARY
-        ================================================= */}
-
-        <div
-          className={[
-            "mt-6 overflow-hidden rounded-xl border",
-
-            "border-border/55",
-            "bg-surface-2/65",
-
-            "dark:border-border",
-            "dark:bg-card",
-          ].join(" ")}
-        >
-          <div className="grid lg:grid-cols-[minmax(0,1fr)_minmax(430px,0.78fr)] xl:grid-cols-[minmax(0,1fr)_470px]">
-            {/* =============================================
-                PROGRESS
-            ============================================= */}
-
-            <div className="min-w-0 px-5 py-5 sm:px-6">
-              <div className="max-w-[420px]">
-                <div className="flex items-end justify-between gap-5">
-                  <div className="min-w-0">
-                    <p className="text-[0.55rem] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
-                      Project progress
-                    </p>
-
-                    <p className="mt-1.5 text-sm font-semibold tracking-[-0.015em] text-foreground/80 dark:text-foreground/90">
-                      {completedTaskList.length}/{tasks.length} tasks complete
-                    </p>
-                  </div>
-
-                  <span className="shrink-0 text-lg font-semibold tabular-nums tracking-[-0.03em] text-brand-secondary-highlight/90 dark:text-secondary">
-                    {progress}%
-                  </span>
-                </div>
-
-                <div
-                  className="mt-3 h-1.5 overflow-hidden rounded-full bg-muted/80 dark:bg-surface-3"
-                  role="progressbar"
-                  aria-label="Project progress"
-                  aria-valuemin={0}
-                  aria-valuemax={100}
-                  aria-valuenow={progress}
-                >
-                  <div
-                    className="h-full rounded-full bg-brand-secondary-highlight/85 transition-[width] duration-500 ease-out dark:bg-secondary"
-                    style={{ width: `${progress}%` }}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* =============================================
-                PROJECT META
-            ============================================= */}
-
-            <div
-              className={[
-                "grid grid-cols-1 border-t border-border/55",
-
-                "bg-surface-3/30",
-
-                "sm:grid-cols-3",
-
-                "lg:border-l lg:border-t-0",
-
-                "dark:border-border",
-                "dark:bg-surface-2",
-              ].join(" ")}
-            >
-              <ProjectSummaryItem
-                label="Status"
-                value={project.status || "Pending"}
-                tone="status"
+            {canManageTasks && (
+              <CreateTaskDialog
+                projectId={project.id}
+                onCreated={refreshWorkspace}
+                trigger={
+                  <button type="button" className={primaryAction}>
+                    <PlusIcon
+                      size={14}
+                      aria-hidden="true"
+                      className="text-inherit"
+                    />
+                    Create task
+                  </button>
+                }
               />
-
-              <ProjectSummaryItem
-                label="Priority"
-                value={project.priority || "Standard"}
-              />
-
-              <ProjectSummaryItem
-                label="Due"
-                value={formatDate(project.dueDate)}
-                icon={CalendarDaysIcon}
-                preserveValue
-              />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ===================================================
-          TASK BOARD HEADER
-      =================================================== */}
-
-      <section className="flex flex-col gap-4 pb-4 pt-6 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <div className="flex items-center gap-2.5">
-            <p className="text-[0.56rem] font-semibold uppercase tracking-[0.17em] text-brand-secondary-highlight dark:text-secondary/90">
-              Task board
-            </p>
-
-            {!canManageTasks && (
-              <span className="flex items-center gap-1 text-[0.6rem] font-medium text-muted-foreground">
-                <EyeIcon size={10} />
-                Client view
-              </span>
             )}
           </div>
-
-          <h2 className="mt-1.5 text-xl font-semibold tracking-[-0.025em] text-foreground/90 dark:text-foreground">
-            Work in motion
-          </h2>
-
-          <p className="mt-1 text-[0.68rem] leading-5 text-muted-foreground">
-            {canManageTasks
-              ? "Move work from pending through completion."
-              : "Track progress and comment on tasks."}
-          </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 text-[0.65rem] text-muted-foreground">
-          <span>{tasks.length} tasks</span>
+        {/* PROJECT SUMMARY */}
 
-          <SummaryDivider />
-
-          <span>{activeTaskList.length} in progress</span>
-
-          {overdueTaskCount > 0 && (
-            <>
-              <SummaryDivider />
-
-              <span className="inline-flex items-center gap-1 font-semibold text-destructive dark:text-status-overdue-foreground">
-                <TriangleAlertIcon size={11} />
-                {overdueTaskCount} overdue
+        <div className="mt-5 grid gap-0 overflow-hidden rounded-xl border border-border/80 bg-card sm:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] xl:grid-cols-[minmax(0,1.5fr)_repeat(3,minmax(0,0.65fr))]">
+          <div className="min-w-0 px-4 py-4 sm:px-5">
+            <div className="flex items-center justify-between gap-4">
+              <span className="text-[11px] font-medium text-muted-foreground">
+                Project progress
               </span>
-            </>
-          )}
+
+              <span className="text-sm font-medium tabular-nums text-brand-secondary-highlight dark:text-secondary">
+                {progress}%
+              </span>
+            </div>
+
+            <div
+              role="progressbar"
+              aria-label="Project progress"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={progress}
+              className="mt-3 h-1.5 overflow-hidden rounded-full bg-surface-3"
+            >
+              <div
+                className="h-full rounded-full bg-brand-secondary-highlight transition-[width] duration-300 dark:bg-secondary motion-reduce:transition-none"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+
+            <p className="mt-2.5 text-[11px] text-muted-foreground">
+              {groups.complete.length} of {tasks.length} tasks complete
+            </p>
+          </div>
+
+          <SummaryItem
+            label="Priority"
+            value={formatStatus(project.priority || "Standard")}
+          />
+
+          <SummaryItem
+            label="Due date"
+            value={formatDate(project.dueDate)}
+            icon
+          />
+
+          <SummaryItem
+            label="Needs attention"
+            value={
+              overdueCount
+                ? `${overdueCount} overdue ${
+                    overdueCount === 1 ? "task" : "tasks"
+                  }`
+                : "No overdue tasks"
+            }
+            attention={overdueCount > 0}
+          />
         </div>
       </section>
 
-      {/* ===================================================
-          TASK BOARD
-      =================================================== */}
+      {/* TASK BOARD */}
 
-      <DndContext
-        sensors={canManageTasks ? sensors : []}
-        onDragStart={canManageTasks ? handleDragStart : undefined}
-        onDragEnd={canManageTasks ? handleDragEnd : undefined}
-        onDragCancel={handleDragCancel}
-      >
-        <section
-          className={[
-            "grid min-h-0 grid-flow-col items-start gap-4 overflow-x-auto pb-4",
-            "auto-cols-[minmax(280px,1fr)]",
-            "lg:grid-flow-row lg:auto-cols-auto lg:grid-cols-3 lg:overflow-visible",
-          ].join(" ")}
-        >
-          <TaskStatusBoard
-            status="pending"
-            title="Pending"
-            description="No pending tasks"
-            tasks={pendingTaskList}
-            project={project}
-            onTaskCreated={handleTaskCreated}
-            canManageTasks={canManageTasks}
-            onTaskMove={moveTask}
-            onTaskDelete={deleteTask}
-            className={getTaskBoardClassName(pendingTaskList.length)}
-          />
+      <div ref={boardRef} className="min-w-0 pt-6">
+        <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <div className="flex items-center gap-2.5">
+              <h2 className="text-base font-medium tracking-[-0.02em]">
+                Task board
+              </h2>
 
-          <TaskStatusBoard
-            status="active"
-            title="In progress"
-            description="No active tasks"
-            tasks={activeTaskList}
-            project={project}
-            onTaskCreated={handleTaskCreated}
-            canManageTasks={canManageTasks}
-            onTaskMove={moveTask}
-            onTaskDelete={deleteTask}
-            className={getTaskBoardClassName(activeTaskList.length)}
-          />
+              {!canManageTasks && (
+                <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground">
+                  <EyeIcon size={11} aria-hidden="true" />
+                  View &amp; comment
+                </span>
+              )}
+            </div>
 
-          <TaskStatusBoard
-            status="complete"
-            title="Complete"
-            description="No completed tasks"
-            tasks={completedTaskList}
-            project={project}
-            onTaskCreated={handleTaskCreated}
-            canManageTasks={canManageTasks}
-            onTaskMove={moveTask}
-            onTaskDelete={deleteTask}
-            className={getTaskBoardClassName(completedTaskList.length)}
-          />
-        </section>
+            <p className="mt-1.5 text-xs text-muted-foreground">
+              {filtering
+                ? `${filteredTasks.length} of ${tasks.length} tasks shown`
+                : `${tasks.length} ${
+                    tasks.length === 1 ? "task" : "tasks"
+                  } across the workflow`}
+            </p>
+          </div>
 
-        {canManageTasks && (
-          <DragOverlay>
-            {activeTask ? (
-              <div className="w-[280px] rotate-[1deg] opacity-95">
-                <TaskCard task={activeTask} isOverlay />
-              </div>
-            ) : null}
-          </DragOverlay>
+          {/* BOARD CONTROLS */}
+
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
+            <div className="relative min-w-0 flex-1 sm:w-48 sm:flex-none">
+              <SearchIcon
+                size={14}
+                aria-hidden="true"
+                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+              />
+
+              <input
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                aria-label="Search tasks"
+                placeholder="Search tasks"
+                className="h-10 w-full rounded-lg border border-input bg-card pl-9 pr-8 text-base outline-none focus-visible:border-ring/50 sm:text-xs"
+              />
+
+              {search && (
+                <button
+                  type="button"
+                  aria-label="Clear task search"
+                  onClick={() => setSearch("")}
+                  className="absolute inset-y-0 right-1 flex w-7 items-center justify-center text-muted-foreground"
+                >
+                  <XIcon size={12} aria-hidden="true" />
+                </button>
+              )}
+            </div>
+
+            <button
+              type="button"
+              aria-pressed={overdueOnly}
+              onClick={() => setOverdueOnly((value) => !value)}
+              className={[
+                secondaryAction,
+                overdueOnly
+                  ? "border-ring/45 text-brand-secondary-highlight dark:text-secondary"
+                  : "",
+              ].join(" ")}
+            >
+              <SlidersHorizontalIcon size={13} aria-hidden="true" />
+              Overdue
+            </button>
+
+            <button
+              type="button"
+              aria-label="Refresh workspace"
+              title="Refresh workspace"
+              disabled={refreshing || busyTaskIds.size > 0}
+              onClick={() => void refreshWorkspace()}
+              className={`${secondaryAction} w-10 px-0`}
+            >
+              {refreshing ? (
+                <BusyIcon />
+              ) : (
+                <RefreshCwIcon size={14} aria-hidden="true" />
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* FILTER SUMMARY */}
+
+        {filtering && (
+          <div className="mb-4 flex items-center justify-between gap-3 text-[11px] text-muted-foreground">
+            <span>
+              {overdueOnly ? "Showing overdue work" : "Search applied"}
+            </span>
+
+            <button
+              type="button"
+              onClick={() => {
+                setSearch("");
+                setOverdueOnly(false);
+              }}
+              className="rounded text-brand-secondary-highlight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35 dark:text-secondary"
+            >
+              Clear filters
+            </button>
+          </div>
         )}
-      </DndContext>
+
+        {/* COMPACT STAGE TABS */}
+
+        {!wideBoard && (
+          <div className="mb-4">
+            <div
+              role="tablist"
+              aria-label="Task stages"
+              className="grid grid-cols-3 gap-1 rounded-lg border border-border/70 bg-surface-2 p-1"
+            >
+              {WORKFLOW_STATUSES.map((status) => (
+                <button
+                  key={status}
+                  type="button"
+                  role="tab"
+                  aria-selected={selectedLane === status}
+                  aria-controls={`lane-${status}`}
+                  id={`tab-${status}`}
+                  onClick={() => setSelectedLane(status)}
+                  onKeyDown={(event) => {
+                    const index = WORKFLOW_STATUSES.indexOf(status);
+
+                    const next =
+                      event.key === "ArrowRight"
+                        ? (index + 1) % 3
+                        : event.key === "ArrowLeft"
+                          ? (index + 2) % 3
+                          : event.key === "Home"
+                            ? 0
+                            : event.key === "End"
+                              ? 2
+                              : -1;
+
+                    if (next < 0) return;
+
+                    event.preventDefault();
+
+                    const nextStatus = WORKFLOW_STATUSES[next];
+
+                    setSelectedLane(nextStatus);
+
+                    document.getElementById(`tab-${nextStatus}`)?.focus();
+                  }}
+                  tabIndex={selectedLane === status ? 0 : -1}
+                  className={[
+                    "flex min-h-10 items-center justify-center",
+                    "gap-1.5 rounded-md px-1.5",
+                    "text-[11px] font-medium",
+                    "focus-visible:outline-none",
+                    "focus-visible:ring-2",
+                    "focus-visible:ring-ring/35",
+                    selectedLane === status
+                      ? "bg-card text-foreground"
+                      : "text-muted-foreground",
+                  ].join(" ")}
+                >
+                  {laneAppearance[status].label}
+
+                  <span className="text-[10px] tabular-nums text-muted-foreground">
+                    {groups[status].length}
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            {canManageTasks && (
+              <p className="mt-2 text-[10px] leading-5 text-muted-foreground">
+                Use a task’s menu to move it between stages.
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* DRAG CONTEXT */}
+
+        <DndContext
+          sensors={canManageTasks ? sensors : []}
+          onDragStart={canManageTasks ? handleDragStart : undefined}
+          onDragEnd={canManageTasks ? handleDragEnd : undefined}
+          onDragCancel={handleDragCancel}
+        >
+          <div
+            className={
+              wideBoard
+                ? "grid min-w-0 grid-cols-3 items-start gap-4"
+                : "grid min-w-0 grid-cols-1"
+            }
+          >
+            {WORKFLOW_STATUSES.filter(
+              (status) => wideBoard || selectedLane === status,
+            ).map((status) => (
+              <div
+                key={status}
+                id={`lane-${status}`}
+                role={wideBoard ? undefined : "tabpanel"}
+                aria-labelledby={wideBoard ? undefined : `tab-${status}`}
+                className="min-w-0"
+              >
+                <TaskStatusBoard
+                  status={status}
+                  title={laneAppearance[status].label}
+                  description={
+                    filtering
+                      ? "No matching tasks"
+                      : `No ${
+                          status === "active"
+                            ? "active"
+                            : status === "complete"
+                              ? "completed"
+                              : "pending"
+                        } tasks`
+                  }
+                  tasks={filteredTasks.filter(
+                    (task) => getWorkflowStatus(task) === status,
+                  )}
+                  project={project}
+                  onTaskCreated={refreshWorkspace}
+                  canManageTasks={canManageTasks}
+                  onTaskMove={moveTask}
+                  onTaskDelete={deleteTask}
+                  busyTaskIds={busyTaskIds}
+                  filtering={filtering}
+                  className={wideBoard ? "max-h-[680px]" : ""}
+                />
+              </div>
+            ))}
+          </div>
+
+          {/* DRAG PREVIEW */}
+
+          {canManageTasks &&
+            typeof document !== "undefined" &&
+            createPortal(
+              <DragOverlay
+                adjustScale={false}
+                dropAnimation={null}
+                zIndex={100}
+                style={{ pointerEvents: "none" }}
+              >
+                {activeTask ? (
+                  <div
+                    className="h-full w-full"
+                    style={{
+                      width: dragSize?.width,
+                      height: dragSize?.height,
+                    }}
+                  >
+                    <TaskCard
+                      task={activeTask}
+                      isOverlay
+                      dragHandle={
+                        <span aria-hidden="true" className="block h-8 w-6" />
+                      }
+                    />
+                  </div>
+                ) : null}
+              </DragOverlay>,
+              document.body,
+            )}
+        </DndContext>
+      </div>
+
+      {/* PROJECT DETAILS */}
+
+      <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
+        <DialogContent className="max-h-[85dvh] overflow-y-auto border-border bg-card text-card-foreground shadow-none sm:max-w-lg">
+          <DialogHeader className="text-left">
+            <DialogTitle className="break-words text-xl font-medium">
+              {project.title}
+            </DialogTitle>
+
+            <DialogDescription>
+              Project details and current delivery status.
+            </DialogDescription>
+          </DialogHeader>
+
+          <dl className="mt-2 divide-y divide-border/70">
+            {[
+              ["Project code", project.projectCode || "Not set"],
+              ["Status", formatStatus(project.status)],
+              ["Priority", formatStatus(project.priority || "Standard")],
+              ["Due date", formatDate(project.dueDate)],
+              ["Progress", `${progress}%`],
+            ].map(([label, value]) => (
+              <div
+                key={label}
+                className="grid grid-cols-[100px_minmax(0,1fr)] gap-4 py-3 text-xs"
+              >
+                <dt className="text-muted-foreground">{label}</dt>
+
+                <dd className="break-words font-medium">{value}</dd>
+              </div>
+            ))}
+          </dl>
+
+          <Link
+            to="/projects/new"
+            className={`${quietAction} mt-2 justify-start px-0`}
+          >
+            <PlusIcon size={13} aria-hidden="true" />
+            Create another project
+          </Link>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
 
 /* =========================================================
-   PROJECT SUMMARY ITEM
+   SUMMARY ITEM
 ========================================================= */
 
-function ProjectSummaryItem({
+function SummaryItem({
   label,
   value,
-  icon: Icon,
-  tone,
-  preserveValue = false,
+  icon = false,
+  attention = false,
 }: {
   label: string;
   value: string;
-  icon?: ComponentType<{
-    size?: number;
-    className?: string;
-  }>;
-  tone?: "status";
-  preserveValue?: boolean;
+  icon?: boolean;
+  attention?: boolean;
 }) {
-  const statusAppearance =
-    tone === "status" ? getProjectStatusAppearance(value) : null;
-
   return (
-    <div
-      className={[
-        "min-w-0 px-4 py-4 sm:px-4 sm:py-5",
+    <div className="min-w-0 border-t border-border/70 px-4 py-4 sm:border-l sm:px-5 xl:border-t-0">
+      <p className="text-[11px] text-muted-foreground">{label}</p>
 
-        "border-t border-border/50 first:border-t-0",
-
-        "sm:border-l sm:border-t-0 sm:first:border-l-0",
-
-        "dark:border-border",
-      ].join(" ")}
-    >
-      <p className="text-[0.53rem] font-semibold uppercase tracking-[0.13em] text-muted-foreground">
-        {label}
-      </p>
-
-      {statusAppearance ? (
-        <div
-          className={[
-            "mt-1.5 inline-flex max-w-full items-center gap-1.5 rounded-md",
-            "px-2 py-1",
-
-            statusAppearance.surface,
-          ].join(" ")}
-        >
-          <span
-            className={[
-              "h-1.5 w-1.5 shrink-0 rounded-full",
-              statusAppearance.dot,
-            ].join(" ")}
+      <p
+        className={[
+          "mt-2 flex items-center gap-1.5",
+          "text-xs font-medium",
+          attention ? "text-status-overdue-foreground" : "text-foreground",
+        ].join(" ")}
+      >
+        {attention ? (
+          <TriangleAlertIcon size={13} aria-hidden="true" />
+        ) : icon ? (
+          <CalendarDaysIcon
+            size={13}
+            aria-hidden="true"
+            className="shrink-0 text-muted-foreground"
           />
+        ) : null}
 
-          <span
-            className={[
-              "min-w-0 text-[0.68rem] font-semibold leading-4",
-              statusAppearance.text,
-            ].join(" ")}
-          >
-            {statusAppearance.label}
-          </span>
-        </div>
-      ) : (
-        <div className="mt-1.5 flex min-w-0 items-start gap-1.5">
-          {Icon && (
-            <Icon size={11} className="mt-0.5 shrink-0 text-muted-foreground" />
-          )}
-
-          <p
-            className={[
-              "min-w-0 text-xs font-semibold capitalize leading-5",
-              "text-foreground/75 dark:text-foreground/90",
-
-              preserveValue ? "whitespace-nowrap" : "break-words",
-            ].join(" ")}
-          >
-            {value}
-          </p>
-        </div>
-      )}
+        <span className="break-words">{value}</span>
+      </p>
     </div>
   );
 }
-
-/* =========================================================
-   SUMMARY DIVIDER
-========================================================= */
-
-function SummaryDivider() {
-  return (
-    <span className="h-0.5 w-0.5 rounded-full bg-muted-foreground/40 dark:bg-muted-foreground/65" />
-  );
-}
-
-/* =========================================================
-   ERROR
-========================================================= */
-
-function ProjectManagerError() {
-  return (
-    <div className="flex min-h-[420px] items-center justify-center">
-      <div className="max-w-md text-center">
-        <span
-          className={[
-            "mx-auto flex h-11 w-11 items-center justify-center rounded-xl",
-
-            "bg-surface-3/80",
-            "text-muted-foreground",
-
-            "dark:bg-surface-2",
-            "dark:text-brand-secondary-highlight",
-
-            "dark:ring-1",
-            "dark:ring-inset",
-            "dark:ring-border",
-          ].join(" ")}
-        >
-          <FolderOpenIcon size={18} />
-        </span>
-
-        <h2 className="mt-5 text-lg font-semibold tracking-[-0.02em] text-foreground/90 dark:text-foreground">
-          Could not load project
-        </h2>
-
-        <p className="mt-2 text-sm leading-7 text-muted-foreground">
-          Something interrupted the project workspace while it was loading.
-        </p>
-
-        <Button
-          asChild
-          variant="outline"
-          className={[
-            "mt-6 h-10 rounded-lg px-5 text-xs font-semibold shadow-none",
-
-            "border-border/70",
-            "bg-surface-2/30",
-            "text-foreground/75",
-
-            "hover:bg-surface-3/60",
-            "hover:text-foreground",
-
-            "dark:border-border",
-            "dark:bg-surface-2",
-            "dark:text-foreground/85",
-
-            "dark:hover:bg-surface-3",
-            "dark:hover:text-foreground",
-          ].join(" ")}
-        >
-          <Link to="/projects">
-            <ArrowLeftIcon size={13} />
-            Back to projects
-          </Link>
-        </Button>
-      </div>
-    </div>
-  );
-}
-
-/* =========================================================
-   HELPERS
-========================================================= */
-
-function getProjectStatusAppearance(status?: string) {
-  const normalized = normalizeProjectStatus(status);
-
-  return (
-    projectStatusAppearance[normalized] ?? {
-      label: formatProjectStatus(status),
-      dot: "bg-muted-foreground/65",
-      text: "text-muted-foreground",
-      surface: "bg-muted/60 dark:bg-surface-3/55",
-    }
-  );
-}
-
-function normalizeProjectStatus(status?: string) {
-  return String(status ?? "")
-    .toLowerCase()
-    .replace(/[\s_-]/g, "");
-}
-
-function formatProjectStatus(status?: string) {
-  if (!status?.trim()) return "Unknown";
-
-  return status
-    .trim()
-    .replace(/[_-]+/g, " ")
-    .replace(/\b\w/g, (letter) => letter.toUpperCase());
-}
-
-function getTaskBoardClassName(taskCount: number) {
-  return ["min-w-0", taskCount === 0 ? "h-auto! min-h-0! self-start" : ""].join(
-    " ",
-  );
-}
-
-function getProjectDisplayCode(value: string) {
-  const code = value.trim();
-
-  if (!code) return "";
-
-  const cleanCode = code.startsWith("#") ? code.slice(1) : code;
-
-  if (cleanCode.length <= 10) {
-    return `#${cleanCode}`;
-  }
-
-  if (cleanCode.toUpperCase().startsWith("PRJ-")) {
-    return `#${cleanCode.slice(0, 9)}`;
-  }
-
-  return `#${cleanCode.slice(0, 8)}`;
-}
-
-function formatDate(value?: string | Date | null) {
-  if (!value) return "Not set";
-
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return "Not set";
-  }
-
-  return new Intl.DateTimeFormat("en", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  }).format(date);
-}
-
-export default ProjectManager;

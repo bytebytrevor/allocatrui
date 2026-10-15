@@ -67,17 +67,19 @@ type Props = {
 ========================================================= */
 
 const cardSurface = [
-  "border-border/50 bg-surface-2/50",
+  "bg-[color-mix(in_srgb,var(--background)_65%,white)]",
+  "border-border/55",
+  "text-foreground",
+  "shadow-none",
 
-  "transition-[background-color,border-color] duration-200",
+  "transition-[border-color] duration-200",
+  "hover:border-border/75",
 
-  "hover:border-border/70",
-  "hover:bg-surface-3/45",
+  "dark:bg-[color-mix(in_srgb,var(--background)_96%,white)]",
+  "dark:border-border/60",
+  "dark:hover:border-border/80",
 
-  "dark:border-border",
-  "dark:bg-surface-1/75",
-
-  "dark:hover:bg-surface-2/70",
+  "motion-reduce:transition-none",
 ].join(" ");
 
 const avatarSurface = [

@@ -28,6 +28,7 @@ import CreateAllocatProfile from "./pages/CreateAllocatProfile";
 import AboutPage from "./pages/AboutPage";
 import HowItWorksPage from "./pages/HowItWorksPage";
 import RequireAllocatSetup from "./auth/RequireAllocatSetup";
+import AllocatPublicProfilePage from "./pages/AllocatPublicProfile";
 
 function CreateAllocatProfileRoute() {
   return (
@@ -70,9 +71,13 @@ function App() {
       path: "/discover",
       Component: Discover,
     },
+    // {
+    //   path: "/allocats/:profileId",
+    //   Component: AllocatProfilePage,
+    // },
     {
       path: "/allocats/:profileId",
-      Component: AllocatProfilePage,
+      Component: AllocatPublicProfilePage,
     },
     {
       path: "/verify-email",
