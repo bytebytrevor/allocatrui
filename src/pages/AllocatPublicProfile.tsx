@@ -380,141 +380,141 @@ export function PublicProfileContent({
         aria-labelledby="profile-name"
         className={surface + " relative overflow-hidden"}
       >
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-x-0 top-0 h-44 overflow-hidden bg-gradient-to-br from-brand-secondary-highlight/[0.08] via-surface-2/60 to-card sm:h-52 dark:from-secondary/[0.08]"
-        >
-          <div className="absolute -right-12 -top-28 h-80 w-80 rounded-full border border-brand-secondary-highlight/10 dark:border-secondary/10" />
-          <div className="absolute -right-3 -top-20 h-64 w-64 rounded-full border border-brand-secondary-highlight/10 dark:border-secondary/10" />
-          <div className="absolute right-8 top-10 h-2 w-2 rounded-full bg-brand-secondary-highlight/35 dark:bg-secondary/35" />
-          <div className="absolute right-24 top-28 h-1 w-12 rounded-full bg-brand-secondary-highlight/15 dark:bg-secondary/15" />
-        </div>
-        <div className="relative px-5 pb-8 pt-5 sm:px-8 sm:pb-10 sm:pt-7 lg:px-10">
-          <div className="flex items-center justify-between gap-3">
-            <p className="inline-flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
-              <span
-                aria-hidden="true"
-                className="h-1 w-5 rounded-full bg-brand-secondary-highlight dark:bg-secondary"
-              />
-              The people behind the work
-            </p>
-            <button
-              type="button"
-              onClick={() => void copyProfileLink()}
-              aria-label="Copy public profile link"
-              className={quietAction + " shrink-0 bg-card/70"}
-            >
-              {copied ? (
-                <CheckIcon size={13} aria-hidden="true" />
-              ) : (
-                <CopyIcon size={13} aria-hidden="true" />
-              )}
-              <span className="hidden sm:inline">
-                {copied ? "Copied" : "Share profile"}
-              </span>
-            </button>
+        <div className="relative overflow-hidden bg-card text-foreground dark:bg-surface-2">
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 overflow-hidden"
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-brand-secondary-highlight/[0.12] via-brand-secondary-highlight/[0.035] to-brand-secondary-highlight/[0.08] dark:from-secondary/[0.025] dark:via-secondary/[0.01] dark:to-secondary/[0.035]" />
+            <div className="absolute -right-16 -top-52 h-[640px] w-64 rotate-[35deg] rounded-[80px] border border-brand-secondary-highlight/[0.06] bg-brand-secondary-highlight/[0.045] dark:border-secondary/[0.04] dark:bg-secondary/[0.02]" />
+            <div className="absolute right-32 -top-64 h-[640px] w-40 rotate-[35deg] rounded-[64px] border border-brand-secondary-highlight/[0.055] bg-brand-secondary-highlight/[0.025] dark:border-secondary/[0.03] dark:bg-secondary/[0.015]" />
+            <div className="absolute -bottom-36 -left-28 h-80 w-80 rounded-full border border-brand-secondary-highlight/[0.06] dark:border-secondary/[0.035]" />
           </div>
-
-          <div className="mt-10 flex flex-col items-start gap-6 sm:mt-12 sm:flex-row sm:items-end sm:gap-7">
-            <div className="relative shrink-0">
+          <div className="relative px-5 pb-8 pt-5 sm:px-8 sm:pb-10 sm:pt-7 lg:px-10">
+            <div className="flex items-center justify-between gap-3">
+              <p className="inline-flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
+                <span
+                  aria-hidden="true"
+                  className="h-1 w-5 rounded-full bg-brand-secondary-highlight/80 dark:bg-secondary"
+                />
+                The people behind the work
+              </p>
               <button
                 type="button"
-                disabled={!avatarUrl || photoFailed}
-                aria-label={"View " + name + "'s profile photo"}
-                aria-haspopup="dialog"
-                onClick={() => setPhotoOpen(true)}
+                onClick={() => void copyProfileLink()}
+                aria-label="Copy public profile link"
                 className={
-                  "group relative block rounded-3xl text-left disabled:cursor-default " +
+                  "inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-lg border border-brand-secondary-highlight/15 bg-card/70 px-3 text-xs font-medium text-brand-secondary-highlight transition-colors hover:bg-card dark:border-border dark:bg-surface-3/50 dark:text-foreground/85 dark:hover:bg-surface-3 motion-reduce:transition-none " +
                   focus
                 }
               >
-                <Avatar className="h-28 w-28 rounded-3xl border-4 border-card bg-surface-3 ring-1 ring-border/60 sm:h-36 sm:w-36">
-                  <AvatarImage
-                    src={avatarUrl}
-                    alt={name}
-                    onLoadingStatusChange={(status) =>
-                      setPhotoFailed(status === "error")
-                    }
-                    className="object-cover transition-transform duration-300 motion-reduce:transition-none group-enabled:group-hover:scale-105"
-                  />
-                  <AvatarFallback className="rounded-2xl bg-surface-3 text-3xl font-medium text-brand-secondary-highlight sm:text-4xl dark:text-secondary">
-                    {getProfileInitials(name)}
-                  </AvatarFallback>
-                </Avatar>
-                {avatarUrl && !photoFailed && (
-                  <span
-                    aria-hidden="true"
-                    className="absolute bottom-2 left-2 flex h-7 w-7 items-center justify-center rounded-lg border border-border/60 bg-card text-foreground transition-colors group-hover:bg-surface-2"
-                  >
-                    <ZoomInIcon size={13} />
-                  </span>
+                {copied ? (
+                  <CheckIcon size={13} aria-hidden="true" />
+                ) : (
+                  <CopyIcon size={13} aria-hidden="true" />
                 )}
-              </button>
-              {verified && (
-                <span
-                  title="Verified profile"
-                  className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-xl border-4 border-card bg-brand-secondary-highlight text-primary-foreground dark:bg-secondary dark:text-secondary-foreground"
-                >
-                  <BadgeCheckIcon size={16} aria-hidden="true" />
+                <span className="hidden sm:inline">
+                  {copied ? "Copied" : "Share profile"}
                 </span>
-              )}
+              </button>
             </div>
-            <div className="min-w-0 flex-1 pb-1">
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-                <h1
-                  id="profile-name"
-                  className="break-words text-3xl font-semibold leading-tight tracking-[-0.045em] sm:text-4xl lg:text-5xl"
-                >
-                  {name}
-                </h1>
-                {verified && (
-                  <span
-                    className={
-                      accent +
-                      " inline-flex items-center gap-1 text-[11px] font-medium"
-                    }
-                  >
-                    <BadgeCheckIcon size={13} aria-hidden="true" />
-                    Verified
-                  </span>
-                )}
-              </div>
-              <p className="mt-2 break-words text-base font-medium text-foreground/80 sm:text-lg">
-                {title}
-              </p>
-              <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
-                {profile.location?.trim() && (
-                  <span className="inline-flex items-center gap-1.5">
-                    <MapPinIcon size={13} aria-hidden="true" />
-                    {profile.location}
-                  </span>
-                )}
-                <span
+
+            <div className="mt-10 flex flex-col items-start gap-6 sm:mt-12 sm:flex-row sm:items-end sm:gap-7">
+              <div className="relative shrink-0">
+                <button
+                  type="button"
+                  disabled={!avatarUrl || photoFailed}
+                  aria-label={"View " + name + "'s profile photo"}
+                  aria-haspopup="dialog"
+                  onClick={() => setPhotoOpen(true)}
                   className={
-                    "inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-card/80 px-2.5 py-1 " +
-                    availability.text
+                    "group relative block rounded-3xl text-left disabled:cursor-default " +
+                    focus
                   }
                 >
+                  <Avatar className="h-28 w-28 rounded-3xl border-4 border-card bg-surface-3 ring-1 ring-border/60 sm:h-36 sm:w-36">
+                    <AvatarImage
+                      src={avatarUrl}
+                      alt={name}
+                      onLoadingStatusChange={(status) =>
+                        setPhotoFailed(status === "error")
+                      }
+                      className="object-cover transition-transform duration-300 motion-reduce:transition-none group-enabled:group-hover:scale-105"
+                    />
+                    <AvatarFallback className="rounded-2xl bg-surface-3 text-3xl font-medium text-brand-secondary-highlight sm:text-4xl dark:text-secondary">
+                      {getProfileInitials(name)}
+                    </AvatarFallback>
+                  </Avatar>
+                  {avatarUrl && !photoFailed && (
+                    <span
+                      aria-hidden="true"
+                      className="absolute bottom-2 left-2 flex h-7 w-7 items-center justify-center rounded-lg border border-border/60 bg-card text-foreground transition-colors group-hover:bg-surface-2"
+                    >
+                      <ZoomInIcon size={13} />
+                    </span>
+                  )}
+                </button>
+                {verified && (
                   <span
-                    aria-hidden="true"
-                    className={"h-1.5 w-1.5 rounded-full " + availability.dot}
-                  />
-                  {availability.label}
-                </span>
-                {memberSince && (
-                  <span className="inline-flex items-center gap-1.5">
-                    <CalendarDaysIcon size={13} aria-hidden="true" />
-                    Member since {memberSince}
+                    title="Verified profile"
+                    className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-xl border-4 border-card bg-brand-secondary-highlight text-primary-foreground dark:bg-secondary dark:text-secondary-foreground"
+                  >
+                    <BadgeCheckIcon size={16} aria-hidden="true" />
                   </span>
                 )}
               </div>
+              <div className="min-w-0 flex-1 pb-1">
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+                  <h1
+                    id="profile-name"
+                    className="break-words text-3xl font-semibold leading-tight tracking-[-0.045em] sm:text-4xl lg:text-5xl"
+                  >
+                    {name}
+                  </h1>
+                  {verified && (
+                    <span className="inline-flex items-center gap-1 text-[11px] font-medium text-brand-secondary-highlight dark:text-secondary">
+                      <BadgeCheckIcon size={13} aria-hidden="true" />
+                      Verified
+                    </span>
+                  )}
+                </div>
+                <p className="mt-2 break-words text-base font-medium text-foreground/80 sm:text-lg">
+                  {title}
+                </p>
+                <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
+                  {profile.location?.trim() && (
+                    <span className="inline-flex items-center gap-1.5">
+                      <MapPinIcon size={13} aria-hidden="true" />
+                      {profile.location}
+                    </span>
+                  )}
+                  <span
+                    className={
+                      "inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-card px-2.5 py-1 dark:bg-surface-3 " +
+                      availability.text
+                    }
+                  >
+                    <span
+                      aria-hidden="true"
+                      className={"h-1.5 w-1.5 rounded-full " + availability.dot}
+                    />
+                    {availability.label}
+                  </span>
+                  {memberSince && (
+                    <span className="inline-flex items-center gap-1.5">
+                      <CalendarDaysIcon size={13} aria-hidden="true" />
+                      Member since {memberSince}
+                    </span>
+                  )}
+                </div>
+              </div>
             </div>
+            {headline && headline !== title && (
+              <p className="mt-5 max-w-3xl break-words text-sm leading-7 text-muted-foreground">
+                {headline}
+              </p>
+            )}
           </div>
-          {headline && headline !== title && (
-            <p className="mt-5 max-w-3xl break-words text-sm leading-7 text-muted-foreground">
-              {headline}
-            </p>
-          )}
         </div>
 
         <dl className="grid grid-cols-2 border-t border-border/65 bg-surface-2/25 sm:grid-cols-4">
