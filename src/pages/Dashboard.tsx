@@ -1,3 +1,5 @@
+import { projectFileListCache } from "@/api/projectFileListCache";
+import { thumbnailCache } from "@/api/thumbnailCache";
 import {
   useCallback,
   useEffect,
@@ -6,7 +8,6 @@ import {
   useState,
   type CSSProperties,
 } from "react";
-
 import {
   Link,
   NavLink,
@@ -14,7 +15,6 @@ import {
   useLocation,
   useParams,
 } from "react-router-dom";
-
 import {
   ArrowLeftIcon,
   ArrowRightLeftIcon,
@@ -24,20 +24,17 @@ import {
   ChartNoAxesColumnIcon,
   CheckIcon,
   ChevronDownIcon,
-  HeartIcon,
+  FolderOpenIcon,
   MailIcon,
   MenuIcon,
   PlusIcon,
   RefreshCwIcon,
   SearchIcon,
 } from "lucide-react";
-
 import api from "@/api/axios";
 import { useAuth } from "@/auth/useAuth";
-
 import DashboardMainNav from "@/components/DashboardMainNav";
 import LoadingState from "@/components/LoadingState";
-
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -46,7 +43,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
 import {
   menuItem,
   menuSurface,
@@ -55,123 +51,82 @@ import {
   quietAction,
   secondaryAction,
 } from "@/components/workspace-ui";
-
 import {
   CLOSED_PROJECT_STATUSES,
   normalizeStatus,
   projectCode,
 } from "@/components/workspace-utils";
-
 import type { Project } from "@/Types/project";
 import type { ProjectWorkspaceContext } from "@/Types/projectWorkspaceContext";
-
-/* =========================================================
-   NAVIGATION
-========================================================= */
-
 const managerLinks = [
   { label: "Manager", path: "", icon: BlocksIcon },
+  { label: "Files", path: "files", icon: FolderOpenIcon },
   { label: "Calendar", path: "calendar", icon: CalendarDaysIcon },
   { label: "Messaging", path: "messaging", icon: MailIcon },
   { label: "Analytics", path: "analytics", icon: ChartNoAxesColumnIcon },
-  { label: "Favorites", path: "favorites", icon: HeartIcon },
   { label: "Transactions", path: "transactions", icon: BanknoteIcon },
 ];
-
-/* =========================================================
-   DASHBOARD
-========================================================= */
-
 export default function Dashboard() {
   const { projectId } = useParams();
   const { pathname } = useLocation();
   const { user } = useAuth();
-
+  useEffect(() => {
+    thumbnailCache.setUser(user?.userId || null);
+    projectFileListCache.setUser(user?.userId || null);
+    return () => {
+      thumbnailCache.clear();
+      projectFileListCache.clear();
+    };
+  }, [user?.userId]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [headerHeight, setHeaderHeight] = useState(64);
-
   const headerRef = useRef<HTMLElement>(null);
   const requestRef = useRef(0);
-
-  /* =======================================================
-     LOAD PROJECTS
-  ======================================================= */
-
   const fetchProjects = useCallback(async () => {
     const request = ++requestRef.current;
-
     setLoading(true);
     setError(null);
-
     try {
       const response = await api.get<Project[]>("/projects", {
         withCredentials: true,
       });
-
-      if (request === requestRef.current) {
+      if (request === requestRef.current)
         setProjects(Array.isArray(response.data) ? response.data : []);
-      }
     } catch {
       if (request === requestRef.current) {
         setProjects([]);
         setError("Your projects could not be loaded. Please try again.");
       }
     } finally {
-      if (request === requestRef.current) {
-        setLoading(false);
-      }
+      if (request === requestRef.current) setLoading(false);
     }
   }, []);
-
   useEffect(() => {
     void fetchProjects();
-
     return () => {
       requestRef.current += 1;
     };
   }, [fetchProjects]);
-
-  /* =======================================================
-     ROUTE CHANGES
-  ======================================================= */
-
   useEffect(() => {
     setMobileOpen(false);
   }, [pathname]);
-
-  /* =======================================================
-     HEADER HEIGHT
-  ======================================================= */
-
   useEffect(() => {
     const header = headerRef.current;
-
     if (!header) return;
-
-    const measure = () => {
+    const measure = () =>
       setHeaderHeight(Math.ceil(header.getBoundingClientRect().height));
-    };
-
     const observer = new ResizeObserver(measure);
-
     observer.observe(header);
     measure();
-
     return () => observer.disconnect();
   }, []);
-
-  /* =======================================================
-     PROJECT CONTEXT
-  ======================================================= */
-
   const currentProject = useMemo(
     () => projects.find((item) => String(item.id) === String(projectId)),
     [projects, projectId],
   );
-
   const openProjects = useMemo(
     () =>
       projects.filter(
@@ -179,10 +134,8 @@ export default function Dashboard() {
       ),
     [projects],
   );
-
   const basePath = projectId ? `/projects/${projectId}` : "/projects";
   const canAccess = Boolean(currentProject && projectId);
-
   const switcher = (
     <ProjectSwitcher
       projects={openProjects}
@@ -194,22 +147,13 @@ export default function Dashboard() {
       onRetry={fetchProjects}
     />
   );
-
-  /* =======================================================
-     RENDER
-  ======================================================= */
-
   return (
     <div
       className="min-h-screen bg-background text-foreground"
       style={
-        {
-          "--workspace-header-height": `${headerHeight}px`,
-        } as CSSProperties
+        { "--workspace-header-height": `${headerHeight}px` } as CSSProperties
       }
     >
-      {/* MAIN NAVIGATION */}
-
       <header
         ref={headerRef}
         className="sticky top-0 z-50 border-b border-border/70 bg-background"
@@ -218,10 +162,7 @@ export default function Dashboard() {
           <DashboardMainNav />
         </div>
       </header>
-
-      {/* MOBILE WORKSPACE NAVIGATION */}
-
-      <div className="sticky top-[var(--workspace-header-height)] z-40 border-b border-border/70 lg:hidden">
+      <div className="sticky top-[var(--workspace-header-height)] z-40 border-b border-border/70 bg-background text-foreground lg:hidden">
         <div className="flex min-h-14 items-center gap-3 px-4 sm:px-6">
           <div className="min-w-0 flex-1">
             {loading ? (
@@ -232,7 +173,6 @@ export default function Dashboard() {
               switcher
             )}
           </div>
-
           {canAccess && (
             <DropdownMenu
               modal={false}
@@ -248,7 +188,6 @@ export default function Dashboard() {
                   <MenuIcon size={18} aria-hidden="true" />
                 </button>
               </DropdownMenuTrigger>
-
               <DropdownMenuContent
                 align="end"
                 sideOffset={8}
@@ -258,7 +197,6 @@ export default function Dashboard() {
                 <DropdownMenuLabel className="px-3 py-2 text-[10px] font-medium uppercase tracking-[0.1em] text-muted-foreground">
                   Workspace
                 </DropdownMenuLabel>
-
                 <ProjectNavigation
                   basePath={basePath}
                   menu
@@ -269,12 +207,7 @@ export default function Dashboard() {
           )}
         </div>
       </div>
-
-      {/* WORKSPACE */}
-
       <div className="mx-auto grid w-full max-w-[1800px] lg:grid-cols-[236px_minmax(0,1fr)] xl:grid-cols-[248px_minmax(0,1fr)]">
-        {/* DESKTOP SIDEBAR */}
-
         <aside
           aria-label="Project navigation"
           className="hidden border-r border-border/70 lg:block"
@@ -287,7 +220,6 @@ export default function Dashboard() {
               <ArrowLeftIcon size={13} aria-hidden="true" />
               All projects
             </Link>
-
             <div className="mb-5 mt-4 rounded-xl border border-border/70 p-1">
               {loading ? (
                 <p className="px-3 py-4 text-xs text-muted-foreground">
@@ -297,12 +229,10 @@ export default function Dashboard() {
                 switcher
               )}
             </div>
-
             <div className="min-h-0 flex-1 overflow-y-auto">
               <p className="mb-3 px-3 text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
                 Workspace
               </p>
-
               {!loading && canAccess ? (
                 <ProjectNavigation basePath={basePath} />
               ) : (
@@ -313,25 +243,19 @@ export default function Dashboard() {
                 )
               )}
             </div>
-
             <div className="mt-5 border-t border-border/70 px-3 pt-4">
               <p className="text-[10px] font-medium uppercase tracking-[0.1em] text-muted-foreground">
                 Your access
               </p>
-
               <p className="mt-1.5 text-xs text-foreground">
                 {user?.isAllocat ? "Allocat workspace" : "Project workspace"}
               </p>
-
               <p className="mt-1 text-[11px] leading-5 text-muted-foreground">
                 Tools and actions follow your project permissions.
               </p>
             </div>
           </div>
         </aside>
-
-        {/* PAGE CONTENT */}
-
         <main className="min-w-0 px-4 py-5 sm:px-6 sm:py-6 lg:px-8 lg:py-7">
           {loading ? (
             <LoadingState
@@ -359,11 +283,6 @@ export default function Dashboard() {
     </div>
   );
 }
-
-/* =========================================================
-   PROJECT NAVIGATION
-========================================================= */
-
 function ProjectNavigation({
   basePath,
   menu = false,
@@ -381,26 +300,8 @@ function ProjectNavigation({
         onClick={onNavigate}
         className={({ isActive }) =>
           menu
-            ? [
-                "flex min-h-10 items-center gap-3",
-                "px-3 py-2.5 text-xs",
-                isActive
-                  ? "text-brand-secondary-highlight dark:text-secondary"
-                  : "text-foreground",
-              ].join(" ")
-            : [
-                "relative flex min-h-11 items-center gap-3",
-                "rounded-lg px-3 py-2.5",
-                "text-xs font-medium",
-                "transition-colors",
-                "focus-visible:outline-none",
-                "focus-visible:ring-2",
-                "focus-visible:ring-ring/35",
-                "motion-reduce:transition-none",
-                isActive
-                  ? "bg-card text-brand-secondary-highlight dark:text-secondary"
-                  : "text-muted-foreground hover:bg-card/70 hover:text-foreground",
-              ].join(" ")
+            ? `flex min-h-10 items-center gap-3 px-3 py-2.5 text-xs ${isActive ? "text-brand-secondary-highlight dark:text-secondary" : "text-foreground"}`
+            : `relative flex min-h-11 items-center gap-3 rounded-lg px-3 py-2.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35 motion-reduce:transition-none ${isActive ? "bg-card text-brand-secondary-highlight dark:text-secondary" : "text-muted-foreground hover:bg-card/70 hover:text-foreground"}`
         }
       >
         {({ isActive }) => (
@@ -411,19 +312,16 @@ function ProjectNavigation({
                 className="absolute bottom-3 left-0 top-3 w-0.5 rounded-full bg-brand-secondary-highlight dark:bg-secondary"
               />
             )}
-
             <Icon
               size={16}
               aria-hidden="true"
               className="shrink-0 text-inherit"
             />
-
             <span>{label}</span>
           </>
         )}
       </NavLink>
     );
-
     return menu ? (
       <DropdownMenuItem asChild key={label} className={`${menuItem} p-0`}>
         {link}
@@ -432,7 +330,6 @@ function ProjectNavigation({
       <div key={label}>{link}</div>
     );
   });
-
   return menu ? (
     <>{links}</>
   ) : (
@@ -441,11 +338,6 @@ function ProjectNavigation({
     </nav>
   );
 }
-
-/* =========================================================
-   PROJECT SWITCHER
-========================================================= */
-
 function ProjectSwitcher({
   projects,
   currentProject,
@@ -463,29 +355,25 @@ function ProjectSwitcher({
   error: string | null;
   onRetry: () => void;
 }) {
+  const { pathname } = useLocation();
+  const projectSection = pathname.endsWith("/files") ? "/files" : "";
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
-
   const inputRef = useRef<HTMLInputElement>(null);
-
   const matches = projects.filter((item) =>
     `${item.title} ${item.projectCode ?? ""}`
       .toLowerCase()
       .includes(query.trim().toLowerCase()),
   );
-
   useEffect(() => {
     if (!open) {
       setQuery("");
       return;
     }
-
     const frame = requestAnimationFrame(() => inputRef.current?.focus());
-
     return () => cancelAnimationFrame(frame);
   }, [open]);
-
-  if (error) {
+  if (error)
     return (
       <button
         type="button"
@@ -496,34 +384,23 @@ function ProjectSwitcher({
         Reload projects
       </button>
     );
-  }
-
   return (
     <DropdownMenu modal={false} open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
         <button
           type="button"
           aria-label="Switch project"
-          className={[
-            "flex min-h-12 w-full min-w-0 items-center gap-3",
-            "rounded-lg px-3 py-3 text-left",
-            "transition-opacity hover:opacity-80",
-            "focus-visible:outline-none",
-            "focus-visible:ring-2",
-            "focus-visible:ring-ring/35",
-          ].join(" ")}
+          className="flex min-h-12 w-full min-w-0 items-center gap-3 rounded-lg px-3 py-3 text-left transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35"
         >
           <ArrowRightLeftIcon
             size={16}
             aria-hidden="true"
             className="shrink-0 text-brand-secondary-highlight dark:text-secondary"
           />
-
           <span className="min-w-0 flex-1">
             <span className="block truncate text-xs font-medium text-foreground">
               {currentProject?.title || "Choose a project"}
             </span>
-
             {currentProject ? (
               <span className="mt-1 block">
                 <ProjectStatus status={currentProject.status} />
@@ -534,7 +411,6 @@ function ProjectSwitcher({
               </span>
             )}
           </span>
-
           <ChevronDownIcon
             size={13}
             aria-hidden="true"
@@ -542,7 +418,6 @@ function ProjectSwitcher({
           />
         </button>
       </DropdownMenuTrigger>
-
       <DropdownMenuContent
         align="start"
         sideOffset={8}
@@ -552,14 +427,12 @@ function ProjectSwitcher({
         <DropdownMenuLabel className="px-3 py-2 text-[10px] font-medium uppercase tracking-[0.1em] text-muted-foreground">
           Open projects
         </DropdownMenuLabel>
-
         <div className="relative mx-1 mb-2">
           <SearchIcon
             size={13}
             aria-hidden="true"
             className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
           />
-
           <input
             ref={inputRef}
             value={query}
@@ -569,21 +442,17 @@ function ProjectSwitcher({
             className="h-10 w-full rounded-lg border border-input bg-surface-2 pl-9 pr-3 text-base outline-none focus-visible:border-ring/50 sm:text-xs"
             onKeyDown={(event) => {
               if (event.key === "Escape") return;
-
               if (event.key === "ArrowDown") {
                 event.preventDefault();
-
                 event.currentTarget
                   .closest('[role="menu"]')
                   ?.querySelector<HTMLElement>('[role="menuitem"]')
                   ?.focus();
               }
-
               event.stopPropagation();
             }}
           />
         </div>
-
         <div className="max-h-72 overflow-y-auto">
           {matches.length ? (
             matches.map((project) => (
@@ -593,7 +462,7 @@ function ProjectSwitcher({
                 className={`${menuItem} p-0`}
               >
                 <Link
-                  to={`/projects/${project.id}`}
+                  to={`/projects/${project.id}${projectSection}`}
                   onClick={() => setOpen(false)}
                   className="flex items-center justify-between gap-3 px-3 py-3"
                 >
@@ -601,16 +470,13 @@ function ProjectSwitcher({
                     <span className="block truncate text-xs font-medium">
                       {project.title}
                     </span>
-
                     <span className="mt-1.5 flex flex-wrap items-center gap-2">
                       <span className="text-[10px] text-muted-foreground">
                         {projectCode(project.projectCode)}
                       </span>
-
                       <ProjectStatus status={project.status} />
                     </span>
                   </span>
-
                   {String(project.id) === String(projectId) && (
                     <CheckIcon
                       size={14}
@@ -626,7 +492,6 @@ function ProjectSwitcher({
               <p className="text-xs font-medium">
                 {query ? "No matching projects" : "No open projects"}
               </p>
-
               <p className="mt-1 text-[11px] leading-5 text-muted-foreground">
                 {query
                   ? "Try a different name or project code."
@@ -637,11 +502,9 @@ function ProjectSwitcher({
             </div>
           )}
         </div>
-
         {canCreate && (
           <>
             <DropdownMenuSeparator className="bg-border/70" />
-
             <DropdownMenuItem asChild className={`${menuItem} p-0`}>
               <Link
                 to="/projects/new"
@@ -662,11 +525,6 @@ function ProjectSwitcher({
     </DropdownMenu>
   );
 }
-
-/* =========================================================
-   WORKSPACE ERROR
-========================================================= */
-
 function WorkspaceError({
   message,
   onRetry,
@@ -682,13 +540,10 @@ function WorkspaceError({
           aria-hidden="true"
           className="mx-auto text-muted-foreground"
         />
-
         <h1 className="mt-5 text-lg font-medium">Workspace unavailable</h1>
-
         <p className="mt-2 text-sm leading-7 text-muted-foreground">
           {message}
         </p>
-
         <div className="mt-5 flex flex-wrap justify-center gap-2">
           {onRetry && (
             <button type="button" onClick={onRetry} className={secondaryAction}>
@@ -696,7 +551,6 @@ function WorkspaceError({
               Try again
             </button>
           )}
-
           <Link
             to="/projects"
             className={onRetry ? quietAction : primaryAction}

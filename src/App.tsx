@@ -29,6 +29,7 @@ import AboutPage from "./pages/AboutPage";
 import HowItWorksPage from "./pages/HowItWorksPage";
 import RequireAllocatSetup from "./auth/RequireAllocatSetup";
 import AllocatPublicProfilePage from "./pages/AllocatPublicProfile";
+import ProjectFilesWorkspace from "./pages/ProjectFilesWorkspace";
 
 function CreateAllocatProfileRoute() {
   return (
@@ -115,9 +116,9 @@ function App() {
               children: [
                 { index: true, Component: ProjectManager },
                 { path: "calendar", Component: Calendar },
+                { path: "files", Component: ProjectFilesWorkspace },
                 { path: "messaging", Component: Messaging },
                 { path: "analytics", Component: Analytics },
-                { path: "favorites", Component: Favorites },
                 { path: "transactions", Component: Transactions },
               ],
             },
