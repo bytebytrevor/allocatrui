@@ -345,8 +345,10 @@ export default function ProjectManager() {
     }
   }
   function handleDragStart(event: DragStartEvent) {
-    if (!canManageTasks || busyTaskIds.has(String(event.active.id))) return;
-    const rect = event.active.rect.current.initial;
+    if (!canManageTasks || operationsRef.current.has(String(event.active.id)))
+      return;
+    const rect =
+      event.active.rect.current.initial ?? event.active.rect.current.translated;
     setDragSize(rect ? { width: rect.width, height: rect.height } : null);
     setActiveTaskId(String(event.active.id));
   }
@@ -367,7 +369,7 @@ export default function ProjectManager() {
     }
   }, [loading, error, sourceTaskId, sourceCommentId, tasks]);
   const fileTask = tasks.find((task) => task.id === fileTarget?.taskId);
-  const activeTask = tasks.find((task) => task.id === activeTaskId);
+  const activeTask = tasks.find((task) => String(task.id) === activeTaskId);
   const groups = useMemo(
     () =>
       Object.fromEntries(
@@ -737,9 +739,9 @@ export default function ProjectManager() {
                 zIndex={100}
                 style={{ pointerEvents: "none" }}
               >
-                {activeTask && dragSize ? (
+                {activeTask ? (
                   <div
-                    style={{ width: dragSize.width, height: dragSize.height }}
+                    style={{ width: dragSize?.width, height: dragSize?.height }}
                   >
                     <TaskCard
                       task={activeTask}
