@@ -1,3 +1,4 @@
+import { useProjectUnread } from "@/api/projectMessagingUnread";
 import { projectFileListCache } from "@/api/projectFileListCache";
 import { thumbnailCache } from "@/api/thumbnailCache";
 import {
@@ -136,6 +137,12 @@ export default function Dashboard() {
   );
   const basePath = projectId ? `/projects/${projectId}` : "/projects";
   const canAccess = Boolean(currentProject && projectId);
+  const unreadCount = useProjectUnread(
+    projectId,
+    user?.userId,
+    canAccess && !loading && !error,
+    pathname.endsWith("/messaging"),
+  );
   const switcher = (
     <ProjectSwitcher
       projects={openProjects}
@@ -182,7 +189,11 @@ export default function Dashboard() {
               <DropdownMenuTrigger asChild>
                 <button
                   type="button"
-                  aria-label="Open workspace navigation"
+                  aria-label={
+                    unreadCount
+                      ? `Open workspace navigation, ${unreadCount} unread messages`
+                      : "Open workspace navigation"
+                  }
                   className={`${quietAction} h-10 w-10 px-0`}
                 >
                   <MenuIcon size={18} aria-hidden="true" />
@@ -199,6 +210,7 @@ export default function Dashboard() {
                 </DropdownMenuLabel>
                 <ProjectNavigation
                   basePath={basePath}
+                  unreadCount={unreadCount}
                   menu
                   onNavigate={() => setMobileOpen(false)}
                 />
@@ -234,7 +246,10 @@ export default function Dashboard() {
                 Workspace
               </p>
               {!loading && canAccess ? (
-                <ProjectNavigation basePath={basePath} />
+                <ProjectNavigation
+                  basePath={basePath}
+                  unreadCount={unreadCount}
+                />
               ) : (
                 !loading && (
                   <p className="px-3 text-xs leading-6 text-muted-foreground">
@@ -287,10 +302,12 @@ function ProjectNavigation({
   basePath,
   menu = false,
   onNavigate,
+  unreadCount,
 }: {
   basePath: string;
   menu?: boolean;
   onNavigate?: () => void;
+  unreadCount?: number | null;
 }) {
   const links = managerLinks.map(({ label, path, icon: Icon }) => {
     const link = (
@@ -317,7 +334,23 @@ function ProjectNavigation({
               aria-hidden="true"
               className="shrink-0 text-inherit"
             />
-            <span>{label}</span>
+            <span className="min-w-0 flex-1">{label}</span>
+            {path === "messaging" &&
+              typeof unreadCount === "number" &&
+              unreadCount > 0 && (
+                <>
+                  <span
+                    aria-hidden="true"
+                    className="inline-flex min-w-6 shrink-0 items-center justify-center rounded-md border border-border/70 bg-surface-3/65 px-1.5 py-0.5 text-[10px] font-semibold tabular-nums text-brand-secondary-highlight dark:text-secondary"
+                  >
+                    {unreadCount.toLocaleString()}
+                  </span>
+                  <span className="sr-only">
+                    {unreadCount} unread{" "}
+                    {unreadCount === 1 ? "message" : "messages"}
+                  </span>
+                </>
+              )}
           </>
         )}
       </NavLink>
@@ -356,7 +389,10 @@ function ProjectSwitcher({
   onRetry: () => void;
 }) {
   const { pathname } = useLocation();
-  const projectSection = pathname.endsWith("/files") ? "/files" : "";
+  const section = managerLinks.find(
+    (link) => link.path && pathname.endsWith(`/${link.path}`),
+  )?.path;
+  const projectSection = section ? `/${section}` : "";
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
