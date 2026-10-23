@@ -1,5 +1,4 @@
-import { useState } from "react";
-
+import { useEffect, useRef, useState } from "react";
 import {
   BadgeCheckIcon,
   BriefcaseBusinessIcon,
@@ -12,25 +11,14 @@ import {
   StarIcon,
   UserRoundIcon,
 } from "lucide-react";
-
 import { toast } from "sonner";
-
 import api from "@/api/axios";
-
 import type { Project } from "@/Types/project";
 import type { AllocatProfile } from "@/Types/allocatProfile";
 import type { ProjectAllocatStatus } from "@/Types/enums";
-
 import AllocatProfileDialog from "@/components/AllocatProfileDialog";
-
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-
 import { Button } from "@/components/ui/button";
-
-/* =========================================================
-   TYPES
-========================================================= */
-
 type SkillItem =
   | string
   | {
@@ -39,7 +27,6 @@ type SkillItem =
       categoryId?: string;
       category?: string;
     };
-
 type CardAllocat = Omit<AllocatProfile, "skills"> & {
   skills?: SkillItem[];
   matchScore?: number;
@@ -49,9 +36,7 @@ type CardAllocat = Omit<AllocatProfile, "skills"> & {
   isVerified?: boolean;
   averageRating?: number;
 };
-
 type CardMode = "project" | "discovery";
-
 type Props = {
   allocat: CardAllocat;
   project?: Project;
@@ -61,142 +46,30 @@ type Props = {
   mode?: CardMode;
   onStartProject?: () => void;
 };
-
-/* =========================================================
-   THEME
-========================================================= */
-
-const cardSurface = [
-  "bg-[color-mix(in_srgb,var(--background)_65%,white)]",
-  "border-border/55",
-  "text-foreground",
-  "shadow-none",
-
-  "transition-[border-color] duration-200",
-  "hover:border-border/75",
-
-  "dark:bg-[color-mix(in_srgb,var(--background)_96%,white)]",
-  "dark:border-border/60",
-  "dark:hover:border-border/80",
-
-  "motion-reduce:transition-none",
-].join(" ");
-
-const avatarSurface = [
-  "border-border/60",
-  "bg-surface-3/70",
-
-  "dark:border-border",
-  "dark:bg-surface-2/80",
-].join(" ");
-
-const avatarFallbackSurface = [
-  "bg-surface-3/75",
-  "text-foreground/65",
-
-  "dark:bg-surface-2/90",
-  "dark:text-secondary/80",
-].join(" ");
-
-// const primaryActionButton = [
-//   "border border-brand-secondary/15",
-
-//   "bg-brand-secondary",
-//   "text-primary-foreground",
-
-//   "hover:border-brand-secondary/20",
-//   "hover:bg-brand-secondary/90",
-//   "hover:text-primary-foreground",
-
-//   "focus-visible:ring-brand-secondary/20",
-
-//   "dark:border-secondary/10",
-//   "dark:bg-secondary",
-//   "dark:text-secondary-foreground",
-
-//   "dark:hover:border-secondary/15",
-//   "dark:hover:bg-secondary/90",
-//   "dark:hover:text-secondary-foreground",
-
-//   "dark:focus-visible:ring-secondary/20",
-// ].join(" ");
-
-const primaryActionButton = [
-  "border border-brand-secondary-highlight/15",
-
-  "bg-brand-secondary-highlight",
-  "text-primary-foreground",
-
-  "hover:border-brand-secondary-highlight/20",
-  "hover:bg-brand-secondary-highlight/90",
-  "hover:text-primary-foreground",
-
-  "focus-visible:ring-brand-secondary-highlight/20",
-
-  "dark:border-secondary/10",
-  "dark:bg-secondary",
-  "dark:text-secondary-foreground",
-
-  "dark:hover:border-secondary/15",
-  "dark:hover:bg-secondary/90",
-  "dark:hover:text-secondary-foreground",
-
-  "dark:focus-visible:ring-secondary/20",
-].join(" ");
-
-const secondaryActionButton = [
-  "border-border/65",
-  "bg-surface-2/35",
-  "text-foreground/70",
-
-  "hover:border-border/85",
-  "hover:bg-surface-3/65",
-  "hover:text-foreground/90",
-
-  "dark:border-border",
-  "dark:bg-surface-2/60",
-  "dark:text-foreground/75",
-
-  "dark:hover:bg-surface-3/70",
-  "dark:hover:text-foreground",
-].join(" ");
-
-const ghostActionButton = [
-  "text-muted-foreground",
-
-  "hover:bg-surface-3/60",
-  "hover:text-foreground/90",
-
-  "dark:hover:bg-surface-3/70",
-  "dark:hover:text-foreground",
-].join(" ");
-
-const skillSurface = [
-  "border-border/50",
-  "bg-surface-3/50",
-  "text-foreground/65",
-
-  "dark:border-border",
-  "dark:bg-surface-2/75",
-  "dark:text-foreground/70",
-].join(" ");
-
-const matchSurface = [
-  "border-foreground/[0.07]",
-  "bg-foreground/[0.04]",
-  "text-foreground/65",
-
-  "dark:border-secondary/10",
-  "dark:bg-secondary/[0.045]",
-  "dark:text-secondary/85",
-].join(" ");
-
-const verifiedIconClass = "text-brand-secondary-highlight dark:text-secondary";
-
-/* =========================================================
-   CARD
-========================================================= */
-
+const ACCENT = "text-brand-secondary-highlight dark:text-secondary";
+const FOCUS =
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35 focus-visible:ring-offset-2 focus-visible:ring-offset-card";
+const CARD =
+  "min-w-0 rounded-2xl border border-border/75 bg-card text-card-foreground shadow-[0_2px_8px_-5px_color-mix(in_srgb,var(--brand-charcoal)_18%,transparent)] transition-[border-color,box-shadow] duration-150 hover:border-brand-secondary-highlight/25 hover:shadow-[0_10px_28px_-20px_color-mix(in_srgb,var(--brand-charcoal)_30%,transparent)] focus-within:border-ring/40 dark:hover:border-secondary/25 motion-reduce:transition-none";
+const ACTION = `inline-flex h-11 min-w-0 items-center justify-center gap-2 rounded-lg px-3 text-xs font-medium shadow-none transition-opacity duration-150 hover:opacity-80 disabled:pointer-events-none disabled:opacity-50 motion-reduce:transition-none ${FOCUS}`;
+const PRIMARY =
+  "border border-brand-secondary-highlight/15 bg-brand-secondary-highlight text-primary-foreground hover:bg-brand-secondary-highlight hover:text-primary-foreground dark:border-secondary/15 dark:bg-secondary dark:text-secondary-foreground dark:hover:bg-secondary dark:hover:text-secondary-foreground";
+const SECONDARY =
+  "border border-border/75 bg-transparent text-foreground hover:bg-transparent hover:text-foreground";
+const STATUS =
+  "border border-border/65 bg-surface-2/65 text-muted-foreground hover:bg-surface-2/65 hover:text-muted-foreground disabled:opacity-100";
+const SKILL =
+  "inline-flex max-w-full items-center rounded-md border border-border/65 bg-surface-2/55 px-2 py-1 text-[10px] font-medium leading-4 text-muted-foreground";
+const numberFormat = new Intl.NumberFormat(undefined, {
+  maximumFractionDigits: 2,
+});
+const countFormat = new Intl.NumberFormat(undefined, {
+  maximumFractionDigits: 0,
+});
+const joinedFormat = new Intl.DateTimeFormat(undefined, {
+  month: "short",
+  year: "numeric",
+});
 export function AllocatCardGrid({
   allocat,
   project,
@@ -207,967 +80,530 @@ export function AllocatCardGrid({
   onStartProject,
 }: Props) {
   const [profileOpen, setProfileOpen] = useState(false);
-  const [inviting, setInviting] = useState(false);
-
-  const isDiscovery = mode === "discovery";
-
-  const rating = allocat.rating ?? allocat.averageRating ?? 0;
-  const completedProjects = allocat.completedProjects ?? 0;
-  const yearsExperience = allocat.yearsExperience ?? 0;
-
-  const isVerified = Boolean(allocat.isVerified ?? allocat.verified ?? false);
-
-  const isInvited = relationshipStatus === "Invited";
-  const isAccepted = relationshipStatus === "Accepted";
-  const isDeclined = relationshipStatus === "Declined";
-  const isRemoved = relationshipStatus === "Removed";
-
-  const canInvite =
-    !isDiscovery && Boolean(project) && !inviting && !isInvited && !isAccepted;
-
-  const ratingStyle = getRatingStyle(rating);
-
-  const visibleSkills = (allocat.skills ?? []).slice(
-    0,
-    viewMode === "list" ? 5 : 3,
+  const [localStatus, setLocalStatus] = useState(() =>
+    normalizeStatus(relationshipStatus),
   );
-
-  const remainingSkills = (allocat.skills?.length ?? 0) - visibleSkills.length;
-
-  /* =======================================================
-     INVITE
-  ======================================================= */
-
+  const [pendingScope, setPendingScope] = useState<string | null>(null);
+  const requests = useRef(new Set<string>());
+  const mounted = useRef(true);
+  const scope = JSON.stringify([project?.id, allocat.allocatrUserId, mode]);
+  const currentScope = useRef(scope);
+  currentScope.current = scope;
+  const statusRef = useRef(localStatus);
+  statusRef.current = localStatus;
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
+  useEffect(() => {
+    setLocalStatus(normalizeStatus(relationshipStatus));
+  }, [relationshipStatus, scope]);
+  useEffect(() => {
+    setProfileOpen(false);
+  }, [scope]);
+  const inviting = pendingScope === scope;
+  const isDiscovery = mode === "discovery";
+  const isInvited = localStatus === "invited";
+  const isAccepted = localStatus === "accepted";
+  const reinvite = localStatus === "declined" || localStatus === "removed";
+  const canInvite =
+    !isDiscovery && !!project && !inviting && !isInvited && !isAccepted;
+  const name = allocat.fullName?.trim() || "Allocat professional";
+  const title =
+    allocat.title?.trim() ||
+    allocat.headline?.trim() ||
+    "Professional service provider";
+  const verified = Boolean(allocat.isVerified ?? allocat.verified ?? false);
+  const rating = Math.min(
+    5,
+    safeNumber(allocat.rating ?? allocat.averageRating),
+  );
+  const ratingCount = Math.floor(safeNumber(allocat.ratingCount));
+  const experience = safeNumber(allocat.yearsExperience);
+  const completed = Math.floor(safeNumber(allocat.completedProjects));
+  const rate = formatHourlyRate(allocat.hourlyRate, allocat.currency);
+  const joined = formatJoinedDate(allocat.joinedAt);
+  const skills = normalizeSkills(allocat.skills);
+  const visibleSkills = skills.slice(0, viewMode === "list" ? 5 : 3);
+  const remainingSkills = skills.slice(visibleSkills.length);
+  const matchScore =
+    typeof allocat.matchScore === "number" &&
+    Number.isFinite(allocat.matchScore)
+      ? Math.round(Math.min(100, Math.max(0, allocat.matchScore)))
+      : undefined;
+  // The dialog's public profile contract uses skill names. Keep the card's
+  // catalogue metadata here and avoid casting an object skill array to string[].
+  const dialogProfile: AllocatProfile = {
+    ...allocat,
+    skills: skills.map((skill) => skill.name),
+  };
   async function handleInvite() {
-    if (!project || !canInvite) return;
-
-    setInviting(true);
-
+    if (!project || !canInvite || requests.current.has(scope)) return;
+    const requestScope = scope;
+    const personId = allocat.allocatrUserId;
+    const projectId = project.id;
+    requests.current.add(requestScope);
+    setPendingScope(requestScope);
     try {
       await api.put(
-        `/projects/${project.id}/allocats/${allocat.allocatrUserId}/invite`,
+        `/projects/${encodeURIComponent(projectId)}/allocats/${encodeURIComponent(personId)}/invite`,
         {},
         { withCredentials: true },
       );
-
-      onStatusChange?.("Invited");
-
-      toast.success(
-        `${allocat.fullName} has been invited to ${project.title}.`,
-      );
-    } catch (error) {
-      console.error("Could not invite Allocat:", error);
-
-      toast.error("The invitation could not be sent. Please try again.");
+    } catch {
+      if (mounted.current && currentScope.current === requestScope)
+        toast.error("The invitation could not be sent. Please try again.");
+      return;
     } finally {
-      setInviting(false);
-    }
-  }
-
-  /* =======================================================
-     START PROJECT
-  ======================================================= */
-
-  function handleStartProject() {
-    setProfileOpen(false);
-    onStartProject?.();
-  }
-
-  /* =======================================================
-     INVITE CONTENT
-  ======================================================= */
-
-  function renderInviteContent() {
-    if (inviting) {
-      return (
-        <>
-          <LoaderCircleIcon size={14} className="animate-spin" />
-          Inviting
-        </>
-      );
-    }
-
-    if (isAccepted) {
-      return (
-        <>
-          <CheckCircle2Icon size={14} />
-          Added
-        </>
-      );
-    }
-
-    if (isInvited) {
-      return (
-        <>
-          <CheckCircle2Icon size={14} />
-          Invited
-        </>
-      );
-    }
-
-    if (isDeclined || isRemoved) {
-      return (
-        <>
-          <RotateCcwIcon size={14} />
-          Invite again
-        </>
-      );
-    }
-
-    return (
-      <>
-        <SendIcon size={14} />
-        Invite
-      </>
-    );
-  }
-
-  function renderCompactInviteContent() {
-    if (inviting) {
-      return (
-        <>
-          <LoaderCircleIcon size={13} className="animate-spin" />
-
-          <span className="hidden sm:inline">Inviting</span>
-        </>
-      );
-    }
-
-    if (isAccepted) {
-      return (
-        <>
-          <CheckCircle2Icon size={13} />
-
-          <span className="hidden sm:inline">Added</span>
-        </>
-      );
-    }
-
-    if (isInvited) {
-      return (
-        <>
-          <CheckCircle2Icon size={13} />
-
-          <span className="hidden sm:inline">Invited</span>
-        </>
-      );
-    }
-
-    if (isDeclined || isRemoved) {
-      return (
-        <>
-          <RotateCcwIcon size={13} />
-
-          <span className="hidden sm:inline">Invite again</span>
-        </>
-      );
-    }
-
-    return (
-      <>
-        <SendIcon size={13} />
-
-        <span className="hidden sm:inline">Invite</span>
-      </>
-    );
-  }
-
-  function getInviteButtonClass(compact = false) {
-    const base = compact
-      ? [
-          "h-8 w-8 rounded-lg p-0",
-          "text-[0.65rem] font-semibold shadow-none",
-          "sm:h-9 sm:w-auto sm:px-3",
-          "lg:px-4 lg:text-xs",
-        ].join(" ")
-      : ["h-10 flex-1 rounded-lg", "text-xs font-semibold shadow-none"].join(
-          " ",
+      requests.current.delete(requestScope);
+      if (mounted.current)
+        setPendingScope((current) =>
+          current === requestScope ? null : current,
         );
-
-    if (isAccepted) {
-      return [
-        base,
-
-        "border border-brand-green/15",
-        "bg-brand-green/[0.055]",
-        "text-brand-green/90",
-
-        "hover:border-brand-green/20",
-        "hover:bg-brand-green/[0.08]",
-        "hover:text-brand-green",
-
-        "dark:border-brand-green/15",
-        "dark:bg-brand-green/[0.06]",
-        "dark:text-brand-green",
-      ].join(" ");
     }
-
-    if (isInvited) {
-      return [
-        base,
-
-        "border border-brand-amber/15",
-        "bg-brand-amber/[0.055]",
-        "text-brand-amber/90",
-
-        "hover:border-brand-amber/20",
-        "hover:bg-brand-amber/[0.08]",
-        "hover:text-brand-amber",
-
-        "dark:border-brand-amber/15",
-        "dark:bg-brand-amber/[0.06]",
-        "dark:text-brand-amber",
-      ].join(" ");
+    if (!mounted.current || currentScope.current !== requestScope) return;
+    // Keep the successful action visible even if the parent does not re-fetch
+    // immediately. Do not downgrade a newer Accepted state to Invited.
+    if (statusRef.current !== "accepted") {
+      setLocalStatus("invited");
+      toast.success(`${name} has been invited to ${project.title}.`);
+      onStatusChange?.("Invited");
     }
-
-    return [base, primaryActionButton].join(" ");
   }
-
-  /* =======================================================
-     LIST VIEW
-  ======================================================= */
-
-  if (viewMode === "list") {
+  function handleStartProject() {
+    if (!onStartProject || inviting) return;
+    setProfileOpen(false);
+    onStartProject();
+  }
+  function actions() {
+    const Icon = inviting
+      ? LoaderCircleIcon
+      : isInvited || isAccepted
+        ? CheckCircle2Icon
+        : reinvite
+          ? RotateCcwIcon
+          : SendIcon;
+    const label = inviting
+      ? "Inviting…"
+      : isAccepted
+        ? "Added"
+        : isInvited
+          ? "Invited"
+          : reinvite
+            ? "Invite again"
+            : "Invite";
     return (
       <>
-        <article
-          className={[
-            "group rounded-xl border",
-            "px-3 py-3 sm:px-4 sm:py-4 lg:px-5",
-            cardSurface,
-          ].join(" ")}
+        <Button
+          type="button"
+          variant="ghost"
+          aria-label={`View profile: ${name}`}
+          onClick={() => setProfileOpen(true)}
+          className={`${ACTION} ${SECONDARY} flex-1`}
         >
-          <div className="flex min-w-0 items-center gap-2.5 sm:gap-3.5 lg:gap-4">
-            {/* AVATAR */}
-
-            <ProfileAvatar
-              allocat={allocat}
-              verified={isVerified}
-              size="large"
-            />
-
-            {/* IDENTITY */}
-
-            <div className="min-w-0 flex-1">
-              <div className="flex min-w-0 items-center gap-1.5 sm:gap-2">
-                <h2 className="min-w-0 truncate text-[0.78rem] font-semibold tracking-[-0.01em] text-foreground/85 sm:text-sm lg:text-base">
-                  {allocat.fullName || "Allocat professional"}
-                </h2>
-
-                {isVerified && (
-                  <BadgeCheckIcon
-                    size={14}
-                    className={[
-                      "hidden shrink-0 sm:block",
-                      verifiedIconClass,
-                    ].join(" ")}
-                  />
-                )}
-
-                {!isDiscovery && allocat.matchScore !== undefined && (
-                  <span
-                    className={[
-                      "inline-flex h-5 shrink-0 items-center gap-1",
-                      "rounded-md border px-1.5",
-                      "text-[0.55rem] font-semibold",
-                      "sm:h-6 sm:px-2 sm:text-[0.62rem]",
-                      matchSurface,
-                    ].join(" ")}
-                  >
-                    <SparklesIcon size={9} className="hidden sm:block" />
-                    {allocat.matchScore}%
-                    <span className="hidden md:inline">match</span>
-                  </span>
-                )}
-              </div>
-
-              <p className="mt-0.5 truncate text-[0.65rem] font-medium text-muted-foreground sm:mt-1 sm:text-xs">
-                {allocat.title ||
-                  allocat.headline ||
-                  "Professional service provider"}
-              </p>
-
-              <div className="mt-1.5 flex min-w-0 items-center gap-2.5 sm:mt-2 sm:gap-3 lg:gap-4">
-                <ListRating rating={rating} ratingStyle={ratingStyle} />
-
-                {yearsExperience > 0 && (
-                  <span className="hidden items-center gap-1.5 text-[0.65rem] text-muted-foreground sm:inline-flex lg:text-[0.7rem]">
-                    <BriefcaseBusinessIcon size={11} />
-
-                    <span>
-                      {yearsExperience}
-
-                      <span className="hidden md:inline">
-                        {" "}
-                        {yearsExperience === 1 ? "year" : "years"}
-                      </span>
-                    </span>
-                  </span>
-                )}
-
-                <span className="hidden text-[0.7rem] text-muted-foreground lg:inline">
-                  <span className="font-semibold text-foreground/75">
-                    {completedProjects}
-                  </span>{" "}
-                  completed
-                </span>
-
-                <span className="hidden min-w-0 items-center gap-1.5 text-[0.7rem] text-muted-foreground lg:inline-flex">
-                  <MapPinIcon size={11} className="shrink-0" />
-
-                  <span className="max-w-36 truncate xl:max-w-48">
-                    {allocat.location || "Location not listed"}
-                  </span>
-                </span>
-              </div>
-
-              {/* SKILLS */}
-
-              {visibleSkills.length > 0 && (
-                <div className="mt-3 hidden flex-wrap gap-1.5 md:flex">
-                  {visibleSkills.map((skill, index) => (
-                    <SkillBadge key={getSkillKey(skill, index)} skill={skill} />
-                  ))}
-
-                  {remainingSkills > 0 && (
-                    <span
-                      className={[
-                        "rounded-md border px-2 py-1",
-                        "text-[0.62rem] font-semibold",
-                        skillSurface,
-                      ].join(" ")}
-                    >
-                      +{remainingSkills}
-                    </span>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* RATE */}
-
-            <div className="shrink-0 text-right">
-              <p className="hidden text-[0.55rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground/80 md:block">
-                Rate
-              </p>
-
-              <p className="whitespace-nowrap text-[0.68rem] font-semibold tracking-[-0.02em] text-foreground/80 sm:text-xs md:mt-0.5 md:text-sm lg:text-base">
-                <span className="hidden sm:inline">US$</span>
-
-                <span className="sm:hidden">$</span>
-
-                {allocat.hourlyRate ?? 0}
-
-                <span className="ml-0.5 text-[0.52rem] font-medium text-muted-foreground sm:text-[0.6rem]">
-                  /hr
-                </span>
-              </p>
-            </div>
-
-            {/* ACTIONS */}
-
-            <div className="flex shrink-0 items-center gap-1 sm:gap-2">
-              <Button
-                type="button"
-                variant="ghost"
-                title="View profile"
-                aria-label="View profile"
-                onClick={() => setProfileOpen(true)}
-                className={[
-                  "h-8 w-8 rounded-lg p-0 shadow-none",
-                  "sm:h-9 sm:w-auto sm:px-3",
-                  ghostActionButton,
-                ].join(" ")}
-              >
-                <UserRoundIcon size={13} />
-
-                <span className="hidden lg:inline">Profile</span>
-              </Button>
-
-              {isDiscovery ? (
-                <Button
-                  type="button"
-                  title="Start a project"
-                  aria-label={`Start a project with ${
-                    allocat.fullName || "this Allocat"
-                  }`}
-                  onClick={handleStartProject}
-                  disabled={!onStartProject}
-                  className={[
-                    "h-8 w-8 rounded-lg p-0",
-                    "text-[0.65rem] font-semibold shadow-none",
-                    "sm:h-9 sm:w-auto sm:px-3",
-                    "lg:px-4 lg:text-xs",
-                    primaryActionButton,
-                  ].join(" ")}
-                >
-                  <BriefcaseBusinessIcon size={13} />
-
-                  <span className="hidden sm:inline">Start project</span>
-                </Button>
-              ) : (
-                <Button
-                  type="button"
-                  title={
-                    isInvited ? "Invited" : isAccepted ? "Added" : "Invite"
-                  }
-                  aria-label={
-                    isInvited ? "Invited" : isAccepted ? "Added" : "Invite"
-                  }
-                  onClick={() => void handleInvite()}
-                  disabled={!project || inviting || isInvited || isAccepted}
-                  variant="ghost"
-                  className={getInviteButtonClass(true)}
-                >
-                  {renderCompactInviteContent()}
-                </Button>
-              )}
-            </div>
-          </div>
-        </article>
-
-        <AllocatProfileDialog
-          allocat={allocat as AllocatProfile}
-          project={project}
-          open={profileOpen}
-          onOpenChange={setProfileOpen}
-          invited={isInvited}
-          inviting={inviting}
-          onInvite={() => void handleInvite()}
-          mode={mode}
-          onStartProject={handleStartProject}
-        />
-      </>
-    );
-  }
-
-  /* =======================================================
-     GRID VIEW
-  ======================================================= */
-
-  return (
-    <>
-      <article
-        className={[
-          "group flex h-full min-w-0 flex-col",
-          "rounded-xl border p-5",
-          cardSurface,
-        ].join(" ")}
-      >
-        {/* =================================================
-            IDENTITY
-        ================================================= */}
-
-        <div className="flex items-start gap-3.5">
-          <ProfileAvatar allocat={allocat} verified={isVerified} />
-
-          <div className="min-w-0 flex-1">
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <div className="flex min-w-0 items-center gap-1.5">
-                  <h2 className="truncate text-sm font-semibold tracking-[-0.01em] text-foreground/85">
-                    {allocat.fullName || "Allocat professional"}
-                  </h2>
-
-                  {isVerified && (
-                    <BadgeCheckIcon
-                      size={13}
-                      className={["shrink-0", verifiedIconClass].join(" ")}
-                    />
-                  )}
-                </div>
-
-                <p className="mt-1 truncate text-xs text-muted-foreground">
-                  {allocat.title ||
-                    allocat.headline ||
-                    "Professional service provider"}
-                </p>
-              </div>
-
-              {!isDiscovery && allocat.matchScore !== undefined && (
-                <MatchBadge score={allocat.matchScore} compact />
-              )}
-            </div>
-
-            <div className="mt-3 flex flex-wrap items-center gap-3 text-[0.7rem]">
-              <Rating rating={rating} ratingStyle={ratingStyle} />
-
-              {yearsExperience > 0 && (
-                <>
-                  <span className="h-3 w-px bg-border/60" />
-
-                  <span className="inline-flex items-center gap-1.5 text-muted-foreground">
-                    <BriefcaseBusinessIcon size={12} />
-                    {yearsExperience} {yearsExperience === 1 ? "yr" : "yrs"}
-                  </span>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* =================================================
-            LOCATION
-        ================================================= */}
-
-        <div className="mt-5 flex items-center gap-2 border-t border-border/50 pt-4 text-xs text-muted-foreground">
-          <MapPinIcon size={13} className="shrink-0" />
-
-          <span className="truncate">
-            {allocat.location || "Location not listed"}
-          </span>
-        </div>
-
-        {/* =================================================
-            SKILLS
-        ================================================= */}
-
-        {visibleSkills.length > 0 && (
-          <div className="mt-4 flex flex-wrap gap-1.5">
-            {visibleSkills.map((skill, index) => (
-              <SkillBadge key={getSkillKey(skill, index)} skill={skill} />
-            ))}
-
-            {remainingSkills > 0 && (
-              <span
-                className={[
-                  "rounded-md border px-2 py-1",
-                  "text-[0.65rem] font-semibold",
-                  skillSurface,
-                ].join(" ")}
-              >
-                +{remainingSkills}
-              </span>
-            )}
-          </div>
-        )}
-
-        {/* =================================================
-            METRICS
-        ================================================= */}
-
-        <div className="mt-5 grid grid-cols-3 divide-x divide-border/50 border-y border-border/50 py-4">
-          <Metric
-            label="Rate"
-            value={`US$${allocat.hourlyRate ?? 0}`}
-            suffix="/hr"
-          />
-
-          <Metric label="Completed" value={String(completedProjects)} />
-
-          <Metric
-            label="Joined"
-            value={formatJoinedDateShort(allocat.joinedAt)}
-          />
-        </div>
-
-        {/* =================================================
-            ACTIONS
-        ================================================= */}
-
-        <div className="mt-auto flex items-center gap-2 pt-5">
+          <UserRoundIcon size={14} aria-hidden="true" />
+          Profile
+        </Button>
+        {isDiscovery ? (
+          <Button
+            type="button"
+            aria-label={`Start a project with ${name}`}
+            onClick={handleStartProject}
+            disabled={!onStartProject || inviting}
+            className={`${ACTION} ${PRIMARY} flex-1`}
+          >
+            <BriefcaseBusinessIcon size={14} aria-hidden="true" />
+            Start project
+          </Button>
+        ) : (
           <Button
             type="button"
             variant="ghost"
-            onClick={() => setProfileOpen(true)}
-            className={[
-              "h-10 flex-1 rounded-lg",
-              "text-xs font-semibold shadow-none",
-              ghostActionButton,
-            ].join(" ")}
+            onClick={() => void handleInvite()}
+            disabled={!canInvite}
+            aria-busy={inviting}
+            aria-label={`${label.replace("…", "")} ${name}`}
+            className={`${ACTION} ${isInvited || isAccepted ? STATUS : PRIMARY} flex-1`}
           >
-            <UserRoundIcon size={14} />
-            Profile
+            <Icon
+              size={14}
+              aria-hidden="true"
+              className={
+                inviting ? "animate-spin motion-reduce:animate-none" : ""
+              }
+            />
+            {label}
           </Button>
-
-          {isDiscovery ? (
-            <Button
-              type="button"
-              onClick={handleStartProject}
-              disabled={!onStartProject}
-              className={[
-                "h-10 flex-1 rounded-lg",
-                "text-xs font-semibold shadow-none",
-                primaryActionButton,
-              ].join(" ")}
-            >
-              <BriefcaseBusinessIcon size={14} />
-              Start project
-            </Button>
-          ) : (
-            <Button
-              type="button"
-              onClick={() => void handleInvite()}
-              disabled={!project || inviting || isInvited || isAccepted}
-              variant="ghost"
-              className={getInviteButtonClass()}
-            >
-              {renderInviteContent()}
-            </Button>
-          )}
-        </div>
-      </article>
-
+        )}
+      </>
+    );
+  }
+  function skillBadges() {
+    return (
+      <>
+        {visibleSkills.map((skill) => (
+          <span key={skill.key} title={skill.name} className={SKILL}>
+            <span className="truncate">{skill.name}</span>
+          </span>
+        ))}
+        {remainingSkills.length > 0 && (
+          <span
+            title={remainingSkills.map((skill) => skill.name).join(", ")}
+            aria-label={`${remainingSkills.length} more skills: ${remainingSkills.map((skill) => skill.name).join(", ")}`}
+            className={SKILL}
+          >
+            +{remainingSkills.length}
+          </span>
+        )}
+      </>
+    );
+  }
+  function identity() {
+    return (
+      <>
+        <h2 className="min-w-0 text-[15px] font-medium leading-6 tracking-[-0.025em]">
+          <button
+            type="button"
+            onClick={() => setProfileOpen(true)}
+            title={name}
+            aria-label={`View profile: ${name}`}
+            className={`block max-w-full rounded text-left transition-opacity hover:opacity-75 motion-reduce:transition-none ${FOCUS}`}
+          >
+            <span className="line-clamp-2 break-words">{name}</span>
+          </button>
+        </h2>
+        <p
+          title={title}
+          className="mt-1 line-clamp-2 break-words text-xs leading-5 text-muted-foreground"
+        >
+          {title}
+        </p>
+      </>
+    );
+  }
+  function trustLine() {
+    return (
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-[11px] text-muted-foreground">
+        <Rating rating={rating} count={ratingCount} />
+        {experience > 0 && (
+          <span className="inline-flex items-center gap-1.5">
+            <BriefcaseBusinessIcon
+              size={12}
+              aria-hidden="true"
+              className="shrink-0"
+            />
+            {numberFormat.format(experience)}{" "}
+            {experience === 1 ? "year" : "years"} experience
+          </span>
+        )}
+      </div>
+    );
+  }
+  function locationLine() {
+    return (
+      <span
+        title={allocat.location || undefined}
+        className="inline-flex min-w-0 max-w-full items-center gap-1.5 text-[11px] leading-5 text-muted-foreground"
+      >
+        <MapPinIcon size={13} aria-hidden="true" className="shrink-0" />
+        <span className="truncate">
+          {allocat.location?.trim() || "Location not listed"}
+        </span>
+      </span>
+    );
+  }
+  const match =
+    !isDiscovery && matchScore !== undefined ? (
+      <MatchBadge
+        score={matchScore}
+        matched={allocat.matchedSkillCount}
+        required={allocat.requiredSkillCount}
+      />
+    ) : null;
+  return (
+    <>
+      {viewMode === "list" ? (
+        <article className={`${CARD} p-4 sm:p-5`} aria-busy={inviting}>
+          <div className="flex min-w-0 flex-col gap-4 xl:flex-row xl:items-center xl:gap-6">
+            <div className="flex min-w-0 flex-1 items-start gap-3 sm:gap-4">
+              <ProfileAvatar
+                name={name}
+                url={allocat.avatarUrl}
+                verified={verified}
+              />
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-2">
+                  <div className="min-w-0 flex-1">{identity()}</div>
+                  {match}
+                </div>
+                <div className="mt-2.5">{trustLine()}</div>
+                <div className="mt-2">{locationLine()}</div>
+                {skills.length > 0 && (
+                  <div
+                    aria-label="Skills"
+                    className="mt-3 flex flex-wrap gap-1.5"
+                  >
+                    {skillBadges()}
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="flex min-w-0 flex-col gap-3 border-t border-border/65 pt-4 sm:flex-row sm:items-center sm:justify-between sm:gap-5 xl:shrink-0 xl:border-t-0 xl:pt-0">
+              <div className="flex items-baseline justify-between gap-3 sm:block">
+                <p className="text-[10px] text-muted-foreground">Hourly rate</p>
+                <Rate value={rate} compact />
+              </div>
+              <div className="flex min-w-0 items-center gap-2 sm:w-[248px]">
+                {actions()}
+              </div>
+            </div>
+          </div>
+        </article>
+      ) : (
+        <article
+          className={`${CARD} flex h-full flex-col p-5`}
+          aria-busy={inviting}
+        >
+          <div className="flex min-w-0 items-start gap-3.5">
+            <ProfileAvatar
+              name={name}
+              url={allocat.avatarUrl}
+              verified={verified}
+            />
+            <div className="min-w-0 flex-1">{identity()}</div>
+          </div>
+          <div className="mt-4">{trustLine()}</div>
+          <div className="mt-3 flex min-w-0 flex-wrap items-center justify-between gap-2">
+            {locationLine()}
+            {match}
+          </div>
+          <div
+            aria-label="Skills"
+            className="mt-4 flex min-h-14 flex-wrap content-start items-start gap-1.5"
+          >
+            {skills.length ? (
+              skillBadges()
+            ) : (
+              <span className="text-[11px] leading-5 text-muted-foreground">
+                Skills not listed
+              </span>
+            )}
+          </div>
+          <div className="mt-auto pt-5">
+            <div className="grid grid-cols-[minmax(0,1.2fr)_minmax(0,0.85fr)_minmax(0,1fr)] items-start gap-3 border-t border-border/65 pt-4">
+              <div className="min-w-0">
+                <p className="mb-1.5 text-[10px] text-muted-foreground">
+                  Hourly rate
+                </p>
+                <Rate value={rate} />
+              </div>
+              <Metric label="Completed" value={countFormat.format(completed)} />
+              <Metric label="Joined" value={joined} />
+            </div>
+            <div className="mt-5 flex min-w-0 items-center gap-2">
+              {actions()}
+            </div>
+          </div>
+        </article>
+      )}
       <AllocatProfileDialog
-        allocat={allocat as AllocatProfile}
+        allocat={dialogProfile}
         project={project}
         open={profileOpen}
         onOpenChange={setProfileOpen}
         invited={isInvited}
+        accepted={isAccepted}
         inviting={inviting}
-        onInvite={() => void handleInvite()}
+        onInvite={canInvite ? () => void handleInvite() : undefined}
         mode={mode}
-        onStartProject={handleStartProject}
+        onStartProject={
+          isDiscovery && onStartProject ? handleStartProject : undefined
+        }
       />
     </>
   );
 }
-
-/* =========================================================
-   AVATAR
-========================================================= */
-
 function ProfileAvatar({
-  allocat,
+  name,
+  url,
   verified,
-  size = "default",
 }: {
-  allocat: CardAllocat;
+  name: string;
+  url?: string | null;
   verified: boolean;
-  size?: "default" | "large";
 }) {
-  const avatarSize =
-    size === "large"
-      ? "h-10 w-10 sm:h-12 sm:w-12 lg:h-14 lg:w-14"
-      : "h-12 w-12";
-
   return (
     <div className="relative shrink-0">
-      <Avatar className={[avatarSize, "border", avatarSurface].join(" ")}>
-        {allocat.avatarUrl && (
-          <AvatarImage
-            src={allocat.avatarUrl}
-            alt={
-              allocat.fullName
-                ? `${allocat.fullName}'s profile`
-                : "Allocat profile"
-            }
-            className="object-cover"
-          />
-        )}
-
+      <Avatar
+        aria-hidden="true"
+        className="h-12 w-12 border border-border/70 bg-surface-2 sm:h-14 sm:w-14"
+      >
+        <AvatarImage src={url || undefined} alt="" className="object-cover" />
         <AvatarFallback
-          className={[
-            "text-[0.65rem] font-semibold sm:text-xs",
-            avatarFallbackSurface,
-          ].join(" ")}
+          className={`bg-surface-2 text-xs font-medium ${ACCENT}`}
         >
-          {getInitials(allocat.fullName)}
+          {getInitials(name)}
         </AvatarFallback>
       </Avatar>
-
       {verified && (
         <span
-          className={[
-            "absolute -bottom-0.5 -right-0.5",
-
-            "flex h-4 w-4 items-center justify-center",
-            "rounded-full border-2",
-
-            "border-surface-2",
-            "bg-brand-secondary",
-            "text-primary-foreground",
-
-            "sm:h-5 sm:w-5",
-
-            "dark:border-surface-1",
-            "dark:bg-secondary",
-            "dark:text-secondary-foreground",
-          ].join(" ")}
-          title="Verified professional"
+          title="Verified profile"
+          className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full border-2 border-card bg-brand-secondary-highlight text-primary-foreground dark:bg-secondary dark:text-secondary-foreground"
         >
-          <BadgeCheckIcon size={9} className="sm:h-[10px] sm:w-[10px]" />
+          <BadgeCheckIcon size={11} aria-hidden="true" />
+          <span className="sr-only">Verified profile</span>
         </span>
       )}
     </div>
   );
 }
-
-/* =========================================================
-   LIST RATING
-========================================================= */
-
-function ListRating({
-  rating,
-  ratingStyle,
-}: {
-  rating: number;
-  ratingStyle: ReturnType<typeof getRatingStyle>;
-}) {
-  if (rating <= 0) {
-    return (
-      <span
-        title="New profile"
-        className={[
-          "hidden shrink-0 items-center gap-1 sm:inline-flex",
-          ratingStyle.text,
-        ].join(" ")}
-      >
-        <StarIcon size={12} className={ratingStyle.star} />
-
-        <span className="text-[0.65rem] font-semibold lg:text-[0.7rem]">
-          New
-        </span>
-      </span>
-    );
-  }
-
+function Rating({ rating, count }: { rating: number; count: number }) {
+  const description =
+    rating > 0
+      ? `${rating.toFixed(1)} out of 5${count > 0 ? ` from ${countFormat.format(count)} ${count === 1 ? "review" : "reviews"}` : ""}`
+      : "Not yet rated";
   return (
     <span
-      title={`${rating.toFixed(1)} rating`}
-      className={[
-        "inline-flex shrink-0 items-center gap-1",
-        ratingStyle.text,
-      ].join(" ")}
+      role="img"
+      aria-label={description}
+      title={description}
+      className="inline-flex shrink-0 items-center gap-1.5 text-[11px] text-muted-foreground"
     >
       <StarIcon
         size={12}
-        className={["fill-current", ratingStyle.star].join(" ")}
+        aria-hidden="true"
+        className={
+          rating > 0
+            ? "fill-brand-amber/75 text-brand-amber"
+            : "text-muted-foreground/60"
+        }
       />
-
-      <span className="hidden text-[0.65rem] font-semibold sm:inline lg:text-[0.7rem]">
-        {rating.toFixed(1)}
+      <span
+        aria-hidden="true"
+        className={rating > 0 ? "font-medium text-foreground" : ""}
+      >
+        {rating > 0 ? rating.toFixed(1) : "Not yet rated"}
       </span>
-
-      <span className="hidden text-[0.7rem] font-medium text-muted-foreground lg:inline">
-        rating
-      </span>
+      {rating > 0 && count > 0 && (
+        <span aria-hidden="true">({countFormat.format(count)})</span>
+      )}
     </span>
   );
 }
-
-/* =========================================================
-   MATCH
-========================================================= */
-
-function MatchBadge({
-  score,
+function Rate({
+  value,
   compact = false,
 }: {
-  score: number;
+  value: string | null;
   compact?: boolean;
 }) {
-  if (compact) {
-    return (
-      <div className="shrink-0 text-right">
-        <p className="text-[0.55rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground/75">
-          Match
-        </p>
-
-        <p className="mt-0.5 text-sm font-semibold text-foreground/70 dark:text-secondary/90">
-          {score}%
-        </p>
-      </div>
-    );
-  }
-
+  return (
+    <p
+      title={value ? `${value} per hour` : "Rate on request"}
+      className={`min-w-0 ${compact ? "sm:mt-1" : ""}`}
+    >
+      <span
+        className={`block truncate ${value ? "text-base font-medium tracking-[-0.03em] text-foreground sm:text-lg" : "text-[11px] font-medium leading-6 text-muted-foreground"}`}
+      >
+        {value ?? "On request"}
+        {value && (
+          <span className="ml-0.5 text-[10px] font-normal tracking-normal text-muted-foreground">
+            /hr
+          </span>
+        )}
+      </span>
+    </p>
+  );
+}
+function Metric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="min-w-0">
+      <p className="mb-1.5 text-[10px] text-muted-foreground">{label}</p>
+      <p
+        title={value}
+        className="truncate text-xs font-medium leading-6 text-foreground/85"
+      >
+        {value}
+      </p>
+    </div>
+  );
+}
+function MatchBadge({
+  score,
+  matched,
+  required,
+}: {
+  score: number;
+  matched?: number;
+  required?: number;
+}) {
+  const detail =
+    typeof matched === "number" &&
+    Number.isFinite(matched) &&
+    matched >= 0 &&
+    typeof required === "number" &&
+    Number.isFinite(required) &&
+    required > 0 &&
+    matched <= required
+      ? ` · ${matched} of ${required} required skills matched`
+      : "";
   return (
     <span
-      className={[
-        "inline-flex h-7 shrink-0 items-center gap-1.5",
-        "rounded-md border px-2.5",
-        "text-[0.65rem] font-semibold",
-        matchSurface,
-      ].join(" ")}
+      title={`${score}% project match${detail}`}
+      className={`inline-flex shrink-0 items-center gap-1 rounded-md border border-brand-secondary-highlight/15 bg-brand-secondary-highlight/[0.045] px-2 py-1 text-[10px] font-medium dark:border-secondary/15 dark:bg-secondary/[0.055] ${ACCENT}`}
     >
-      <SparklesIcon size={11} />
+      <SparklesIcon size={10} aria-hidden="true" />
       {score}% match
     </span>
   );
 }
-
-/* =========================================================
-   RATING
-========================================================= */
-
-function Rating({
-  rating,
-  ratingStyle,
-}: {
-  rating: number;
-  ratingStyle: ReturnType<typeof getRatingStyle>;
-}) {
-  return (
-    <span
-      className={["inline-flex items-center gap-1.5", ratingStyle.text].join(
-        " ",
-      )}
-    >
-      <StarIcon
-        size={12}
-        className={[rating > 0 ? "fill-current" : "", ratingStyle.star].join(
-          " ",
-        )}
-      />
-
-      <span className="font-semibold">
-        {rating > 0 ? rating.toFixed(1) : "New"}
-      </span>
-
-      {rating > 0 && (
-        <span className="font-medium text-muted-foreground">rating</span>
-      )}
-    </span>
-  );
+function safeNumber(value?: number | null) {
+  return typeof value === "number" && Number.isFinite(value)
+    ? Math.max(0, value)
+    : 0;
 }
-
-/* =========================================================
-   SKILL
-========================================================= */
-
-function SkillBadge({ skill }: { skill: SkillItem }) {
-  return (
-    <span
-      className={[
-        "max-w-full truncate rounded-md border",
-        "px-2 py-1",
-        "text-[0.65rem] font-semibold",
-        skillSurface,
-      ].join(" ")}
-    >
-      {getSkillName(skill)}
-    </span>
-  );
-}
-
-function getSkillName(skill: SkillItem): string {
-  if (typeof skill === "string") {
-    return skill;
-  }
-
-  return skill.name;
-}
-
-function getSkillKey(skill: SkillItem, index: number): string {
-  if (typeof skill === "string") {
-    return `${skill}-${index}`;
-  }
-
-  return skill.id || `${skill.name}-${index}`;
-}
-
-/* =========================================================
-   METRIC
-========================================================= */
-
-function Metric({
-  label,
-  value,
-  suffix,
-}: {
-  label: string;
-  value: string;
-  suffix?: string;
-}) {
-  return (
-    <div className="min-w-0 px-3 first:pl-0 last:pr-0">
-      <p className="text-[0.55rem] font-semibold uppercase tracking-[0.11em] text-muted-foreground/75">
-        {label}
-      </p>
-
-      <p className="mt-1 truncate text-xs font-semibold text-foreground/75">
-        {value}
-
-        {suffix && (
-          <span className="ml-0.5 font-medium text-muted-foreground">
-            {suffix}
-          </span>
-        )}
-      </p>
-    </div>
-  );
-}
-
-/* =========================================================
-   RATING STYLE
-========================================================= */
-
-function getRatingStyle(rating: number) {
-  if (rating <= 0) {
-    return {
-      text: "text-muted-foreground",
-      star: "text-muted-foreground/50",
-    };
-  }
-
-  if (rating < 3) {
-    return {
-      text: "text-destructive/85",
-      star: "text-destructive/80",
-    };
-  }
-
-  if (rating < 4) {
-    return {
-      text: "text-brand-amber/90",
-      star: "text-brand-amber/80",
-    };
-  }
-
-  return {
-    text: "text-brand-green/90",
-    star: "text-brand-green/80",
-  };
-}
-
-/* =========================================================
-   INITIALS
-========================================================= */
-
-function getInitials(name?: string | null) {
-  if (!name?.trim()) {
-    return "A";
-  }
-
-  return name
+function normalizeStatus(value?: ProjectAllocatStatus | null) {
+  return String(value ?? "")
     .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((part) => part.charAt(0).toUpperCase())
-    .join("");
+    .toLowerCase();
 }
-
-/* =========================================================
-   JOINED DATE
-========================================================= */
-
-function formatJoinedDateShort(joinedAt?: string): string {
-  if (!joinedAt) {
-    return "—";
+function getInitials(name: string) {
+  return (
+    name
+      .trim()
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((part) => part.charAt(0).toUpperCase())
+      .join("") || "A"
+  );
+}
+function formatJoinedDate(value?: string) {
+  if (!value) return "—";
+  const date = new Date(value);
+  return Number.isFinite(date.getTime()) ? joinedFormat.format(date) : "—";
+}
+function formatHourlyRate(value?: number | null, currency?: string | null) {
+  if (typeof value !== "number" || !Number.isFinite(value) || value < 0)
+    return null;
+  const code = currency?.trim().toUpperCase();
+  if (!code || !/^[A-Z]{3}$/.test(code)) return null;
+  return `${code === "USD" ? "US$" : `${code} `}${numberFormat.format(value)}`;
+}
+function normalizeSkills(input?: SkillItem[]) {
+  const unique = new Map<
+    string,
+    {
+      key: string;
+      name: string;
+    }
+  >();
+  for (const item of Array.isArray(input) ? input : []) {
+    const name = (typeof item === "string" ? item : item?.name)?.trim();
+    if (!name) continue;
+    const key = name.toLowerCase();
+    if (!unique.has(key)) unique.set(key, { key, name });
   }
-
-  const joinedDate = new Date(joinedAt);
-
-  if (Number.isNaN(joinedDate.getTime())) {
-    return "—";
-  }
-
-  const now = new Date();
-
-  const monthDifference =
-    (now.getFullYear() - joinedDate.getFullYear()) * 12 +
-    now.getMonth() -
-    joinedDate.getMonth();
-
-  if (monthDifference < 1) {
-    return "New";
-  }
-
-  if (monthDifference < 12) {
-    return `${monthDifference}mo`;
-  }
-
-  const years = Math.floor(monthDifference / 12);
-
-  return `${years}yr`;
+  return [...unique.values()];
 }

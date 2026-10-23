@@ -1,919 +1,4 @@
-// import { type ComponentType, type ReactNode } from "react";
-
-// import {
-//   BadgeCheckIcon,
-//   BriefcaseBusinessIcon,
-//   CalendarDaysIcon,
-//   CheckCircle2Icon,
-//   Clock3Icon,
-//   LoaderCircleIcon,
-//   MapPinIcon,
-//   SendIcon,
-//   SparklesIcon,
-//   StarIcon,
-// } from "lucide-react";
-
-// import type { AllocatProfile } from "@/Types/allocatProfile";
-// import type { Project } from "@/Types/project";
-
-// import { avatarFallback } from "@/utils/avatarFallback";
-
-// import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-
-// import { Button } from "@/components/ui/button";
-
-// import {
-//   Dialog,
-//   DialogContent,
-//   DialogDescription,
-//   DialogHeader,
-//   DialogTitle,
-// } from "@/components/ui/dialog";
-
-// /* =========================================================
-//    TYPES
-// ========================================================= */
-
-// type SkillItem =
-//   | string
-//   | {
-//       id?: string;
-//       name: string;
-//       categoryId?: string;
-//       category?: string;
-//     };
-
-// type DialogAllocat = Omit<AllocatProfile, "skills"> & {
-//   skills?: SkillItem[];
-//   matchScore?: number;
-//   averageRating?: number;
-//   verified?: boolean;
-//   isVerified?: boolean;
-//   availability?: boolean | string;
-// };
-
-// type DialogMode = "project" | "discovery";
-
-// type Props = {
-//   allocat: DialogAllocat;
-//   project?: Project;
-//   open: boolean;
-//   onOpenChange: (open: boolean) => void;
-//   invited?: boolean;
-//   inviting?: boolean;
-//   onInvite?: () => void;
-//   mode?: DialogMode;
-//   onStartProject?: () => void;
-// };
-
-// type RatingStyle = {
-//   text: string;
-//   star: string;
-//   surface: string;
-// };
-
-// /* =========================================================
-//    SHARED THEME
-// ========================================================= */
-
-// const primaryActionButton = [
-//   "border border-brand-secondary-highlight/15",
-//   "bg-brand-secondary-highlight",
-//   "text-primary-foreground",
-
-//   "hover:border-brand-secondary-highlight/20",
-//   "hover:bg-brand-secondary-highlight/90",
-//   "hover:text-primary-foreground",
-
-//   "focus-visible:ring-brand-secondary-highlight/20",
-
-//   "dark:border-secondary/10",
-//   "dark:bg-secondary",
-//   "dark:text-secondary-foreground",
-
-//   "dark:hover:border-secondary/15",
-//   "dark:hover:bg-secondary/90",
-//   "dark:hover:text-secondary-foreground",
-
-//   "dark:focus-visible:ring-secondary/20",
-// ].join(" ");
-
-// const subtleIconSurface = [
-//   "bg-surface-3/70",
-//   "text-brand-secondary-highlight",
-//   "ring-1 ring-inset ring-border/40",
-
-//   "dark:bg-surface-2",
-//   "dark:text-secondary",
-//   "dark:ring-border",
-// ].join(" ");
-
-// const subtlePanelSurface = [
-//   "border-border/55",
-//   "bg-surface-2/45",
-
-//   "dark:border-border",
-//   "dark:bg-surface-2/55",
-// ].join(" ");
-
-// /* =========================================================
-//    DIALOG
-// ========================================================= */
-
-// export default function AllocatProfileDialog({
-//   allocat,
-//   project,
-//   open,
-//   onOpenChange,
-//   invited = false,
-//   inviting = false,
-//   onInvite,
-//   mode,
-//   onStartProject,
-// }: Props) {
-//   const rating = allocat.rating ?? allocat.averageRating ?? 0;
-//   const completedProjects = allocat.completedProjects ?? 0;
-//   const yearsExperience = allocat.yearsExperience ?? 0;
-
-//   const isDiscovery = mode === "discovery" || !project;
-
-//   const isVerified = Boolean(allocat.isVerified ?? allocat.verified ?? false);
-
-//   const hasSkills = (allocat.skills?.length ?? 0) > 0;
-
-//   const availability = formatAvailability(allocat.availability);
-
-//   const ratingStyle = getRatingStyle(rating);
-
-//   const professionalTitle =
-//     allocat.title || allocat.headline || "Professional service provider";
-
-//   const hourlyRate = formatHourlyRate(allocat.hourlyRate);
-
-//   return (
-//     <Dialog
-//       open={open}
-//       onOpenChange={(nextOpen) => {
-//         if (!inviting) {
-//           onOpenChange(nextOpen);
-//         }
-//       }}
-//     >
-//       <DialogContent
-//         className={[
-//           "flex max-h-[92vh] flex-col overflow-hidden p-0",
-//           "rounded-xl border shadow-none",
-//           "border-border/60 bg-card text-card-foreground",
-//           "dark:border-border dark:bg-card",
-//           "sm:max-w-2xl",
-//         ].join(" ")}
-//       >
-//         {/* =================================================
-//             HERO
-//         ================================================= */}
-
-//         <DialogHeader
-//           className={[
-//             "shrink-0 border-b px-6 pb-6 pt-6 text-left",
-//             "border-border/55 bg-surface-2/30",
-//             "dark:border-border dark:bg-surface-2/45",
-//             "sm:px-7 sm:pb-7 sm:pt-7",
-//           ].join(" ")}
-//         >
-//           <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
-//             {/* AVATAR */}
-
-//             <div className="relative shrink-0">
-//               <Avatar
-//                 className={[
-//                   "h-[72px] w-[72px]",
-//                   "border border-border/65",
-//                   "bg-surface-3",
-//                   "ring-1 ring-inset ring-border/25",
-//                 ].join(" ")}
-//               >
-//                 {allocat.avatarUrl && (
-//                   <AvatarImage
-//                     src={allocat.avatarUrl}
-//                     alt={
-//                       allocat.fullName
-//                         ? `${allocat.fullName}'s profile`
-//                         : "Allocat profile"
-//                     }
-//                     className="object-cover"
-//                   />
-//                 )}
-
-//                 <AvatarFallback
-//                   className={[
-//                     "bg-surface-3",
-//                     "text-base font-semibold",
-//                     "text-brand-secondary-highlight",
-//                     "dark:text-secondary",
-//                   ].join(" ")}
-//                 >
-//                   {avatarFallback(allocat)}
-//                 </AvatarFallback>
-//               </Avatar>
-
-//               {isVerified && (
-//                 <span
-//                   className={[
-//                     "absolute -bottom-1 -right-1",
-//                     "flex h-6 w-6 items-center justify-center",
-//                     "rounded-full border-2 border-surface-2",
-
-//                     "bg-brand-secondary-highlight",
-//                     "text-primary-foreground",
-
-//                     "dark:border-surface-2",
-//                     "dark:bg-secondary",
-//                     "dark:text-secondary-foreground",
-//                   ].join(" ")}
-//                   title="Verified professional"
-//                 >
-//                   <BadgeCheckIcon size={11} />
-//                 </span>
-//               )}
-//             </div>
-
-//             {/* IDENTITY */}
-
-//             <div className="min-w-0 flex-1">
-//               <div className="flex min-w-0 flex-wrap items-center gap-2">
-//                 <DialogTitle
-//                   className={[
-//                     "min-w-0 break-words",
-//                     "text-xl font-semibold leading-tight tracking-[-0.025em]",
-//                     "text-foreground/90",
-//                     "sm:text-2xl",
-//                   ].join(" ")}
-//                 >
-//                   {allocat.fullName || "Allocat professional"}
-//                 </DialogTitle>
-
-//                 {isVerified && (
-//                   <BadgeCheckIcon
-//                     size={14}
-//                     className="shrink-0 text-brand-secondary-highlight dark:text-secondary"
-//                   />
-//                 )}
-//               </div>
-
-//               <DialogDescription className="mt-1.5 text-sm font-medium text-muted-foreground">
-//                 {professionalTitle}
-//               </DialogDescription>
-
-//               <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-[0.68rem] text-muted-foreground">
-//                 {allocat.location && (
-//                   <span className="inline-flex min-w-0 items-center gap-1.5">
-//                     <MapPinIcon size={12} className="shrink-0" />
-
-//                     <span className="break-words">{allocat.location}</span>
-//                   </span>
-//                 )}
-
-//                 {yearsExperience > 0 && (
-//                   <span className="inline-flex items-center gap-1.5">
-//                     <BriefcaseBusinessIcon size={12} className="shrink-0" />
-//                     {yearsExperience} {yearsExperience === 1 ? "year" : "years"}{" "}
-//                     experience
-//                   </span>
-//                 )}
-//               </div>
-//             </div>
-//           </div>
-
-//           {/* HERO STATS */}
-
-//           <div
-//             className={[
-//               "mt-6 grid overflow-hidden rounded-xl border",
-//               "border-border/55 bg-surface-2/40",
-//               "dark:border-border dark:bg-surface-1/45",
-
-//               isDiscovery ? "grid-cols-3" : "grid-cols-2 sm:grid-cols-4",
-//             ].join(" ")}
-//           >
-//             <HeroMetric
-//               label="Rating"
-//               value={rating > 0 ? rating.toFixed(1) : "New"}
-//               icon={StarIcon}
-//               iconClass={ratingStyle.star}
-//               valueClass={ratingStyle.text}
-//               surfaceClass={rating > 0 ? ratingStyle.surface : ""}
-//             />
-
-//             <HeroMetric
-//               label="Projects"
-//               value={completedProjects.toString()}
-//               icon={CheckCircle2Icon}
-//               className="border-l border-border/55 dark:border-border"
-//             />
-
-//             <HeroMetric
-//               label="Rate"
-//               value={hourlyRate}
-//               sub={
-//                 allocat.hourlyRate !== null && allocat.hourlyRate !== undefined
-//                   ? "/hour"
-//                   : undefined
-//               }
-//               className={[
-//                 isDiscovery
-//                   ? "border-l border-border/55 dark:border-border"
-//                   : [
-//                       "border-t border-border/55",
-//                       "dark:border-border",
-//                       "sm:border-l sm:border-t-0",
-//                     ].join(" "),
-//               ].join(" ")}
-//             />
-
-//             {!isDiscovery && (
-//               <HeroMetric
-//                 label="Match"
-//                 value={
-//                   allocat.matchScore !== undefined
-//                     ? `${allocat.matchScore}%`
-//                     : "—"
-//                 }
-//                 icon={SparklesIcon}
-//                 accent
-//                 className={[
-//                   "border-l border-t border-border/55",
-//                   "dark:border-border",
-//                   "sm:border-t-0",
-//                 ].join(" ")}
-//               />
-//             )}
-//           </div>
-//         </DialogHeader>
-
-//         {/* =================================================
-//             BODY
-//         ================================================= */}
-
-//         <div className="min-h-0 flex-1 overflow-y-auto px-6 sm:px-7">
-//           {/* =================================================
-//               ABOUT
-//           ================================================= */}
-
-//           <ProfileSection eyebrow="About" title="About this Allocat">
-//             <p className="max-w-xl whitespace-pre-line text-sm leading-7 text-foreground/75">
-//               {allocat.bio ||
-//                 "This Allocat has not added a profile description yet."}
-//             </p>
-//           </ProfileSection>
-
-//           {/* =================================================
-//               SKILLS
-//           ================================================= */}
-
-//           <ProfileSection eyebrow="Skills" title="What they work with">
-//             {hasSkills ? (
-//               <div className="flex flex-wrap gap-2">
-//                 {allocat.skills?.map((skill, index) => (
-//                   <span
-//                     key={getSkillKey(skill, index)}
-//                     className={[
-//                       "inline-flex max-w-full items-center rounded-lg border",
-//                       "border-border/55 bg-surface-2/50",
-//                       "px-2.5 py-1.5",
-//                       "text-[0.68rem] font-medium text-foreground/75",
-
-//                       "dark:border-border",
-//                       "dark:bg-surface-2/60",
-//                       "dark:text-foreground/80",
-//                     ].join(" ")}
-//                   >
-//                     <span className="truncate">{getSkillName(skill)}</span>
-//                   </span>
-//                 ))}
-//               </div>
-//             ) : (
-//               <p className="text-sm text-muted-foreground">
-//                 No skills have been listed yet.
-//               </p>
-//             )}
-//           </ProfileSection>
-
-//           {/* =================================================
-//               DETAILS
-//           ================================================= */}
-
-//           <ProfileSection
-//             eyebrow="Profile"
-//             title="Working details"
-//             bordered={false}
-//           >
-//             <div className="grid gap-3 sm:grid-cols-2">
-//               <InfoTile
-//                 icon={BriefcaseBusinessIcon}
-//                 label="Experience"
-//                 value={
-//                   yearsExperience > 0
-//                     ? `${yearsExperience} ${
-//                         yearsExperience === 1 ? "year" : "years"
-//                       }`
-//                     : "Not listed"
-//                 }
-//               />
-
-//               <InfoTile
-//                 icon={CalendarDaysIcon}
-//                 label="Member since"
-//                 value={formatJoinedDate(allocat.joinedAt)}
-//               />
-
-//               <InfoTile
-//                 icon={CheckCircle2Icon}
-//                 label="Completed work"
-//                 value={`${completedProjects} ${
-//                   completedProjects === 1 ? "project" : "projects"
-//                 }`}
-//               />
-
-//               <InfoTile
-//                 icon={Clock3Icon}
-//                 label="Availability"
-//                 value={availability}
-//               />
-//             </div>
-//           </ProfileSection>
-
-//           {/* =================================================
-//               WORKING RATE
-//           ================================================= */}
-
-//           <section className="pb-7">
-//             <div
-//               className={[
-//                 "overflow-hidden rounded-xl border p-5",
-//                 subtlePanelSurface,
-//               ].join(" ")}
-//             >
-//               <div
-//                 className={[
-//                   "grid gap-5",
-
-//                   !isDiscovery && allocat.matchScore !== undefined
-//                     ? "sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"
-//                     : "",
-//                 ].join(" ")}
-//               >
-//                 <div>
-//                   <p className="text-[0.58rem] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
-//                     Working rate
-//                   </p>
-
-//                   <p className="mt-2 text-xl font-semibold tracking-[-0.025em] text-foreground/85 sm:text-2xl">
-//                     {hourlyRate}
-
-//                     {allocat.hourlyRate !== null &&
-//                       allocat.hourlyRate !== undefined && (
-//                         <span className="ml-1 text-xs font-medium text-muted-foreground">
-//                           /hour
-//                         </span>
-//                       )}
-//                   </p>
-
-//                   <p className="mt-2 max-w-md text-xs leading-6 text-muted-foreground">
-//                     {isDiscovery
-//                       ? "Final scope, availability and terms can be confirmed when you start a project together."
-//                       : "Final scope, availability and terms can be confirmed after the invitation is accepted."}
-//                   </p>
-//                 </div>
-
-//                 {!isDiscovery && allocat.matchScore !== undefined && (
-//                   <div className="border-t border-border/55 pt-4 sm:border-l sm:border-t-0 sm:pl-6 sm:pt-0 dark:border-border">
-//                     <p className="text-[0.58rem] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
-//                       Project match
-//                     </p>
-
-//                     <p className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-brand-secondary-highlight dark:text-secondary">
-//                       {allocat.matchScore}%
-//                     </p>
-
-//                     <p className="mt-1 text-[0.66rem] text-muted-foreground">
-//                       based on this project
-//                     </p>
-//                   </div>
-//                 )}
-//               </div>
-//             </div>
-//           </section>
-//         </div>
-
-//         {/* =================================================
-//             ACTION BAR
-//         ================================================= */}
-
-//         <div
-//           className={[
-//             "shrink-0 border-t px-6 py-4",
-//             "border-border/55 bg-surface-2/35",
-//             "dark:border-border dark:bg-surface-2/45",
-//             "sm:px-7",
-//           ].join(" ")}
-//         >
-//           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-//             <div className="min-w-0">
-//               <p className="text-sm font-semibold text-foreground/85">
-//                 {isDiscovery
-//                   ? `Want to work with ${allocat.fullName || "this Allocat"}?`
-//                   : "Ready to work together?"}
-//               </p>
-
-//               <p className="mt-1 max-w-sm text-xs leading-5 text-muted-foreground">
-//                 {isDiscovery
-//                   ? `Create a project and invite ${
-//                       allocat.fullName || "this Allocat"
-//                     } when you're ready.`
-//                   : `Invite ${
-//                       allocat.fullName || "this Allocat"
-//                     } to ${project?.title || "your project"}.`}
-//               </p>
-//             </div>
-
-//             <div className="flex shrink-0 items-center justify-end gap-2">
-//               <Button
-//                 type="button"
-//                 variant="ghost"
-//                 disabled={inviting}
-//                 onClick={() => onOpenChange(false)}
-//                 className={[
-//                   "h-10 rounded-lg px-4",
-//                   "text-xs font-medium shadow-none",
-//                   "text-muted-foreground",
-
-//                   "hover:bg-surface-3/60",
-//                   "hover:text-foreground/90",
-
-//                   "dark:hover:bg-surface-3",
-//                   "dark:hover:text-foreground",
-//                 ].join(" ")}
-//               >
-//                 Close
-//               </Button>
-
-//               {isDiscovery ? (
-//                 <Button
-//                   type="button"
-//                   variant="ghost"
-//                   onClick={onStartProject}
-//                   disabled={!onStartProject}
-//                   className={[
-//                     "h-10 rounded-lg px-5",
-//                     "text-xs font-semibold shadow-none",
-//                     primaryActionButton,
-//                   ].join(" ")}
-//                 >
-//                   <BriefcaseBusinessIcon size={14} />
-//                   Start a project
-//                 </Button>
-//               ) : (
-//                 <Button
-//                   type="button"
-//                   variant="ghost"
-//                   onClick={onInvite}
-//                   disabled={!project || !onInvite || inviting || invited}
-//                   className={[
-//                     "h-10 rounded-lg px-5",
-//                     "text-xs font-semibold shadow-none",
-
-//                     invited
-//                       ? [
-//                           "border border-status-pending/20",
-//                           "bg-status-pending/[0.07]",
-//                           "text-status-pending-foreground",
-
-//                           "hover:bg-status-pending/[0.07]",
-//                           "hover:text-status-pending-foreground",
-
-//                           "dark:border-status-pending/15",
-//                           "dark:bg-status-pending/[0.06]",
-//                         ].join(" ")
-//                       : primaryActionButton,
-//                   ].join(" ")}
-//                 >
-//                   {inviting ? (
-//                     <>
-//                       <LoaderCircleIcon size={14} className="animate-spin" />
-//                       Sending
-//                     </>
-//                   ) : invited ? (
-//                     <>
-//                       <CheckCircle2Icon size={14} />
-//                       Invited
-//                     </>
-//                   ) : (
-//                     <>
-//                       <SendIcon size={14} />
-//                       Invite to project
-//                     </>
-//                   )}
-//                 </Button>
-//               )}
-//             </div>
-//           </div>
-//         </div>
-//       </DialogContent>
-//     </Dialog>
-//   );
-// }
-
-// /* =========================================================
-//    PROFILE SECTION
-// ========================================================= */
-
-// function ProfileSection({
-//   eyebrow,
-//   title,
-//   children,
-//   bordered = true,
-// }: {
-//   eyebrow: string;
-//   title: string;
-//   children: ReactNode;
-//   bordered?: boolean;
-// }) {
-//   return (
-//     <section
-//       className={[
-//         "py-7",
-//         bordered ? "border-b border-border/55 dark:border-border" : "",
-//       ].join(" ")}
-//     >
-//       <div className="mb-4">
-//         <div className="flex items-center gap-2">
-//           <span className="h-1.5 w-1.5 rounded-full bg-brand-secondary-highlight/75 dark:bg-secondary/75" />
-
-//           <p className="text-[0.58rem] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
-//             {eyebrow}
-//           </p>
-//         </div>
-
-//         <h3 className="mt-2 text-sm font-semibold tracking-[-0.015em] text-foreground/85">
-//           {title}
-//         </h3>
-//       </div>
-
-//       {children}
-//     </section>
-//   );
-// }
-
-// /* =========================================================
-//    HERO METRIC
-// ========================================================= */
-
-// function HeroMetric({
-//   label,
-//   value,
-//   sub,
-//   icon: Icon,
-//   accent = false,
-//   iconClass = "",
-//   valueClass = "",
-//   surfaceClass = "",
-//   className = "",
-// }: {
-//   label: string;
-//   value: string;
-//   sub?: string;
-//   icon?: ComponentType<{
-//     size?: number;
-//     className?: string;
-//   }>;
-//   accent?: boolean;
-//   iconClass?: string;
-//   valueClass?: string;
-//   surfaceClass?: string;
-//   className?: string;
-// }) {
-//   return (
-//     <div
-//       className={[
-//         "min-w-0 px-4 py-4",
-//         surfaceClass,
-//         accent
-//           ? "bg-brand-secondary-highlight/[0.035] dark:bg-secondary/[0.035]"
-//           : "",
-//         className,
-//       ].join(" ")}
-//     >
-//       <div className="flex items-center gap-1.5 text-muted-foreground">
-//         {Icon && (
-//           <Icon
-//             size={11}
-//             className={
-//               iconClass ||
-//               (accent
-//                 ? "text-brand-secondary-highlight dark:text-secondary"
-//                 : "")
-//             }
-//           />
-//         )}
-
-//         <p className="truncate text-[0.54rem] font-semibold uppercase tracking-[0.12em]">
-//           {label}
-//         </p>
-//       </div>
-
-//       <p
-//         className={[
-//           "mt-1.5 truncate",
-//           "text-sm font-semibold tracking-[-0.015em]",
-//           "text-foreground/80",
-
-//           valueClass ||
-//             (accent
-//               ? "text-brand-secondary-highlight dark:text-secondary"
-//               : ""),
-//         ].join(" ")}
-//       >
-//         {value}
-
-//         {sub && (
-//           <span className="ml-1 text-[0.6rem] font-medium text-muted-foreground">
-//             {sub}
-//           </span>
-//         )}
-//       </p>
-//     </div>
-//   );
-// }
-
-// /* =========================================================
-//    INFO TILE
-// ========================================================= */
-
-// function InfoTile({
-//   icon: Icon,
-//   label,
-//   value,
-// }: {
-//   icon: ComponentType<{
-//     size?: number;
-//     className?: string;
-//   }>;
-//   label: string;
-//   value: string;
-// }) {
-//   return (
-//     <article
-//       className={[
-//         "flex items-start gap-3 rounded-xl border p-4",
-//         "border-border/55 bg-surface-2/40",
-//         "transition-[background-color,border-color] duration-150",
-
-//         "hover:border-border/75",
-//         "hover:bg-surface-2/60",
-
-//         "dark:border-border",
-//         "dark:bg-surface-2/50",
-//         "dark:hover:bg-surface-3/55",
-//       ].join(" ")}
-//     >
-//       <span
-//         className={[
-//           "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
-//           subtleIconSurface,
-//         ].join(" ")}
-//       >
-//         <Icon size={14} />
-//       </span>
-
-//       <div className="min-w-0">
-//         <p className="text-[0.57rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-//           {label}
-//         </p>
-
-//         <p className="mt-1.5 break-words text-sm font-semibold text-foreground/80">
-//           {value}
-//         </p>
-//       </div>
-//     </article>
-//   );
-// }
-
-// /* =========================================================
-//    RATING STYLE
-// ========================================================= */
-
-// function getRatingStyle(rating: number): RatingStyle {
-//   if (rating <= 0) {
-//     return {
-//       text: "text-muted-foreground",
-//       star: "text-muted-foreground/55",
-//       surface: "",
-//     };
-//   }
-
-//   if (rating < 3) {
-//     return {
-//       text: "text-destructive/90",
-//       star: "fill-current text-destructive/85",
-//       surface: "bg-destructive/[0.025]",
-//     };
-//   }
-
-//   if (rating < 4) {
-//     return {
-//       text: "text-brand-amber/90",
-//       star: "fill-current text-brand-amber/85",
-//       surface: "bg-brand-amber/[0.025]",
-//     };
-//   }
-
-//   return {
-//     text: "text-brand-green/90",
-//     star: "fill-current text-brand-green/80",
-//     surface: "bg-brand-green/[0.025]",
-//   };
-// }
-
-// /* =========================================================
-//    SKILLS
-// ========================================================= */
-
-// function getSkillName(skill: SkillItem): string {
-//   if (typeof skill === "string") {
-//     return skill;
-//   }
-
-//   return skill.name;
-// }
-
-// function getSkillKey(skill: SkillItem, index: number): string {
-//   if (typeof skill === "string") {
-//     return `${skill}-${index}`;
-//   }
-
-//   return skill.id || `${skill.name}-${index}`;
-// }
-
-// /* =========================================================
-//    AVAILABILITY
-// ========================================================= */
-
-// function formatAvailability(availability?: boolean | string): string {
-//   if (availability === true) {
-//     return "Available";
-//   }
-
-//   if (availability === false) {
-//     return "Unavailable";
-//   }
-
-//   if (!availability) {
-//     return "Contact to confirm";
-//   }
-
-//   return availability
-//     .replace(/[-_]/g, " ")
-//     .replace(/\b\w/g, (character) => character.toUpperCase());
-// }
-
-// /* =========================================================
-//    RATE
-// ========================================================= */
-
-// function formatHourlyRate(hourlyRate?: number | null): string {
-//   if (
-//     hourlyRate === null ||
-//     hourlyRate === undefined ||
-//     !Number.isFinite(hourlyRate)
-//   ) {
-//     return "Not set";
-//   }
-
-//   return `US$${hourlyRate}`;
-// }
-
-// /* =========================================================
-//    DATE
-// ========================================================= */
-
-// function formatJoinedDate(joinedAt?: string): string {
-//   if (!joinedAt) {
-//     return "Not available";
-//   }
-
-//   const joinedDate = new Date(joinedAt);
-
-//   if (Number.isNaN(joinedDate.getTime())) {
-//     return "Not available";
-//   }
-
-//   return new Intl.DateTimeFormat("en", {
-//     month: "long",
-//     year: "numeric",
-//   }).format(joinedDate);
-// }
-
-import { type ComponentType, type ReactNode } from "react";
+import { type ReactNode } from "react";
 import {
   ArrowUpRightIcon,
   BadgeCheckIcon,
@@ -926,6 +11,7 @@ import {
   SendIcon,
   SparklesIcon,
   StarIcon,
+  type LucideIcon,
 } from "lucide-react";
 import type { AllocatProfile } from "@/Types/allocatProfile";
 import type { Project } from "@/Types/project";
@@ -938,9 +24,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-/* =========================================================
-   TYPES
-========================================================= */
 type SkillItem =
   | string
   | {
@@ -949,8 +32,6 @@ type SkillItem =
       categoryId?: string;
       category?: string;
     };
-// Omit each overridden property so its replacement is not
-// intersected with the narrower property in AllocatProfile.
 type DialogAllocat = Omit<
   AllocatProfile,
   "skills" | "availability" | "verified"
@@ -969,421 +50,351 @@ type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   invited?: boolean;
+  accepted?: boolean;
   inviting?: boolean;
   onInvite?: () => void;
   mode?: DialogMode;
   onStartProject?: () => void;
 };
-type RatingStyle = {
-  text: string;
-  star: string;
-  surface: string;
-};
-/* =========================================================
-   SHARED THEME
-========================================================= */
-const primaryActionButton = [
-  "border border-brand-secondary-highlight/15",
-  "bg-brand-secondary-highlight text-primary-foreground",
-  "hover:border-brand-secondary-highlight/20",
-  "hover:bg-brand-secondary-highlight/90",
-  "hover:text-primary-foreground",
-  "focus-visible:ring-brand-secondary-highlight/20",
-  "dark:border-secondary/10 dark:bg-secondary",
-  "dark:text-secondary-foreground",
-  "dark:hover:border-secondary/15 dark:hover:bg-secondary/90",
-  "dark:hover:text-secondary-foreground",
-  "dark:focus-visible:ring-secondary/20",
-].join(" ");
-const subtleIconSurface = [
-  "bg-surface-3/70 text-brand-secondary-highlight",
-  "ring-1 ring-inset ring-border/40",
-  "dark:bg-surface-2 dark:text-secondary dark:ring-border",
-].join(" ");
-const subtlePanelSurface = [
-  "border-border/55 bg-surface-2/45",
-  "dark:border-border dark:bg-surface-2/55",
-].join(" ");
-/* =========================================================
-   DIALOG
-========================================================= */
+const ACCENT = "text-brand-secondary-highlight dark:text-secondary";
+const FOCUS =
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35 focus-visible:ring-offset-2 focus-visible:ring-offset-card";
+const ACTION = `inline-flex h-11 min-w-0 items-center justify-center gap-2 rounded-lg px-4 text-xs font-medium shadow-none transition-opacity duration-150 hover:opacity-80 disabled:pointer-events-none disabled:opacity-50 motion-reduce:transition-none ${FOCUS}`;
+const PRIMARY =
+  "border border-brand-secondary-highlight/15 bg-brand-secondary-highlight text-primary-foreground hover:bg-brand-secondary-highlight hover:text-primary-foreground dark:border-secondary/15 dark:bg-secondary dark:text-secondary-foreground dark:hover:bg-secondary dark:hover:text-secondary-foreground";
+const SECONDARY =
+  "border border-border/75 bg-transparent text-foreground hover:bg-transparent hover:text-foreground";
+const STATUS =
+  "border border-border/65 bg-surface-2/65 text-muted-foreground hover:bg-surface-2/65 hover:text-muted-foreground disabled:opacity-100";
+const amountFormat = new Intl.NumberFormat(undefined, {
+  maximumFractionDigits: 2,
+});
+const countFormat = new Intl.NumberFormat(undefined, {
+  maximumFractionDigits: 0,
+});
+const joinedFormat = new Intl.DateTimeFormat(undefined, {
+  month: "long",
+  year: "numeric",
+});
 export default function AllocatProfileDialog({
   allocat,
   project,
   open,
   onOpenChange,
   invited = false,
+  accepted = false,
   inviting = false,
   onInvite,
   mode,
   onStartProject,
 }: Props) {
-  const rawRating = allocat.rating ?? allocat.averageRating ?? 0;
-  const rating = Number.isFinite(rawRating)
-    ? Math.min(5, Math.max(0, rawRating))
-    : 0;
-  const completedProjects = safeCount(allocat.completedProjects);
-  const yearsExperience = safeNumber(allocat.yearsExperience);
-  const isDiscovery = mode === "discovery" || !project;
-  const isVerified = Boolean(allocat.isVerified ?? allocat.verified);
-  const hasSkills = (allocat.skills?.length ?? 0) > 0;
+  const name = allocat.fullName?.trim() || "Allocat professional";
+  const title =
+    allocat.title?.trim() ||
+    allocat.headline?.trim() ||
+    "Professional service provider";
+  const rating = Math.min(
+    5,
+    safeNumber(allocat.rating ?? allocat.averageRating),
+  );
+  const reviews = Math.floor(safeNumber(allocat.ratingCount));
+  const completed = Math.floor(safeNumber(allocat.completedProjects));
+  const experience = safeNumber(allocat.yearsExperience);
+  const verified = Boolean(allocat.isVerified ?? allocat.verified ?? false);
   const availability = formatAvailability(
     allocat.availabilityStatus || allocat.availability,
   );
-  const ratingStyle = getRatingStyle(rating);
-  const professionalTitle =
-    allocat.title || allocat.headline || "Professional service provider";
-  const hourlyRate = formatHourlyRate(allocat.hourlyRate);
-  const hasRate =
-    typeof allocat.hourlyRate === "number" &&
-    Number.isFinite(allocat.hourlyRate) &&
-    allocat.hourlyRate >= 0;
-  const matchScore =
+  const rate = formatHourlyRate(allocat.hourlyRate, allocat.currency);
+  const skills = normalizeSkills(allocat.skills);
+  const isDiscovery = mode === "discovery" || !project;
+  const match =
     typeof allocat.matchScore === "number" &&
     Number.isFinite(allocat.matchScore)
-      ? Math.min(100, Math.max(0, allocat.matchScore))
+      ? Math.round(Math.min(100, Math.max(0, allocat.matchScore)))
       : undefined;
   const profileId = allocat.allocatrUserId?.trim();
   const fullProfileUrl = profileId
-    ? "/allocats/" +
-      encodeURIComponent(profileId) +
-      (!isDiscovery && project
-        ? "?projectId=" + encodeURIComponent(project.id)
-        : "")
+    ? `/allocats/${encodeURIComponent(profileId)}${!isDiscovery && project ? `?projectId=${encodeURIComponent(project.id)}` : ""}`
     : null;
+  const ratingDescription =
+    rating > 0
+      ? `${rating.toFixed(1)} out of 5${reviews > 0 ? ` from ${countFormat.format(reviews)} ${reviews === 1 ? "review" : "reviews"}` : ""}`
+      : "Not yet rated";
+  const footerTitle = isDiscovery
+    ? "Start a project together"
+    : inviting
+      ? "Sending invitation…"
+      : accepted
+        ? "Already on this project"
+        : invited
+          ? "Invitation sent"
+          : "Add to your project";
+  const footerDescription = isDiscovery
+    ? `Create a project and invite ${name} when you’re ready.`
+    : accepted
+      ? `Added to ${project?.title || "your project"}.`
+      : invited
+        ? `Awaiting a response for ${project?.title || "your project"}.`
+        : project?.title || "Invite this Allocat to your project.";
+  function close() {
+    if (!inviting) onOpenChange(false);
+  }
   return (
     <Dialog
       open={open}
-      onOpenChange={(nextOpen) => {
-        if (!inviting) onOpenChange(nextOpen);
+      onOpenChange={(next) => {
+        if (!inviting) onOpenChange(next);
       }}
     >
       <DialogContent
-        className={[
-          "flex max-h-[92dvh] flex-col overflow-hidden p-0",
-          "rounded-xl border shadow-none",
-          "border-border/60 bg-card text-card-foreground",
-          "dark:border-border dark:bg-card sm:max-w-2xl",
-        ].join(" ")}
+        aria-busy={inviting}
+        className="flex max-h-[92dvh] w-[calc(100vw-24px)] flex-col gap-0 overflow-hidden rounded-2xl border border-border/80 bg-card p-0 text-card-foreground shadow-[0_24px_80px_-24px_color-mix(in_srgb,var(--brand-charcoal)_50%,transparent)] motion-reduce:animate-none sm:max-w-[720px] [&>button]:right-3 [&>button]:top-3 [&>button]:flex [&>button]:h-10 [&>button]:w-10 [&>button]:items-center [&>button]:justify-center [&>button]:rounded-lg [&>button]:bg-card [&>button]:text-muted-foreground [&>button]:opacity-100"
       >
-        {/* HERO */}
-
-        <DialogHeader
-          className={[
-            "shrink-0 border-b px-6 pb-6 pt-6 text-left",
-            "border-border/55 bg-surface-2/30",
-            "dark:border-border dark:bg-surface-2/45",
-            "sm:px-7 sm:pb-7 sm:pt-7",
-          ].join(" ")}
+        {/* Identity scrolls with the profile, leaving space for the action bar
+            even on short or landscape screens. Radix retains focus trapping. */}
+        <div
+          role="region"
+          aria-label="Profile details"
+          tabIndex={0}
+          className="min-h-0 flex-1 overflow-y-auto overscroll-contain outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring/30"
         >
-          <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
-            <div className="relative shrink-0">
-              <Avatar className="h-[72px] w-[72px] border border-border/65 bg-surface-3 ring-1 ring-inset ring-border/25">
-                {allocat.avatarUrl && (
-                  <AvatarImage
-                    src={allocat.avatarUrl}
-                    alt={allocat.fullName || "Allocat profile"}
-                    className="object-cover"
-                  />
-                )}
-
-                <AvatarFallback className="bg-surface-3 text-base font-semibold text-brand-secondary-highlight dark:text-secondary">
-                  {getInitials(allocat.fullName)}
+          <DialogHeader className="border-b border-border/65 px-5 pb-6 pt-6 text-left sm:px-7 sm:pt-7">
+            <div className="flex min-w-0 items-start gap-3.5 pr-9 sm:gap-5">
+              <Avatar
+                aria-hidden="true"
+                className="h-14 w-14 shrink-0 border border-border/70 bg-surface-2 sm:h-16 sm:w-16"
+              >
+                <AvatarImage
+                  src={allocat.avatarUrl || undefined}
+                  alt=""
+                  className="object-cover"
+                />
+                <AvatarFallback
+                  className={`bg-surface-2 text-sm font-medium ${ACCENT}`}
+                >
+                  {getInitials(name)}
                 </AvatarFallback>
               </Avatar>
-
-              {isVerified && (
+              <div className="min-w-0 flex-1">
+                <DialogTitle className="break-words text-xl font-medium leading-7 tracking-[-0.035em] [overflow-wrap:anywhere] sm:text-2xl sm:leading-8">
+                  {name}
+                </DialogTitle>
+                <DialogDescription className="mt-1.5 break-words text-[13px] leading-6 text-muted-foreground [overflow-wrap:anywhere]">
+                  {title}
+                </DialogDescription>
+                {verified && (
+                  <span
+                    className={`mt-2 inline-flex items-center gap-1 text-[10px] font-medium ${ACCENT}`}
+                  >
+                    <BadgeCheckIcon size={13} aria-hidden="true" />
+                    Verified profile
+                  </span>
+                )}
+              </div>
+            </div>
+            <div className="mt-5 flex min-w-0 flex-wrap items-center gap-x-4 gap-y-2 text-[11px] text-muted-foreground">
+              <span
+                role="img"
+                aria-label={ratingDescription}
+                title={ratingDescription}
+                className="inline-flex items-center gap-1.5"
+              >
+                <StarIcon
+                  size={13}
+                  aria-hidden="true"
+                  className={
+                    rating > 0
+                      ? "fill-brand-amber/75 text-brand-amber"
+                      : "text-muted-foreground/60"
+                  }
+                />
                 <span
-                  title="Verified professional"
-                  className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full border-2 border-surface-2 bg-brand-secondary-highlight text-primary-foreground dark:bg-secondary dark:text-secondary-foreground"
+                  aria-hidden="true"
+                  className={rating > 0 ? "font-medium text-foreground" : ""}
                 >
-                  <BadgeCheckIcon size={11} aria-hidden="true" />
+                  {rating > 0 ? rating.toFixed(1) : "Not yet rated"}
+                </span>
+                {rating > 0 && reviews > 0 && (
+                  <span aria-hidden="true">
+                    ({countFormat.format(reviews)}{" "}
+                    {reviews === 1 ? "review" : "reviews"})
+                  </span>
+                )}
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <CheckCircle2Icon size={13} aria-hidden="true" />
+                {countFormat.format(completed)}{" "}
+                {completed === 1 ? "project" : "projects"} completed
+              </span>
+              {!!allocat.location?.trim() && (
+                <span className="inline-flex min-w-0 max-w-full items-start gap-1.5">
+                  <MapPinIcon
+                    size={13}
+                    aria-hidden="true"
+                    className="mt-0.5 shrink-0"
+                  />
+                  <span className="break-words [overflow-wrap:anywhere]">
+                    {allocat.location.trim()}
+                  </span>
                 </span>
               )}
             </div>
-
-            <div className="min-w-0 flex-1 pr-5">
-              <div className="flex min-w-0 flex-wrap items-center gap-2">
-                <DialogTitle className="min-w-0 break-words text-xl font-semibold leading-tight tracking-[-0.025em] text-foreground/90 sm:text-2xl">
-                  {allocat.fullName || "Allocat professional"}
-                </DialogTitle>
-
-                {isVerified && (
-                  <BadgeCheckIcon
-                    size={14}
-                    aria-hidden="true"
-                    className="shrink-0 text-brand-secondary-highlight dark:text-secondary"
-                  />
-                )}
-              </div>
-
-              <DialogDescription className="mt-1.5 text-sm font-medium text-muted-foreground">
-                {professionalTitle}
-              </DialogDescription>
-
-              <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-[0.68rem] text-muted-foreground">
-                {allocat.location && (
-                  <span className="inline-flex min-w-0 items-center gap-1.5">
-                    <MapPinIcon
-                      size={12}
-                      aria-hidden="true"
-                      className="shrink-0"
-                    />
-                    <span className="break-words">{allocat.location}</span>
-                  </span>
-                )}
-
-                {yearsExperience > 0 && (
-                  <span className="inline-flex items-center gap-1.5">
-                    <BriefcaseBusinessIcon
-                      size={12}
-                      aria-hidden="true"
-                      className="shrink-0"
-                    />
-                    {yearsExperience} {yearsExperience === 1 ? "year" : "years"}{" "}
-                    experience
-                  </span>
-                )}
-              </div>
-
-              {/* Opens separately; the current dialog stays open. */}
-              {fullProfileUrl && (
-                <a
-                  href={fullProfileUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={[
-                    "mt-3 inline-flex min-h-8 items-center gap-1.5 rounded-md",
-                    "text-xs font-medium text-brand-secondary-highlight",
-                    "transition-opacity hover:opacity-75",
-                    "focus-visible:outline-none focus-visible:ring-2",
-                    "focus-visible:ring-ring/30",
-                    "dark:text-secondary motion-reduce:transition-none",
-                  ].join(" ")}
-                >
-                  Open full profile
-                  <ArrowUpRightIcon size={13} aria-hidden="true" />
-                  <span className="sr-only">
-                    {" "}
-                    (opens in a new tab or window)
-                  </span>
-                </a>
-              )}
-            </div>
-          </div>
-
-          {/* HERO STATS */}
-
-          <div
-            className={[
-              "mt-6 grid overflow-hidden rounded-xl border",
-              "border-border/55 bg-surface-2/40",
-              "dark:border-border dark:bg-surface-1/45",
-              isDiscovery ? "grid-cols-3" : "grid-cols-2 sm:grid-cols-4",
-            ].join(" ")}
-          >
-            <HeroMetric
-              label="Rating"
-              value={rating > 0 ? rating.toFixed(1) : "New"}
-              icon={StarIcon}
-              iconClass={ratingStyle.star}
-              valueClass={ratingStyle.text}
-              surfaceClass={rating > 0 ? ratingStyle.surface : ""}
-            />
-
-            <HeroMetric
-              label="Projects"
-              value={String(completedProjects)}
-              icon={CheckCircle2Icon}
-              className="border-l border-border/55 dark:border-border"
-            />
-
-            <HeroMetric
-              label="Rate"
-              value={hourlyRate}
-              sub={hasRate ? "/hour" : undefined}
-              className={
-                isDiscovery
-                  ? "border-l border-border/55 dark:border-border"
-                  : "border-t border-border/55 sm:border-l sm:border-t-0 dark:border-border"
-              }
-            />
-
-            {!isDiscovery && (
-              <HeroMetric
-                label="Match"
-                value={matchScore !== undefined ? matchScore + "%" : "—"}
-                icon={SparklesIcon}
-                accent
-                className="border-l border-t border-border/55 sm:border-t-0 dark:border-border"
-              />
+            {fullProfileUrl && (
+              <a
+                href={fullProfileUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`mt-3 inline-flex min-h-10 items-center gap-1.5 self-start rounded-md text-xs font-medium transition-opacity hover:opacity-75 motion-reduce:transition-none ${ACCENT} ${FOCUS}`}
+              >
+                Open full profile
+                <ArrowUpRightIcon size={13} aria-hidden="true" />
+                <span className="sr-only"> (opens in a new tab or window)</span>
+              </a>
             )}
-          </div>
-        </DialogHeader>
+          </DialogHeader>
 
-        {/* BODY */}
-
-        <div className="min-h-0 flex-1 overflow-y-auto px-6 sm:px-7">
-          <ProfileSection eyebrow="About" title="About this Allocat">
-            <p className="max-w-xl whitespace-pre-line break-words text-sm leading-7 text-foreground/75">
-              {allocat.bio ||
-                "This Allocat has not added a profile description yet."}
-            </p>
-          </ProfileSection>
-
-          <ProfileSection eyebrow="Skills" title="What they work with">
-            {hasSkills ? (
-              <div className="flex flex-wrap gap-2">
-                {allocat.skills?.map((skill, index) => (
-                  <span
-                    key={getSkillKey(skill, index)}
-                    className="inline-flex max-w-full items-center rounded-lg border border-border/55 bg-surface-2/50 px-2.5 py-1.5 text-[0.68rem] font-medium text-foreground/75 dark:border-border dark:bg-surface-2/60 dark:text-foreground/80"
-                  >
-                    <span className="truncate">{getSkillName(skill)}</span>
-                  </span>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">
-                No skills have been listed yet.
+          <div className="px-5 sm:px-7">
+            <ProfileSection title="About this Allocat">
+              <p className="whitespace-pre-wrap break-words text-[13px] leading-7 text-foreground/85 [overflow-wrap:anywhere]">
+                {allocat.bio?.trim() ||
+                  "This Allocat has not added a profile description yet."}
               </p>
-            )}
-          </ProfileSection>
-
-          <ProfileSection
-            eyebrow="Profile"
-            title="Working details"
-            bordered={false}
-          >
-            <div className="grid gap-3 sm:grid-cols-2">
-              <InfoTile
-                icon={BriefcaseBusinessIcon}
-                label="Experience"
-                value={
-                  yearsExperience > 0
-                    ? yearsExperience +
-                      (yearsExperience === 1 ? " year" : " years")
-                    : "Not listed"
-                }
-              />
-              <InfoTile
-                icon={CalendarDaysIcon}
-                label="Member since"
-                value={formatJoinedDate(allocat.joinedAt)}
-              />
-              <InfoTile
-                icon={CheckCircle2Icon}
-                label="Completed work"
-                value={
-                  completedProjects +
-                  (completedProjects === 1 ? " project" : " projects")
-                }
-              />
-              <InfoTile
-                icon={Clock3Icon}
-                label="Availability"
-                value={availability}
-              />
-            </div>
-          </ProfileSection>
-
-          <section className="pb-7">
-            <div
-              className={
-                "overflow-hidden rounded-xl border p-5 " + subtlePanelSurface
-              }
+            </ProfileSection>
+            <ProfileSection title="Skills & expertise">
+              {skills.length ? (
+                <ul className="flex flex-wrap gap-2" aria-label="Skills">
+                  {skills.map((skill) => (
+                    <li
+                      key={skill.key}
+                      className="max-w-full rounded-lg border border-border/65 bg-surface-2/55 px-2.5 py-1.5 text-[11px] font-medium leading-5 text-foreground/85"
+                    >
+                      <span className="break-words [overflow-wrap:anywhere]">
+                        {skill.name}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-xs leading-6 text-muted-foreground">
+                  No skills have been listed yet.
+                </p>
+              )}
+            </ProfileSection>
+            <ProfileSection title="Working details" bordered={false}>
+              <dl className="grid gap-5 sm:grid-cols-3">
+                <Detail
+                  icon={BriefcaseBusinessIcon}
+                  label="Experience"
+                  value={
+                    experience > 0
+                      ? `${amountFormat.format(experience)} ${experience === 1 ? "year" : "years"}`
+                      : "Not listed"
+                  }
+                />
+                <Detail
+                  icon={Clock3Icon}
+                  label="Availability"
+                  value={availability}
+                />
+                <Detail
+                  icon={CalendarDaysIcon}
+                  label="Member since"
+                  value={formatJoinedDate(allocat.joinedAt)}
+                />
+              </dl>
+            </ProfileSection>
+            <section
+              aria-label="Rate and project context"
+              className="mb-6 rounded-xl border border-border/70 bg-surface-2/50 p-4 sm:mb-7 sm:p-5"
             >
               <div
-                className={[
-                  "grid gap-5",
-                  !isDiscovery && matchScore !== undefined
-                    ? "sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"
-                    : "",
-                ].join(" ")}
+                className={`grid gap-5 ${!isDiscovery && match !== undefined ? "sm:grid-cols-[minmax(0,1fr)_160px]" : ""}`}
               >
-                <div>
-                  <p className="text-[0.58rem] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
-                    Working rate
-                  </p>
-                  <p className="mt-2 text-xl font-semibold tracking-[-0.025em] text-foreground/85 sm:text-2xl">
-                    {hourlyRate}
-                    {hasRate && (
-                      <span className="ml-1 text-xs font-medium text-muted-foreground">
+                <div className="min-w-0">
+                  <h3 className="text-[11px] font-medium text-muted-foreground">
+                    Hourly rate
+                  </h3>
+                  <p className="mt-2 break-words text-2xl font-medium leading-8 tracking-[-0.035em] [overflow-wrap:anywhere]">
+                    {rate ?? "On request"}
+                    {rate && (
+                      <span className="ml-1 text-xs font-normal tracking-normal text-muted-foreground">
                         /hour
                       </span>
                     )}
                   </p>
-                  <p className="mt-2 max-w-md text-xs leading-6 text-muted-foreground">
+                  <p className="mt-2 max-w-md text-[11px] leading-6 text-muted-foreground">
                     {isDiscovery
-                      ? "Final scope, availability and terms can be confirmed when you start a project together."
-                      : "Final scope, availability and terms can be confirmed after the invitation is accepted."}
+                      ? "Confirm scope, availability and terms when you start a project together."
+                      : accepted
+                        ? "Confirm scope and terms with your project team."
+                        : "Confirm scope, availability and terms after the invitation is accepted."}
                   </p>
                 </div>
-
-                {!isDiscovery && matchScore !== undefined && (
-                  <div className="border-t border-border/55 pt-4 sm:border-l sm:border-t-0 sm:pl-6 sm:pt-0 dark:border-border">
-                    <p className="text-[0.58rem] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
+                {!isDiscovery && match !== undefined && (
+                  <div className="min-w-0 border-t border-border/65 pt-4 sm:border-l sm:border-t-0 sm:pl-5 sm:pt-0">
+                    <h3 className="inline-flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground">
+                      <SparklesIcon size={12} aria-hidden="true" />
                       Project match
+                    </h3>
+                    <p
+                      className={`mt-2 text-2xl font-medium leading-8 tracking-[-0.035em] ${ACCENT}`}
+                    >
+                      {match}%
                     </p>
-                    <p className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-brand-secondary-highlight dark:text-secondary">
-                      {matchScore}%
-                    </p>
-                    <p className="mt-1 text-[0.66rem] text-muted-foreground">
-                      based on this project
+                    <p
+                      title={project?.title}
+                      className="mt-2 break-words text-[11px] leading-5 text-muted-foreground [overflow-wrap:anywhere]"
+                    >
+                      Based on {project?.title || "this project"}
                     </p>
                   </div>
                 )}
               </div>
-            </div>
-          </section>
+            </section>
+          </div>
         </div>
 
-        {/* ACTION BAR — existing in-dialog invitation flow */}
-
-        <div className="shrink-0 border-t border-border/55 bg-surface-2/35 px-6 py-4 sm:px-7 dark:border-border dark:bg-surface-2/45">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div
+          role="group"
+          aria-label="Profile actions"
+          className="shrink-0 border-t border-border/70 bg-card px-5 py-4 sm:px-7"
+        >
+          <p role="status" aria-live="polite" className="sr-only">
+            {inviting
+              ? "Sending invitation. Please wait."
+              : !isDiscovery && accepted
+                ? "This Allocat is already on the project."
+                : !isDiscovery && invited
+                  ? "Invitation sent."
+                  : ""}
+          </p>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-5">
             <div className="min-w-0">
-              <p className="text-sm font-semibold text-foreground/85">
-                {isDiscovery
-                  ? "Want to work with " +
-                    (allocat.fullName || "this Allocat") +
-                    "?"
-                  : "Ready to work together?"}
-              </p>
-              <p className="mt-1 max-w-sm text-xs leading-5 text-muted-foreground">
-                {isDiscovery
-                  ? "Create a project and invite " +
-                    (allocat.fullName || "this Allocat") +
-                    " when you're ready."
-                  : "Invite " +
-                    (allocat.fullName || "this Allocat") +
-                    " to " +
-                    (project?.title || "your project") +
-                    "."}
+              <p className="text-xs font-medium leading-5">{footerTitle}</p>
+              <p
+                title={footerDescription}
+                className="mt-1 hidden text-[11px] leading-5 text-muted-foreground [overflow-wrap:anywhere] sm:line-clamp-2"
+              >
+                {footerDescription}
               </p>
             </div>
-
-            <div className="flex shrink-0 items-center justify-end gap-2">
+            <div className="grid w-full shrink-0 grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] gap-2 sm:flex sm:w-auto">
               <Button
                 type="button"
                 variant="ghost"
                 disabled={inviting}
-                onClick={() => onOpenChange(false)}
-                className="h-10 rounded-lg px-4 text-xs font-medium text-muted-foreground shadow-none hover:bg-surface-3/60 hover:text-foreground/90 dark:hover:bg-surface-3 dark:hover:text-foreground"
+                onClick={close}
+                className={`${ACTION} ${SECONDARY}`}
               >
                 Close
               </Button>
-
               {isDiscovery ? (
                 <Button
                   type="button"
                   variant="ghost"
                   onClick={onStartProject}
                   disabled={!onStartProject || inviting}
-                  className={
-                    "h-10 rounded-lg px-5 text-xs font-semibold shadow-none " +
-                    primaryActionButton
-                  }
+                  className={`${ACTION} ${PRIMARY}`}
                 >
                   <BriefcaseBusinessIcon size={14} aria-hidden="true" />
                   Start a project
@@ -1393,22 +404,25 @@ export default function AllocatProfileDialog({
                   type="button"
                   variant="ghost"
                   onClick={onInvite}
-                  disabled={!project || !onInvite || inviting || invited}
-                  className={[
-                    "h-10 rounded-lg px-5 text-xs font-semibold shadow-none",
-                    invited
-                      ? "border border-status-pending/20 bg-status-pending/[0.07] text-status-pending-foreground hover:bg-status-pending/[0.07] hover:text-status-pending-foreground dark:border-status-pending/15 dark:bg-status-pending/[0.06]"
-                      : primaryActionButton,
-                  ].join(" ")}
+                  disabled={
+                    !project || !onInvite || inviting || invited || accepted
+                  }
+                  aria-busy={inviting}
+                  className={`${ACTION} ${invited || accepted ? STATUS : PRIMARY}`}
                 >
                   {inviting ? (
                     <>
                       <LoaderCircleIcon
                         size={14}
                         aria-hidden="true"
-                        className="animate-spin"
+                        className="animate-spin motion-reduce:animate-none"
                       />
-                      Sending
+                      Sending…
+                    </>
+                  ) : accepted ? (
+                    <>
+                      <CheckCircle2Icon size={14} aria-hidden="true" />
+                      Added
                     </>
                   ) : invited ? (
                     <>
@@ -1430,231 +444,98 @@ export default function AllocatProfileDialog({
     </Dialog>
   );
 }
-/* =========================================================
-   PROFILE SECTION
-========================================================= */
 function ProfileSection({
-  eyebrow,
   title,
   children,
   bordered = true,
 }: {
-  eyebrow: string;
   title: string;
   children: ReactNode;
   bordered?: boolean;
 }) {
   return (
-    <section
-      className={
-        "py-7 " +
-        (bordered ? "border-b border-border/55 dark:border-border" : "")
-      }
-    >
-      <div className="mb-4">
-        <div className="flex items-center gap-2">
-          <span
-            aria-hidden="true"
-            className="h-1.5 w-1.5 rounded-full bg-brand-secondary-highlight/75 dark:bg-secondary/75"
-          />
-          <p className="text-[0.58rem] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
-            {eyebrow}
-          </p>
-        </div>
-        <h3 className="mt-2 text-sm font-semibold tracking-[-0.015em] text-foreground/85">
-          {title}
-        </h3>
-      </div>
+    <section className={`py-6 ${bordered ? "border-b border-border/65" : ""}`}>
+      <h3 className="mb-3 text-sm font-medium tracking-[-0.015em]">{title}</h3>
       {children}
     </section>
   );
 }
-/* =========================================================
-   HERO METRIC
-========================================================= */
-function HeroMetric({
-  label,
-  value,
-  sub,
-  icon: Icon,
-  accent = false,
-  iconClass = "",
-  valueClass = "",
-  surfaceClass = "",
-  className = "",
-}: {
-  label: string;
-  value: string;
-  sub?: string;
-  icon?: ComponentType<{
-    size?: number;
-    className?: string;
-  }>;
-  accent?: boolean;
-  iconClass?: string;
-  valueClass?: string;
-  surfaceClass?: string;
-  className?: string;
-}) {
-  return (
-    <div
-      className={[
-        "min-w-0 px-4 py-4",
-        surfaceClass,
-        accent
-          ? "bg-brand-secondary-highlight/[0.035] dark:bg-secondary/[0.035]"
-          : "",
-        className,
-      ].join(" ")}
-    >
-      <div className="flex items-center gap-1.5 text-muted-foreground">
-        {Icon && (
-          <Icon
-            size={11}
-            className={
-              iconClass ||
-              (accent
-                ? "text-brand-secondary-highlight dark:text-secondary"
-                : "")
-            }
-          />
-        )}
-        <p className="truncate text-[0.54rem] font-semibold uppercase tracking-[0.12em]">
-          {label}
-        </p>
-      </div>
-      <p
-        title={value + (sub || "")}
-        className={[
-          "mt-1.5 truncate text-sm font-semibold tracking-[-0.015em]",
-          valueClass ||
-            (accent
-              ? "text-brand-secondary-highlight dark:text-secondary"
-              : "text-foreground/80"),
-        ].join(" ")}
-      >
-        {value}
-        {sub && (
-          <span className="ml-1 text-[0.6rem] font-medium text-muted-foreground">
-            {sub}
-          </span>
-        )}
-      </p>
-    </div>
-  );
-}
-/* =========================================================
-   INFO TILE
-========================================================= */
-function InfoTile({
+function Detail({
   icon: Icon,
   label,
   value,
 }: {
-  icon: ComponentType<{
-    size?: number;
-    className?: string;
-  }>;
+  icon: LucideIcon;
   label: string;
   value: string;
 }) {
   return (
-    <article className="flex items-start gap-3 rounded-xl border border-border/55 bg-surface-2/40 p-4 transition-[background-color,border-color] duration-150 hover:border-border/75 hover:bg-surface-2/60 dark:border-border dark:bg-surface-2/50 dark:hover:bg-surface-3/55">
+    <div className="flex min-w-0 items-start gap-2.5">
       <span
-        className={
-          "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg " +
-          subtleIconSurface
-        }
+        aria-hidden="true"
+        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-surface-2 text-muted-foreground"
       >
         <Icon size={14} />
       </span>
       <div className="min-w-0">
-        <p className="text-[0.57rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-          {label}
-        </p>
-        <p className="mt-1.5 break-words text-sm font-semibold text-foreground/80">
+        <dt className="text-[10px] leading-4 text-muted-foreground">{label}</dt>
+        <dd className="mt-1 break-words text-xs font-medium leading-5 [overflow-wrap:anywhere]">
           {value}
-        </p>
+        </dd>
       </div>
-    </article>
+    </div>
   );
 }
-/* =========================================================
-   HELPERS
-========================================================= */
-function getRatingStyle(rating: number): RatingStyle {
-  if (rating <= 0)
-    return {
-      text: "text-muted-foreground",
-      star: "text-muted-foreground/55",
-      surface: "",
-    };
-  if (rating < 3)
-    return {
-      text: "text-status-overdue-foreground",
-      star: "fill-current text-status-overdue-foreground",
-      surface: "bg-status-overdue/[0.025]",
-    };
-  if (rating < 4)
-    return {
-      text: "text-status-pending-foreground",
-      star: "fill-current text-status-pending-foreground",
-      surface: "bg-status-pending/[0.025]",
-    };
-  return {
-    text: "text-status-complete-foreground",
-    star: "fill-current text-status-complete-foreground",
-    surface: "bg-status-complete/[0.025]",
-  };
+function safeNumber(value?: number | null) {
+  return typeof value === "number" && Number.isFinite(value)
+    ? Math.max(0, value)
+    : 0;
 }
-function getSkillName(skill: SkillItem): string {
-  return typeof skill === "string" ? skill : skill.name;
-}
-function getSkillKey(skill: SkillItem, index: number): string {
-  return typeof skill === "string"
-    ? skill + "-" + index
-    : skill.id || skill.name + "-" + index;
-}
-// Initials need only a name, not an entire AllocatProfile/User.
-// This avoids casting optional object/string skills to string[].
-function getInitials(name?: string | null): string {
+function getInitials(name: string) {
   return (
     name
-      ?.trim()
+      .trim()
       .split(/\s+/)
       .slice(0, 2)
       .map((part) => part.charAt(0).toUpperCase())
       .join("") || "A"
   );
 }
-function formatAvailability(value?: boolean | string): string {
+function formatAvailability(value?: boolean | string) {
   if (value === true) return "Available";
   if (value === false) return "Unavailable";
-  const normalized = value?.trim();
-  if (!normalized) return "Contact to confirm";
-  return normalized
-    .replace(/[-_]/g, " ")
-    .replace(/\b\w/g, (character) => character.toUpperCase());
+  const text = value?.trim().replace(/[-_]/g, " ").replace(/\s+/g, " ");
+  return text
+    ? text.replace(/\b\w/g, (letter) => letter.toUpperCase())
+    : "Contact to confirm";
 }
-function formatHourlyRate(value?: number | null): string {
-  return typeof value === "number" && Number.isFinite(value) && value >= 0
-    ? "US$" + value
-    : "Not set";
+function formatHourlyRate(value?: number | null, currency?: string | null) {
+  if (typeof value !== "number" || !Number.isFinite(value) || value < 0)
+    return null;
+  const code = currency?.trim().toUpperCase();
+  if (!code || !/^[A-Z]{3}$/.test(code)) return null;
+  return `${code === "USD" ? "US$" : `${code} `}${amountFormat.format(value)}`;
 }
-function safeNumber(value?: number | null): number {
-  return typeof value === "number" && Number.isFinite(value)
-    ? Math.max(0, value)
-    : 0;
-}
-function safeCount(value?: number | null): number {
-  return Math.floor(safeNumber(value));
-}
-function formatJoinedDate(value?: string): string {
-  if (!value) return "Not available";
+function formatJoinedDate(value?: string) {
+  if (!value) return "Not listed";
   const date = new Date(value);
   return Number.isFinite(date.getTime())
-    ? new Intl.DateTimeFormat("en", { month: "long", year: "numeric" }).format(
-        date,
-      )
-    : "Not available";
+    ? joinedFormat.format(date)
+    : "Not listed";
+}
+function normalizeSkills(input?: SkillItem[]) {
+  const unique = new Map<
+    string,
+    {
+      key: string;
+      name: string;
+    }
+  >();
+  for (const item of Array.isArray(input) ? input : []) {
+    const name = (typeof item === "string" ? item : item?.name)?.trim();
+    if (!name) continue;
+    const key = name.toLowerCase();
+    if (!unique.has(key)) unique.set(key, { key, name });
+  }
+  return [...unique.values()];
 }

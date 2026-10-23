@@ -37,7 +37,6 @@ import {
   PawPrintIcon,
   type LucideIcon,
 } from "lucide-react";
-
 import allocatrLogoLight from "@/assets/allocatr-neg-light.svg";
 import allocatrLogoDark from "@/assets/allocatr-dark-02.svg";
 import allocatrIcon from "@/assets/icon-variant-01.svg";
@@ -52,7 +51,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
 type AccountUser = {
   fullName?: string;
   email?: string;
@@ -79,7 +77,6 @@ type SiteHeaderProps = {
   /** Auto uses the fixed dark navigation on / and the app theme elsewhere. */
   appearance?: "auto" | "landing";
 };
-
 const platformLinks: MenuLink[] = [
   {
     title: "How Allocatr works",
@@ -169,7 +166,6 @@ const resourceLinks: MenuLink[] = [
     icon: LockKeyholeIcon,
   },
 ];
-
 /* The header reads the hero canvas locally. Radix portals use the identical
    brand-token fallback because they do not inherit page-scoped variables. */
 const LANDING_NAV_TOKENS = {
@@ -199,22 +195,19 @@ const LANDING_NAV_TOKENS = {
   "--secondary-foreground": "var(--brand-charcoal)",
   "--brand-secondary-highlight": "var(--brand-primary)",
 } as CSSProperties;
-
 const HeaderThemeContext = createContext(false);
-
 const actionBase =
-  "inline-flex items-center justify-center gap-2 rounded-lg border text-xs font-medium shadow-none transition-opacity duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-background";
+  "inline-flex items-center justify-center gap-2 rounded-lg border text-xs font-medium shadow-none transition-opacity duration-150 motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-background";
 const landingPrimary =
-  "border-brand-primary/20 bg-brand-primary text-dark-gray hover:bg-brand-primary hover:text-dark-gray hover:opacity-90 focus-visible:ring-brand-primary/30";
+  "border-brand-primary/20 bg-brand-primary text-brand-charcoal hover:bg-brand-primary hover:text-brand-charcoal hover:opacity-90 focus-visible:ring-brand-primary/30";
 const autoPrimary =
   "border-brand-secondary-highlight/15 bg-brand-secondary-highlight text-primary-foreground hover:bg-brand-secondary-highlight hover:text-primary-foreground hover:opacity-90 focus-visible:ring-brand-secondary-highlight/20 dark:border-secondary/10 dark:bg-secondary dark:text-secondary-foreground dark:hover:bg-secondary dark:hover:text-secondary-foreground dark:focus-visible:ring-secondary/20";
 const ghostAction =
   "border-transparent bg-transparent text-muted-foreground hover:text-foreground hover:opacity-80 focus-visible:ring-ring/25";
 const itemStyle =
-  "rounded-lg px-2.5 py-2 text-sm text-foreground/75 transition-colors duration-150 focus:bg-surface-3/60 focus:text-foreground";
+  "min-h-11 gap-3 rounded-lg px-3 py-2.5 text-xs text-foreground/85 transition-colors duration-150 focus:bg-surface-3/55 focus:text-foreground motion-reduce:transition-none";
 const dropdownSurface =
-  "[--menu-platform:var(--brand-secondary-highlight)] [--menu-solutions:color-mix(in_srgb,var(--brand-primary-muted)_45%,var(--brand-charcoal))] [--menu-resources:color-mix(in_srgb,var(--brand-amber)_40%,var(--brand-charcoal))] dark:[--menu-solutions:var(--brand-primary-muted)] dark:[--menu-resources:var(--brand-amber)] z-[150] rounded-xl border border-border/70 bg-popover text-popover-foreground shadow-none origin-[var(--radix-dropdown-menu-content-transform-origin)] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0 data-[state=open]:zoom-in-95 data-[state=closed]:zoom-out-95 motion-reduce:animate-none";
-
+  "[--menu-platform:var(--brand-secondary-highlight)] [--menu-solutions:color-mix(in_srgb,var(--brand-primary-muted)_45%,var(--brand-charcoal))] [--menu-resources:color-mix(in_srgb,var(--brand-amber)_40%,var(--brand-charcoal))] dark:[--menu-solutions:var(--brand-primary-muted)] dark:[--menu-resources:var(--brand-amber)] z-[150] rounded-2xl border border-border/80 bg-popover text-popover-foreground shadow-[0_18px_55px_-18px_color-mix(in_srgb,var(--brand-charcoal)_35%,transparent)] origin-[var(--radix-dropdown-menu-content-transform-origin)] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0 duration-150 motion-reduce:animate-none";
 function useNavAppearance() {
   const landing = useContext(HeaderThemeContext);
   return {
@@ -228,7 +221,6 @@ function useNavAppearance() {
       : "bg-brand-secondary-highlight/[0.08] text-brand-secondary-highlight ring-1 ring-inset ring-brand-secondary-highlight/10 dark:bg-secondary/[0.07] dark:text-secondary dark:ring-secondary/10",
   };
 }
-
 function getInitials(name?: string) {
   return name?.trim()
     ? name
@@ -243,7 +235,6 @@ type SearchLayout = "small" | "tablet" | "desktop";
 function getSearchLayout(width: number): SearchLayout {
   return width < 640 ? "small" : width < 1024 ? "tablet" : "desktop";
 }
-
 export default function SiteHeader({ appearance = "auto" }: SiteHeaderProps) {
   const { user, logout } = useAuth();
   const location = useLocation();
@@ -276,7 +267,6 @@ export default function SiteHeader({ appearance = "auto" }: SiteHeaderProps) {
         : solutionLinks,
     [user?.isAllocat],
   );
-
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 12);
     handleScroll();
@@ -326,14 +316,25 @@ export default function SiteHeader({ appearance = "auto" }: SiteHeaderProps) {
       setMobileSearchOpen(false);
       searchTriggerRef.current?.focus();
     }
+    function dismissOnFocus(event: FocusEvent) {
+      const target = event.target;
+      if (!(target instanceof Node)) return;
+      if (
+        !floatingSearchRef.current?.contains(target) &&
+        !inlineSearchRef.current?.contains(target) &&
+        !searchTriggerRef.current?.contains(target)
+      )
+        setMobileSearchOpen(false);
+    }
+    document.addEventListener("focusin", dismissOnFocus);
     document.addEventListener("pointerdown", dismiss);
     document.addEventListener("keydown", escape);
     return () => {
+      document.removeEventListener("focusin", dismissOnFocus);
       document.removeEventListener("pointerdown", dismiss);
       document.removeEventListener("keydown", escape);
     };
   }, [mobileSearchOpen]);
-
   const goTo = (href: string) => {
     setExploreOpen(false);
     setMobileMenuOpen(false);
@@ -372,7 +373,7 @@ export default function SiteHeader({ appearance = "auto" }: SiteHeaderProps) {
       <div aria-hidden="true" className="h-16 w-full" />
       <header
         style={landing ? LANDING_NAV_TOKENS : undefined}
-        className={`fixed inset-x-0 top-0 z-[120] border-b text-foreground transition-[background-color,border-color] duration-300 motion-reduce:transition-none ${isScrolled ? "border-border/45 bg-background/95 backdrop-blur-xl" : "border-transparent bg-background"}`}
+        className={`fixed inset-x-0 top-0 z-[120] border-b bg-background text-foreground transition-[border-color,box-shadow] duration-200 motion-reduce:transition-none ${isScrolled ? "border-border/65 shadow-[0_4px_20px_-12px_color-mix(in_srgb,var(--brand-charcoal)_30%,transparent)]" : "border-transparent"}`}
       >
         <div
           className={`mx-auto flex h-16 w-full items-center justify-between gap-3 lg:gap-4 ${container}`}
@@ -380,7 +381,7 @@ export default function SiteHeader({ appearance = "auto" }: SiteHeaderProps) {
           <Link
             to="/"
             aria-label="Allocatr home"
-            className="group flex h-16 shrink-0 items-center rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
+            className="group flex h-11 shrink-0 items-center rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
           >
             {landing ? (
               <img
@@ -408,7 +409,7 @@ export default function SiteHeader({ appearance = "auto" }: SiteHeaderProps) {
               </>
             )}
           </Link>
-          <div className="hidden min-w-0 lg:block lg:flex-1">
+          <div className="hidden min-w-0 lg:mx-2 lg:block lg:max-w-[480px] lg:flex-1 xl:mx-6 xl:max-w-[520px]">
             <NavSearch query={query} onQueryChange={setQuery} />
           </div>
           <AnimatePresence initial={false}>
@@ -417,12 +418,12 @@ export default function SiteHeader({ appearance = "auto" }: SiteHeaderProps) {
                 key="tablet-search"
                 ref={inlineSearchRef}
                 id="tablet-nav-search"
-                className="hidden min-w-0 overflow-hidden sm:block lg:hidden"
-                initial={{ width: 0, flexGrow: 0, opacity: 0 }}
-                animate={{ width: "auto", flexGrow: 1, opacity: 1 }}
-                exit={{ width: 0, flexGrow: 0, opacity: 0 }}
+                className="hidden min-w-0 flex-1 sm:block lg:hidden"
+                initial={{ opacity: 0, y: reducedMotion ? 0 : -3 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: reducedMotion ? 0 : -3 }}
                 transition={{
-                  duration: reducedMotion ? 0 : 0.24,
+                  duration: reducedMotion ? 0 : 0.16,
                   ease: [0.22, 1, 0.36, 1],
                 }}
               >
@@ -456,7 +457,7 @@ export default function SiteHeader({ appearance = "auto" }: SiteHeaderProps) {
             {!user && (
               <Link
                 to="/login"
-                className={`${actionBase} ${ghostAction} h-9 whitespace-nowrap px-1.5 sm:px-3`}
+                className={`${actionBase} ${ghostAction} h-10 whitespace-nowrap px-1.5 sm:px-3`}
               >
                 Log in
               </Link>
@@ -464,7 +465,7 @@ export default function SiteHeader({ appearance = "auto" }: SiteHeaderProps) {
             <Link
               to={postProjectHref}
               aria-label="Post a project"
-              className={`${cta} h-9 whitespace-nowrap px-2.5 sm:px-4`}
+              className={`${cta} h-10 whitespace-nowrap px-2.5 sm:px-4`}
             >
               <span className="sm:hidden">Post</span>
               <span className="hidden sm:inline">Post a project</span>
@@ -478,15 +479,17 @@ export default function SiteHeader({ appearance = "auto" }: SiteHeaderProps) {
               aria-label={mobileSearchOpen ? "Close search" : "Open search"}
               aria-expanded={mobileSearchOpen}
               aria-controls={
-                searchLayout === "tablet"
-                  ? "tablet-nav-search"
-                  : "mobile-nav-search"
+                mobileSearchOpen
+                  ? searchLayout === "tablet"
+                    ? "tablet-nav-search"
+                    : "mobile-nav-search"
+                  : undefined
               }
               onClick={() => {
                 setMobileMenuOpen(false);
                 setMobileSearchOpen((value) => !value);
               }}
-              className={`${actionBase} ${ghostAction} h-10 w-10`}
+              className={`${actionBase} ${ghostAction} h-11 w-11`}
             >
               {mobileSearchOpen ? (
                 <XIcon size={20} aria-hidden="true" />
@@ -515,7 +518,7 @@ export default function SiteHeader({ appearance = "auto" }: SiteHeaderProps) {
               id="mobile-nav-search"
               role="region"
               aria-label="Search Allocats"
-              className="absolute inset-x-4 top-[76px] rounded-2xl border border-border/60 bg-popover p-3 text-popover-foreground sm:hidden"
+              className="absolute inset-x-4 top-[76px] rounded-2xl border border-border/80 bg-popover p-4 text-popover-foreground shadow-[0_16px_40px_-16px_color-mix(in_srgb,var(--brand-charcoal)_35%,transparent)] sm:hidden"
               initial={{
                 opacity: 0,
                 y: reducedMotion ? 0 : -8,
@@ -541,7 +544,7 @@ export default function SiteHeader({ appearance = "auto" }: SiteHeaderProps) {
                     setMobileSearchOpen(false);
                     searchTriggerRef.current?.focus();
                   }}
-                  className={`${actionBase} ${ghostAction} h-8 w-8`}
+                  className={`${actionBase} ${ghostAction} h-10 w-10`}
                 >
                   <XIcon size={16} aria-hidden="true" />
                 </button>
@@ -562,7 +565,6 @@ export default function SiteHeader({ appearance = "auto" }: SiteHeaderProps) {
     </HeaderThemeContext.Provider>
   );
 }
-
 function ExploreMenu({
   links,
   open,
@@ -572,33 +574,17 @@ function ExploreMenu({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
-  const { portalStyle, accent, landing } = useNavAppearance();
-  const groups: {
-    label: string;
-    caption: string;
-    icon: LucideIcon;
-    color: string;
-    items: MenuLink[];
-  }[] = [
+  const { portalStyle, accent, iconSurface } = useNavAppearance();
+  const groups = [
     {
       label: "Platform",
       caption: "From brief to delivery",
-      icon: LayoutDashboardIcon,
-      color: "var(--menu-platform)",
       items: platformLinks,
     },
-    {
-      label: "Solutions",
-      caption: "Find your way to work",
-      icon: BriefcaseBusinessIcon,
-      color: "var(--menu-solutions)",
-      items: links,
-    },
+    { label: "Solutions", caption: "Find your way to work", items: links },
     {
       label: "Resources",
       caption: "Guidance at every step",
-      icon: BookOpenIcon,
-      color: "var(--menu-resources)",
       items: resourceLinks,
     },
   ];
@@ -607,75 +593,69 @@ function ExploreMenu({
       <DropdownMenuTrigger asChild>
         <button
           type="button"
-          className="group inline-flex h-10 shrink-0 items-center gap-2 rounded-xl border border-border/60 bg-surface-2/60 px-3 text-xs font-medium text-foreground transition-[background-color,border-color] duration-200 hover:border-ring/30 hover:bg-surface-3/75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/25 data-[state=open]:border-ring/35 data-[state=open]:bg-surface-3/75 motion-reduce:transition-none"
+          className="group inline-flex h-10 shrink-0 items-center gap-2 rounded-lg border border-transparent px-3 text-xs font-medium text-foreground/85 transition-colors duration-150 hover:bg-surface-2 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30 data-[state=open]:bg-surface-2 data-[state=open]:text-foreground motion-reduce:transition-none"
         >
-          <CompassIcon size={16} aria-hidden="true" className={accent} />
+          <CompassIcon
+            size={16}
+            strokeWidth={1.7}
+            aria-hidden="true"
+            className={accent}
+          />
           Explore
           <ChevronDownIcon
             size={12}
             aria-hidden="true"
-            className="text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180 motion-reduce:transition-none"
+            className="text-muted-foreground transition-transform duration-150 group-data-[state=open]:rotate-180 motion-reduce:transition-none"
           />
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
+        aria-label="Explore Allocatr"
         align="end"
-        sideOffset={12}
-        collisionPadding={16}
+        sideOffset={14}
+        collisionPadding={20}
         style={portalStyle}
-        className={`${dropdownSurface} max-h-[min(80dvh,var(--radix-dropdown-menu-content-available-height))] w-[860px] max-w-[calc(100vw-32px)] overflow-y-auto p-4`}
+        className={`${dropdownSurface} max-h-[min(82dvh,var(--radix-dropdown-menu-content-available-height))] w-[900px] max-w-[calc(100vw-40px)] overflow-y-auto p-3 sm:p-4`}
       >
-        <DropdownMenuItem asChild className="group rounded-xl p-0">
+        <DropdownMenuItem
+          asChild
+          className="group rounded-xl p-0 focus:bg-surface-2"
+        >
           <Link
             to="/discover"
-            className={`flex items-center gap-4 rounded-xl px-5 py-4 transition-opacity duration-150 hover:opacity-90 data-[highlighted]:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 motion-reduce:transition-none ${
-              landing
-                ? "[--explore-feature-bg:var(--brand-primary)] [--explore-feature-text:var(--brand-charcoal)]"
-                : "[--explore-feature-bg:var(--brand-secondary-highlight)] [--explore-feature-text:var(--primary-foreground)] dark:[--explore-feature-bg:var(--secondary)] dark:[--explore-feature-text:var(--secondary-foreground)]"
-            }`}
-            style={{
-              backgroundColor: "var(--explore-feature-bg)",
-              color: "var(--explore-feature-text)",
-            }}
+            className="flex items-center gap-4 rounded-xl border border-border/65 bg-surface-2/65 px-5 py-4 outline-none transition-opacity duration-150 hover:opacity-85 data-[highlighted]:opacity-85 motion-reduce:transition-none"
           >
-            <UsersIcon
-              size={23}
-              strokeWidth={1.8}
-              aria-hidden="true"
-              style={{ color: "var(--explore-feature-text)" }}
-              className="shrink-0 text-inherit"
-            />
+            <span
+              className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${iconSurface}`}
+            >
+              <UsersIcon size={21} strokeWidth={1.7} aria-hidden="true" />
+            </span>
             <span className="min-w-0 flex-1">
-              <span className="block text-sm font-medium">
+              <span className="block text-sm font-medium tracking-[-0.015em]">
                 Discover Allocats
               </span>
-              <span className="mt-1 block text-xs opacity-80">
+              <span className="mt-1 block text-xs leading-5 text-muted-foreground">
                 Find the right skills for what needs doing.
               </span>
             </span>
             <ArrowRightIcon
               size={17}
               aria-hidden="true"
-              style={{ color: "var(--explore-feature-text)" }}
-              className="shrink-0 text-inherit transition-transform duration-200 group-hover:translate-x-1 group-data-[highlighted]:translate-x-1 motion-reduce:transition-none"
+              className={`shrink-0 ${accent}`}
             />
           </Link>
         </DropdownMenuItem>
-        <div className="mt-4 grid gap-4 sm:grid-cols-3">
-          {groups.map(({ label, caption, icon: Icon, color, items }) => (
-            <DropdownMenuGroup key={label} className="min-w-0 p-1">
-              <DropdownMenuLabel className="px-3 pb-3 pt-3 font-normal">
-                <span
-                  className="mb-3 block h-0.5 w-6 rounded-full"
-                  style={{ backgroundColor: color }}
-                />
-                <span className="flex items-center gap-2">
-                  <Icon size={14} aria-hidden="true" style={{ color }} />
-                  <span className="text-[11px] font-medium uppercase tracking-[0.1em] text-foreground/90">
-                    {label}
-                  </span>
+        <div className="my-4 grid sm:grid-cols-3 sm:divide-x sm:divide-border/60">
+          {groups.map(({ label, caption, items }) => (
+            <DropdownMenuGroup
+              key={label}
+              className="min-w-0 px-1 first:pl-0 last:pr-0 sm:px-3"
+            >
+              <DropdownMenuLabel className="px-3 pb-3 pt-2 font-normal">
+                <span className="block text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
+                  {label}
                 </span>
-                <span className="mt-1.5 block text-[11px] text-muted-foreground">
+                <span className="mt-1.5 block text-xs font-medium text-foreground/85">
                   {caption}
                 </span>
               </DropdownMenuLabel>
@@ -685,25 +665,21 @@ function ExploreMenu({
             </DropdownMenuGroup>
           ))}
         </div>
-        <DropdownMenuSeparator className="my-3 bg-border/50" />
-        <div className="flex items-center justify-between gap-4 px-1">
+        <DropdownMenuSeparator className="mx-0 mb-2 bg-border/65" />
+        <div className="flex items-center justify-between gap-4">
           <DropdownMenuItem
             asChild
-            className="group rounded-lg p-0 focus:bg-surface-3/60"
+            className="rounded-lg p-0 focus:bg-surface-2"
           >
             <Link
               to="/about"
-              className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-xs font-medium"
+              className="flex min-h-10 items-center gap-2 px-3 text-xs font-medium"
             >
               Why Allocatr?
-              <ArrowRightIcon
-                size={13}
-                aria-hidden="true"
-                className={`transition-transform group-hover:translate-x-1 group-data-[highlighted]:translate-x-1 motion-reduce:transition-none ${accent}`}
-              />
+              <ArrowRightIcon size={13} aria-hidden="true" className={accent} />
             </Link>
           </DropdownMenuItem>
-          <span className="flex items-center gap-2 pr-2 text-[10px] text-muted-foreground">
+          <span className="flex items-center gap-2 pr-3 text-[10px] text-muted-foreground">
             <PawPrintIcon size={12} aria-hidden="true" className={accent} />
             Work, properly allocated
           </span>
@@ -712,7 +688,6 @@ function ExploreMenu({
     </DropdownMenu>
   );
 }
-
 function MobileMenu({
   user,
   links,
@@ -739,7 +714,7 @@ function MobileMenu({
         <button
           type="button"
           aria-label={open ? "Close navigation" : "Open navigation"}
-          className={`${actionBase} ${ghostAction} h-10 w-10`}
+          className={`${actionBase} ${ghostAction} h-11 w-11`}
         >
           {open ? (
             <XIcon size={21} aria-hidden="true" />
@@ -753,7 +728,7 @@ function MobileMenu({
         sideOffset={12}
         collisionPadding={16}
         style={portalStyle}
-        className={`${dropdownSurface} w-[360px] max-w-[calc(100vw-32px)] max-h-[min(75dvh,var(--radix-dropdown-menu-content-available-height))] overflow-y-auto p-2 lg:hidden`}
+        className={`${dropdownSurface} w-[380px] max-w-[calc(100vw-32px)] max-h-[min(80dvh,var(--radix-dropdown-menu-content-available-height))] overscroll-contain overflow-y-auto p-3 lg:hidden`}
       >
         <DropdownMenuItem asChild className="rounded-lg p-0">
           <Link
@@ -832,7 +807,7 @@ function MobileMenu({
               {String(label)}
             </DropdownMenuLabel>
             {(items as MenuLink[]).map((item) => (
-              <EnterpriseMenuItem key={item.href} item={item} />
+              <EnterpriseMenuItem key={item.href} item={item} compact />
             ))}
           </DropdownMenuGroup>
         ))}
@@ -850,7 +825,7 @@ function MobileMenu({
               event.preventDefault();
               onLogout();
             }}
-            className="rounded-lg px-3 py-3 text-muted-foreground focus:bg-destructive/[0.07] focus:text-destructive"
+            className="min-h-11 gap-3 rounded-lg px-3 py-3 text-xs text-muted-foreground focus:bg-destructive/[0.07] focus:text-destructive"
           >
             <LogOutIcon size={14} />
             {loggingOut ? "Logging out…" : "Log out"}
@@ -860,7 +835,6 @@ function MobileMenu({
     </DropdownMenu>
   );
 }
-
 function NavSearch({
   query,
   onQueryChange,
@@ -873,12 +847,11 @@ function NavSearch({
   onSubmitted?: () => void;
 }) {
   const navigate = useNavigate();
-  const { landing } = useNavAppearance();
+  const { accent } = useNavAppearance();
   const inputRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
     if (autoFocus) inputRef.current?.focus({ preventScroll: true });
   }, [autoFocus]);
-
   function submitSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const params = new URLSearchParams();
@@ -897,8 +870,14 @@ function NavSearch({
       role="search"
       aria-label="Find Allocats"
       onSubmit={submitSearch}
-      className="flex h-11 w-full min-w-0 items-center rounded-xl border border-border/65 bg-surface-2/50 p-1 focus-within:border-ring/40 focus-within:ring-2 focus-within:ring-ring/10"
+      className="flex h-11 w-full min-w-0 items-center gap-1 rounded-lg border border-border/65 bg-surface-2/50 pl-3 pr-1 transition-[border-color,box-shadow] duration-150 focus-within:border-ring/45 focus-within:ring-2 focus-within:ring-ring/10 motion-reduce:transition-none"
     >
+      <SearchIcon
+        size={15}
+        strokeWidth={1.7}
+        aria-hidden="true"
+        className="shrink-0 text-muted-foreground"
+      />
       <input
         ref={inputRef}
         name="search"
@@ -907,22 +886,40 @@ function NavSearch({
         value={query}
         onChange={(event) => onQueryChange(event.target.value)}
         autoComplete="off"
+        enterKeyHint="search"
         placeholder="Search skills or categories"
-        className="min-w-0 flex-1 border-0 bg-transparent px-3 text-xs text-foreground outline-none placeholder:text-muted-foreground/70"
+        className="h-full min-w-0 flex-1 border-0 bg-transparent pl-1.5 pr-1 text-base text-foreground outline-none placeholder:text-muted-foreground/75 lg:text-xs [&::-webkit-search-cancel-button]:appearance-none"
       />
+      {query && (
+        <button
+          type="button"
+          aria-label="Clear search"
+          onClick={() => {
+            onQueryChange("");
+            inputRef.current?.focus();
+          }}
+          className={`${actionBase} ${ghostAction} h-10 w-9 shrink-0 sm:h-9`}
+        >
+          <XIcon size={14} aria-hidden="true" />
+        </button>
+      )}
       <button
         type="submit"
         aria-label="Find Allocats"
-        className={`${actionBase} ${landing ? landingPrimary : autoPrimary} h-9 shrink-0 px-3`}
+        className={`${actionBase} h-9 w-9 shrink-0 border-transparent bg-surface-3/65 hover:opacity-75 focus-visible:ring-ring/30 ${accent}`}
       >
-        <SearchIcon size={15} aria-hidden="true" />
-        <span className="hidden xl:inline">Find</span>
+        <ArrowRightIcon size={16} strokeWidth={1.8} aria-hidden="true" />
       </button>
     </form>
   );
 }
-
-function EnterpriseMenuItem({ item }: { item: MenuLink }) {
+function EnterpriseMenuItem({
+  item,
+  compact = false,
+}: {
+  item: MenuLink;
+  compact?: boolean;
+}) {
   const Icon = item.icon;
   const itemColor = platformLinks.some((link) => link.href === item.href)
     ? "var(--menu-platform)"
@@ -937,46 +934,45 @@ function EnterpriseMenuItem({ item }: { item: MenuLink }) {
         to={item.href}
         aria-current={active ? "page" : undefined}
         style={{ "--menu-item-color": itemColor } as CSSProperties}
-        className={`group relative flex items-start gap-3 rounded-lg px-3 py-3 outline-none transition-[background-color] duration-150 hover:bg-surface-3/45 data-[highlighted]:bg-surface-3/45 motion-reduce:transition-none ${active ? "bg-surface-3/45" : ""}`}
+        className={`group flex min-h-11 items-start gap-2.5 rounded-lg px-3 py-2.5 outline-none transition-colors duration-150 hover:bg-surface-3/45 data-[highlighted]:bg-surface-3/45 motion-reduce:transition-none ${active ? "bg-surface-3/65" : ""}`}
       >
         <span
           aria-hidden="true"
-          style={{ backgroundColor: itemColor }}
-          className={`absolute bottom-3 left-0 top-3 w-0.5 rounded-full transition-opacity duration-150 group-hover:opacity-100 group-data-[highlighted]:opacity-100 motion-reduce:transition-none ${active ? "opacity-100" : "opacity-0"}`}
-        />
-        <Icon
-          size={20}
-          strokeWidth={1.8}
-          aria-hidden="true"
-          style={{ color: itemColor }}
-          className="mt-0.5 shrink-0 text-inherit"
-        />
-        <span className="min-w-0 flex-1">
+          style={{
+            color: itemColor,
+            backgroundColor:
+              "color-mix(in srgb, var(--menu-item-color) 7%, transparent)",
+          }}
+          className={`flex shrink-0 items-center justify-center rounded-lg ${compact ? "h-6 w-6" : "mt-0.5 h-8 w-8"}`}
+        >
+          <Icon size={compact ? 16 : 17} strokeWidth={1.7} />
+        </span>
+        <span className="min-w-0 flex-1 self-center">
           <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
             <span className="text-xs font-medium leading-5 text-foreground">
               {item.title}
             </span>
             {item.comingSoon && (
-              <span className="text-[9px] font-medium text-muted-foreground">
+              <span className="rounded border border-border/65 px-1.5 py-0.5 text-[8px] leading-3 text-muted-foreground">
                 Coming soon
               </span>
             )}
           </span>
-          <span className="mt-1 block text-[11px] leading-5 text-muted-foreground">
-            {item.description}
-          </span>
+          {!compact && (
+            <span className="mt-1 block text-[11px] leading-5 text-muted-foreground">
+              {item.description}
+            </span>
+          )}
         </span>
         <ArrowRightIcon
-          size={13}
+          size={12}
           aria-hidden="true"
-          style={{ color: itemColor }}
-          className={`mt-1.5 shrink-0 transition-[opacity,transform] duration-150 group-hover:translate-x-0 group-hover:opacity-100 group-data-[highlighted]:translate-x-0 group-data-[highlighted]:opacity-100 motion-reduce:transition-none ${active ? "opacity-100" : "-translate-x-1 opacity-0"}`}
+          className={`shrink-0 self-center text-muted-foreground transition-opacity duration-150 group-hover:opacity-100 group-data-[highlighted]:opacity-100 motion-reduce:transition-none ${active ? "opacity-100" : "opacity-0"}`}
         />
       </Link>
     </DropdownMenuItem>
   );
 }
-
 function UserAvatar({
   user,
   initials,
@@ -1002,7 +998,6 @@ function UserAvatar({
     </Avatar>
   );
 }
-
 function AccountMenu({
   user,
   initials,
@@ -1019,7 +1014,7 @@ function AccountMenu({
         <button
           type="button"
           aria-label="Open account menu"
-          className="flex h-9 items-center gap-2 rounded-lg px-1.5 text-foreground transition-colors hover:bg-surface-3/55 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/25"
+          className="group flex h-10 items-center gap-2 rounded-lg border border-transparent px-2 text-foreground transition-colors duration-150 hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30 data-[state=open]:border-border/65 data-[state=open]:bg-surface-2 motion-reduce:transition-none"
         >
           <UserAvatar user={user} initials={initials} />
           <span className="hidden max-w-28 truncate text-xs font-medium xl:block">
@@ -1027,7 +1022,8 @@ function AccountMenu({
           </span>
           <ChevronDownIcon
             size={11}
-            className="hidden text-muted-foreground xl:block"
+            aria-hidden="true"
+            className="hidden text-muted-foreground transition-transform duration-150 group-data-[state=open]:rotate-180 motion-reduce:transition-none xl:block"
           />
         </button>
       </DropdownMenuTrigger>
@@ -1036,7 +1032,7 @@ function AccountMenu({
         sideOffset={10}
         collisionPadding={16}
         style={portalStyle}
-        className={`${dropdownSurface} w-64 p-1.5`}
+        className={`${dropdownSurface} w-72 max-w-[calc(100vw-32px)] p-2`}
       >
         <DropdownMenuLabel className="p-3 font-normal">
           <div className="flex min-w-0 items-center gap-3">
@@ -1050,7 +1046,7 @@ function AccountMenu({
                   {user.email}
                 </p>
               )}
-              <p className="mt-1 text-[0.58rem] text-muted-foreground">
+              <p className="mt-1 text-[10px] text-muted-foreground">
                 {user.isAllocat ? "Allocat account" : "Client account"}
               </p>
             </div>
@@ -1078,7 +1074,7 @@ function AccountMenu({
             event.preventDefault();
             onLogout();
           }}
-          className="rounded-lg px-2.5 py-2 text-muted-foreground transition-colors focus:bg-destructive/[0.07] focus:text-destructive"
+          className="min-h-11 gap-3 rounded-lg px-3 py-2.5 text-xs text-muted-foreground transition-colors duration-150 focus:bg-destructive/[0.07] focus:text-destructive motion-reduce:transition-none"
         >
           <LogOutIcon size={14} />
           {loggingOut ? "Logging out..." : "Log out"}

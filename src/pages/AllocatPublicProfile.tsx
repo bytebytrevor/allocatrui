@@ -1,5 +1,12 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { MotionConfig, motion } from "framer-motion";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+} from "react";
+import { MotionConfig, motion, useReducedMotion } from "framer-motion";
 import {
   Link,
   useNavigate,
@@ -24,7 +31,6 @@ import {
   RefreshCwIcon,
   SearchIcon,
   SendIcon,
-  SparklesIcon,
   StarIcon,
   UserRoundIcon,
   ZoomInIcon,
@@ -49,9 +55,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  primaryAction,
-  secondaryAction,
-  quietAction,
+  primaryAction as workspacePrimaryAction,
+  secondaryAction as workspaceSecondaryAction,
+  quietAction as workspaceQuietAction,
   ProjectStatus,
 } from "@/components/workspace-ui";
 import { getProjectCategoryLabel, getProjectIcon } from "@/utils/projectIcons";
@@ -78,10 +84,15 @@ type Props = {
   loadProfile?: AllocatPublicProfileLoader;
 };
 type ProfileFailure = "unavailable" | "unauthorized" | "connection" | null;
-const surface = "rounded-2xl border border-border/60 bg-card";
+const primaryAction = workspacePrimaryAction + " min-h-11";
+const secondaryAction = workspaceSecondaryAction + " min-h-11";
+const quietAction = workspaceQuietAction + " min-h-11";
+const CONTAINER =
+  "mx-auto w-full max-w-[1440px] px-5 sm:px-8 lg:px-12 xl:px-16";
+const surface = "rounded-2xl border border-border/75 bg-card";
 const accent = "text-brand-secondary-highlight dark:text-secondary";
 const focus =
-  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35";
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35 focus-visible:ring-offset-2 focus-visible:ring-offset-background";
 export default function AllocatPublicProfilePage({
   loadProfile = getPublicAllocatProfile,
 }: Props = {}) {
@@ -93,6 +104,18 @@ export default function AllocatPublicProfilePage({
   const [loading, setLoading] = useState(true);
   const [failure, setFailure] = useState<ProfileFailure>(null);
   const [reload, setReload] = useState(0);
+  const headerRef = useRef<HTMLElement>(null);
+  const [navHeight, setNavHeight] = useState(68);
+  useEffect(() => {
+    const header = headerRef.current;
+    if (!header) return;
+    const measure = () =>
+      setNavHeight(Math.ceil(header.getBoundingClientRect().height) || 68);
+    const observer = new ResizeObserver(measure);
+    observer.observe(header);
+    measure();
+    return () => observer.disconnect();
+  }, []);
   useEffect(() => {
     let cancelled = false;
     const controller = new AbortController();
@@ -151,13 +174,19 @@ export default function AllocatPublicProfilePage({
   const pending = loading || loadedId !== (allocatId ?? "");
   return (
     <MotionConfig reducedMotion="user">
-      <div className="min-h-screen bg-background text-foreground">
-        <header className="sticky top-0 z-50 border-b border-border/70 bg-background">
-          <div className="mx-auto w-full max-w-[1440px] px-4 sm:px-6 lg:px-8">
+      <div
+        className="min-h-screen bg-background text-foreground"
+        style={{ "--profile-nav-height": `${navHeight}px` } as CSSProperties}
+      >
+        <header
+          ref={headerRef}
+          className="sticky top-0 z-50 border-b border-border/70 bg-background"
+        >
+          <div className={CONTAINER}>
             <MinimalNavMenu />
           </div>
         </header>
-        <main className="mx-auto w-full max-w-[1280px] px-4 pb-12 pt-5 sm:px-6 sm:pb-16 sm:pt-7 lg:px-8">
+        <main className={`${CONTAINER} pb-12 pt-5 sm:pb-16 sm:pt-7`}>
           <nav
             aria-label="Breadcrumb"
             className="mb-5 flex min-h-9 items-center gap-2 text-xs text-muted-foreground sm:mb-7"
@@ -258,6 +287,7 @@ export function PublicProfileContent({
   profile: PublicAllocatProfile;
 }) {
   const { user } = useAuth();
+  const reducedMotion = useReducedMotion();
   const [searchParams] = useSearchParams();
   const [inviteOpen, setInviteOpen] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -360,51 +390,47 @@ export function PublicProfileContent({
   ) : (
     <Link
       to={getStartProjectPath(profile.allocatrUserId)}
+      aria-label={`Start a project with ${name}`}
       className={
         primaryAction + " min-h-10 w-full whitespace-normal py-3 text-center"
       }
     >
       <BriefcaseBusinessIcon size={14} aria-hidden="true" />
-      Start project with {name}
+      Start a project
       <ArrowUpRightIcon size={13} aria-hidden="true" className="ml-auto" />
     </Link>
   );
   return (
     <motion.div
-      initial={{ opacity: 0, y: 8 }}
+      initial={reducedMotion ? false : { opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.24, ease: "easeOut" }}
+      transition={{ duration: reducedMotion ? 0 : 0.2, ease: "easeOut" }}
     >
       {/* PROFILE HERO */}
       <section
         aria-labelledby="profile-name"
         className={surface + " relative overflow-hidden"}
       >
-        <div className="relative overflow-hidden bg-card text-foreground dark:bg-surface-2">
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0 overflow-hidden"
-          >
-            <div className="absolute inset-0 bg-gradient-to-br from-brand-secondary-highlight/[0.12] via-brand-secondary-highlight/[0.035] to-brand-secondary-highlight/[0.08] dark:from-secondary/[0.025] dark:via-secondary/[0.01] dark:to-secondary/[0.035]" />
-            <div className="absolute -right-16 -top-52 h-[640px] w-64 rotate-[35deg] rounded-[80px] border border-brand-secondary-highlight/[0.06] bg-brand-secondary-highlight/[0.045] dark:border-secondary/[0.04] dark:bg-secondary/[0.02]" />
-            <div className="absolute right-32 -top-64 h-[640px] w-40 rotate-[35deg] rounded-[64px] border border-brand-secondary-highlight/[0.055] bg-brand-secondary-highlight/[0.025] dark:border-secondary/[0.03] dark:bg-secondary/[0.015]" />
-            <div className="absolute -bottom-36 -left-28 h-80 w-80 rounded-full border border-brand-secondary-highlight/[0.06] dark:border-secondary/[0.035]" />
-          </div>
-          <div className="relative px-5 pb-8 pt-5 sm:px-8 sm:pb-10 sm:pt-7 lg:px-10">
+        <div className="relative overflow-hidden bg-card text-foreground">
+          <div className="relative px-5 py-6 sm:px-8 sm:py-8">
             <div className="flex items-center justify-between gap-3">
               <p className="inline-flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
                 <span
                   aria-hidden="true"
-                  className="h-1 w-5 rounded-full bg-brand-secondary-highlight/80 dark:bg-secondary"
+                  className="h-1.5 w-1.5 rounded-full bg-brand-secondary-highlight/80 dark:bg-secondary"
                 />
-                The people behind the work
+                Allocat profile
               </p>
               <button
                 type="button"
                 onClick={() => void copyProfileLink()}
-                aria-label="Copy public profile link"
+                aria-label={
+                  copied
+                    ? "Public profile link copied"
+                    : "Copy public profile link"
+                }
                 className={
-                  "inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-lg border border-brand-secondary-highlight/15 bg-card/70 px-3 text-xs font-medium text-brand-secondary-highlight transition-colors hover:bg-card dark:border-border dark:bg-surface-3/50 dark:text-foreground/85 dark:hover:bg-surface-3 motion-reduce:transition-none " +
+                  "inline-flex h-11 w-11 shrink-0 sm:w-auto items-center justify-center gap-2 rounded-lg border border-border/70 bg-surface-2/40 px-3 text-xs font-medium text-brand-secondary-highlight transition-opacity hover:opacity-75 dark:border-border dark:bg-surface-2/50 dark:text-foreground/85 motion-reduce:transition-none " +
                   focus
                 }
               >
@@ -414,12 +440,12 @@ export function PublicProfileContent({
                   <CopyIcon size={13} aria-hidden="true" />
                 )}
                 <span className="hidden sm:inline">
-                  {copied ? "Copied" : "Share profile"}
+                  {copied ? "Copied" : "Copy link"}
                 </span>
               </button>
             </div>
 
-            <div className="mt-10 flex flex-col items-start gap-6 sm:mt-12 sm:flex-row sm:items-end sm:gap-7">
+            <div className="mt-6 flex flex-col items-start gap-5 sm:mt-7 sm:flex-row sm:items-center sm:gap-6">
               <div className="relative shrink-0">
                 <button
                   type="button"
@@ -428,20 +454,20 @@ export function PublicProfileContent({
                   aria-haspopup="dialog"
                   onClick={() => setPhotoOpen(true)}
                   className={
-                    "group relative block rounded-3xl text-left disabled:cursor-default " +
+                    "group relative block rounded-2xl text-left disabled:cursor-default " +
                     focus
                   }
                 >
-                  <Avatar className="h-28 w-28 rounded-3xl border-4 border-card bg-surface-3 ring-1 ring-border/60 sm:h-36 sm:w-36">
+                  <Avatar className="h-24 w-24 rounded-2xl border border-border/70 bg-surface-2 sm:h-28 sm:w-28">
                     <AvatarImage
                       src={avatarUrl}
                       alt={name}
                       onLoadingStatusChange={(status) =>
                         setPhotoFailed(status === "error")
                       }
-                      className="object-cover transition-transform duration-300 motion-reduce:transition-none group-enabled:group-hover:scale-105"
+                      className="object-cover transition-opacity duration-150 motion-reduce:transition-none group-enabled:group-hover:opacity-85"
                     />
-                    <AvatarFallback className="rounded-2xl bg-surface-3 text-3xl font-medium text-brand-secondary-highlight sm:text-4xl dark:text-secondary">
+                    <AvatarFallback className="rounded-2xl bg-surface-2 text-3xl font-medium text-brand-secondary-highlight sm:text-4xl dark:text-secondary">
                       {getProfileInitials(name)}
                     </AvatarFallback>
                   </Avatar>
@@ -454,20 +480,12 @@ export function PublicProfileContent({
                     </span>
                   )}
                 </button>
-                {verified && (
-                  <span
-                    title="Verified profile"
-                    className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-xl border-4 border-card bg-brand-secondary-highlight text-primary-foreground dark:bg-secondary dark:text-secondary-foreground"
-                  >
-                    <BadgeCheckIcon size={16} aria-hidden="true" />
-                  </span>
-                )}
               </div>
               <div className="min-w-0 flex-1 pb-1">
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
                   <h1
                     id="profile-name"
-                    className="break-words text-3xl font-semibold leading-tight tracking-[-0.045em] sm:text-4xl lg:text-5xl"
+                    className="break-words text-[clamp(1.9rem,3.5vw,2.8rem)] font-medium leading-[1.12] tracking-[-0.04em] [overflow-wrap:anywhere]"
                   >
                     {name}
                   </h1>
@@ -478,14 +496,20 @@ export function PublicProfileContent({
                     </span>
                   )}
                 </div>
-                <p className="mt-2 break-words text-base font-medium text-foreground/80 sm:text-lg">
+                <p className="mt-2 break-words text-sm font-normal leading-7 text-foreground/80 sm:text-base">
                   {title}
                 </p>
                 <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
                   {profile.location?.trim() && (
-                    <span className="inline-flex items-center gap-1.5">
-                      <MapPinIcon size={13} aria-hidden="true" />
-                      {profile.location}
+                    <span className="inline-flex min-w-0 max-w-full items-start gap-1.5">
+                      <MapPinIcon
+                        size={13}
+                        aria-hidden="true"
+                        className="mt-0.5 shrink-0"
+                      />
+                      <span className="break-words [overflow-wrap:anywhere]">
+                        {profile.location}
+                      </span>
                     </span>
                   )}
                   <span
@@ -503,7 +527,7 @@ export function PublicProfileContent({
                   {memberSince && (
                     <span className="inline-flex items-center gap-1.5">
                       <CalendarDaysIcon size={13} aria-hidden="true" />
-                      Member since {memberSince}
+                      Joined {memberSince}
                     </span>
                   )}
                 </div>
@@ -517,22 +541,22 @@ export function PublicProfileContent({
           </div>
         </div>
 
-        <dl className="grid grid-cols-2 border-t border-border/65 bg-surface-2/25 sm:grid-cols-4">
+        <dl className="grid grid-cols-3 border-t border-border/65 bg-surface-2/25">
           <ProfileMetric
             label="Client rating"
             icon={<StarIcon size={14} aria-hidden="true" />}
-            value={rating ? rating.toFixed(1) + "/5" : "New profile"}
+            value={rating ? rating.toFixed(1) + "/5" : "Not yet rated"}
             detail={
               rating
                 ? ratingCount + (ratingCount === 1 ? " rating" : " ratings")
-                : "Not yet rated"
+                : "Ratings on Allocatr"
             }
           />
           <ProfileMetric
-            label="Projects completed"
+            label="Completed"
             icon={<CircleCheckBigIcon size={14} aria-hidden="true" />}
             value={String(completed)}
-            detail="Completed on Allocatr"
+            detail="Projects on Allocatr"
           />
           <ProfileMetric
             label="Experience"
@@ -542,15 +566,7 @@ export function PublicProfileContent({
                 ? "Not listed"
                 : experience + (experience === 1 ? " year" : " years")
             }
-            detail="Professional experience"
-          />
-          <ProfileMetric
-            label="Expertise"
-            icon={<SparklesIcon size={14} aria-hidden="true" />}
-            value={String(skills.length)}
-            detail={
-              skills.length === 1 ? "Specialist skill" : "Specialist skills"
-            }
+            detail="Listed experience"
           />
         </dl>
       </section>
@@ -558,15 +574,15 @@ export function PublicProfileContent({
       {/* IN-PAGE NAVIGATION */}
       <nav
         aria-label="Profile sections"
-        className="mt-6 flex items-center gap-1 overflow-x-auto rounded-xl border border-border/60 bg-card p-2 sm:mt-7"
+        className="mt-5 flex items-center gap-2 overflow-x-auto border-b border-border/70 py-1 [scrollbar-width:thin] sm:mt-6 sm:gap-4"
       >
         <SectionLink href="#overview">Overview</SectionLink>
         <SectionLink href="#expertise">Expertise</SectionLink>
         <SectionLink href="#public-work">Work</SectionLink>
-        <SectionLink href="#reputation">Client feedback</SectionLink>
+        <SectionLink href="#reputation">Client ratings</SectionLink>
       </nav>
 
-      <div className="mt-5 rounded-xl border border-border/70 bg-card p-4 lg:hidden">
+      <div className="mt-5 rounded-xl border border-border/75 bg-card p-4 sm:p-5 lg:hidden">
         <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
           <p className="text-xs text-muted-foreground">Work with {firstName}</p>
           <p className="text-sm font-medium">
@@ -581,42 +597,25 @@ export function PublicProfileContent({
         {inviteAction}
       </div>
 
-      <div className="mt-6 grid min-w-0 items-start gap-5 lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-7">
+      <div className="mt-6 grid min-w-0 items-start gap-5 lg:grid-cols-[minmax(0,1fr)_312px] xl:grid-cols-[minmax(0,1fr)_336px] lg:gap-7">
         <div className="min-w-0 space-y-5 lg:space-y-6">
           <section
             id="overview"
             aria-labelledby="about-heading"
-            className={surface + " scroll-mt-28 p-6 sm:p-8"}
+            className={
+              surface +
+              " scroll-mt-[calc(var(--profile-nav-height,68px)+24px)] p-5 sm:p-7"
+            }
           >
             <SectionHeading
               eyebrow="The introduction"
               title={"About " + firstName}
               id="about-heading"
             />
-            <div className="mt-5 whitespace-pre-line break-words text-sm leading-8 text-foreground/75">
+            <div className="mt-5 whitespace-pre-line break-words text-[13px] leading-8 text-foreground/85 [overflow-wrap:anywhere]">
               {profile.bio?.trim() ||
                 "This professional has not added a personal introduction yet."}
             </div>
-            {(experience !== null || profile.location?.trim()) && (
-              <dl className="mt-6 grid gap-5 border-t border-border/60 pt-5 sm:grid-cols-2">
-                {experience !== null && (
-                  <DetailItem
-                    icon={
-                      <BriefcaseBusinessIcon size={15} aria-hidden="true" />
-                    }
-                    label="Experience"
-                    value={experience + (experience === 1 ? " year" : " years")}
-                  />
-                )}
-                {profile.location?.trim() && (
-                  <DetailItem
-                    icon={<MapPinIcon size={15} aria-hidden="true" />}
-                    label="Based in"
-                    value={profile.location}
-                  />
-                )}
-              </dl>
-            )}
           </section>
 
           <ExpertiseSection skills={skills} />
@@ -624,56 +623,51 @@ export function PublicProfileContent({
           <section
             id="reputation"
             aria-labelledby="feedback-heading"
-            className={surface + " scroll-mt-28 p-6 sm:p-8"}
+            className={
+              surface +
+              " scroll-mt-[calc(var(--profile-nav-height,68px)+24px)] p-5 sm:p-7"
+            }
           >
             <SectionHeading
               eyebrow="Reputation"
-              title="Client feedback"
+              title="Client ratings"
               id="feedback-heading"
             />
-            <div className="mt-5 flex flex-col gap-5 rounded-xl border border-border/60 bg-surface-2/35 p-5 sm:flex-row sm:items-center sm:gap-7">
-              <div className="shrink-0">
-                <p className="text-4xl font-medium tracking-[-0.05em] tabular-nums">
+            <div className="mt-5 flex flex-col gap-4 rounded-xl border border-border/65 bg-surface-2/40 p-5 sm:flex-row sm:items-center sm:gap-6">
+              <div
+                className="shrink-0"
+                role="img"
+                aria-label={
+                  rating
+                    ? `${rating.toFixed(1)} out of 5 from ${ratingCount} ${ratingCount === 1 ? "rating" : "ratings"}`
+                    : "Not yet rated"
+                }
+              >
+                <p
+                  aria-hidden="true"
+                  className="inline-flex items-baseline gap-1.5 text-3xl font-medium tracking-[-0.04em] tabular-nums"
+                >
+                  <StarIcon
+                    size={18}
+                    className={
+                      rating
+                        ? "self-center fill-brand-amber/75 text-brand-amber"
+                        : "self-center text-muted-foreground/50"
+                    }
+                  />
                   {rating ? rating.toFixed(1) : "—"}
-                  <span className="ml-1 text-sm font-normal tracking-normal text-muted-foreground">
+                  <span className="text-xs font-normal tracking-normal text-muted-foreground">
                     / 5
                   </span>
                 </p>
-                <div
-                  aria-label={
-                    rating
-                      ? rating.toFixed(1) + " out of 5 stars"
-                      : "No client rating yet"
-                  }
-                  className="mt-3 flex items-center gap-1"
-                >
-                  {[1, 2, 3, 4, 5].map((value) => (
-                    <StarIcon
-                      key={value}
-                      size={15}
-                      aria-hidden="true"
-                      className={
-                        rating && value <= Math.round(rating)
-                          ? "fill-status-pending text-status-pending"
-                          : "text-muted-foreground/25"
-                      }
-                    />
-                  ))}
-                </div>
               </div>
               <div className="min-w-0">
                 <p className="text-sm font-medium">
-                  {rating
-                    ? "Rated by clients"
-                    : "A new professional connection"}
+                  {rating ? "Rated by clients" : "Not yet rated"}
                 </p>
-                <p className="mt-2 text-xs leading-6 text-muted-foreground">
+                <p className="mt-1.5 text-xs leading-6 text-muted-foreground">
                   {rating
-                    ? "Based on " +
-                      ratingCount +
-                      (ratingCount === 1
-                        ? " client rating on Allocatr."
-                        : " client ratings on Allocatr.")
+                    ? `Based on ${ratingCount.toLocaleString()} ${ratingCount === 1 ? "client rating" : "client ratings"} on Allocatr.`
                     : "Client ratings will appear here as work is reviewed."}
                 </p>
               </div>
@@ -684,24 +678,18 @@ export function PublicProfileContent({
         {/* WORK WITH THIS PROFESSIONAL */}
         <aside
           aria-label={"Work with " + firstName}
-          className="hidden min-w-0 space-y-4 lg:sticky lg:top-24 lg:block"
+          className="hidden min-w-0 lg:sticky lg:top-[calc(var(--profile-nav-height,68px)+24px)] lg:block"
         >
-          <section
-            className={
-              surface +
-              " relative overflow-hidden border-t-2 border-t-brand-secondary-highlight/60 dark:border-t-secondary/60"
-            }
-          >
+          <section className={surface + " overflow-hidden"}>
             <div className="border-b border-border/65 bg-surface-2/35 px-5 py-5 sm:px-6">
               <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
-                Your next collaboration
+                Project collaboration
               </p>
               <h2 className="mt-2 break-words text-lg font-medium tracking-[-0.025em]">
                 Work with {firstName}
               </h2>
               <p className="mt-2 text-xs leading-6 text-muted-foreground">
-                Bring the brief. Find the right fit. Build something worth
-                doing.
+                Start with a project brief and confirm the scope together.
               </p>
             </div>
             <div className="space-y-5 p-5 sm:p-6">
@@ -741,24 +729,10 @@ export function PublicProfileContent({
             </div>
           </section>
 
-          <section className="rounded-xl border border-border/65 bg-surface-2/30 p-5">
-            <div
-              className={
-                "flex items-center gap-2 text-xs font-medium " + accent
-              }
-            >
-              <UserRoundIcon size={14} aria-hidden="true" />A person, not just a
-              profile.
-            </div>
-            <p className="mt-2 text-xs leading-6 text-muted-foreground">
-              Explore their expertise, read their introduction and choose a
-              collaboration that fits your project.
-            </p>
-            <Link to="/discover" className={quietAction + " -ml-2.5 mt-3"}>
-              Explore more Allocats
-              <ArrowRightIcon size={12} aria-hidden="true" />
-            </Link>
-          </section>
+          <Link to="/discover" className={quietAction + " mt-4 w-full"}>
+            Explore more Allocats
+            <ArrowRightIcon size={12} aria-hidden="true" />
+          </Link>
         </aside>
       </div>
 
@@ -796,16 +770,16 @@ function ProfilePhotoViewer({
   const [failed, setFailed] = useState(false);
   return (
     <Dialog open onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[92dvh] overflow-y-auto rounded-2xl border-border/70 bg-card p-0 text-card-foreground sm:max-w-3xl">
-        <DialogHeader className="border-b border-border/60 px-6 py-5 pr-12 text-left">
-          <DialogTitle className="text-base font-semibold tracking-[-0.02em]">
+      <DialogContent className="flex max-h-[92dvh] w-[calc(100vw-24px)] flex-col gap-0 overflow-hidden rounded-2xl border-border/80 bg-card p-0 text-card-foreground sm:max-w-3xl">
+        <DialogHeader className="shrink-0 border-b border-border/65 px-5 py-5 pr-12 text-left sm:px-6">
+          <DialogTitle className="text-base font-medium tracking-[-0.02em]">
             {name}
           </DialogTitle>
           <DialogDescription className="text-xs">
             Profile photo
           </DialogDescription>
         </DialogHeader>
-        <div className="relative flex min-h-52 items-center justify-center overflow-hidden bg-surface-2/50 p-3 sm:p-5">
+        <div className="relative flex min-h-[min(13rem,35dvh)] flex-1 items-start justify-center overflow-y-auto bg-surface-2/50 p-3 sm:p-5">
           {!loaded && !failed && (
             <div
               role="status"
@@ -844,13 +818,13 @@ function ProfilePhotoViewer({
               onLoad={() => setLoaded(true)}
               onError={() => setFailed(true)}
               className={
-                "max-h-[65dvh] max-w-full rounded-xl object-contain " +
+                "my-auto max-h-[65dvh] max-w-full rounded-xl object-contain " +
                 (loaded ? "opacity-100" : "opacity-0")
               }
             />
           )}
         </div>
-        <DialogFooter className="border-t border-border/60 px-6 py-4">
+        <DialogFooter className="shrink-0 border-t border-border/65 px-5 py-4 sm:px-6">
           <button
             type="button"
             className={secondaryAction}
@@ -880,7 +854,10 @@ function ExpertiseSection({
     <section
       id="expertise"
       aria-labelledby="expertise-heading"
-      className={surface + " scroll-mt-28 p-6 sm:p-8"}
+      className={
+        surface +
+        " scroll-mt-[calc(var(--profile-nav-height,68px)+24px)] p-5 sm:p-7"
+      }
     >
       <SectionHeading
         eyebrow="What they bring"
@@ -894,7 +871,7 @@ function ExpertiseSection({
             {visible.map((skill) => (
               <span
                 key={skill.id}
-                className="max-w-full break-words rounded-lg border border-border/60 bg-surface-2/45 px-3.5 py-2.5 text-xs font-medium text-foreground/80"
+                className="max-w-full break-words rounded-lg border border-border/65 bg-surface-2/45 px-3 py-2 text-[11px] font-medium leading-5 text-foreground/85 [overflow-wrap:anywhere]"
               >
                 {skill.name}
               </span>
@@ -904,6 +881,7 @@ function ExpertiseSection({
             <button
               type="button"
               onClick={() => setExpanded((value) => !value)}
+              aria-expanded={expanded}
               className={quietAction + " -ml-2.5 mt-4"}
             >
               {expanded
@@ -945,7 +923,10 @@ function PublicWorkSection({
     <section
       id="public-work"
       aria-labelledby="work-heading"
-      className={surface + " scroll-mt-28 p-6 sm:p-8"}
+      className={
+        surface +
+        " scroll-mt-[calc(var(--profile-nav-height,68px)+24px)] p-5 sm:p-7"
+      }
     >
       <SectionHeading
         eyebrow="Experience in practice"
@@ -973,7 +954,7 @@ function PublicWorkSection({
                   setLimit(6);
                 }}
                 className={
-                  "min-h-8 rounded-md px-3 text-[11px] font-medium " +
+                  "min-h-10 rounded-md px-3 text-[11px] font-medium " +
                   focus +
                   " " +
                   (completedOnly === item.value
@@ -989,7 +970,7 @@ function PublicWorkSection({
             {visible.map((project) => (
               <article
                 key={project.id}
-                className="min-w-0 rounded-xl border border-border/60 bg-surface-2/25 p-5 transition-colors hover:border-brand-secondary-highlight/25 dark:hover:border-secondary/25 motion-reduce:transition-none"
+                className="min-w-0 rounded-xl border border-border/70 bg-surface-2/25 p-4 sm:p-5"
               >
                 <span
                   aria-hidden="true"
@@ -1253,213 +1234,206 @@ function InviteToProjectDialog({
         if (!busyRef.current) onOpenChange(open);
       }}
     >
-      <DialogContent className="flex max-h-[90dvh] flex-col overflow-hidden rounded-xl border-border bg-card p-0 text-card-foreground shadow-none sm:max-w-lg">
-        <DialogHeader className="shrink-0 border-b border-border/65 px-5 py-6 text-left sm:px-6">
-          <DialogTitle className="text-xl font-medium tracking-[-0.025em]">
-            {confirming ? "Confirm project invitation" : "Invite to a project"}
-          </DialogTitle>
-          <DialogDescription className="mt-2 text-xs leading-6">
-            {confirming
-              ? "Review the skill match before sending this invitation."
-              : `Choose a project for ${profile.fullName} to review, or start a new one.`}
-          </DialogDescription>
-        </DialogHeader>
-        <div className="min-h-0 space-y-4 overflow-y-auto px-5 py-5 sm:px-6">
-          {confirming && selected && skillCheck ? (
-            <section className="space-y-4">
-              <div
-                role="status"
-                className="rounded-xl border border-status-pending/25 bg-status-pending/[0.06] p-4"
-              >
-                <h3 className="text-sm font-semibold text-status-pending-foreground">
-                  {skillCheck.unavailable
-                    ? "Skill match could not be verified"
-                    : "No required skills match"}
-                </h3>
-                <p className="mt-2 text-xs leading-6 text-muted-foreground">
-                  {skillCheck.unavailable
-                    ? `Required skill details are not available for ${selected.title}. Would you still like to invite ${profile.fullName}?`
-                    : `${profile.fullName} does not have any of the required skills listed for ${selected.title}. Would you still like to invite them?`}
+      <DialogContent className="flex max-h-[92dvh] w-[calc(100vw-24px)] flex-col gap-0 overflow-hidden rounded-2xl border-border/80 bg-card p-0 text-card-foreground shadow-[0_24px_80px_-24px_color-mix(in_srgb,var(--brand-charcoal)_45%,transparent)] sm:max-w-[560px]">
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+          <DialogHeader className="border-b border-border/65 px-5 py-5 pr-12 text-left sm:px-6 sm:pr-12">
+            <DialogTitle className="text-xl font-medium tracking-[-0.025em]">
+              {confirming
+                ? "Confirm project invitation"
+                : "Invite to a project"}
+            </DialogTitle>
+            <DialogDescription className="mt-2 text-xs leading-6">
+              {confirming
+                ? "Review the skill match before sending this invitation."
+                : `Choose a project for ${profile.fullName} to review, or start a new one.`}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 px-5 py-5 sm:px-6">
+            {confirming && selected && skillCheck ? (
+              <section className="space-y-4">
+                <div
+                  role="status"
+                  className="rounded-xl border border-status-pending/25 bg-status-pending/[0.06] p-4"
+                >
+                  <h3 className="text-sm font-medium text-status-pending-foreground">
+                    {skillCheck.unavailable
+                      ? "Skill match could not be verified"
+                      : "No required skills match"}
+                  </h3>
+                  <p className="mt-2 text-xs leading-6 text-muted-foreground">
+                    {skillCheck.unavailable
+                      ? `Required skill details are not available for ${selected.title}. Would you still like to invite ${profile.fullName}?`
+                      : `${profile.fullName} does not have any of the required skills listed for ${selected.title}. Would you still like to invite them?`}
+                  </p>
+                </div>
+                {skillCheck.required.length > 0 && (
+                  <div>
+                    <p className="text-xs font-semibold">
+                      Project requirements
+                    </p>
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      {skillCheck.required.map((skill) => (
+                        <span
+                          key={skill}
+                          className="max-w-full break-words rounded-md border border-border/60 bg-surface-2/40 px-2.5 py-1.5 text-xs text-foreground/80 [overflow-wrap:anywhere]"
+                        >
+                          {skill}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                <p className="text-xs leading-6 text-muted-foreground">
+                  This sends an invitation. {profile.fullName} will join the
+                  project only after accepting.
+                </p>
+              </section>
+            ) : loading ? (
+              <LoadingLine>Loading your projects</LoadingLine>
+            ) : loadError ? (
+              <InlineError
+                message="Your projects could not be loaded."
+                onRetry={() => setReload((value) => value + 1)}
+              />
+            ) : !projects.length ? (
+              <div className="rounded-lg border border-border/65 bg-surface-2/35 p-4">
+                <p className="text-xs leading-6 text-muted-foreground">
+                  Create an active or pending project to invite this Allocat.
                 </p>
               </div>
-              {skillCheck.required.length > 0 && (
-                <div>
-                  <p className="text-xs font-semibold">Project requirements</p>
-                  <div className="mt-2 flex flex-wrap gap-1.5">
-                    {skillCheck.required.map((skill) => (
-                      <span
-                        key={skill}
-                        className="rounded-md border border-border/60 bg-surface-2/40 px-2.5 py-1.5 text-xs text-foreground/80"
-                      >
-                        {skill}
-                      </span>
-                    ))}
-                  </div>
+            ) : (
+              <>
+                <div className="relative">
+                  <SearchIcon
+                    size={14}
+                    aria-hidden="true"
+                    className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                  />
+                  <input
+                    type="search"
+                    value={query}
+                    disabled={sending}
+                    onChange={(event) => setQuery(event.target.value)}
+                    aria-label="Search your projects"
+                    placeholder="Search your projects"
+                    className={
+                      "h-11 w-full rounded-lg border border-input bg-surface-2/40 pl-9 pr-3 text-base outline-none placeholder:text-muted-foreground/75 lg:text-xs " +
+                      focus
+                    }
+                  />
                 </div>
-              )}
-              <p className="text-xs leading-6 text-muted-foreground">
-                This sends an invitation. {profile.fullName} will join the
-                project only after accepting.
-              </p>
-            </section>
-          ) : loading ? (
-            <LoadingLine>Loading your projects</LoadingLine>
-          ) : loadError ? (
-            <InlineError
-              message="Your projects could not be loaded."
-              onRetry={() => setReload((value) => value + 1)}
-            />
-          ) : !projects.length ? (
-            <div className="rounded-lg border border-border/65 bg-surface-2/35 p-4">
-              <p className="text-xs leading-6 text-muted-foreground">
-                Create an active or pending project to invite this Allocat.
-              </p>
-            </div>
-          ) : (
-            <>
-              <div className="relative">
-                <SearchIcon
-                  size={14}
-                  aria-hidden="true"
-                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                />
-                <input
-                  type="search"
-                  value={query}
-                  disabled={sending}
-                  onChange={(event) => setQuery(event.target.value)}
-                  aria-label="Search your projects"
-                  placeholder="Search your projects"
-                  className={
-                    "h-11 w-full rounded-lg border border-input bg-surface-2/40 pl-9 pr-3 text-base outline-none placeholder:text-muted-foreground/60 sm:text-xs " +
-                    focus
-                  }
-                />
-              </div>
-              <fieldset disabled={sending} className="space-y-2">
-                <legend className="sr-only">Choose a project</legend>
-                {visible.map((project) => (
-                  <label
-                    key={project.id}
-                    className="relative block cursor-pointer"
-                  >
-                    <input
-                      type="radio"
-                      name="profile-invite-project"
-                      value={project.id}
-                      checked={selectedId === project.id}
-                      onChange={() => {
-                        setSelectedId(project.id);
-                        setConfirmProjectId(null);
-                        setSubmitError(null);
-                      }}
-                      className="peer sr-only"
-                    />
-                    <span
-                      className={
-                        "flex items-center justify-between gap-3 rounded-lg border p-3.5 peer-focus-visible:ring-2 peer-focus-visible:ring-ring/35 peer-disabled:cursor-not-allowed peer-disabled:opacity-60 " +
-                        (selectedId === project.id
-                          ? "border-brand-secondary-highlight/35 bg-brand-secondary-highlight/[0.04] dark:border-secondary/30 dark:bg-secondary/[0.04]"
-                          : "border-border/65 bg-surface-2/25 hover:border-border")
-                      }
+                <fieldset disabled={sending} className="space-y-2">
+                  <legend className="sr-only">Choose a project</legend>
+                  {visible.map((project) => (
+                    <label
+                      key={project.id}
+                      className="relative block cursor-pointer"
                     >
-                      <span className="min-w-0">
-                        <span className="block truncate text-xs font-medium">
-                          {project.title}
-                        </span>
-                        <span className="mt-1.5 block">
-                          <ProjectStatus status={project.status} />
-                        </span>
-                      </span>
+                      <input
+                        type="radio"
+                        name="profile-invite-project"
+                        value={project.id}
+                        checked={selectedId === project.id}
+                        onChange={() => {
+                          setSelectedId(project.id);
+                          setConfirmProjectId(null);
+                          setSubmitError(null);
+                        }}
+                        className="peer sr-only"
+                      />
                       <span
-                        aria-hidden="true"
                         className={
-                          "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border " +
+                          "flex min-h-16 items-center justify-between gap-3 rounded-xl border p-4 peer-focus-visible:ring-2 peer-focus-visible:ring-ring/35 peer-disabled:cursor-not-allowed peer-disabled:opacity-60 " +
                           (selectedId === project.id
-                            ? "border-brand-secondary-highlight bg-brand-secondary-highlight text-primary-foreground dark:border-secondary dark:bg-secondary dark:text-secondary-foreground"
-                            : "border-border")
+                            ? "border-brand-secondary-highlight/35 bg-brand-secondary-highlight/[0.07] dark:border-secondary/35 dark:bg-secondary/[0.08]"
+                            : "border-border/65 bg-surface-2/25 hover:border-border")
                         }
                       >
-                        {selectedId === project.id && (
-                          <motion.svg
-                            width="12"
-                            height="12"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="3"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
+                        <span className="min-w-0">
+                          <span
+                            title={project.title}
+                            className="block truncate text-xs font-medium"
                           >
-                            <motion.path
-                              d="m5 12 4 4 10-10"
-                              initial={{ pathLength: 0 }}
-                              animate={{ pathLength: 1 }}
-                              transition={{ duration: 0.18 }}
-                            />
-                          </motion.svg>
-                        )}
+                            {project.title}
+                          </span>
+                          <span className="mt-1.5 block">
+                            <ProjectStatus status={project.status} />
+                          </span>
+                        </span>
+                        <span
+                          aria-hidden="true"
+                          className={
+                            "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border " +
+                            (selectedId === project.id
+                              ? "border-brand-secondary-highlight bg-brand-secondary-highlight text-primary-foreground dark:border-secondary dark:bg-secondary dark:text-secondary-foreground"
+                              : "border-border")
+                          }
+                        >
+                          {selectedId === project.id && (
+                            <CheckIcon size={12} aria-hidden="true" />
+                          )}
+                        </span>
                       </span>
-                    </span>
-                  </label>
-                ))}
-                {!visible.length && (
-                  <p className="py-3 text-xs text-muted-foreground">
-                    No matching projects. Try another name or code.
+                    </label>
+                  ))}
+                  {!visible.length && (
+                    <p className="py-3 text-xs text-muted-foreground">
+                      No matching projects. Try another name or code.
+                    </p>
+                  )}
+                </fieldset>
+                {selectedId &&
+                (checking || relationshipProjectId !== selectedId) ? (
+                  <LoadingLine>Checking project invitation</LoadingLine>
+                ) : relationshipError ? (
+                  <InlineError
+                    message="The project relationship could not be checked."
+                    onRetry={() => setRelationshipReload((value) => value + 1)}
+                  />
+                ) : alreadyAccepted ? (
+                  <p
+                    role="status"
+                    className="rounded-lg border border-border/65 bg-surface-2/35 p-3 text-xs leading-6 text-status-complete-foreground"
+                  >
+                    This Allocat is already part of the selected project.
                   </p>
-                )}
-              </fieldset>
-              {selectedId &&
-              (checking || relationshipProjectId !== selectedId) ? (
-                <LoadingLine>Checking project invitation</LoadingLine>
-              ) : relationshipError ? (
-                <InlineError
-                  message="The project relationship could not be checked."
-                  onRetry={() => setRelationshipReload((value) => value + 1)}
-                />
-              ) : alreadyAccepted ? (
-                <p
-                  role="status"
-                  className="rounded-lg border border-border/65 bg-surface-2/35 p-3 text-xs leading-6 text-status-complete-foreground"
+                ) : alreadyInvited ? (
+                  <p
+                    role="status"
+                    className="rounded-lg border border-border/65 bg-surface-2/35 p-3 text-xs leading-6 text-status-pending-foreground"
+                  >
+                    An invitation is already waiting for this Allocat.
+                  </p>
+                ) : null}
+              </>
+            )}
+            {!confirming && (
+              <div className="border-t border-border/60 pt-4">
+                <button
+                  type="button"
+                  disabled={sending}
+                  onClick={startNewProject}
+                  className={secondaryAction + " w-full"}
                 >
-                  This Allocat is already part of the selected project.
+                  <PlusIcon size={14} aria-hidden="true" />
+                  Start a new project instead
+                </button>
+                <p className="mt-2 text-xs leading-6 text-muted-foreground">
+                  {profile.fullName} will be carried into the new project flow.
                 </p>
-              ) : alreadyInvited ? (
-                <p
-                  role="status"
-                  className="rounded-lg border border-border/65 bg-surface-2/35 p-3 text-xs leading-6 text-status-pending-foreground"
-                >
-                  An invitation is already waiting for this Allocat.
-                </p>
-              ) : null}
-            </>
-          )}
-          {!confirming && (
-            <div className="border-t border-border/60 pt-4">
-              <button
-                type="button"
-                disabled={sending}
-                onClick={startNewProject}
-                className={secondaryAction + " w-full"}
+              </div>
+            )}
+            {submitError && (
+              <p
+                role="alert"
+                className="text-xs leading-6 text-status-overdue-foreground"
               >
-                <PlusIcon size={14} aria-hidden="true" />
-                Start a new project instead
-              </button>
-              <p className="mt-2 text-xs leading-6 text-muted-foreground">
-                {profile.fullName} will be carried into the new project flow.
+                {submitError}
               </p>
-            </div>
-          )}
-          {submitError && (
-            <p
-              role="alert"
-              className="text-xs leading-6 text-status-overdue-foreground"
-            >
-              {submitError}
-            </p>
-          )}
+            )}
+          </div>
         </div>
-        <DialogFooter className="shrink-0 border-t border-border/65 bg-surface-2/35 px-5 py-4 sm:px-6">
+        <DialogFooter className="shrink-0 border-t border-border/65 bg-card px-5 py-4 gap-2 sm:px-6">
           {confirming ? (
             <>
               <button
@@ -1485,7 +1459,7 @@ function InviteToProjectDialog({
                   <LoaderCircleIcon
                     size={14}
                     aria-hidden="true"
-                    className="animate-spin"
+                    className="animate-spin motion-reduce:animate-none"
                   />
                 ) : (
                   <SendIcon size={14} aria-hidden="true" />
@@ -1513,7 +1487,7 @@ function InviteToProjectDialog({
                   <LoaderCircleIcon
                     size={14}
                     aria-hidden="true"
-                    className="animate-spin"
+                    className="animate-spin motion-reduce:animate-none"
                   />
                 ) : (
                   <SendIcon size={14} aria-hidden="true" />
@@ -1546,16 +1520,18 @@ function ProfileMetric({
   icon: ReactNode;
 }) {
   return (
-    <div className="min-w-0 border-b border-r border-border/60 px-5 py-5 sm:border-b-0 sm:px-6 [&:nth-child(2)]:border-r-0 sm:[&:nth-child(2)]:border-r last:border-r-0 [&:nth-last-child(-n+2)]:border-b-0">
-      <dt className="flex items-center gap-2 text-[11px] text-muted-foreground">
-        <span className={accent}>{icon}</span>
+    <div className="min-w-0 border-r border-border/65 px-3 py-4 last:border-r-0 sm:px-6 sm:py-5">
+      <dt className="flex flex-wrap items-center gap-1.5 text-[10px] leading-4 text-muted-foreground">
+        <span aria-hidden="true">{icon}</span>
         {label}
       </dt>
       <dd className="mt-2">
-        <span className="block break-words text-xl font-semibold tracking-[-0.03em] tabular-nums sm:text-2xl">
+        <span
+          className={`block break-words font-medium tracking-[-0.025em] tabular-nums ${value === "Not yet rated" || value === "Not listed" ? "text-xs leading-6 text-muted-foreground sm:text-sm" : "text-lg leading-6 sm:text-xl"}`}
+        >
           {value}
         </span>
-        <span className="mt-1 block text-[11px] leading-5 text-muted-foreground">
+        <span className="mt-1 block text-[10px] leading-5 text-muted-foreground">
           {detail}
         </span>
       </dd>
@@ -1563,32 +1539,26 @@ function ProfileMetric({
   );
 }
 function SectionHeading({
-  eyebrow,
   title,
   id,
   count,
 }: {
-  eyebrow: string;
+  eyebrow?: string;
   title: string;
   id: string;
   count?: number;
 }) {
   return (
-    <div className="flex items-start justify-between gap-3">
-      <div>
-        <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
-          {eyebrow}
-        </p>
-        <h2
-          id={id}
-          className="mt-2 text-lg font-semibold tracking-[-0.025em] sm:text-xl"
-        >
-          {title}
-        </h2>
-      </div>
+    <div className="flex items-center justify-between gap-3">
+      <h2
+        id={id}
+        className="text-lg font-medium tracking-[-0.025em] sm:text-xl"
+      >
+        {title}
+      </h2>
       {typeof count === "number" && count > 0 && (
-        <span className="rounded-md border border-border/65 bg-surface-2/45 px-2 py-1 text-[11px] tabular-nums text-muted-foreground">
-          {count}
+        <span className="text-xs tabular-nums text-muted-foreground">
+          {count.toLocaleString()}
         </span>
       )}
     </div>
@@ -1602,28 +1572,9 @@ function SectionLink({
   children: ReactNode;
 }) {
   return (
-    <a href={href} className={quietAction + " shrink-0 px-3"}>
+    <a href={href} className={quietAction + " min-h-11 shrink-0 px-2.5"}>
       {children}
     </a>
-  );
-}
-function DetailItem({
-  icon,
-  label,
-  value,
-}: {
-  icon: ReactNode;
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="flex items-start gap-3">
-      <span className="mt-0.5 text-muted-foreground">{icon}</span>
-      <div>
-        <dt className="text-[11px] text-muted-foreground">{label}</dt>
-        <dd className="mt-1 text-xs font-medium text-foreground/85">{value}</dd>
-      </div>
-    </div>
   );
 }
 function LoadingLine({ children }: { children: ReactNode }) {
