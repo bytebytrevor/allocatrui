@@ -198,14 +198,21 @@ const LANDING_NAV_TOKENS = {
 const HeaderThemeContext = createContext(false);
 const actionBase =
   "inline-flex items-center justify-center gap-2 rounded-lg border text-xs font-medium shadow-none transition-opacity duration-150 motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-background";
+// Set the pair directly as well as through utilities: the landing palette
+// changes the accent to lime, so inherited white foreground is unsuitable.
+const LANDING_CTA_STYLE: CSSProperties = {
+  backgroundColor: "var(--brand-primary)",
+  color: "var(--brand-charcoal)",
+  borderColor: "color-mix(in srgb, var(--brand-primary) 80%, transparent)",
+};
 const landingPrimary =
-  "border-brand-primary/20 bg-brand-primary text-brand-charcoal hover:bg-brand-primary hover:text-brand-charcoal hover:opacity-90 focus-visible:ring-brand-primary/30";
+  "border-brand-primary/20 bg-brand-primary !text-[color:var(--brand-charcoal)] hover:bg-brand-primary hover:!text-[color:var(--brand-charcoal)] focus-visible:!text-[color:var(--brand-charcoal)] [&_span]:!text-inherit [&_svg]:!text-inherit hover:brightness-95 focus-visible:ring-brand-primary/60";
 const autoPrimary =
   "border-brand-secondary-highlight/15 bg-brand-secondary-highlight text-primary-foreground hover:bg-brand-secondary-highlight hover:text-primary-foreground hover:opacity-90 focus-visible:ring-brand-secondary-highlight/20 dark:border-secondary/10 dark:bg-secondary dark:text-secondary-foreground dark:hover:bg-secondary dark:hover:text-secondary-foreground dark:focus-visible:ring-secondary/20";
 const ghostAction =
   "border-transparent bg-transparent text-muted-foreground hover:text-foreground hover:opacity-80 focus-visible:ring-ring/25";
 const itemStyle =
-  "min-h-11 gap-3 rounded-lg px-3 py-2.5 text-xs text-foreground/85 transition-colors duration-150 focus:bg-surface-3/55 focus:text-foreground motion-reduce:transition-none";
+  "min-h-11 gap-3 rounded-lg px-3 py-2.5 text-xs text-foreground/85 transition-colors duration-150 focus:bg-surface-3/70 focus:!text-foreground data-[highlighted]:bg-surface-3/70 data-[highlighted]:!text-foreground motion-reduce:transition-none";
 const dropdownSurface =
   "[--menu-platform:var(--brand-secondary-highlight)] [--menu-solutions:color-mix(in_srgb,var(--brand-primary-muted)_45%,var(--brand-charcoal))] [--menu-resources:color-mix(in_srgb,var(--brand-amber)_40%,var(--brand-charcoal))] dark:[--menu-solutions:var(--brand-primary-muted)] dark:[--menu-resources:var(--brand-amber)] z-[150] rounded-2xl border border-border/80 bg-popover text-popover-foreground shadow-[0_18px_55px_-18px_color-mix(in_srgb,var(--brand-charcoal)_35%,transparent)] origin-[var(--radix-dropdown-menu-content-transform-origin)] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0 duration-150 motion-reduce:animate-none";
 function useNavAppearance() {
@@ -465,10 +472,21 @@ export default function SiteHeader({ appearance = "auto" }: SiteHeaderProps) {
             <Link
               to={postProjectHref}
               aria-label="Post a project"
-              className={`${cta} h-10 whitespace-nowrap px-2.5 sm:px-4`}
+              style={landing ? LANDING_CTA_STYLE : undefined}
+              className={`${cta} h-11 whitespace-nowrap px-3 sm:px-4`}
             >
-              <span className="sm:hidden">Post</span>
-              <span className="hidden sm:inline">Post a project</span>
+              <span
+                style={landing ? { color: "inherit" } : undefined}
+                className="sm:hidden"
+              >
+                Post
+              </span>
+              <span
+                style={landing ? { color: "inherit" } : undefined}
+                className="hidden sm:inline"
+              >
+                Post a project
+              </span>
             </Link>
             {user && <AccountMenu user={user} {...accountActions} />}
           </div>
@@ -733,13 +751,17 @@ function MobileMenu({
         <DropdownMenuItem asChild className="rounded-lg p-0">
           <Link
             to={postProjectHref}
-            style={{
-              backgroundColor: "var(--menu-cta-bg)",
-              color: "var(--menu-cta-text)",
-              borderColor:
-                "color-mix(in srgb, var(--menu-cta-bg) 80%, transparent)",
-            }}
-            className={`${actionBase} mb-2 min-h-11 w-full hover:opacity-90 focus:opacity-90 data-[highlighted]:opacity-90 motion-reduce:transition-none ${
+            style={
+              landing
+                ? LANDING_CTA_STYLE
+                : {
+                    backgroundColor: "var(--menu-cta-bg)",
+                    color: "var(--menu-cta-text)",
+                    borderColor:
+                      "color-mix(in srgb, var(--menu-cta-bg) 80%, transparent)",
+                  }
+            }
+            className={`${actionBase} ${landing ? landingPrimary : ""} mb-2 min-h-11 w-full hover:opacity-90 focus:opacity-90 data-[highlighted]:opacity-90 motion-reduce:transition-none ${
               landing
                 ? "[--menu-cta-bg:var(--brand-primary)] [--menu-cta-text:var(--brand-charcoal)]"
                 : "[--menu-cta-bg:var(--brand-secondary-highlight)] [--menu-cta-text:var(--primary-foreground)] dark:[--menu-cta-bg:var(--secondary)] dark:[--menu-cta-text:var(--secondary-foreground)]"
@@ -748,7 +770,11 @@ function MobileMenu({
             <BriefcaseBusinessIcon
               size={15}
               aria-hidden="true"
-              style={{ color: "var(--menu-cta-text)" }}
+              style={{
+                color: landing
+                  ? "var(--brand-charcoal)"
+                  : "var(--menu-cta-text)",
+              }}
               className="text-inherit"
             />
             Post a project

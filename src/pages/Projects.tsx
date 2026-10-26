@@ -136,7 +136,7 @@ const secondaryActionButton = [
   "motion-reduce:transition-none",
 ].join(" ");
 const elevatedSurface =
-  "border-border/65 bg-card dark:border-border dark:shadow-none";
+  "border-border/65 bg-card shadow-sm shadow-black/[0.025] dark:border-border dark:shadow-none";
 const softIconSurface = [
   "bg-surface-3/65 text-brand-secondary-highlight",
   "ring-1 ring-inset ring-border/35",
@@ -567,21 +567,21 @@ function ProjectsPage() {
             />
           </div>
 
-          <main className="container mx-auto flex-1 px-4 pb-10 pt-5 sm:px-5 sm:pb-12 sm:pt-6 md:px-8">
+          <main className="container mx-auto flex-1 px-4 pb-10 pt-8 sm:px-5 sm:pb-12 sm:pt-10 md:px-8">
             <motion.section
               initial={{ opacity: 0, y: 7 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.04, duration: 0.3, ease: "easeOut" }}
             >
-              <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+              <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between sm:gap-8">
                 <div className="min-w-0">
                   <SectionEyebrow>
                     {isWorkSection ? "Client work" : "Your workspace"}
                   </SectionEyebrow>
-                  <h2 className="mt-2 text-xl font-semibold tracking-[-0.025em] text-foreground/90 sm:text-2xl dark:text-foreground">
+                  <h2 className="mt-3 text-lg font-medium leading-snug tracking-[-0.02em] text-foreground/90 sm:text-xl dark:text-foreground">
                     {sectionTitle}
                   </h2>
-                  <p className="mt-1.5 hidden max-w-2xl text-xs leading-6 text-muted-foreground sm:block sm:text-sm">
+                  <p className="mt-2.5 hidden max-w-2xl text-xs leading-7 text-muted-foreground sm:block sm:text-sm">
                     {sectionDescription}
                   </p>
                 </div>
@@ -596,7 +596,7 @@ function ProjectsPage() {
                 )}
               </div>
 
-              <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+              <div className="mt-6 flex flex-col gap-3 sm:mt-7 sm:flex-row sm:items-center sm:justify-between sm:gap-5">
                 <ProjectSearch
                   value={search}
                   onChange={setSearch}
@@ -913,7 +913,7 @@ function WorkspaceMasthead({
               Workspace
             </p>
           </div>
-          <h1 className="mt-3 break-words text-xl font-semibold leading-tight tracking-[-0.03em] text-foreground/90 sm:text-2xl lg:text-[1.75rem] dark:text-foreground">
+          <h1 className="mt-3 break-words text-2xl font-semibold leading-[1.15] tracking-[-0.035em] text-foreground/95 sm:text-3xl lg:text-[2rem] dark:text-foreground">
             Welcome back,{" "}
             <span className="text-brand-secondary-highlight dark:text-secondary">
               {firstName}
@@ -931,7 +931,7 @@ function WorkspaceMasthead({
             asChild
             size="icon"
             className={
-              "group h-9 w-9 rounded-lg shadow-none sm:w-auto sm:px-4 " +
+              "group h-11 w-11 rounded-lg shadow-none sm:w-auto sm:px-4 " +
               primaryActionButton
             }
           >
@@ -952,7 +952,7 @@ function WorkspaceMasthead({
             variant="outline"
             size="icon"
             className={
-              "h-9 w-9 rounded-lg shadow-none sm:w-auto sm:px-4 " +
+              "h-11 w-11 rounded-lg shadow-none sm:w-auto sm:px-4 " +
               secondaryActionButton
             }
           >
@@ -966,14 +966,14 @@ function WorkspaceMasthead({
         </div>
       </div>
 
-      <div className="border-t border-border/60 bg-surface-2/35 px-3 py-2 sm:px-5 dark:border-border dark:bg-surface-2/50">
-        <div className="flex min-w-0 items-center justify-between gap-3 overflow-x-auto p-0.5 [scrollbar-width:thin]">
+      <div className="border-t border-border/50 bg-surface-2/25 px-1.5 py-1.5 sm:px-2 dark:border-border dark:bg-surface-2/40">
+        <div className="flex min-w-0 items-center justify-between gap-2 overflow-x-auto p-0.5 [scrollbar-width:thin]">
           <div className="shrink-0">
             {isAllocat ? (
               <div
                 role="group"
                 aria-label="Workspace section"
-                className="inline-flex items-center rounded-xl border border-border/55 bg-surface-3/35 p-1 dark:border-border dark:bg-surface-1"
+                className="inline-flex items-center rounded-lg border border-border/60 bg-surface-3/25 p-0.5 dark:border-border dark:bg-surface-1"
               >
                 <WorkspaceTab
                   active={workspaceSection === "projects"}
@@ -1025,7 +1025,7 @@ function WorkspaceMetric({ item }: { item: SummaryItem }) {
       aria-label={item.label + ": " + item.value}
       title={item.label}
       className={[
-        "relative flex h-8 items-center gap-2 rounded-lg px-2.5 text-left ring-1 ring-inset",
+        "relative flex h-8 items-center gap-1.5 rounded-md px-2.5 text-left ring-1 ring-inset",
         "transition-[background-color,color] duration-150 motion-reduce:transition-none",
         focusStyle,
         item.active
@@ -1038,7 +1038,7 @@ function WorkspaceMetric({ item }: { item: SummaryItem }) {
           layoutId="workspace-active-metric"
           aria-hidden="true"
           className={
-            "absolute inset-x-2.5 bottom-0 h-px rounded-full " + appearance.line
+            "absolute inset-x-2 bottom-0 h-0.5 rounded-full " + appearance.line
           }
           transition={{ duration: 0.18, ease: "easeOut" }}
         />
@@ -1047,7 +1047,7 @@ function WorkspaceMetric({ item }: { item: SummaryItem }) {
         {item.attention && <AttentionDot className="-right-1.5 -top-1.5" />}
         <Icon size={11} className={appearance.icon} />
       </span>
-      <span className="text-[0.68rem] font-semibold tabular-nums sm:text-xs">
+      <span className="text-[11px] font-semibold tabular-nums sm:text-xs">
         {item.value}
       </span>
       <span className="hidden text-[11px] font-medium sm:inline">
@@ -1077,7 +1077,7 @@ function WorkspaceTab({
       onClick={onClick}
       aria-pressed={active}
       className={[
-        "relative flex h-8 shrink-0 items-center gap-2 rounded-lg px-3.5 text-xs font-medium",
+        "relative flex h-8 shrink-0 items-center gap-2 rounded-md px-3 text-xs font-medium",
         "transition-colors duration-200 motion-reduce:transition-none",
         focusStyle,
         active
@@ -1089,7 +1089,7 @@ function WorkspaceTab({
         <motion.span
           layoutId="workspace-active-tab"
           aria-hidden="true"
-          className="absolute inset-0 rounded-lg border border-border/60 bg-card shadow-sm shadow-black/[0.025] dark:border-border dark:bg-surface-3/70 dark:shadow-none"
+          className="absolute inset-0 rounded-md border border-border/45 bg-card shadow-none dark:border-border dark:bg-surface-3/70"
           transition={{ type: "spring", stiffness: 500, damping: 38 }}
         />
       )}
@@ -1184,7 +1184,7 @@ function SortControl({
           variant="ghost"
           size="sm"
           aria-label={"Sort projects: " + currentOption.label}
-          className="h-9 rounded-lg px-2.5 text-xs font-medium text-muted-foreground shadow-none transition-colors hover:bg-surface-3/60 hover:text-foreground/90 data-[state=open]:bg-surface-3/60 data-[state=open]:text-foreground/90 dark:hover:bg-surface-3/70 dark:hover:text-foreground dark:data-[state=open]:bg-surface-3/70 dark:data-[state=open]:text-foreground"
+          className="h-9 rounded-lg px-2.5 text-xs font-medium text-muted-foreground shadow-none transition-colors hover:bg-surface-3/60 hover:text-foreground/90 data-[state=open]:bg-surface-3/60 data-[state=open]:text-foreground/90 dark:hover:bg-surface-3/70 dark:hover:text-foreground dark:data-[state=open]:bg-surface-3/70 dark:data-[state=open]:text-foreground motion-reduce:transition-none"
         >
           <ArrowDownNarrowWideIcon
             size={14}
@@ -1278,7 +1278,7 @@ function ViewControls({
           className={[
             "h-8 w-8 rounded-md shadow-none transition-colors duration-150 motion-reduce:transition-none",
             view === value
-              ? "bg-card text-brand-secondary-highlight shadow-sm hover:bg-card hover:text-brand-secondary-highlight dark:bg-surface-3 dark:text-secondary dark:hover:bg-surface-3 dark:hover:text-secondary"
+              ? "bg-card text-brand-secondary-highlight shadow-none hover:bg-card hover:text-brand-secondary-highlight dark:bg-surface-3 dark:text-secondary dark:hover:bg-surface-3 dark:hover:text-secondary"
               : "text-muted-foreground hover:bg-surface-1/80 hover:text-foreground/85 dark:hover:bg-surface-3/70 dark:hover:text-foreground",
           ].join(" ")}
         >

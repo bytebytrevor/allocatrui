@@ -19,7 +19,6 @@ import { Link } from "react-router-dom";
 import {
   ArrowRightIcon,
   BriefcaseBusinessIcon,
-  CheckIcon,
   ChevronDownIcon,
   CircleCheckBigIcon,
   FileCheck2Icon,
@@ -131,6 +130,29 @@ const SECONDARY_BUTTON =
   "border-border/65 bg-surface-2/35 text-foreground hover:bg-surface-2/35 hover:text-foreground hover:opacity-[0.72] focus-visible:ring-brand-secondary-highlight/18       ";
 const TEAL_BUTTON =
   "border-brand-primary/20 bg-brand-primary text-secondary-foreground hover:bg-brand-primary hover:text-secondary-foreground hover:opacity-[0.84] focus-visible:ring-brand-primary/30 focus-visible:ring-offset-primary";
+const LANDING_LAYOUT = `
+.allocatr-landing { --landing-viewport-height: 100vh; }
+@supports (height: 100svh) { .allocatr-landing { --landing-viewport-height: 100svh; } }
+@supports (height: 100dvh) { .allocatr-landing { --landing-viewport-height: 100dvh; } }
+.allocatr-landing .landing-hero {
+  min-height: max(0px, calc(var(--landing-viewport-height) - var(--landing-header-height, 64px)));
+}
+.allocatr-landing #landing-content { scroll-margin-top: var(--landing-header-height, 64px); }
+@media (max-height: 800px) {
+  .allocatr-landing .landing-hero-content { padding-top: 1.75rem; padding-bottom: 1.25rem; }
+  .allocatr-landing .landing-hero-heading { margin-top: 1.25rem; font-size: clamp(2.35rem, 5vw, 4.25rem); }
+  .allocatr-landing .landing-hero-copy { margin-top: 1rem; line-height: 1.75; }
+  .allocatr-landing .landing-hero-actions { margin-top: 1.5rem; }
+  .allocatr-landing .landing-hero-benefits { margin-top: 1.75rem; padding-top: 1rem; }
+}
+@media (max-width: 639px) and (max-height: 740px) {
+  .allocatr-landing .landing-hero-content { padding-top: 1.25rem; padding-bottom: 1rem; }
+  .allocatr-landing .landing-hero-heading { font-size: clamp(2.15rem, 9vw, 2.75rem); }
+  .allocatr-landing .landing-hero-copy { font-size: 0.875rem; line-height: 1.65; }
+  .allocatr-landing .landing-hero-actions { margin-top: 1.25rem; }
+  .allocatr-landing .landing-hero-benefits { margin-top: 1.25rem; column-gap: 1rem; row-gap: 0.5rem; }
+}
+`;
 export default function LandingPage() {
   const { user } = useAuth();
   const pageRef = useRef<HTMLDivElement | null>(null);
@@ -146,13 +168,16 @@ export default function LandingPage() {
         Math.ceil(header.getBoundingClientRect().height || childHeight || 64),
       );
     };
-    const observer = new ResizeObserver(measure);
-    observer.observe(header);
-    if (header.firstElementChild) observer.observe(header.firstElementChild);
+    const observer =
+      typeof ResizeObserver !== "undefined"
+        ? new ResizeObserver(measure)
+        : null;
+    observer?.observe(header);
+    if (header.firstElementChild) observer?.observe(header.firstElementChild);
     window.addEventListener("resize", measure);
     measure();
     return () => {
-      observer.disconnect();
+      observer?.disconnect();
       window.removeEventListener("resize", measure);
     };
   }, []);
@@ -162,7 +187,7 @@ export default function LandingPage() {
   return (
     <div
       ref={pageRef}
-      className="isolate w-full bg-background text-foreground"
+      className="allocatr-landing isolate w-full bg-background text-foreground"
       style={
         {
           ...LANDING_TOKENS,
@@ -170,6 +195,7 @@ export default function LandingPage() {
         } as CSSProperties
       }
     >
+      <style>{LANDING_LAYOUT}</style>
       <a
         href="#landing-content"
         className="sr-only fixed left-4 top-4 z-[110] rounded-lg bg-brand-primary px-4 py-3 text-sm font-medium text-brand-charcoal focus:not-sr-only"
@@ -191,7 +217,11 @@ export default function LandingPage() {
         className="relative isolate w-full outline-none"
       >
         <HeroPanel postProjectHref={postProjectHref} />
-        <SlidingSection order={1} className="bg-surface-1">
+        <SlidingSection
+          order={1}
+          id="choose-your-path"
+          className="bg-surface-1"
+        >
           <AdventurePanel
             postProjectHref={postProjectHref}
             allocatHref={allocatHref}
@@ -235,17 +265,26 @@ export default function LandingPage() {
 function SlidingSection({
   children,
   order,
+  id,
   className = "",
 }: {
   children: ReactNode;
   order: number;
+  id?: string;
   className?: string;
 }) {
   return (
     <section
+      id={id}
+      tabIndex={id ? -1 : undefined}
+      aria-labelledby={id ? "choose-path-title" : undefined}
       data-paw-tone={className.includes("bg-primary") ? "dark" : undefined}
       className={`relative w-full border-t border-border/55 ${className}`}
-      style={{ zIndex: order }}
+      style={{
+        zIndex: order,
+        scrollMarginTop: "var(--landing-header-height, 64px)",
+        outline: "none",
+      }}
     >
       {children}
     </section>
@@ -325,14 +364,14 @@ function HeroPanel({ postProjectHref }: { postProjectHref: string }) {
   return (
     <section
       aria-labelledby="landing-title"
-      className="relative flex min-h-[min(820px,calc(100svh-var(--landing-header-height)))] w-full flex-col overflow-hidden bg-background text-foreground"
+      className="landing-hero relative flex w-full flex-col overflow-hidden bg-background text-foreground"
       data-paw-tone="dark"
       style={HERO_TOKENS}
     >
       <HeroAtmosphere />
       <CatBackground />
       <div
-        className={`${CONTAINER} relative z-10 flex flex-1 flex-col items-center justify-center pb-12 pt-16 text-center sm:pb-16 sm:pt-20 lg:items-start lg:py-24 lg:text-left`}
+        className={`${CONTAINER} landing-hero-content relative z-10 flex flex-1 flex-col items-center justify-center pb-7 pt-10 text-center sm:pb-9 sm:pt-14 lg:items-start lg:pb-12 lg:pt-16 lg:text-left`}
       >
         <Eyebrow dark>Work, better allocated</Eyebrow>
         <motion.h1
@@ -340,7 +379,7 @@ function HeroPanel({ postProjectHref }: { postProjectHref: string }) {
           initial={reducedMotion ? false : { opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          className="relative mt-6 max-w-[720px] text-balance text-[clamp(2.5rem,5.4vw,5rem)] font-medium leading-[1.04] tracking-[-0.045em] lg:max-w-[64%]"
+          className="landing-hero-heading relative mt-6 max-w-[720px] text-balance text-[clamp(2.5rem,5.4vw,5rem)] font-medium leading-[1.04] tracking-[-0.045em] lg:max-w-[64%]"
         >
           Good work starts
           <br />
@@ -350,11 +389,11 @@ function HeroPanel({ postProjectHref }: { postProjectHref: string }) {
             skilled people.
           </span>
         </motion.h1>
-        <p className="mt-6 max-w-[470px] text-pretty text-[15px] leading-7 text-muted-foreground sm:text-base sm:leading-8 lg:max-w-[44%]">
+        <p className="landing-hero-copy mt-6 max-w-[470px] text-pretty text-[15px] leading-7 text-muted-foreground sm:text-base sm:leading-8 lg:max-w-[44%]">
           Find experienced professionals, skilled tradespeople and specialists.
           Bring your team and your project together in one connected workspace.
         </p>
-        <div className="mt-8 flex w-full max-w-sm flex-col gap-3 sm:max-w-none sm:w-auto sm:flex-row">
+        <div className="landing-hero-actions mt-8 flex w-full max-w-sm flex-col gap-3 sm:max-w-none sm:w-auto sm:flex-row">
           <ActionLink to={postProjectHref} onTeal>
             Post a project
           </ActionLink>
@@ -362,7 +401,7 @@ function HeroPanel({ postProjectHref }: { postProjectHref: string }) {
             Browse Allocats
           </ActionLink>
         </div>
-        <div className="mt-12 flex flex-wrap justify-center gap-x-6 gap-y-3 border-t border-border/60 pt-6 lg:mt-14 lg:justify-start">
+        <div className="landing-hero-benefits mt-8 flex flex-wrap justify-center gap-x-6 gap-y-3 border-t border-border/60 pt-5 lg:mt-10 lg:justify-start">
           <HeroBenefit
             icon={BriefcaseBusinessIcon}
             title="Professional expertise"
@@ -371,7 +410,57 @@ function HeroPanel({ postProjectHref }: { postProjectHref: string }) {
           <HeroBenefit icon={UsersIcon} title="One shared workspace" />
         </div>
       </div>
+      <HeroScrollCue />
     </section>
+  );
+}
+/** An ordinary anchor stays usable before JavaScript loads. */
+function HeroScrollCue() {
+  const ref = useRef<HTMLAnchorElement>(null);
+  const visible = useInView(ref, { amount: 0.2 });
+  const reducedMotion = useReducedMotion();
+  return (
+    <div
+      className="relative z-10 flex shrink-0 justify-center px-5 pb-5 pt-2 sm:pb-7"
+      style={{ paddingBottom: "max(1.25rem, env(safe-area-inset-bottom))" }}
+    >
+      <a
+        ref={ref}
+        href="#choose-your-path"
+        aria-label="Scroll to Choose your path"
+        onClick={(event) => {
+          const target = document.getElementById("choose-your-path");
+          if (!target) return;
+          event.preventDefault();
+          target.focus({ preventScroll: true });
+          target.scrollIntoView({
+            behavior: reducedMotion ? "instant" : "smooth",
+            block: "start",
+          });
+        }}
+        className="group inline-flex h-12 w-12 items-center justify-center rounded-full border border-border/80 bg-surface-2/30 text-brand-primary transition-colors hover:border-brand-primary/40 hover:bg-surface-3/65 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/70 focus-visible:ring-offset-4 focus-visible:ring-offset-background motion-reduce:transition-none"
+      >
+        <span className="flex items-center justify-center">
+          <motion.span
+            aria-hidden="true"
+            animate={visible && !reducedMotion ? { y: [0, 4, 0] } : { y: 0 }}
+            transition={
+              visible && !reducedMotion
+                ? {
+                    duration: 1.8,
+                    repeat: Infinity,
+                    repeatDelay: 0.6,
+                    ease: "easeInOut",
+                  }
+                : { duration: 0 }
+            }
+            className="flex"
+          >
+            <ChevronDownIcon size={18} strokeWidth={1.7} />
+          </motion.span>
+        </span>
+      </a>
+    </div>
   );
 }
 function CatBackground() {
@@ -379,26 +468,27 @@ function CatBackground() {
   const [imageLoaded, setImageLoaded] = useState(false);
   const reducedMotion = useReducedMotion();
   if (!imageAvailable) return null;
-  const feather =
-    "radial-gradient(ellipse at 64% 48%, var(--primary-foreground) 24%, color-mix(in srgb, var(--primary-foreground) 82%, transparent) 45%, transparent 78%)";
   return (
     <div
       aria-hidden="true"
       className="pointer-events-none absolute inset-0 overflow-hidden select-none"
     >
-      {/* Lighten removes the photograph's black rectangle without recolouring
-            the amber eyes. The radial mask feathers all four image edges. */}
+      {/* Contain preserves the ears and face. Lighten lets the photo's black
+            backdrop merge with the hero without a rectangle behind the text.
+            A single broad horizontal fade replaces the tight elliptical mask. */}
       <div
-        className="absolute -right-[12%] -top-[4%] h-[108%] w-[105%] mix-blend-lighten opacity-[0.26] sm:-right-[8%] sm:w-[82%] sm:opacity-[0.38] lg:-right-[8%] lg:w-[65%] lg:opacity-[0.78]"
+        className="absolute inset-0 mix-blend-lighten opacity-[0.18] sm:opacity-[0.32] lg:opacity-[0.76]"
         style={{
-          maskImage: feather,
-          WebkitMaskImage: feather,
+          maskImage:
+            "linear-gradient(to right, transparent 12%, rgba(0,0,0,0.15) 32%, rgba(0,0,0,0.7) 56%, black 78%)",
+          WebkitMaskImage:
+            "linear-gradient(to right, transparent 12%, rgba(0,0,0,0.15) 32%, rgba(0,0,0,0.7) 56%, black 78%)",
         }}
       >
         <motion.img
           src={HERO_CAT_IMAGE}
           srcSet={photoSrcSet(HERO_CAT_IMAGE)}
-          sizes="(min-width: 1024px) 65vw, 100vw"
+          sizes="100vw"
           width={2400}
           height={1600}
           alt=""
@@ -409,20 +499,13 @@ function CatBackground() {
           initial={false}
           animate={{ opacity: imageLoaded ? 1 : 0 }}
           transition={{ duration: reducedMotion ? 0 : 1.2, ease: "easeOut" }}
-          className="h-full w-full object-cover object-[50%_42%]"
+          className="h-full w-full object-contain object-right"
         />
       </div>
-      {/* A tonal veil separates the headline from the photograph at every width. */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background:
-            "linear-gradient(to right, var(--background) 3%, color-mix(in srgb, var(--background) 85%, transparent) 32%, color-mix(in srgb, var(--background) 45%, transparent) 58%, transparent 85%), linear-gradient(to top, var(--background), transparent 24%, transparent 78%, color-mix(in srgb, var(--background) 68%, transparent))",
-        }}
-      />
     </div>
   );
 }
+
 function HeroBenefit({
   icon: Icon,
   title,
@@ -639,53 +722,36 @@ function AdventurePanel({
   allocatLabel: string;
 }) {
   return (
-    <div className={`${CONTAINER} py-12 sm:py-16 lg:py-24`}>
-      <div className="text-center">
-        <Eyebrow>Two ways to start</Eyebrow>
-        <h2 className={`${HEADING} mt-4`}>Choose your path</h2>
-        <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
-          Different goals. One connected platform. Built for people who want to
-          work together.
-        </p>
-      </div>
-      <div className="mt-9 grid gap-5 lg:mt-12 lg:grid-cols-2 lg:gap-7">
-        <Reveal className="h-full">
-          <ChoiceCard
-            title="For clients"
-            copy="Find the capability your project needs and bring the right people together."
-            points={[
-              "Describe the work",
-              "Discover relevant capability",
-              "Allocate responsibility",
-            ]}
-            image={IMAGES.client}
-            imageAlt="Professional planning project work"
-            href={postProjectHref}
-            action="Post a project"
-            labels={["Planning", "Allocating", "Tracking", "Delivering"]}
-          />
-        </Reveal>
-        <Reveal className="h-full" delay={0.08}>
-          <ChoiceCard
-            title="For skilled experts"
-            copy="Bring your trade, profession or specialist experience to work that needs it."
-            points={[
-              "Showcase your skills and experience",
-              "Join relevant projects",
-              "Build your professional reputation",
-            ]}
-            image={IMAGES.expert}
-            imageAlt="Skilled construction expert working on site"
-            href={allocatHref}
-            action={allocatLabel}
-            labels={[
-              "Find work",
-              "Build your profile",
-              "Gain experience",
-              "Grow your network",
-            ]}
-          />
-        </Reveal>
+    <div className={`${CONTAINER} py-16 sm:py-20 lg:py-28`}>
+      <div className="mx-auto max-w-5xl">
+        <div className="max-w-2xl">
+          <Eyebrow>Two ways to start</Eyebrow>
+          <h2 id="choose-path-title" className={`${HEADING} mt-4`}>
+            Choose your path
+          </h2>
+          <p className="mt-5 max-w-lg text-sm leading-7 text-muted-foreground sm:text-base">
+            Find the right people for your project, or bring your skills to work
+            that needs them.
+          </p>
+        </div>
+        <div className="mt-10 grid gap-0 md:mt-14 md:grid-cols-2 md:gap-14 lg:gap-20">
+          <Reveal className="h-full">
+            <ChoiceCard
+              title="For clients"
+              copy="Describe what needs doing. Find skilled people and keep the work connected from start to finish."
+              href={postProjectHref}
+              action="Post a project"
+            />
+          </Reveal>
+          <Reveal className="h-full" delay={0.08}>
+            <ChoiceCard
+              title="For skilled experts"
+              copy="Show what you do well. Find relevant projects and build your professional reputation through good work."
+              href={allocatHref}
+              action={allocatLabel}
+            />
+          </Reveal>
+        </div>
       </div>
     </div>
   );
@@ -693,81 +759,34 @@ function AdventurePanel({
 function ChoiceCard({
   title,
   copy,
-  points,
-  image,
-  imageAlt,
   href,
   action,
-  labels,
 }: {
   title: string;
   copy: string;
-  points: string[];
-  image: string;
-  imageAlt: string;
   href: string;
   action: string;
-  labels: string[];
 }) {
   return (
-    <article className="grid h-full min-w-0 overflow-hidden rounded-2xl border border-border/70 bg-card text-card-foreground sm:grid-cols-[1.2fr_0.8fr]">
-      <div className="flex flex-col items-start p-6 sm:p-7 xl:p-8">
-        <h3 className="text-lg font-medium tracking-[-0.025em] sm:text-2xl">
-          {title}
-        </h3>
-        <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-          {copy}
-        </p>
-        <ul className="mb-7 mt-6 space-y-3">
-          {points.map((point) => (
-            <li
-              key={point}
-              className="flex items-start gap-2.5 text-xs leading-relaxed sm:text-sm"
-            >
-              <CheckDot />
-              <span>{point}</span>
-            </li>
-          ))}
-        </ul>
-        <div className="mt-auto w-full sm:w-auto">
-          <ActionLink to={href}>{action}</ActionLink>
-        </div>
-      </div>
-      <div className="relative hidden sm:block sm:min-h-[360px]">
-        <img
-          src={image}
-          srcSet={photoSrcSet(image)}
-          sizes="(min-width: 1024px) 20vw, (min-width: 640px) 40vw, 1px"
-          alt={imageAlt}
-          loading="lazy"
-          decoding="async"
-          className="absolute inset-0 h-full w-full object-cover saturate-[0.76]  "
+    <article className="flex h-full min-w-0 flex-col items-start border-t border-border/65 py-8 sm:py-10">
+      <h3 className="text-2xl font-medium tracking-[-0.035em] sm:text-[1.75rem]">
+        {title}
+      </h3>
+      <p className="mb-7 mt-4 max-w-md text-sm leading-7 text-muted-foreground sm:text-[15px]">
+        {copy}
+      </p>
+      <Link
+        to={href}
+        className="group mt-auto inline-flex min-h-12 items-center gap-3 rounded-md text-[13px] font-medium text-brand-secondary-highlight transition-opacity hover:opacity-75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-4 focus-visible:ring-offset-background motion-reduce:transition-none"
+      >
+        {action}
+        <ArrowRightIcon
+          size={17}
+          aria-hidden="true"
+          className="transition-transform group-hover:translate-x-1 motion-reduce:transform-none motion-reduce:transition-none"
         />
-        <div className="absolute inset-0 bg-brand-secondary/15" />
-        <div className="absolute bottom-4 left-3 right-3 rounded-xl border border-primary-foreground/15 bg-primary p-3 text-primary-foreground   ">
-          {labels.map((label) => (
-            <div
-              key={label}
-              className="flex items-center gap-2 py-1.5 text-[10px]"
-            >
-              <CircleCheckBigIcon
-                className="shrink-0 text-brand-primary "
-                size={15}
-                aria-hidden="true"
-              />
-              {label}
-            </div>
-          ))}
-        </div>
-      </div>
+      </Link>
     </article>
-  );
-}
-function CheckDot() {
-  return (
-    <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-brand-secondary-highlight text-primary-foreground  ">
-      <CheckIcon size={11} strokeWidth={3} aria-hidden="true" />
-    </span>
   );
 }
 const OPERATING_STAGES = [
@@ -812,64 +831,36 @@ type TimelineSegment = {
   from: TimelinePoint;
   to: TimelinePoint;
 };
-function insetTimelinePoint(
-  from: TimelinePoint,
-  to: TimelinePoint,
-  distance: number,
-): TimelinePoint {
-  const length = Math.hypot(to.x - from.x, to.y - from.y);
-  if (!length) return from;
-  const offset = Math.min(distance, length / 2) / length;
-  return {
-    x: from.x + (to.x - from.x) * offset,
-    y: from.y + (to.y - from.y) * offset,
-  };
-}
-// One marker follows the same path in either orientation, hiding behind nodes.
+// Distance-based interpolation keeps one speed across unequal stage spacing.
+// The marker is rendered above the icons, so it never disappears at a stage.
 function timelineMarker(phase: number, segments: TimelineSegment[]) {
-  if (!segments.length) return { x: 0, y: 0, opacity: 0 };
-  const last = segments.length - 1;
-  const stops = [
-    insetTimelinePoint(segments[0].from, segments[0].to, 4),
-    ...segments.slice(0, last).map((segment, index) => ({
-      x: (segment.to.x + segments[index + 1].from.x) / 2,
-      y: (segment.to.y + segments[index + 1].from.y) / 2,
-    })),
-    insetTimelinePoint(segments[last].to, segments[last].from, 4),
-  ];
-  const position = Math.max(0, Math.min(segments.length, phase));
-  const index = Math.min(last, Math.floor(position));
-  const progress = position - index;
-  const point = {
-    x: stops[index].x + (stops[index + 1].x - stops[index].x) * progress,
-    y: stops[index].y + (stops[index + 1].y - stops[index].y) * progress,
-  };
-  let opacity = 0;
-  for (const segment of segments) {
-    const dx = segment.to.x - segment.from.x;
-    const dy = segment.to.y - segment.from.y;
-    const length = Math.hypot(dx, dy);
-    if (!length) continue;
-    const along =
-      ((point.x - segment.from.x) * dx + (point.y - segment.from.y) * dy) /
-      length;
-    const across =
-      Math.abs(
-        (point.x - segment.from.x) * dy - (point.y - segment.from.y) * dx,
-      ) / length;
-    if (across < 0.5 && along >= 0 && along <= length) {
-      opacity = Math.max(0, Math.min(1, along / 4, (length - along) / 4));
-      break;
+  if (!segments.length) return { x: 0, y: 0 };
+  const lengths = segments.map(({ from, to }) =>
+    Math.hypot(to.x - from.x, to.y - from.y),
+  );
+  const total = lengths.reduce((sum, length) => sum + length, 0);
+  let distance =
+    (Math.max(0, Math.min(segments.length, phase)) / segments.length) * total;
+  for (let index = 0; index < segments.length; index += 1) {
+    const { from, to } = segments[index];
+    const length = lengths[index];
+    if (distance <= length || index === segments.length - 1) {
+      const progress = length ? Math.min(1, distance / length) : 0;
+      return {
+        x: from.x + (to.x - from.x) * progress,
+        y: from.y + (to.y - from.y) * progress,
+      };
     }
+    distance -= length;
   }
-  return { ...point, opacity };
+  return segments[segments.length - 1].to;
 }
 function OperatingTimeline() {
   const timelineId = useId().replace(/[^a-zA-Z0-9_-]/g, "");
   const ref = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const iconRefs = useRef<Array<HTMLDivElement | null>>([]);
-  const visible = useInView(ref, { amount: 0.25, once: true });
+  const visible = useInView(ref, { amount: 0.25 });
   const reducedMotion = useReducedMotion();
   const phase = useMotionValue(0);
   const [active, setActive] = useState(0);
@@ -881,10 +872,6 @@ function OperatingTimeline() {
   const markerY = useTransform(
     phase,
     (value) => timelineMarker(value, segments).y,
-  );
-  const markerOpacity = useTransform(
-    phase,
-    (value) => timelineMarker(value, segments).opacity,
   );
   useMotionValueEvent(phase, "change", (value) => {
     const next = Math.min(
@@ -907,19 +894,19 @@ function OperatingTimeline() {
         const from = icons[index];
         const to = icons[index + 1];
         if (!from || !to) return;
-        if (horizontal) {
-          const x1 = from.right - bounds.left + 10;
-          const x2 = to.left - bounds.left - 10;
-          if (x2 <= x1) return;
-          const y = from.top - bounds.top + from.height / 2;
-          next.push({ from: { x: x1, y }, to: { x: x2, y } });
-        } else {
-          const y1 = from.bottom - bounds.top + 10;
-          const y2 = to.top - bounds.top - 10;
-          if (y2 <= y1) return;
-          const x = from.left - bounds.left + from.width / 2;
-          next.push({ from: { x, y: y1 }, to: { x, y: y2 } });
-        }
+        const fromCenter = {
+          x: from.left - bounds.left + from.width / 2,
+          y: from.top - bounds.top + from.height / 2,
+        };
+        const toCenter = {
+          x: to.left - bounds.left + to.width / 2,
+          y: to.top - bounds.top + to.height / 2,
+        };
+        if (
+          horizontal ? toCenter.x <= fromCenter.x : toCenter.y <= fromCenter.y
+        )
+          return;
+        next.push({ from: fromCenter, to: toCenter });
       }
       setSegments((current) =>
         JSON.stringify(current) === JSON.stringify(next) ? current : next,
@@ -943,10 +930,12 @@ function OperatingTimeline() {
       return;
     }
     phase.set(0);
-    const playback = animate(phase, [0, 1, 2, 3], {
+    const playback = animate(phase, [0, OPERATING_STAGES.length - 1], {
       duration: 6.6,
-      times: [0, 1 / 3, 2 / 3, 1],
-      ease: "easeInOut",
+      ease: "linear",
+      repeat: Infinity,
+      repeatType: "reverse",
+      repeatDelay: 0,
     });
     return () => playback.stop();
   }, [visible, reducedMotion, phase]);
@@ -962,7 +951,7 @@ function OperatingTimeline() {
           </div>
           <Link
             to={ROUTES.howItWorks}
-            className={`pointer-events-auto relative z-10 inline-flex items-center gap-2 text-sm font-medium ${ACCENT}`}
+            className={`pointer-events-auto relative z-10 inline-flex min-h-11 items-center gap-2 rounded-md text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 ${ACCENT}`}
           >
             See the process
             <ArrowRightIcon size={16} />
@@ -1013,15 +1002,21 @@ function OperatingTimeline() {
                     strokeLinecap="round"
                   />
                 ))}
-                {!reducedMotion && (
-                  <motion.circle
-                    r={4}
-                    cx={markerX}
-                    cy={markerY}
-                    fill="var(--brand-secondary-highlight)"
-                    style={{ opacity: markerOpacity }}
-                  />
-                )}
+              </svg>
+            )}
+            {segments.length > 0 && !reducedMotion && (
+              <svg
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 z-20 h-full w-full overflow-visible"
+              >
+                <motion.circle
+                  r={4}
+                  cx={markerX}
+                  cy={markerY}
+                  fill="var(--brand-secondary-highlight)"
+                  stroke="var(--card)"
+                  strokeWidth={2}
+                />
               </svg>
             )}
             <ol className="grid grid-cols-1 gap-9 lg:grid-cols-4 lg:gap-8">
@@ -1634,9 +1629,9 @@ function FaqPanel() {
 function ClosingPanel({ postProjectHref }: { postProjectHref: string }) {
   return (
     <div className={`${CONTAINER} py-12 sm:py-16 lg:py-24`}>
-      <div className="flex flex-col items-center rounded-2xl border border-border/60 bg-surface-lime px-5 py-12 text-center sm:px-10 sm:py-16">
+      <div className="flex flex-col items-center rounded-2xl border border-border/65 bg-card px-6 py-14 text-center shadow-[0_16px_48px_-32px_color-mix(in_srgb,var(--brand-charcoal)_18%,transparent)] sm:px-12 sm:py-20">
         <Eyebrow>Get started today</Eyebrow>
-        <h2 className={`${HEADING} mt-4 max-w-[1000px]`}>
+        <h2 className={`${HEADING} mt-5 max-w-[900px]`}>
           Something needs doing.
           <br />
           <span className={ACCENT}>Put the right people around it.</span>

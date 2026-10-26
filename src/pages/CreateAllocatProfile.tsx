@@ -73,11 +73,7 @@ type CreateAllocatProfilePayload = {
   operatingCountryCode: string;
   operatingCityId: number;
 };
-type OperatingCountry = {
-  code: string;
-  name: string;
-  supportsAllocatOperations: boolean;
-};
+type OperatingCountry = { code: string; name: string; supportsAllocatOperations: boolean };
 type OperatingCity = { id: number; name: string; countryCode: string };
 type FormState = {
   title: string;
@@ -104,6 +100,8 @@ type VerificationDocumentDraft = {
   id: string;
   type: ProfessionalDocumentType;
   file: File;
+  title: string;
+  issuingInstitution: string;
 };
 type StepDefinition = {
   title: string;
@@ -113,10 +111,7 @@ type StepDefinition = {
 };
 type ReviewRowProps = { label: string; value: ReactNode; missing?: boolean };
 // Currency policy remains separate from the database location catalogue.
-const PROFILE_CURRENCIES: Record<
-  string,
-  { code: string; name: string; symbol: string }
-> = {
+const PROFILE_CURRENCIES: Record<string, { code: string; name: string; symbol: string }> = {
   ZW: { code: "USD", name: "United States Dollar", symbol: "$" },
   ZA: { code: "ZAR", name: "South African Rand", symbol: "R" },
 };
@@ -171,7 +166,7 @@ const STEPS: StepDefinition[] = [
     title: "Add professional credentials",
     shortTitle: "Credentials",
     description:
-      "Qualifications and certifications help support verification. You can skip these during setup and add them later.",
+      "Add your qualifications and where you earned them. Supporting files stay private. You can also add credentials later.",
     icon: GraduationCapIcon,
   },
   {
@@ -260,6 +255,8 @@ function CreateAllocatProfile() {
     VerificationDocumentDraft[]
   >([]);
   const documentInputRef = useRef<HTMLInputElement | null>(null);
+  const documentSequence = useRef(0);
+  const creatingRef = useRef(false);
   const loadSkills = useCallback(async () => {
     try {
       setLoadingSkills(true);
@@ -297,20 +294,16 @@ function CreateAllocatProfile() {
       });
       const account = accountResponse.data;
       const countryResponse = await api.get<OperatingCountry[]>(
-        "/locations/countries",
-        { params: { operatingOnly: true }, withCredentials: true },
+        "/locations/countries", { params: { operatingOnly: true }, withCredentials: true },
       );
-      if (!Array.isArray(countryResponse.data))
-        throw new Error("Invalid country catalogue.");
-      setCountries(
-        countryResponse.data
-          .filter((country) => country.supportsAllocatOperations)
-          .sort((a, b) => a.name.localeCompare(b.name)),
-      );
+      if (!Array.isArray(countryResponse.data)) throw new Error("Invalid country catalogue.");
+      setCountries(countryResponse.data.filter((country) => country.supportsAllocatOperations)
+        .sort((a, b) => a.name.localeCompare(b.name)));
       setAccountProfile(account);
       setForm((current) => ({
         ...current,
         phoneNumber: account.phoneNumber ?? "",
+
       }));
       await loadSkills();
     } catch (error) {
@@ -337,57 +330,37 @@ function CreateAllocatProfile() {
     setCities([]);
     setCitiesCountry("");
     setCitiesError(null);
-    if (!form.countryCode) {
-      setLoadingCities(false);
-      return;
-    }
+    if (!form.countryCode) { setLoadingCities(false); return; }
     setLoadingCities(true);
     const code = form.countryCode;
     async function loadCities() {
       try {
         const response = await api.get<OperatingCity[]>(
-          `/locations/countries/${encodeURIComponent(code)}/cities`,
-          { withCredentials: true },
+          `/locations/countries/${encodeURIComponent(code)}/cities`, { withCredentials: true },
         );
-        if (!Array.isArray(response.data))
-          throw new Error("Invalid city catalogue.");
+        if (!Array.isArray(response.data)) throw new Error("Invalid city catalogue.");
         if (!active) return;
-        setCities(
-          response.data
-            .filter((city) => city.countryCode === code)
-            .sort((a, b) => a.name.localeCompare(b.name)),
-        );
+        setCities(response.data.filter((city) => city.countryCode === code)
+          .sort((a, b) => a.name.localeCompare(b.name)));
         setCitiesCountry(code);
       } catch (error) {
-        if (active)
-          setCitiesError(
-            getApiErrorMessage(
-              error,
-              "The city catalogue could not be loaded. Please retry.",
-            ),
-          );
+        if (active) setCitiesError(getApiErrorMessage(error, "The city catalogue could not be loaded. Please retry."));
       } finally {
         if (active) setLoadingCities(false);
       }
     }
     void loadCities();
-    return () => {
-      active = false;
-    };
+    return () => { active = false; };
   }, [form.countryCode, cityRetry]);
-  const selectedCountry =
-    countries.find((country) => country.code === form.countryCode) ?? null;
+  const selectedCountry = countries.find((country) => country.code === form.countryCode) ?? null;
   const availableCities = citiesCountry === form.countryCode ? cities : [];
-  const selectedCity =
-    availableCities.find((city) => String(city.id) === form.cityId) ?? null;
+  const selectedCity = availableCities.find((city) => String(city.id) === form.cityId) ?? null;
   const currency = PROFILE_CURRENCIES[form.countryCode];
   const currencyCode = currency?.code ?? "USD";
   const currencyName = currency?.name ?? "United States Dollar";
   const currencySymbol = currency?.symbol ?? "$";
-  const formattedLocation =
-    selectedCountry && selectedCity
-      ? `${selectedCity.name}, ${selectedCountry.name}`
-      : "";
+  const formattedLocation = selectedCountry && selectedCity
+    ? `${selectedCity.name}, ${selectedCountry.name}` : "";
   const selectedSkills = useMemo(
     () =>
       form.skillIds
@@ -415,9 +388,11 @@ function CreateAllocatProfile() {
   }
   function goNext() {
     if (creating) return;
-    const error = validateStep(step, form, countries, availableCities);
+    const error = validateStep(step, form, countries, availableCities) ||
+      (step === 5 ? validateCredentialDrafts(verificationDocuments) : null);
     if (error) {
       setStepError(error);
+      if (step === 5) focusIncompleteQualification();
       return;
     }
     setStepError(null);
@@ -432,6 +407,11 @@ function CreateAllocatProfile() {
     const file = event.target.files?.[0] ?? null;
     setStepError(null);
     if (!file) return;
+    if (file.size <= 0) {
+      setStepError("Choose a non-empty profile picture.");
+      event.target.value = "";
+      return;
+    }
     if (!ACCEPTED_AVATAR_TYPES.includes(file.type)) {
       setStepError("Choose a JPEG, PNG or WebP profile picture.");
       event.target.value = "";
@@ -471,6 +451,7 @@ function CreateAllocatProfile() {
     if (idDocumentInputRef.current) idDocumentInputRef.current.value = "";
   }
   function handleVerificationFiles(event: ChangeEvent<HTMLInputElement>) {
+    if (creatingRef.current) return;
     const files = Array.from(event.target.files ?? []);
     setStepError(null);
     if (files.length === 0) return;
@@ -489,13 +470,29 @@ function CreateAllocatProfile() {
         return;
       }
     }
-    const additions: VerificationDocumentDraft[] = files.map((file, index) => ({
-      id: `${Date.now()}-${index}-${file.name}`,
+    const additions: VerificationDocumentDraft[] = files.map((file) => ({
+      id: `credential-${++documentSequence.current}`,
       type: documentType,
       file,
+      title: "",
+      issuingInstitution: "",
     }));
     setVerificationDocuments((current) => [...current, ...additions]);
     event.target.value = "";
+  }
+  function updateCredential(id: string, field: "title" | "issuingInstitution", value: string) {
+    if (creatingRef.current) return;
+    setVerificationDocuments((current) => current.map((document) =>
+      document.id === id ? { ...document, [field]: value } : document));
+    setStepError(null);
+    setSubmitError(null);
+  }
+  function focusIncompleteQualification() {
+    const document = verificationDocuments.find((item) =>
+      item.type === "Qualification" && (!item.title.trim() || !item.issuingInstitution.trim()));
+    if (!document) return;
+    const field = document.title.trim() ? "institution" : "title";
+    requestAnimationFrame(() => window.document.getElementById(`${document.id}-${field}`)?.focus());
   }
   function removeVerificationDocument(id: string) {
     if (creating) return;
@@ -513,22 +510,27 @@ function CreateAllocatProfile() {
   async function uploadUserDocument(
     documentType: UserDocumentType,
     file: File,
+    metadata?: Pick<VerificationDocumentDraft, "title" | "issuingInstitution">,
   ) {
     const data = new FormData();
     data.append("documentType", documentType);
     data.append("file", file);
+    if (documentType !== "Identity") {
+      if (metadata?.title.trim()) data.append("title", metadata.title.trim());
+      if (metadata?.issuingInstitution.trim()) data.append("issuingInstitution", metadata.issuingInstitution.trim());
+    }
     await api.post("/allocats/profiles/me/documents", data, {
       withCredentials: true,
     });
   }
   async function createProfile() {
-    const finalError = validateAll(form, countries, availableCities);
+    if (creatingRef.current) return;
+    const finalError = validateAll(form, countries, availableCities) || validateCredentialDrafts(verificationDocuments);
     if (finalError) {
       setSubmitError(finalError);
       return;
     }
-    if (!accountProfile || !selectedCountry || !selectedCity || creating)
-      return;
+    if (!accountProfile || !selectedCountry || !selectedCity || creating) return;
     const payload: CreateAllocatProfilePayload = {
       idNumber: form.idNumber.trim(),
       title: cleanOptional(form.title),
@@ -542,6 +544,7 @@ function CreateAllocatProfile() {
       yearsExperience: parseNullableInteger(form.yearsExperience),
       skillIds: form.skillIds,
     };
+    creatingRef.current = true;
     setCreating(true);
     setSubmitError(null);
     setSubmitProgress(0);
@@ -558,6 +561,7 @@ function CreateAllocatProfile() {
         getApiErrorMessage(error, "Your Allocat profile could not be created."),
       );
       setSubmitPhase(null);
+      creatingRef.current = false;
       setCreating(false);
       return;
     }
@@ -621,7 +625,7 @@ function CreateAllocatProfile() {
         `Uploading professional document ${index + 1} of ${verificationDocuments.length}`,
       );
       try {
-        await uploadUserDocument(document.type, document.file);
+        await uploadUserDocument(document.type, document.file, document);
         uploadedDocuments += 1;
       } catch (error) {
         console.error(
@@ -772,8 +776,8 @@ function CreateAllocatProfile() {
                       className="mt-0.5 shrink-0 text-brand-secondary-highlight dark:text-secondary"
                     />
                     <p className="text-[0.6875rem] leading-5 text-muted-foreground">
-                      Your identity information and verification documents are
-                      private and are never displayed to clients.
+                      Your identity information and supporting files stay private.
+                      Credential titles, institutions and verification statuses appear on your public profile.
                     </p>
                   </div>
                 </div>
@@ -909,12 +913,7 @@ function CreateAllocatProfile() {
                     <ProfileField label="City">
                       <Select
                         value={form.cityId}
-                        disabled={
-                          !selectedCountry ||
-                          creating ||
-                          loadingCities ||
-                          citiesCountry !== form.countryCode
-                        }
+                        disabled={!selectedCountry || creating || loadingCities || citiesCountry !== form.countryCode}
                         onValueChange={(value) => updateField("cityId", value)}
                       >
                         <SelectTrigger
@@ -924,9 +923,7 @@ function CreateAllocatProfile() {
                           <SelectValue
                             placeholder={
                               selectedCountry
-                                ? loadingCities
-                                  ? "Loading cities…"
-                                  : "Select city"
+                                ? loadingCities ? "Loading cities…" : "Select city"
                                 : "Select a country first"
                             }
                           />
@@ -944,36 +941,14 @@ function CreateAllocatProfile() {
                         </SelectContent>
                       </Select>
                       <FieldHelp>
-                        Your public profile will show this operating city and
-                        country. Your account residence stays separate.
+                        Your public profile will show this operating city and country. Your account residence stays separate.
                       </FieldHelp>
                     </ProfileField>
-                    {citiesError && (
-                      <div className="sm:col-span-2">
-                        <InlineError message={citiesError} />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          className={secondaryButton + " mt-3"}
-                          onClick={() => setCityRetry((value) => value + 1)}
-                        >
-                          Retry cities
-                        </Button>
-                      </div>
-                    )}
-                    {selectedCountry &&
-                      !loadingCities &&
-                      !citiesError &&
-                      citiesCountry === form.countryCode &&
-                      availableCities.length === 0 && (
-                        <p
-                          role="status"
-                          className="text-sm text-muted-foreground sm:col-span-2"
-                        >
-                          No operating cities are available for this country
-                          yet.
-                        </p>
-                      )}
+                    {citiesError && <div className="sm:col-span-2"><InlineError message={citiesError} />
+                      <Button type="button" variant="outline" className={secondaryButton + " mt-3"}
+                        onClick={() => setCityRetry((value) => value + 1)}>Retry cities</Button></div>}
+                    {selectedCountry && !loadingCities && !citiesError && citiesCountry === form.countryCode && availableCities.length === 0 &&
+                      <p role="status" className="text-sm text-muted-foreground sm:col-span-2">No operating cities are available for this country yet.</p>}
                     <ProfileField label="Phone number" hint="Optional">
                       <div className="relative">
                         <PhoneIcon
@@ -1021,12 +996,13 @@ function CreateAllocatProfile() {
                         </span>
                         <div>
                           <p className="text-xs font-semibold text-foreground">
-                            Your profile currency will be {currencyCode}
+                            Your profile currency will be{" "}
+                            {currencyCode}
                           </p>
                           <p className="mt-1 text-[0.6875rem] leading-5 text-muted-foreground">
-                            {selectedCountry.name} profiles use {currencyName}.
-                            This is determined automatically from your operating
-                            location.
+                            {selectedCountry.name} profiles use{" "}
+                            {currencyName}. This is determined
+                            automatically from your operating location.
                           </p>
                         </div>
                       </div>
@@ -1398,151 +1374,81 @@ function CreateAllocatProfile() {
                           Credentials are optional during setup
                         </p>
                         <p className="mt-1 text-xs leading-6 text-muted-foreground">
-                          Qualifications, certifications, professional licences
-                          and training can support verification. You can also
-                          submit them later from your profile.
+                          Add a file for each credential, then enter its details below.
+                          For qualifications, the title and issuing institution are required.
+                          You can continue without files and add them later.
                         </p>
                       </div>
                     </div>
                   </div>
-                  <div className="grid gap-6 sm:grid-cols-2">
+                  <div className="grid items-end gap-4 sm:grid-cols-[minmax(0,1fr)_auto]">
                     <ProfileField label="Document type">
-                      <Select
-                        value={documentType}
-                        disabled={creating}
-                        onValueChange={(value) =>
-                          setDocumentType(value as ProfessionalDocumentType)
-                        }
-                      >
-                        <SelectTrigger
-                          aria-label="Document type"
-                          className={selectTriggerClass}
-                        >
-                          <SelectValue />
-                        </SelectTrigger>
+                      <Select value={documentType} disabled={creating}
+                        onValueChange={(value) => { setDocumentType(value as ProfessionalDocumentType); setStepError(null); }}>
+                        <SelectTrigger aria-label="Document type" className={selectTriggerClass}><SelectValue /></SelectTrigger>
                         <SelectContent className={selectContentClass}>
-                          {(
-                            [
-                              "Qualification",
-                              "Certification",
-                              "ProfessionalLicense",
-                              "Training",
-                              "Other",
-                            ] as ProfessionalDocumentType[]
-                          ).map((type) => (
-                            <SelectItem
-                              key={type}
-                              value={type}
-                              className={selectItemClass}
-                            >
-                              {formatDocumentType(type)}
-                            </SelectItem>
+                          {(["Qualification", "Certification", "ProfessionalLicense", "Training", "Other"] as ProfessionalDocumentType[]).map((type) => (
+                            <SelectItem key={type} value={type} className={selectItemClass}>{formatDocumentType(type)}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
-                      <FieldHelp>
-                        Choose the category that best describes the files you
-                        are adding.
-                      </FieldHelp>
                     </ProfileField>
-                    <ProfileField label="Credential files" hint="Optional">
-                      <button
-                        type="button"
-                        disabled={
-                          creating ||
-                          verificationDocuments.length >= MAX_DOCUMENTS
-                        }
-                        onClick={() => documentInputRef.current?.click()}
-                        className={fileChooseClass}
-                      >
-                        <span
-                          className={[
-                            "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
-                            accentIconSurface,
-                          ].join(" ")}
-                        >
-                          <GraduationCapIcon size={15} />
-                        </span>
-                        <span className="min-w-0">
-                          <span className="block text-xs font-semibold text-foreground">
-                            {verificationDocuments.length >= MAX_DOCUMENTS
-                              ? "Document limit reached"
-                              : "Choose documents"}
-                          </span>
-                          <span className="mt-1 block text-[0.6875rem] leading-5 text-muted-foreground">
-                            PDF, JPEG, PNG or WebP. Up to 10 MB each.
-                          </span>
-                        </span>
-                      </button>
-                      <input
-                        ref={documentInputRef}
-                        type="file"
-                        aria-label="Credential files"
-                        multiple
-                        accept="application/pdf,image/jpeg,image/png,image/webp"
-                        disabled={
-                          creating ||
-                          verificationDocuments.length >= MAX_DOCUMENTS
-                        }
-                        onChange={handleVerificationFiles}
-                        className="hidden"
-                      />
-                    </ProfileField>
+                    <Button type="button" variant="outline" disabled={creating || verificationDocuments.length >= MAX_DOCUMENTS}
+                      onClick={() => documentInputRef.current?.click()}
+                      className={"h-11 rounded-lg px-4 text-xs font-semibold " + secondaryButton}>
+                      <GraduationCapIcon size={15} aria-hidden="true" />
+                      {verificationDocuments.length >= MAX_DOCUMENTS ? "Document limit reached" : "Choose documents"}
+                    </Button>
+                    <input ref={documentInputRef} type="file" aria-label="Credential files" multiple
+                      accept="application/pdf,image/jpeg,image/png,image/webp"
+                      disabled={creating || verificationDocuments.length >= MAX_DOCUMENTS}
+                      onChange={handleVerificationFiles} className="hidden" />
                   </div>
+                  <p className="mt-3 text-[11px] leading-6 text-muted-foreground">PDF, JPEG, PNG or WebP · Up to 10 MB per file · Maximum {MAX_DOCUMENTS} documents.</p>
                   {verificationDocuments.length > 0 && (
-                    <div className="mt-6 border-t border-border/50 pt-5">
+                    <div className="mt-7">
                       <div className="flex items-center justify-between gap-4">
-                        <p className="text-xs font-semibold text-foreground">
-                          Documents selected
-                        </p>
-                        <p className="text-[0.6875rem] tabular-nums text-muted-foreground">
-                          {verificationDocuments.length}/{MAX_DOCUMENTS}
-                        </p>
+                        <p className="text-xs font-semibold text-foreground">Documents selected</p>
+                        <p className="text-[11px] tabular-nums text-muted-foreground">{verificationDocuments.length}/{MAX_DOCUMENTS}</p>
                       </div>
-                      <div className="mt-3 divide-y divide-border/45 border-y border-border/45">
-                        {verificationDocuments.map((document) => (
-                          <div
-                            key={document.id}
-                            className="flex items-center gap-3 py-3"
-                          >
-                            <span
-                              className={[
-                                "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
-                                accentIconSurface,
-                              ].join(" ")}
-                            >
-                              <FileTextIcon size={13} />
-                            </span>
-                            <div className="min-w-0 flex-1">
-                              <p
-                                className="truncate text-xs font-semibold text-foreground"
-                                title={document.file.name}
-                              >
-                                {document.file.name}
-                              </p>
-                              <p className="mt-0.5 text-[0.625rem] text-muted-foreground">
-                                {formatDocumentType(document.type)} ·{" "}
-                                {formatFileSize(document.file.size)}
-                              </p>
-                            </div>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              disabled={creating}
-                              onClick={() =>
-                                removeVerificationDocument(document.id)
-                              }
-                              className={[
-                                "h-8 w-8 shrink-0 rounded-lg",
-                                quietButton,
-                              ].join(" ")}
-                              aria-label={`Remove ${document.file.name}`}
-                            >
-                              <Trash2Icon size={13} />
-                            </Button>
-                          </div>
-                        ))}
+                      <div className="mt-4 space-y-4">
+                        {verificationDocuments.map((document) => {
+                          const qualification = document.type === "Qualification";
+                          return (
+                            <article key={document.id} aria-label={`Details for ${document.file.name}`}
+                              className="min-w-0 rounded-xl border border-border/60 bg-surface-2/20 p-4 sm:p-5">
+                              <div className="flex min-w-0 items-start gap-3">
+                                <span aria-hidden="true" className={"flex h-9 w-9 shrink-0 items-center justify-center rounded-lg " + accentIconSurface}><FileTextIcon size={15} /></span>
+                                <div className="min-w-0 flex-1">
+                                  <h3 className="break-words text-xs font-semibold leading-6 text-foreground [overflow-wrap:anywhere]">{document.file.name}</h3>
+                                  <p className="mt-0.5 text-[11px] leading-5 text-muted-foreground">{formatDocumentType(document.type)} · {formatFileSize(document.file.size)} · Private file</p>
+                                </div>
+                                <Button type="button" variant="ghost" size="icon" disabled={creating}
+                                  onClick={() => removeVerificationDocument(document.id)}
+                                  className={"h-9 w-9 shrink-0 rounded-lg " + quietButton} aria-label={`Remove ${document.file.name}`}><Trash2Icon size={14} aria-hidden="true" /></Button>
+                              </div>
+                              <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                                <div className="min-w-0">
+                                  <Label htmlFor={`${document.id}-title`} className="text-xs font-semibold">{qualification ? "Qualification title" : "Credential title (optional)"}</Label>
+                                  <Input id={`${document.id}-title`} aria-label={`${qualification ? "Qualification" : "Credential"} title for ${document.file.name}`}
+                                    aria-required={qualification} value={document.title} maxLength={200} disabled={creating}
+                                    onChange={(event) => updateCredential(document.id, "title", event.target.value)}
+                                    placeholder={qualification ? "e.g. BSc Civil Engineering" : "Enter credential title"} className={fieldClass + " mt-2"} />
+                                </div>
+                                <div className="min-w-0">
+                                  <Label htmlFor={`${document.id}-institution`} className="text-xs font-semibold">Issuing institution{qualification ? "" : " (optional)"}</Label>
+                                  <Input id={`${document.id}-institution`} aria-label={`Issuing institution for ${document.file.name}`}
+                                    aria-required={qualification} value={document.issuingInstitution} maxLength={200} disabled={creating}
+                                    onChange={(event) => updateCredential(document.id, "issuingInstitution", event.target.value)}
+                                    placeholder="e.g. University of Zimbabwe" className={fieldClass + " mt-2"} />
+                                </div>
+                              </div>
+                              <p className="mt-3 text-[11px] leading-6 text-muted-foreground">{qualification
+                                ? "Clients see these details and the verification status. Your file stays private."
+                                : "Add a title to display this credential publicly. The issuing institution is optional; your file stays private."}</p>
+                            </article>
+                          );
+                        })}
                       </div>
                     </div>
                   )}
@@ -1684,6 +1590,17 @@ function CreateAllocatProfile() {
                       }
                     />
                   </ReviewGroup>
+                  {verificationDocuments.length > 0 && <section aria-labelledby="credential-review-title" className="mt-7">
+                    <h3 id="credential-review-title" className="text-xs font-semibold text-foreground">Credentials to submit</h3>
+                    <ul className="mt-3 divide-y divide-border/50 rounded-xl border border-border/55 px-4">
+                      {verificationDocuments.map((document) => <li key={document.id} className="min-w-0 py-4">
+                        <p className="break-words text-xs font-semibold leading-6 [overflow-wrap:anywhere]">{document.title.trim() || formatDocumentType(document.type)}</p>
+                        {document.issuingInstitution.trim() && <p className="mt-1 break-words text-xs leading-6 text-muted-foreground [overflow-wrap:anywhere]">{document.issuingInstitution.trim()}</p>}
+                        <p className="mt-1 break-words text-[11px] leading-6 text-muted-foreground [overflow-wrap:anywhere]">{document.file.name} · Will be submitted for review</p>
+                      </li>)}
+                    </ul>
+                    <p className="mt-3 text-[11px] leading-6 text-muted-foreground">Credential details can appear publicly before verification. No credential is marked verified during setup.</p>
+                  </section>}
                   <div
                     className={[
                       "mt-7 rounded-xl border p-4",
@@ -1745,7 +1662,7 @@ function CreateAllocatProfile() {
                     onClick={goBack}
                     disabled={creating}
                     className={[
-                      "h-10 rounded-lg px-4 text-xs font-semibold",
+                      "h-11 rounded-lg px-4 text-xs font-semibold",
                       quietButton,
                     ].join(" ")}
                   >
@@ -1762,7 +1679,7 @@ function CreateAllocatProfile() {
                     onClick={goNext}
                     disabled={creating}
                     className={[
-                      "h-10 rounded-lg px-4 text-xs font-semibold",
+                      "h-11 rounded-lg px-4 text-xs font-semibold",
                       primaryButton,
                     ].join(" ")}
                   >
@@ -1776,7 +1693,7 @@ function CreateAllocatProfile() {
                     onClick={() => void createProfile()}
                     disabled={creating}
                     className={[
-                      "h-10 rounded-lg px-4 text-xs font-semibold sm:px-5",
+                      "h-11 rounded-lg px-4 text-xs font-semibold sm:px-5",
                       primaryButton,
                     ].join(" ")}
                   >
@@ -2037,30 +1954,14 @@ function CreateAllocatProfileSkeleton() {
     </div>
   );
 }
-function validateStep(
-  step: number,
-  form: FormState,
-  countries: OperatingCountry[],
-  cities: OperatingCity[],
-) {
+function validateStep(step: number, form: FormState, countries: OperatingCountry[], cities: OperatingCity[]) {
   switch (step) {
     case 1: {
-      const country = countries.find(
-        (item) =>
-          item.code === form.countryCode && item.supportsAllocatOperations,
-      );
+      const country = countries.find((item) => item.code === form.countryCode && item.supportsAllocatOperations);
       if (!country) return "Select the country where you operate.";
-      if (
-        !form.cityId ||
-        !cities.some(
-          (city) =>
-            String(city.id) === form.cityId &&
-            city.countryCode === country.code,
-        )
-      )
+      if (!form.cityId || !cities.some((city) => String(city.id) === form.cityId && city.countryCode === country.code))
         return "Select your city.";
-      if (!PROFILE_CURRENCIES[country.code])
-        return "Profile currency is not configured for this operating country yet.";
+      if (!PROFILE_CURRENCIES[country.code]) return "Profile currency is not configured for this operating country yet.";
       if (form.phoneNumber.trim().length > 30)
         return "Phone number is too long.";
       return null;
@@ -2099,18 +2000,29 @@ function validateStep(
       return null;
   }
 }
-function validateAll(
-  form: FormState,
-  countries: OperatingCountry[],
-  cities: OperatingCity[],
-) {
+function validateAll(form: FormState, countries: OperatingCountry[], cities: OperatingCity[]) {
   for (let step = 0; step < 6; step += 1) {
     const error = validateStep(step, form, countries, cities);
     if (error) return error;
   }
   return null;
 }
+function validateCredentialDrafts(documents: VerificationDocumentDraft[]) {
+  if (documents.length > MAX_DOCUMENTS) return `You can add up to ${MAX_DOCUMENTS} professional documents.`;
+  for (const document of documents) {
+    const fileError = validateDocumentFile(document.file, MAX_DOCUMENT_SIZE);
+    if (fileError) return `${document.file.name}: ${fileError}`;
+    if (document.type === "Qualification") {
+      if (!document.title.trim()) return `Enter a qualification title for ${document.file.name}.`;
+      if (!document.issuingInstitution.trim()) return `Enter the issuing institution for ${document.file.name}.`;
+    }
+    if (document.title.trim().length > 200) return `The title for ${document.file.name} cannot exceed 200 characters.`;
+    if (document.issuingInstitution.trim().length > 200) return `The issuing institution for ${document.file.name} cannot exceed 200 characters.`;
+  }
+  return null;
+}
 function validateDocumentFile(file: File, maxSize: number) {
+  if (file.size <= 0) return "Choose a non-empty document.";
   if (!ACCEPTED_DOCUMENT_TYPES.includes(file.type))
     return "Documents must be PDF, JPEG, PNG or WebP files.";
   if (file.size > maxSize) return "Documents cannot exceed 10 MB.";

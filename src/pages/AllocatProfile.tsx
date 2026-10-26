@@ -67,6 +67,14 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 // Additive response fields allow older profiles to load before location confirmation.
 type MyAllocatProfile = BaseMyAllocatProfile & {
@@ -128,6 +136,8 @@ type UserDocumentDto = {
   sizeBytes: number;
   createdAt: string;
   reviewedAt: string | null;
+  title?: string | null;
+  issuingInstitution?: string | null;
 };
 type ApiUserDocumentDto = Omit<
   UserDocumentDto,
@@ -264,6 +274,14 @@ function AllocatProfilePage() {
   const [identityError, setIdentityError] = useState<string | null>(null);
   const [professionalDocumentType, setProfessionalDocumentType] =
     useState<ProfessionalDocumentType>("Qualification");
+  const [professionalDocumentTitle, setProfessionalDocumentTitle] =
+    useState("");
+  const [professionalDocumentInstitution, setProfessionalDocumentInstitution] =
+    useState("");
+  const professionalUploadRef = useRef(false);
+  const [documentEditorOpen, setDocumentEditorOpen] = useState(false);
+  const [qualificationToEdit, setQualificationToEdit] =
+    useState<UserDocumentDto | null>(null);
   const [professionalDocumentFile, setProfessionalDocumentFile] =
     useState<File | null>(null);
   const [professionalDocumentProgress, setProfessionalDocumentProgress] =
@@ -945,8 +963,30 @@ function AllocatProfilePage() {
     if (professionalDocumentInputRef.current)
       professionalDocumentInputRef.current.value = "";
   }
+  function closeProfessionalDocumentEditor() {
+    if (professionalUploadRef.current) return;
+    clearProfessionalDocumentSelection();
+    setProfessionalDocumentTitle("");
+    setProfessionalDocumentInstitution("");
+    setProfessionalDocumentType("Qualification");
+    setDocumentEditorOpen(false);
+  }
   async function uploadProfessionalDocument() {
-    if (!professionalDocumentFile || uploadingProfessionalDocument) return;
+    if (
+      !professionalDocumentFile ||
+      uploadingProfessionalDocument ||
+      professionalUploadRef.current
+    )
+      return;
+    const metadataError = validateQualificationMetadata(
+      professionalDocumentType,
+      professionalDocumentTitle,
+      professionalDocumentInstitution,
+    );
+    if (metadataError) {
+      setProfessionalDocumentError(metadataError);
+      return;
+    }
     if (professionalDocuments.length >= MAX_PROFESSIONAL_DOCUMENTS) {
       setProfessionalDocumentError(
         `You can upload a maximum of ${MAX_PROFESSIONAL_DOCUMENTS} professional documents.`,
@@ -956,6 +996,11 @@ function AllocatProfilePage() {
     const data = new FormData();
     data.append("documentType", professionalDocumentType);
     data.append("file", professionalDocumentFile);
+    if (professionalDocumentTitle.trim())
+      data.append("title", professionalDocumentTitle.trim());
+    if (professionalDocumentInstitution.trim())
+      data.append("issuingInstitution", professionalDocumentInstitution.trim());
+    professionalUploadRef.current = true;
     try {
       setUploadingProfessionalDocument(true);
       setProfessionalDocumentError(null);
@@ -982,6 +1027,9 @@ function AllocatProfilePage() {
         ]),
       );
       clearProfessionalDocumentSelection();
+      setProfessionalDocumentTitle("");
+      setProfessionalDocumentInstitution("");
+      setDocumentEditorOpen(false);
       toast.success("Professional document uploaded");
     } catch (error) {
       console.error("Could not upload professional document:", error);
@@ -989,6 +1037,7 @@ function AllocatProfilePage() {
         getApiErrorMessage(error, "The document could not be uploaded."),
       );
     } finally {
+      professionalUploadRef.current = false;
       setUploadingProfessionalDocument(false);
     }
   }
@@ -1990,7 +2039,9 @@ function AllocatProfilePage() {
             <ProfileSection
               sectionId="profile-documents"
               eyebrow="Credentials"
-              title="Professional documents"
+              title="Qualifications & documents"
+              editing={documentEditorOpen}
+              onCancel={closeProfessionalDocumentEditor}
             >
               <div className="w-full">
                 <div
@@ -2009,13 +2060,14 @@ function AllocatProfilePage() {
                   </span>
                   <div className="min-w-0">
                     <p className="text-xs font-semibold text-foreground">
-                      Private professional credentials
+                      Credential details, private evidence
                     </p>
                     <p className="mt-1 max-w-2xl text-[0.64rem] leading-5 text-muted-foreground">
-                      Qualifications, certifications and licences help Allocatr
-                      verify your professional background. Approved verification
-                      information can strengthen the trust clients place in your
-                      profile.
+                      Professional credentials with a title appear on your
+                      public profile, including while under review.
+                      Qualifications also require an issuing institution.
+                      Supporting files stay private. Each credential has its own
+                      verification status.
                     </p>
                   </div>
                 </div>
@@ -2071,8 +2123,9 @@ function AllocatProfilePage() {
                       Uploaded documents
                     </p>
                     <p className="mt-1 text-[0.61rem] text-muted-foreground">
-                      Preview or download your files here. Approved documents
-                      are locked after verification.
+                      Preview your private evidence or edit credential details.
+                      Changing verified details sends that credential back for
+                      review.
                     </p>
                   </div>
                   <span className="shrink-0 text-[10px] font-medium text-muted-foreground">
@@ -2092,6 +2145,7 @@ function AllocatProfilePage() {
                         <DocumentRow
                           key={document.id}
                           document={document}
+                          onEdit={() => setQualificationToEdit(document)}
                           previewing={isDocumentPreviewLoading(document.id)}
                           downloading={downloadingDocumentId === document.id}
                           onPreview={() => void previewDocument(document)}
@@ -2116,108 +2170,201 @@ function AllocatProfilePage() {
                     </div>
                   )}
                 </div>
-                <div
-                  className={
-                    "mt-6 rounded-xl border p-4 sm:p-5 " + quietSurface
-                  }
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <p className="text-xs font-semibold text-foreground">
-                        Add a professional document
-                      </p>
-                      <p className="mt-1 text-[0.61rem] leading-5 text-muted-foreground">
-                        PDF, JPEG, PNG or WebP · Maximum 10 MB per file.
-                      </p>
-                    </div>
-                    <span
-                      className={
-                        "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg " +
-                        accentIconSurface
-                      }
-                    >
-                      <UploadIcon size={14} aria-hidden="true" />
-                    </span>
-                  </div>
-                  <div className="mt-5 grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
-                    <ProfileField label="Document type">
-                      <Select
-                        value={professionalDocumentType}
-                        onValueChange={(value) => {
-                          setProfessionalDocumentType(
-                            value as ProfessionalDocumentType,
-                          );
-                          setProfessionalDocumentError(null);
-                        }}
-                        disabled={uploadingProfessionalDocument}
-                      >
-                        <SelectTrigger
-                          aria-label="Document type"
-                          className={selectTriggerClass}
-                        >
-                          <SelectValue placeholder="Choose document type" />
-                        </SelectTrigger>
-                        <SelectContent className={selectContentClass}>
-                          {PROFESSIONAL_DOCUMENT_OPTIONS.map((option) => (
-                            <SelectItem
-                              key={option.value}
-                              value={option.value}
-                              className={selectItemClass}
-                            >
-                              {option.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </ProfileField>
+                {!documentEditorOpen ? (
+                  <div className="mt-6 flex flex-col items-start justify-between gap-3 border-t border-border/50 pt-5 sm:flex-row sm:items-center">
+                    <p className="max-w-md text-xs leading-6 text-muted-foreground">
+                      {professionalDocuments.length >=
+                      MAX_PROFESSIONAL_DOCUMENTS
+                        ? "You have reached the professional document limit. You can still edit existing details."
+                        : "Add supporting evidence and describe the credential it represents."}
+                    </p>
                     <Button
                       type="button"
                       variant="outline"
-                      onClick={() =>
-                        professionalDocumentInputRef.current?.click()
-                      }
+                      onClick={() => setDocumentEditorOpen(true)}
                       disabled={
-                        uploadingProfessionalDocument ||
+                        loadingDocuments ||
+                        Boolean(documentsError) ||
                         professionalDocuments.length >=
                           MAX_PROFESSIONAL_DOCUMENTS
                       }
                       className={
-                        "h-11 rounded-lg px-4 text-xs font-semibold " +
+                        "h-11 shrink-0 rounded-lg px-4 text-xs font-semibold " +
                         secondaryButton
                       }
                     >
-                      <FileTextIcon size={14} aria-hidden="true" />
-                      Choose file
+                      <UploadIcon size={14} aria-hidden="true" />
+                      Add a professional document
                     </Button>
                   </div>
-                  <input
-                    ref={professionalDocumentInputRef}
-                    type="file"
-                    accept="application/pdf,image/jpeg,image/png,image/webp"
-                    className="hidden"
-                    onChange={handleProfessionalDocumentChange}
-                    disabled={uploadingProfessionalDocument}
-                  />
-                  {professionalDocuments.length >=
-                    MAX_PROFESSIONAL_DOCUMENTS && (
-                    <p className="mt-3 text-[0.61rem] leading-5 text-status-pending-foreground">
-                      You have reached the professional document limit.
+                ) : (
+                  <div
+                    className={
+                      "mt-6 rounded-xl border p-4 sm:p-5 " + quietSurface
+                    }
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <p className="text-xs font-semibold text-foreground">
+                          Add a professional document
+                        </p>
+                        <p className="mt-1 text-[0.61rem] leading-5 text-muted-foreground">
+                          PDF, JPEG, PNG or WebP · Maximum 10 MB per file.
+                        </p>
+                      </div>
+                      <span
+                        className={
+                          "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg " +
+                          accentIconSurface
+                        }
+                      >
+                        <UploadIcon size={14} aria-hidden="true" />
+                      </span>
+                    </div>
+                    <div className="mt-5 grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
+                      <ProfileField label="Document type">
+                        <Select
+                          value={professionalDocumentType}
+                          onValueChange={(value) => {
+                            setProfessionalDocumentType(
+                              value as ProfessionalDocumentType,
+                            );
+                            setProfessionalDocumentError(null);
+                          }}
+                          disabled={uploadingProfessionalDocument}
+                        >
+                          <SelectTrigger
+                            aria-label="Document type"
+                            className={selectTriggerClass}
+                          >
+                            <SelectValue placeholder="Choose document type" />
+                          </SelectTrigger>
+                          <SelectContent className={selectContentClass}>
+                            {PROFESSIONAL_DOCUMENT_OPTIONS.map((option) => (
+                              <SelectItem
+                                key={option.value}
+                                value={option.value}
+                                className={selectItemClass}
+                              >
+                                {option.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </ProfileField>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() =>
+                          professionalDocumentInputRef.current?.click()
+                        }
+                        disabled={
+                          uploadingProfessionalDocument ||
+                          professionalDocuments.length >=
+                            MAX_PROFESSIONAL_DOCUMENTS
+                        }
+                        className={
+                          "h-11 rounded-lg px-4 text-xs font-semibold " +
+                          secondaryButton
+                        }
+                      >
+                        <FileTextIcon size={14} aria-hidden="true" />
+                        Choose file
+                      </Button>
+                    </div>
+                    <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                      <ProfileField
+                        label={
+                          professionalDocumentType === "Qualification"
+                            ? "Qualification title"
+                            : "Document title (optional)"
+                        }
+                      >
+                        <Input
+                          aria-label="Qualification title"
+                          value={professionalDocumentTitle}
+                          maxLength={200}
+                          placeholder="e.g. BSc Civil Engineering"
+                          disabled={uploadingProfessionalDocument}
+                          className={fieldClass}
+                          onChange={(event) => {
+                            setProfessionalDocumentTitle(event.target.value);
+                            setProfessionalDocumentError(null);
+                          }}
+                        />
+                      </ProfileField>
+                      <ProfileField
+                        label={
+                          professionalDocumentType === "Qualification"
+                            ? "Issuing institution"
+                            : "Issuing institution (optional)"
+                        }
+                      >
+                        <Input
+                          aria-label="Issuing institution"
+                          value={professionalDocumentInstitution}
+                          maxLength={200}
+                          placeholder="e.g. University of Zimbabwe"
+                          disabled={uploadingProfessionalDocument}
+                          className={fieldClass}
+                          onChange={(event) => {
+                            setProfessionalDocumentInstitution(
+                              event.target.value,
+                            );
+                            setProfessionalDocumentError(null);
+                          }}
+                        />
+                      </ProfileField>
+                    </div>
+                    <p className="mt-3 text-xs leading-6 text-muted-foreground">
+                      {professionalDocumentType === "Qualification"
+                        ? "Both details are required. Clients see these details and the verification status, never your supporting file."
+                        : "Add a title to display this credential publicly. The issuing institution is optional; your supporting file stays private."}
                     </p>
-                  )}
-                  {professionalDocumentFile && (
-                    <SelectedDocument
-                      file={professionalDocumentFile}
-                      typeLabel={getDocumentTypeLabel(professionalDocumentType)}
-                      progress={professionalDocumentProgress}
-                      uploading={uploadingProfessionalDocument}
-                      onClear={clearProfessionalDocumentSelection}
-                      onUpload={() => void uploadProfessionalDocument()}
+                    <input
+                      ref={professionalDocumentInputRef}
+                      type="file"
+                      accept="application/pdf,image/jpeg,image/png,image/webp"
+                      className="hidden"
+                      onChange={handleProfessionalDocumentChange}
+                      disabled={uploadingProfessionalDocument}
                     />
-                  )}
-                  {professionalDocumentError && (
-                    <InlineError message={professionalDocumentError} />
-                  )}
-                </div>
+                    {professionalDocuments.length >=
+                      MAX_PROFESSIONAL_DOCUMENTS && (
+                      <p className="mt-3 text-[0.61rem] leading-5 text-status-pending-foreground">
+                        You have reached the professional document limit.
+                      </p>
+                    )}
+                    {professionalDocumentFile && (
+                      <SelectedDocument
+                        file={professionalDocumentFile}
+                        typeLabel={getDocumentTypeLabel(
+                          professionalDocumentType,
+                        )}
+                        progress={professionalDocumentProgress}
+                        uploading={uploadingProfessionalDocument}
+                        onClear={clearProfessionalDocumentSelection}
+                        onUpload={() => void uploadProfessionalDocument()}
+                      />
+                    )}
+                    {professionalDocumentError && (
+                      <InlineError message={professionalDocumentError} />
+                    )}
+                    <div className="mt-5 flex justify-end border-t border-border/45 pt-4">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={closeProfessionalDocumentEditor}
+                        disabled={uploadingProfessionalDocument}
+                        className={
+                          "h-10 rounded-lg px-4 text-xs " + secondaryButton
+                        }
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </div>
             </ProfileSection>
             <ProfileSection eyebrow="Work history" title="Completed projects">
@@ -2474,6 +2621,28 @@ function AllocatProfilePage() {
         onClear={clearAvatarSelection}
         onUpload={() => void uploadAvatar()}
       />
+      {qualificationToEdit && (
+        <CredentialDetailsDialog
+          key={qualificationToEdit.id}
+          document={qualificationToEdit}
+          onClose={() => setQualificationToEdit(null)}
+          onSaved={(updated) => {
+            setDocuments((current) =>
+              sortDocuments(
+                current.map((item) =>
+                  item.id === updated.id ? updated : item,
+                ),
+              ),
+            );
+            setDocumentPreview((current) =>
+              current?.document.id === updated.id
+                ? { ...current, document: updated }
+                : current,
+            );
+            setQualificationToEdit(null);
+          }}
+        />
+      )}
       <DocumentPreviewDialog
         preview={documentPreview}
         downloading={
@@ -3386,6 +3555,209 @@ function SelectedDocument({
     </div>
   );
 }
+function validateQualificationMetadata(
+  type: UserDocumentType,
+  title: string,
+  institution: string,
+) {
+  if (type === "Identity") return null;
+  if (type === "Qualification" && !title.trim())
+    return "Enter the qualification title.";
+  if (type === "Qualification" && !institution.trim())
+    return "Enter the issuing institution.";
+  if (title.trim().length > 200)
+    return "The title cannot exceed 200 characters.";
+  if (institution.trim().length > 200)
+    return "The issuing institution cannot exceed 200 characters.";
+  return null;
+}
+
+function CredentialDetailsDialog({
+  document,
+  onClose,
+  onSaved,
+}: {
+  document: UserDocumentDto;
+  onClose: () => void;
+  onSaved: (document: UserDocumentDto) => void;
+}) {
+  const isQualification = document.documentType === "Qualification";
+  const [title, setTitle] = useState(document.title || "");
+  const [institution, setInstitution] = useState(
+    document.issuingInstitution || "",
+  );
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const busyRef = useRef(false);
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
+  const changed =
+    title.trim() !== (document.title || "") ||
+    institution.trim() !== (document.issuingInstitution || "");
+  async function save(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (busyRef.current || !changed) return;
+    const invalid = validateQualificationMetadata(
+      document.documentType,
+      title,
+      institution,
+    );
+    if (invalid) {
+      setError(invalid);
+      return;
+    }
+    busyRef.current = true;
+    setSaving(true);
+    setError(null);
+    try {
+      const response = await api.patch<ApiUserDocumentDto>(
+        `/allocats/profiles/me/documents/${encodeURIComponent(document.id)}`,
+        { title: title.trim(), issuingInstitution: institution.trim() },
+        { withCredentials: true },
+      );
+      if (!mounted.current) return;
+      const updated = normalizeUserDocument(response.data);
+      if (updated.id !== document.id)
+        throw new Error("Unexpected document response.");
+      onSaved(updated);
+      toast.success("Credential details saved", {
+        description:
+          "The updated credential is under review. Your supporting file has been kept.",
+      });
+    } catch (cause) {
+      if (mounted.current)
+        setError(
+          getApiErrorMessage(
+            cause,
+            "Credential details could not be saved. Your changes have been kept; please try again.",
+          ),
+        );
+    } finally {
+      busyRef.current = false;
+      if (mounted.current) setSaving(false);
+    }
+  }
+  return (
+    <Dialog
+      open
+      onOpenChange={(open) => {
+        if (!open && !busyRef.current) onClose();
+      }}
+    >
+      <DialogContent
+        className="max-h-[90dvh] overflow-y-auto rounded-2xl border-border/65 bg-card p-0 text-card-foreground sm:max-w-lg"
+        onEscapeKeyDown={(event) => {
+          if (busyRef.current) event.preventDefault();
+        }}
+        onPointerDownOutside={(event) => {
+          if (busyRef.current) event.preventDefault();
+        }}
+      >
+        <DialogHeader className="border-b border-border/50 px-5 py-5 pr-12 text-left sm:px-6">
+          <DialogTitle className="text-lg font-semibold tracking-[-0.025em]">
+            {isQualification ? "Qualification details" : "Credential details"}
+          </DialogTitle>
+          <DialogDescription className="text-xs leading-6">
+            {isQualification
+              ? "Clients see the title, issuing institution and verification status. Your supporting file stays private."
+              : "Add a title to show this credential and its verification status publicly. The issuing institution is optional. Your supporting file stays private."}
+          </DialogDescription>
+        </DialogHeader>
+        <form onSubmit={(event) => void save(event)} noValidate>
+          <div className="space-y-5 px-5 py-5 sm:px-6">
+            <div>
+              <Label
+                htmlFor="qualification-edit-title"
+                className="text-xs font-semibold"
+              >
+                {isQualification
+                  ? "Qualification title"
+                  : "Credential title (optional)"}
+              </Label>
+              <Input
+                id="qualification-edit-title"
+                value={title}
+                maxLength={200}
+                disabled={saving}
+                aria-required={isQualification}
+                placeholder={
+                  isQualification
+                    ? "e.g. BSc Civil Engineering"
+                    : "Enter credential title"
+                }
+                className={fieldClass + " mt-2"}
+                onChange={(event) => {
+                  setTitle(event.target.value);
+                  setError(null);
+                }}
+              />
+            </div>
+            <div>
+              <Label
+                htmlFor="qualification-edit-institution"
+                className="text-xs font-semibold"
+              >
+                Issuing institution{isQualification ? "" : " (optional)"}
+              </Label>
+              <Input
+                id="qualification-edit-institution"
+                value={institution}
+                maxLength={200}
+                disabled={saving}
+                aria-required={isQualification}
+                placeholder="e.g. University of Zimbabwe"
+                className={fieldClass + " mt-2"}
+                onChange={(event) => {
+                  setInstitution(event.target.value);
+                  setError(null);
+                }}
+              />
+            </div>
+            <p className="rounded-lg bg-surface-2/50 px-3.5 py-3 text-xs leading-6 text-muted-foreground">
+              {document.reviewStatus === "Approved"
+                ? "Changing these verified details resets this credential to Under review until Allocatr checks it again."
+                : "Saving changed details submits this credential for review. You do not need to upload the file again."}
+            </p>
+            {error && <InlineError message={error} />}
+          </div>
+          <DialogFooter className="gap-2 border-t border-border/50 px-5 py-4 sm:px-6">
+            <Button
+              type="button"
+              variant="outline"
+              disabled={saving}
+              onClick={onClose}
+              className={secondaryButton + " h-11 rounded-lg px-4 text-xs"}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              disabled={saving || !changed}
+              className={primaryButton + " h-11 rounded-lg px-4 text-xs"}
+            >
+              {saving ? (
+                <LoaderCircleIcon
+                  size={14}
+                  className="animate-spin motion-reduce:animate-none"
+                  aria-hidden="true"
+                />
+              ) : (
+                <SaveIcon size={14} aria-hidden="true" />
+              )}
+              {saving ? "Saving…" : "Save details"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function DocumentRow({
   document,
   previewing,
@@ -3393,6 +3765,7 @@ function DocumentRow({
   onPreview,
   onDownload,
   onDelete,
+  onEdit,
 }: {
   document: UserDocumentDto;
   previewing: boolean;
@@ -3400,11 +3773,13 @@ function DocumentRow({
   onPreview: () => void;
   onDownload: () => void;
   onDelete?: () => void;
+  onEdit?: () => void;
 }) {
   return (
     <div
       className={
-        "flex items-center gap-3 rounded-xl border px-4 py-3.5 " + cardSurface
+        "flex flex-wrap items-center gap-3 rounded-xl border px-4 py-3.5 " +
+        cardSurface
       }
     >
       <span
@@ -3415,16 +3790,31 @@ function DocumentRow({
       >
         <FileTextIcon size={15} aria-hidden="true" />
       </span>
-      <div className="min-w-0 flex-1">
+      <div className="min-w-0 flex-1 basis-[140px]">
         <div className="flex flex-wrap items-center gap-2">
           <p
             className="max-w-full truncate text-xs font-semibold text-foreground"
-            title={document.originalFileName}
+            title={
+              document.documentType !== "Identity"
+                ? document.title ||
+                  getDocumentTypeLabel(document.documentType) +
+                    " details not added"
+                : document.originalFileName
+            }
           >
-            {document.originalFileName}
+            {document.documentType !== "Identity"
+              ? document.title ||
+                getDocumentTypeLabel(document.documentType) +
+                  " details not added"
+              : document.originalFileName}
           </p>
           <DocumentStatusBadge status={document.reviewStatus} />
         </div>
+        {document.documentType !== "Identity" && (
+          <p className="mt-1 break-words text-xs leading-5 text-muted-foreground">
+            {document.issuingInstitution || "Issuing institution not added"}
+          </p>
+        )}
         <p className="mt-1 text-[0.6rem] leading-5 text-muted-foreground">
           {getDocumentTypeLabel(document.documentType)} ·{" "}
           {formatFileSize(document.sizeBytes)} ·{" "}
@@ -3432,6 +3822,20 @@ function DocumentRow({
         </p>
       </div>
       <div className="flex shrink-0 items-center gap-1">
+        {onEdit && (
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={onEdit}
+            aria-label={`Edit credential details: ${document.title || document.originalFileName}`}
+            className={"h-9 rounded-lg px-2 text-[11px] " + quietIconButton}
+          >
+            <Edit3Icon size={13} aria-hidden="true" />
+            {!document.title || !document.issuingInstitution
+              ? "Add details"
+              : "Edit details"}
+          </Button>
+        )}
         <Button
           type="button"
           variant="ghost"
@@ -4447,6 +4851,12 @@ function normalizeUserDocument(document: ApiUserDocumentDto): UserDocumentDto {
     ...document,
     documentType: normalizeDocumentType(document.documentType),
     reviewStatus: normalizeReviewStatus(document.reviewStatus),
+    title:
+      typeof document.title === "string" ? document.title.trim() || null : null,
+    issuingInstitution:
+      typeof document.issuingInstitution === "string"
+        ? document.issuingInstitution.trim() || null
+        : null,
   };
 }
 function normalizeDocumentType(value: unknown): UserDocumentType {
