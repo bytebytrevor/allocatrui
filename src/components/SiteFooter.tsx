@@ -1,11 +1,6 @@
-import {
-  createContext,
-  useContext,
-  type CSSProperties,
-  type ReactNode,
-} from "react";
+import { type CSSProperties, type ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { ArrowRightIcon, PawPrintIcon } from "lucide-react";
+import { PawPrintIcon } from "lucide-react";
 
 import allocatrLogoLight from "@/assets/allocatr-neg-light.svg";
 import allocatrLogoDark from "@/assets/allocatr-dark-02.svg";
@@ -51,7 +46,6 @@ const LANDING_FOOTER_TOKENS = {
     "color-mix(in srgb, var(--primary-foreground) 16%, var(--footer-canvas))",
   "--ring": "var(--brand-primary)",
 } as CSSProperties;
-const FooterThemeContext = createContext(false);
 
 export default function SiteFooter() {
   const { user } = useAuth();
@@ -68,54 +62,53 @@ export default function SiteFooter() {
     { label: "Allocatr Pro", href: "/pro", badge: "Coming soon" },
   ];
   return (
-    <FooterThemeContext.Provider value={landing}>
-      <footer
-        style={landing ? LANDING_FOOTER_TOKENS : undefined}
-        className={`relative isolate overflow-hidden border-t border-border/55 text-foreground ${landing ? "bg-background" : "bg-surface-1 dark:bg-sidebar"}`}
+    <footer
+      style={landing ? LANDING_FOOTER_TOKENS : undefined}
+      className={`relative isolate overflow-hidden border-t border-border/55 text-foreground ${landing ? "bg-background" : "bg-surface-1 dark:bg-sidebar"}`}
+    >
+      <div
+        className={`relative mx-auto w-full ${landing ? "max-w-[1440px] px-4 sm:px-8 lg:px-12 xl:px-16" : "max-w-7xl px-4 sm:px-6 md:px-8 xl:px-10"}`}
       >
-        {landing && <FooterAtmosphere />}
-        <div
-          className={`relative mx-auto w-full ${landing ? "max-w-[1440px] px-5 sm:px-8 lg:px-14 xl:px-20" : "max-w-7xl px-4 sm:px-6 md:px-8 xl:px-10"}`}
-        >
-          <div className="grid grid-cols-2 gap-x-7 gap-y-9 py-12 sm:gap-x-10 sm:py-16 lg:grid-cols-[1.4fr_repeat(4,minmax(0,1fr))] lg:gap-8 lg:py-16 xl:gap-10">
-            <div className="col-span-2 max-w-sm lg:col-span-1">
-              <Link
-                to="/"
-                aria-label="Allocatr home"
-                className="inline-flex rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:ring-offset-4 focus-visible:ring-offset-background"
-              >
-                {landing ? (
+        <div className="grid min-w-0 gap-10 py-10 sm:gap-12 sm:py-14 xl:grid-cols-[minmax(0,1fr)_minmax(0,2.6fr)] xl:gap-16 xl:py-16">
+          <div className="min-w-0 max-w-sm">
+            <Link
+              to="/"
+              aria-label="Allocatr home"
+              className="inline-flex rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:ring-offset-4 focus-visible:ring-offset-background"
+            >
+              {landing ? (
+                <img
+                  src={allocatrLogoLight}
+                  alt="Allocatr"
+                  className="h-7 max-w-full w-auto object-contain"
+                />
+              ) : (
+                <>
+                  <img
+                    src={allocatrLogoDark}
+                    alt="Allocatr"
+                    className="h-7 max-w-full w-auto object-contain dark:hidden"
+                  />
                   <img
                     src={allocatrLogoLight}
                     alt="Allocatr"
-                    className="h-7 w-auto object-contain"
+                    className="hidden h-7 max-w-full w-auto object-contain dark:block"
                   />
-                ) : (
-                  <>
-                    <img
-                      src={allocatrLogoDark}
-                      alt="Allocatr"
-                      className="h-7 w-auto object-contain dark:hidden"
-                    />
-                    <img
-                      src={allocatrLogoLight}
-                      alt="Allocatr"
-                      className="hidden h-7 w-auto object-contain dark:block"
-                    />
-                  </>
-                )}
-              </Link>
-              <p className="mt-5 max-w-[290px] text-[13px] leading-7 text-muted-foreground">
-                Find the right capability. Bring people together. Keep the work
-                connected from brief to delivery.
+                </>
+              )}
+            </Link>
+            <p className="mt-4 max-w-[32ch] text-[13px] leading-7 text-muted-foreground">
+              Find the right capability. Bring people together. Keep the work
+              connected from brief to delivery.
+            </p>
+            <div className="mt-5 flex items-center gap-2">
+              <FooterPawMark />
+              <p className="text-[11px] font-normal tracking-[0.01em] text-muted-foreground">
+                Work, properly allocated
               </p>
-              <div className="mt-6 flex items-center gap-2.5">
-                <FooterPawMark />
-                <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
-                  Work, properly allocated
-                </p>
-              </div>
             </div>
+          </div>
+          <div className="grid min-w-0 grid-cols-1 gap-x-6 gap-y-7 min-[360px]:grid-cols-2 sm:gap-x-8 sm:gap-y-9 md:grid-cols-4">
             <FooterColumn
               title="Platform"
               links={platformLinks}
@@ -137,27 +130,27 @@ export default function SiteFooter() {
               currentPath={pathname}
             />
           </div>
-          <div className="flex flex-col gap-4 border-t border-border/50 py-5 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
-            <p className="text-[11px] leading-6 text-muted-foreground">
-              © {new Date().getFullYear()} Allocatr. All rights reserved.
-            </p>
-            <nav
-              aria-label="Legal"
-              className="flex flex-wrap items-center gap-x-6 gap-y-1"
-            >
-              {legalLinks.map((item) => (
-                <FooterLink
-                  key={item.href}
-                  {...item}
-                  currentPath={pathname}
-                  compact
-                />
-              ))}
-            </nav>
-          </div>
         </div>
-      </footer>
-    </FooterThemeContext.Provider>
+        <div className="flex flex-col-reverse items-start gap-3 border-t border-border/50 py-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-x-6 sm:gap-y-2">
+          <p className="text-[11px] leading-6 text-muted-foreground">
+            © {new Date().getFullYear()} Allocatr. All rights reserved.
+          </p>
+          <nav
+            aria-label="Legal"
+            className="flex flex-wrap items-center gap-x-5 gap-y-1"
+          >
+            {legalLinks.map((item) => (
+              <FooterLink
+                key={item.href}
+                {...item}
+                currentPath={pathname}
+                compact
+              />
+            ))}
+          </nav>
+        </div>
+      </div>
+    </footer>
   );
 }
 
@@ -171,11 +164,11 @@ function FooterColumn({
   currentPath: string;
 }) {
   return (
-    <div>
+    <div className="min-w-0">
       <FooterHeading>{title}</FooterHeading>
       <nav
         aria-label={title}
-        className="mt-3 flex flex-col items-start gap-1 sm:mt-4"
+        className="mt-2 flex flex-col items-start sm:mt-3"
       >
         {links.map((item) => (
           <FooterLink key={item.href} {...item} currentPath={currentPath} />
@@ -187,7 +180,7 @@ function FooterColumn({
 
 function FooterHeading({ children }: { children: ReactNode }) {
   return (
-    <h2 className="text-[11px] font-medium uppercase tracking-[0.12em] text-foreground/85">
+    <h2 className="text-xs font-semibold tracking-[0.01em] text-foreground/90">
       {children}
     </h2>
   );
@@ -203,56 +196,32 @@ function FooterLink({
   currentPath: string;
   compact?: boolean;
 }) {
-  const landing = useContext(FooterThemeContext);
   const active = currentPath === href;
   return (
     <Link
       to={href}
       aria-current={active ? "page" : undefined}
-      className={`group inline-flex min-h-9 max-w-full items-center gap-1.5 rounded-md font-normal transition-colors duration-150 hover:text-foreground focus-visible:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35 focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transition-none ${compact ? "text-[11px]" : "text-[13px]"} ${active ? "text-foreground" : "text-muted-foreground"}`}
+      className={`inline-flex min-h-11 min-w-0 max-w-full flex-wrap items-center gap-x-2 gap-y-1 rounded-sm py-2 leading-6 no-underline transition-colors duration-150 hover:text-foreground hover:no-underline focus-visible:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transition-none ${compact ? "text-xs" : "text-[13px]"} ${active ? "text-foreground" : "text-muted-foreground"}`}
     >
-      <span>{label}</span>
+      <span className="min-w-0 break-words [overflow-wrap:anywhere]">
+        {label}
+      </span>
       {badge && (
-        <span className="shrink-0 rounded border border-border/60 px-1.5 py-0.5 text-[8px] font-medium text-muted-foreground">
+        <span className="max-w-full rounded bg-surface-2 px-1.5 py-0.5 text-[9px] font-medium leading-4 text-muted-foreground">
           {badge}
         </span>
       )}
-      <ArrowRightIcon
-        size={11}
-        aria-hidden="true"
-        className={`shrink-0 transition-[transform,opacity] duration-150 group-hover:translate-x-0 group-hover:opacity-100 group-focus-visible:translate-x-0 group-focus-visible:opacity-100 motion-reduce:transition-none ${active ? "translate-x-0 opacity-70" : "-translate-x-1 opacity-0"} ${landing ? "text-brand-primary" : "text-brand-secondary-highlight dark:text-secondary"}`}
-      />
     </Link>
   );
 }
 
-function FooterAtmosphere() {
-  return (
-    <div
-      aria-hidden="true"
-      className="pointer-events-none absolute inset-0 select-none"
-    >
-      <div
-        className="absolute inset-0"
-        style={{
-          background:
-            "radial-gradient(ellipse at 0% 100%, color-mix(in srgb, var(--brand-secondary) 12%, transparent), transparent 65%)",
-        }}
-      />
-      <PawPrintIcon
-        strokeWidth={1}
-        className="absolute -bottom-14 -left-12 hidden h-64 w-64 -rotate-12 text-foreground/[0.025] sm:block"
-      />
-    </div>
-  );
-}
-
 function FooterPawMark() {
-  const landing = useContext(FooterThemeContext);
   return (
     <span
       aria-hidden="true"
-      className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-surface-2 ${landing ? "text-brand-primary" : "text-brand-secondary-highlight dark:text-secondary"}`}
+      className={
+        "flex h-5 w-5 shrink-0 items-center justify-center text-muted-foreground"
+      }
     >
       <PawPrintIcon size={13} strokeWidth={1.8} className="-rotate-6" />
     </span>
