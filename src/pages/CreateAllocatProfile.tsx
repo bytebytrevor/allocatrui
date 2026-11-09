@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import { isAxiosError } from "axios";
-import { Navigate, useNavigate } from "react-router-dom";
+import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import {
   AlertCircleIcon,
@@ -36,6 +36,13 @@ import {
 } from "lucide-react";
 import api from "@/api/axios";
 import { useAuth } from "@/auth/useAuth";
+import {
+  clearReturnTo,
+  nextAccountPath,
+  rememberedReturnTo,
+  safeReturnTo,
+  withReturnTo,
+} from "@/auth/onboarding";
 import type {
   AllocatAvailability,
   AllocatSkill,
@@ -73,7 +80,11 @@ type CreateAllocatProfilePayload = {
   operatingCountryCode: string;
   operatingCityId: number;
 };
-type OperatingCountry = { code: string; name: string; supportsAllocatOperations: boolean };
+type OperatingCountry = {
+  code: string;
+  name: string;
+  supportsAllocatOperations: boolean;
+};
 type OperatingCity = { id: number; name: string; countryCode: string };
 type FormState = {
   title: string;
@@ -111,7 +122,10 @@ type StepDefinition = {
 };
 type ReviewRowProps = { label: string; value: ReactNode; missing?: boolean };
 // Currency policy remains separate from the database location catalogue.
-const PROFILE_CURRENCIES: Record<string, { code: string; name: string; symbol: string }> = {
+const PROFILE_CURRENCIES: Record<
+  string,
+  { code: string; name: string; symbol: string }
+> = {
   ZW: { code: "USD", name: "United States Dollar", symbol: "$" },
   ZA: { code: "ZAR", name: "South African Rand", symbol: "R" },
 };
@@ -224,6 +238,61 @@ const accentIconSurface =
 function CreateAllocatProfile() {
   const navigate = useNavigate();
   const { user, refreshUser } = useAuth();
+  const [searchParams] = useSearchParams();
+  const returnTo =
+    safeReturnTo(searchParams.get("returnTo")) ??
+    (user ? rememberedReturnTo(user.userId) : null);
+  const [profileCreated, setProfileCreated] = useState(false);
+  const [continuing, setContinuing] = useState(false);
+  const [continuationError, setContinuationError] = useState<string | null>(
+    null,
+  );
+  const continuationRef = useRef(false);
+  const profileSavedRef = useRef(false);
+  const continueAfterSetup = useCallback(async () => {
+    if (continuationRef.current) return;
+    continuationRef.current = true;
+    setContinuing(true);
+    setContinuationError(null);
+    try {
+      const current = await refreshUser();
+      if (!current) {
+        navigate(withReturnTo("/login", returnTo ?? ALLOCAT_PROFILE_ROUTE), {
+          replace: true,
+        });
+        return;
+      }
+      if (!current.emailConfirmed) {
+        navigate(
+          withReturnTo("/check-email", returnTo ?? ALLOCAT_PROFILE_ROUTE),
+          { replace: true },
+        );
+        return;
+      }
+      if (current.isAllocat && !current.hasAllocatProfile)
+        throw new Error(
+          "Your profile is saved, but your account status has not updated yet. Please try continuing again.",
+        );
+      const destination = nextAccountPath(
+        current,
+        returnTo ?? ALLOCAT_PROFILE_ROUTE,
+      );
+      clearReturnTo(current.userId);
+      navigate(destination, { replace: true });
+    } catch (error) {
+      setContinuationError(
+        getApiErrorMessage(
+          error,
+          error instanceof Error
+            ? error.message
+            : "Your profile is saved. We couldn't refresh your account status. Please try continuing again.",
+        ),
+      );
+    } finally {
+      continuationRef.current = false;
+      setContinuing(false);
+    }
+  }, [refreshUser, navigate, returnTo]);
   const [accountProfile, setAccountProfile] = useState<ProfileUser | null>(
     null,
   );
@@ -276,7 +345,7 @@ function CreateAllocatProfile() {
     }
   }, []);
   const loadPage = useCallback(async () => {
-    if (!user?.isAllocat) return;
+    if (!user?.isAllocat || !user.emailConfirmed) return;
     try {
       setLoading(true);
       setPageError(null);
@@ -284,7 +353,9 @@ function CreateAllocatProfile() {
         await api.get<MyAllocatProfile>("/allocats/profiles/me", {
           withCredentials: true,
         });
-        navigate(ALLOCAT_PROFILE_ROUTE, { replace: true });
+        profileSavedRef.current = true;
+        setProfileCreated(true);
+        await continueAfterSetup();
         return;
       } catch (error) {
         if (!isAxiosError(error) || error.response?.status !== 404) throw error;
@@ -294,16 +365,20 @@ function CreateAllocatProfile() {
       });
       const account = accountResponse.data;
       const countryResponse = await api.get<OperatingCountry[]>(
-        "/locations/countries", { params: { operatingOnly: true }, withCredentials: true },
+        "/locations/countries",
+        { params: { operatingOnly: true }, withCredentials: true },
       );
-      if (!Array.isArray(countryResponse.data)) throw new Error("Invalid country catalogue.");
-      setCountries(countryResponse.data.filter((country) => country.supportsAllocatOperations)
-        .sort((a, b) => a.name.localeCompare(b.name)));
+      if (!Array.isArray(countryResponse.data))
+        throw new Error("Invalid country catalogue.");
+      setCountries(
+        countryResponse.data
+          .filter((country) => country.supportsAllocatOperations)
+          .sort((a, b) => a.name.localeCompare(b.name)),
+      );
       setAccountProfile(account);
       setForm((current) => ({
         ...current,
         phoneNumber: account.phoneNumber ?? "",
-
       }));
       await loadSkills();
     } catch (error) {
@@ -314,10 +389,10 @@ function CreateAllocatProfile() {
     } finally {
       setLoading(false);
     }
-  }, [user?.isAllocat, navigate, loadSkills]);
+  }, [user?.isAllocat, user?.emailConfirmed, continueAfterSetup, loadSkills]);
   useEffect(() => {
-    if (user?.isAllocat) void loadPage();
-  }, [user?.isAllocat, loadPage]);
+    if (user?.isAllocat && user.emailConfirmed) void loadPage();
+  }, [user?.isAllocat, user?.emailConfirmed, loadPage]);
   useEffect(
     () => () => {
       if (avatarPreview) URL.revokeObjectURL(avatarPreview);
@@ -330,37 +405,57 @@ function CreateAllocatProfile() {
     setCities([]);
     setCitiesCountry("");
     setCitiesError(null);
-    if (!form.countryCode) { setLoadingCities(false); return; }
+    if (!form.countryCode) {
+      setLoadingCities(false);
+      return;
+    }
     setLoadingCities(true);
     const code = form.countryCode;
     async function loadCities() {
       try {
         const response = await api.get<OperatingCity[]>(
-          `/locations/countries/${encodeURIComponent(code)}/cities`, { withCredentials: true },
+          `/locations/countries/${encodeURIComponent(code)}/cities`,
+          { withCredentials: true },
         );
-        if (!Array.isArray(response.data)) throw new Error("Invalid city catalogue.");
+        if (!Array.isArray(response.data))
+          throw new Error("Invalid city catalogue.");
         if (!active) return;
-        setCities(response.data.filter((city) => city.countryCode === code)
-          .sort((a, b) => a.name.localeCompare(b.name)));
+        setCities(
+          response.data
+            .filter((city) => city.countryCode === code)
+            .sort((a, b) => a.name.localeCompare(b.name)),
+        );
         setCitiesCountry(code);
       } catch (error) {
-        if (active) setCitiesError(getApiErrorMessage(error, "The city catalogue could not be loaded. Please retry."));
+        if (active)
+          setCitiesError(
+            getApiErrorMessage(
+              error,
+              "The city catalogue could not be loaded. Please retry.",
+            ),
+          );
       } finally {
         if (active) setLoadingCities(false);
       }
     }
     void loadCities();
-    return () => { active = false; };
+    return () => {
+      active = false;
+    };
   }, [form.countryCode, cityRetry]);
-  const selectedCountry = countries.find((country) => country.code === form.countryCode) ?? null;
+  const selectedCountry =
+    countries.find((country) => country.code === form.countryCode) ?? null;
   const availableCities = citiesCountry === form.countryCode ? cities : [];
-  const selectedCity = availableCities.find((city) => String(city.id) === form.cityId) ?? null;
+  const selectedCity =
+    availableCities.find((city) => String(city.id) === form.cityId) ?? null;
   const currency = PROFILE_CURRENCIES[form.countryCode];
   const currencyCode = currency?.code ?? "USD";
   const currencyName = currency?.name ?? "United States Dollar";
   const currencySymbol = currency?.symbol ?? "$";
-  const formattedLocation = selectedCountry && selectedCity
-    ? `${selectedCity.name}, ${selectedCountry.name}` : "";
+  const formattedLocation =
+    selectedCountry && selectedCity
+      ? `${selectedCity.name}, ${selectedCountry.name}`
+      : "";
   const selectedSkills = useMemo(
     () =>
       form.skillIds
@@ -388,7 +483,8 @@ function CreateAllocatProfile() {
   }
   function goNext() {
     if (creating) return;
-    const error = validateStep(step, form, countries, availableCities) ||
+    const error =
+      validateStep(step, form, countries, availableCities) ||
       (step === 5 ? validateCredentialDrafts(verificationDocuments) : null);
     if (error) {
       setStepError(error);
@@ -480,19 +576,31 @@ function CreateAllocatProfile() {
     setVerificationDocuments((current) => [...current, ...additions]);
     event.target.value = "";
   }
-  function updateCredential(id: string, field: "title" | "issuingInstitution", value: string) {
+  function updateCredential(
+    id: string,
+    field: "title" | "issuingInstitution",
+    value: string,
+  ) {
     if (creatingRef.current) return;
-    setVerificationDocuments((current) => current.map((document) =>
-      document.id === id ? { ...document, [field]: value } : document));
+    setVerificationDocuments((current) =>
+      current.map((document) =>
+        document.id === id ? { ...document, [field]: value } : document,
+      ),
+    );
     setStepError(null);
     setSubmitError(null);
   }
   function focusIncompleteQualification() {
-    const document = verificationDocuments.find((item) =>
-      item.type === "Qualification" && (!item.title.trim() || !item.issuingInstitution.trim()));
+    const document = verificationDocuments.find(
+      (item) =>
+        item.type === "Qualification" &&
+        (!item.title.trim() || !item.issuingInstitution.trim()),
+    );
     if (!document) return;
     const field = document.title.trim() ? "institution" : "title";
-    requestAnimationFrame(() => window.document.getElementById(`${document.id}-${field}`)?.focus());
+    requestAnimationFrame(() =>
+      window.document.getElementById(`${document.id}-${field}`)?.focus(),
+    );
   }
   function removeVerificationDocument(id: string) {
     if (creating) return;
@@ -517,20 +625,24 @@ function CreateAllocatProfile() {
     data.append("file", file);
     if (documentType !== "Identity") {
       if (metadata?.title.trim()) data.append("title", metadata.title.trim());
-      if (metadata?.issuingInstitution.trim()) data.append("issuingInstitution", metadata.issuingInstitution.trim());
+      if (metadata?.issuingInstitution.trim())
+        data.append("issuingInstitution", metadata.issuingInstitution.trim());
     }
     await api.post("/allocats/profiles/me/documents", data, {
       withCredentials: true,
     });
   }
   async function createProfile() {
-    if (creatingRef.current) return;
-    const finalError = validateAll(form, countries, availableCities) || validateCredentialDrafts(verificationDocuments);
+    if (creatingRef.current || profileSavedRef.current) return;
+    const finalError =
+      validateAll(form, countries, availableCities) ||
+      validateCredentialDrafts(verificationDocuments);
     if (finalError) {
       setSubmitError(finalError);
       return;
     }
-    if (!accountProfile || !selectedCountry || !selectedCity || creating) return;
+    if (!accountProfile || !selectedCountry || !selectedCity || creating)
+      return;
     const payload: CreateAllocatProfilePayload = {
       idNumber: form.idNumber.trim(),
       title: cleanOptional(form.title),
@@ -555,6 +667,7 @@ function CreateAllocatProfile() {
         payload,
         { withCredentials: true },
       );
+      profileSavedRef.current = true;
     } catch (error) {
       console.error("Could not create Allocat profile:", error);
       setSubmitError(
@@ -646,11 +759,6 @@ function CreateAllocatProfile() {
       );
     setSubmitProgress(92);
     setSubmitPhase("Finishing your profile");
-    try {
-      await refreshUser();
-    } catch (error) {
-      console.error("Could not refresh authenticated user:", error);
-    }
     setSubmitProgress(100);
     toast.success("Your Allocat profile is ready", {
       description:
@@ -662,10 +770,81 @@ function CreateAllocatProfile() {
       toast.warning("Some profile details need attention", {
         description: warnings.join(" "),
       });
-    navigate(ALLOCAT_PROFILE_ROUTE, { replace: true });
+    setProfileCreated(true);
+    creatingRef.current = false;
+    setCreating(false);
+    await continueAfterSetup();
   }
+  if (user && !user.emailConfirmed)
+    return (
+      <Navigate
+        to={withReturnTo("/check-email", returnTo ?? "/allocats/profile")}
+        replace
+      />
+    );
   if (user && !user.isAllocat) return <Navigate to="/projects" replace />;
-  if (!user || loading) return <CreateAllocatProfileSkeleton />;
+  if (!user)
+    return (
+      <Navigate
+        to={withReturnTo("/login", returnTo ?? "/allocats/profile")}
+        replace
+      />
+    );
+  if (profileCreated)
+    return (
+      <div className="min-h-screen bg-background text-foreground">
+        <SetupHeader />
+        <main className="container mx-auto px-4 py-16 sm:px-6 lg:px-8">
+          <section
+            aria-labelledby="setup-saved-title"
+            className="mx-auto max-w-md text-center"
+          >
+            <span
+              className={
+                "mx-auto flex h-14 w-14 items-center justify-center rounded-xl " +
+                accentIconSurface
+              }
+            >
+              <CheckIcon size={26} aria-hidden="true" />
+            </span>
+            <h1
+              id="setup-saved-title"
+              className="mt-5 text-2xl font-semibold tracking-[-0.035em]"
+            >
+              Your profile is saved
+            </h1>
+            <p className="mt-3 text-sm leading-7 text-muted-foreground">
+              {continuing
+                ? "Taking you to your next step…"
+                : "Your professional profile has been created. You can continue without submitting it again."}
+            </p>
+            {continuationError && <InlineError message={continuationError} />}
+            <Button
+              type="button"
+              variant="ghost"
+              disabled={continuing}
+              onClick={() => void continueAfterSetup()}
+              className={
+                "mt-6 h-11 rounded-lg px-5 text-xs font-semibold " +
+                primaryButton
+              }
+            >
+              {continuing ? (
+                <LoaderCircleIcon
+                  size={14}
+                  className="animate-spin motion-reduce:animate-none"
+                  aria-hidden="true"
+                />
+              ) : (
+                <ArrowRightIcon size={14} aria-hidden="true" />
+              )}
+              {continuing ? "Continuing…" : "Continue"}
+            </Button>
+          </section>
+        </main>
+      </div>
+    );
+  if (loading) return <CreateAllocatProfileSkeleton />;
   if (pageError || !accountProfile)
     return (
       <CreateAllocatProfileError
@@ -776,8 +955,9 @@ function CreateAllocatProfile() {
                       className="mt-0.5 shrink-0 text-brand-secondary-highlight dark:text-secondary"
                     />
                     <p className="text-[0.6875rem] leading-5 text-muted-foreground">
-                      Your identity information and supporting files stay private.
-                      Credential titles, institutions and verification statuses appear on your public profile.
+                      Your identity information and supporting files stay
+                      private. Credential titles, institutions and verification
+                      statuses appear on your public profile.
                     </p>
                   </div>
                 </div>
@@ -913,7 +1093,12 @@ function CreateAllocatProfile() {
                     <ProfileField label="City">
                       <Select
                         value={form.cityId}
-                        disabled={!selectedCountry || creating || loadingCities || citiesCountry !== form.countryCode}
+                        disabled={
+                          !selectedCountry ||
+                          creating ||
+                          loadingCities ||
+                          citiesCountry !== form.countryCode
+                        }
                         onValueChange={(value) => updateField("cityId", value)}
                       >
                         <SelectTrigger
@@ -923,7 +1108,9 @@ function CreateAllocatProfile() {
                           <SelectValue
                             placeholder={
                               selectedCountry
-                                ? loadingCities ? "Loading cities…" : "Select city"
+                                ? loadingCities
+                                  ? "Loading cities…"
+                                  : "Select city"
                                 : "Select a country first"
                             }
                           />
@@ -941,14 +1128,36 @@ function CreateAllocatProfile() {
                         </SelectContent>
                       </Select>
                       <FieldHelp>
-                        Your public profile will show this operating city and country. Your account residence stays separate.
+                        Your public profile will show this operating city and
+                        country. Your account residence stays separate.
                       </FieldHelp>
                     </ProfileField>
-                    {citiesError && <div className="sm:col-span-2"><InlineError message={citiesError} />
-                      <Button type="button" variant="outline" className={secondaryButton + " mt-3"}
-                        onClick={() => setCityRetry((value) => value + 1)}>Retry cities</Button></div>}
-                    {selectedCountry && !loadingCities && !citiesError && citiesCountry === form.countryCode && availableCities.length === 0 &&
-                      <p role="status" className="text-sm text-muted-foreground sm:col-span-2">No operating cities are available for this country yet.</p>}
+                    {citiesError && (
+                      <div className="sm:col-span-2">
+                        <InlineError message={citiesError} />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className={secondaryButton + " mt-3"}
+                          onClick={() => setCityRetry((value) => value + 1)}
+                        >
+                          Retry cities
+                        </Button>
+                      </div>
+                    )}
+                    {selectedCountry &&
+                      !loadingCities &&
+                      !citiesError &&
+                      citiesCountry === form.countryCode &&
+                      availableCities.length === 0 && (
+                        <p
+                          role="status"
+                          className="text-sm text-muted-foreground sm:col-span-2"
+                        >
+                          No operating cities are available for this country
+                          yet.
+                        </p>
+                      )}
                     <ProfileField label="Phone number" hint="Optional">
                       <div className="relative">
                         <PhoneIcon
@@ -996,13 +1205,12 @@ function CreateAllocatProfile() {
                         </span>
                         <div>
                           <p className="text-xs font-semibold text-foreground">
-                            Your profile currency will be{" "}
-                            {currencyCode}
+                            Your profile currency will be {currencyCode}
                           </p>
                           <p className="mt-1 text-[0.6875rem] leading-5 text-muted-foreground">
-                            {selectedCountry.name} profiles use{" "}
-                            {currencyName}. This is determined
-                            automatically from your operating location.
+                            {selectedCountry.name} profiles use {currencyName}.
+                            This is determined automatically from your operating
+                            location.
                           </p>
                         </div>
                       </div>
@@ -1374,78 +1582,207 @@ function CreateAllocatProfile() {
                           Credentials are optional during setup
                         </p>
                         <p className="mt-1 text-xs leading-6 text-muted-foreground">
-                          Add a file for each credential, then enter its details below.
-                          For qualifications, the title and issuing institution are required.
-                          You can continue without files and add them later.
+                          Add a file for each credential, then enter its details
+                          below. For qualifications, the title and issuing
+                          institution are required. You can continue without
+                          files and add them later.
                         </p>
                       </div>
                     </div>
                   </div>
                   <div className="grid items-end gap-4 sm:grid-cols-[minmax(0,1fr)_auto]">
                     <ProfileField label="Document type">
-                      <Select value={documentType} disabled={creating}
-                        onValueChange={(value) => { setDocumentType(value as ProfessionalDocumentType); setStepError(null); }}>
-                        <SelectTrigger aria-label="Document type" className={selectTriggerClass}><SelectValue /></SelectTrigger>
+                      <Select
+                        value={documentType}
+                        disabled={creating}
+                        onValueChange={(value) => {
+                          setDocumentType(value as ProfessionalDocumentType);
+                          setStepError(null);
+                        }}
+                      >
+                        <SelectTrigger
+                          aria-label="Document type"
+                          className={selectTriggerClass}
+                        >
+                          <SelectValue />
+                        </SelectTrigger>
                         <SelectContent className={selectContentClass}>
-                          {(["Qualification", "Certification", "ProfessionalLicense", "Training", "Other"] as ProfessionalDocumentType[]).map((type) => (
-                            <SelectItem key={type} value={type} className={selectItemClass}>{formatDocumentType(type)}</SelectItem>
+                          {(
+                            [
+                              "Qualification",
+                              "Certification",
+                              "ProfessionalLicense",
+                              "Training",
+                              "Other",
+                            ] as ProfessionalDocumentType[]
+                          ).map((type) => (
+                            <SelectItem
+                              key={type}
+                              value={type}
+                              className={selectItemClass}
+                            >
+                              {formatDocumentType(type)}
+                            </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                     </ProfileField>
-                    <Button type="button" variant="outline" disabled={creating || verificationDocuments.length >= MAX_DOCUMENTS}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      disabled={
+                        creating ||
+                        verificationDocuments.length >= MAX_DOCUMENTS
+                      }
                       onClick={() => documentInputRef.current?.click()}
-                      className={"h-11 rounded-lg px-4 text-xs font-semibold " + secondaryButton}>
+                      className={
+                        "h-11 rounded-lg px-4 text-xs font-semibold " +
+                        secondaryButton
+                      }
+                    >
                       <GraduationCapIcon size={15} aria-hidden="true" />
-                      {verificationDocuments.length >= MAX_DOCUMENTS ? "Document limit reached" : "Choose documents"}
+                      {verificationDocuments.length >= MAX_DOCUMENTS
+                        ? "Document limit reached"
+                        : "Choose documents"}
                     </Button>
-                    <input ref={documentInputRef} type="file" aria-label="Credential files" multiple
+                    <input
+                      ref={documentInputRef}
+                      type="file"
+                      aria-label="Credential files"
+                      multiple
                       accept="application/pdf,image/jpeg,image/png,image/webp"
-                      disabled={creating || verificationDocuments.length >= MAX_DOCUMENTS}
-                      onChange={handleVerificationFiles} className="hidden" />
+                      disabled={
+                        creating ||
+                        verificationDocuments.length >= MAX_DOCUMENTS
+                      }
+                      onChange={handleVerificationFiles}
+                      className="hidden"
+                    />
                   </div>
-                  <p className="mt-3 text-[11px] leading-6 text-muted-foreground">PDF, JPEG, PNG or WebP · Up to 10 MB per file · Maximum {MAX_DOCUMENTS} documents.</p>
+                  <p className="mt-3 text-[11px] leading-6 text-muted-foreground">
+                    PDF, JPEG, PNG or WebP · Up to 10 MB per file · Maximum{" "}
+                    {MAX_DOCUMENTS} documents.
+                  </p>
                   {verificationDocuments.length > 0 && (
                     <div className="mt-7">
                       <div className="flex items-center justify-between gap-4">
-                        <p className="text-xs font-semibold text-foreground">Documents selected</p>
-                        <p className="text-[11px] tabular-nums text-muted-foreground">{verificationDocuments.length}/{MAX_DOCUMENTS}</p>
+                        <p className="text-xs font-semibold text-foreground">
+                          Documents selected
+                        </p>
+                        <p className="text-[11px] tabular-nums text-muted-foreground">
+                          {verificationDocuments.length}/{MAX_DOCUMENTS}
+                        </p>
                       </div>
                       <div className="mt-4 space-y-4">
                         {verificationDocuments.map((document) => {
-                          const qualification = document.type === "Qualification";
+                          const qualification =
+                            document.type === "Qualification";
                           return (
-                            <article key={document.id} aria-label={`Details for ${document.file.name}`}
-                              className="min-w-0 rounded-xl border border-border/60 bg-surface-2/20 p-4 sm:p-5">
+                            <article
+                              key={document.id}
+                              aria-label={`Details for ${document.file.name}`}
+                              className="min-w-0 rounded-xl border border-border/60 bg-surface-2/20 p-4 sm:p-5"
+                            >
                               <div className="flex min-w-0 items-start gap-3">
-                                <span aria-hidden="true" className={"flex h-9 w-9 shrink-0 items-center justify-center rounded-lg " + accentIconSurface}><FileTextIcon size={15} /></span>
+                                <span
+                                  aria-hidden="true"
+                                  className={
+                                    "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg " +
+                                    accentIconSurface
+                                  }
+                                >
+                                  <FileTextIcon size={15} />
+                                </span>
                                 <div className="min-w-0 flex-1">
-                                  <h3 className="break-words text-xs font-semibold leading-6 text-foreground [overflow-wrap:anywhere]">{document.file.name}</h3>
-                                  <p className="mt-0.5 text-[11px] leading-5 text-muted-foreground">{formatDocumentType(document.type)} · {formatFileSize(document.file.size)} · Private file</p>
+                                  <h3 className="break-words text-xs font-semibold leading-6 text-foreground [overflow-wrap:anywhere]">
+                                    {document.file.name}
+                                  </h3>
+                                  <p className="mt-0.5 text-[11px] leading-5 text-muted-foreground">
+                                    {formatDocumentType(document.type)} ·{" "}
+                                    {formatFileSize(document.file.size)} ·
+                                    Private file
+                                  </p>
                                 </div>
-                                <Button type="button" variant="ghost" size="icon" disabled={creating}
-                                  onClick={() => removeVerificationDocument(document.id)}
-                                  className={"h-9 w-9 shrink-0 rounded-lg " + quietButton} aria-label={`Remove ${document.file.name}`}><Trash2Icon size={14} aria-hidden="true" /></Button>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  disabled={creating}
+                                  onClick={() =>
+                                    removeVerificationDocument(document.id)
+                                  }
+                                  className={
+                                    "h-9 w-9 shrink-0 rounded-lg " + quietButton
+                                  }
+                                  aria-label={`Remove ${document.file.name}`}
+                                >
+                                  <Trash2Icon size={14} aria-hidden="true" />
+                                </Button>
                               </div>
                               <div className="mt-5 grid gap-4 sm:grid-cols-2">
                                 <div className="min-w-0">
-                                  <Label htmlFor={`${document.id}-title`} className="text-xs font-semibold">{qualification ? "Qualification title" : "Credential title (optional)"}</Label>
-                                  <Input id={`${document.id}-title`} aria-label={`${qualification ? "Qualification" : "Credential"} title for ${document.file.name}`}
-                                    aria-required={qualification} value={document.title} maxLength={200} disabled={creating}
-                                    onChange={(event) => updateCredential(document.id, "title", event.target.value)}
-                                    placeholder={qualification ? "e.g. BSc Civil Engineering" : "Enter credential title"} className={fieldClass + " mt-2"} />
+                                  <Label
+                                    htmlFor={`${document.id}-title`}
+                                    className="text-xs font-semibold"
+                                  >
+                                    {qualification
+                                      ? "Qualification title"
+                                      : "Credential title (optional)"}
+                                  </Label>
+                                  <Input
+                                    id={`${document.id}-title`}
+                                    aria-label={`${qualification ? "Qualification" : "Credential"} title for ${document.file.name}`}
+                                    aria-required={qualification}
+                                    value={document.title}
+                                    maxLength={200}
+                                    disabled={creating}
+                                    onChange={(event) =>
+                                      updateCredential(
+                                        document.id,
+                                        "title",
+                                        event.target.value,
+                                      )
+                                    }
+                                    placeholder={
+                                      qualification
+                                        ? "e.g. BSc Civil Engineering"
+                                        : "Enter credential title"
+                                    }
+                                    className={fieldClass + " mt-2"}
+                                  />
                                 </div>
                                 <div className="min-w-0">
-                                  <Label htmlFor={`${document.id}-institution`} className="text-xs font-semibold">Issuing institution{qualification ? "" : " (optional)"}</Label>
-                                  <Input id={`${document.id}-institution`} aria-label={`Issuing institution for ${document.file.name}`}
-                                    aria-required={qualification} value={document.issuingInstitution} maxLength={200} disabled={creating}
-                                    onChange={(event) => updateCredential(document.id, "issuingInstitution", event.target.value)}
-                                    placeholder="e.g. University of Zimbabwe" className={fieldClass + " mt-2"} />
+                                  <Label
+                                    htmlFor={`${document.id}-institution`}
+                                    className="text-xs font-semibold"
+                                  >
+                                    Issuing institution
+                                    {qualification ? "" : " (optional)"}
+                                  </Label>
+                                  <Input
+                                    id={`${document.id}-institution`}
+                                    aria-label={`Issuing institution for ${document.file.name}`}
+                                    aria-required={qualification}
+                                    value={document.issuingInstitution}
+                                    maxLength={200}
+                                    disabled={creating}
+                                    onChange={(event) =>
+                                      updateCredential(
+                                        document.id,
+                                        "issuingInstitution",
+                                        event.target.value,
+                                      )
+                                    }
+                                    placeholder="e.g. University of Zimbabwe"
+                                    className={fieldClass + " mt-2"}
+                                  />
                                 </div>
                               </div>
-                              <p className="mt-3 text-[11px] leading-6 text-muted-foreground">{qualification
-                                ? "Clients see these details and the verification status. Your file stays private."
-                                : "Add a title to display this credential publicly. The issuing institution is optional; your file stays private."}</p>
+                              <p className="mt-3 text-[11px] leading-6 text-muted-foreground">
+                                {qualification
+                                  ? "Clients see these details and the verification status. Your file stays private."
+                                  : "Add a title to display this credential publicly. The issuing institution is optional; your file stays private."}
+                              </p>
                             </article>
                           );
                         })}
@@ -1590,17 +1927,43 @@ function CreateAllocatProfile() {
                       }
                     />
                   </ReviewGroup>
-                  {verificationDocuments.length > 0 && <section aria-labelledby="credential-review-title" className="mt-7">
-                    <h3 id="credential-review-title" className="text-xs font-semibold text-foreground">Credentials to submit</h3>
-                    <ul className="mt-3 divide-y divide-border/50 rounded-xl border border-border/55 px-4">
-                      {verificationDocuments.map((document) => <li key={document.id} className="min-w-0 py-4">
-                        <p className="break-words text-xs font-semibold leading-6 [overflow-wrap:anywhere]">{document.title.trim() || formatDocumentType(document.type)}</p>
-                        {document.issuingInstitution.trim() && <p className="mt-1 break-words text-xs leading-6 text-muted-foreground [overflow-wrap:anywhere]">{document.issuingInstitution.trim()}</p>}
-                        <p className="mt-1 break-words text-[11px] leading-6 text-muted-foreground [overflow-wrap:anywhere]">{document.file.name} · Will be submitted for review</p>
-                      </li>)}
-                    </ul>
-                    <p className="mt-3 text-[11px] leading-6 text-muted-foreground">Credential details can appear publicly before verification. No credential is marked verified during setup.</p>
-                  </section>}
+                  {verificationDocuments.length > 0 && (
+                    <section
+                      aria-labelledby="credential-review-title"
+                      className="mt-7"
+                    >
+                      <h3
+                        id="credential-review-title"
+                        className="text-xs font-semibold text-foreground"
+                      >
+                        Credentials to submit
+                      </h3>
+                      <ul className="mt-3 divide-y divide-border/50 rounded-xl border border-border/55 px-4">
+                        {verificationDocuments.map((document) => (
+                          <li key={document.id} className="min-w-0 py-4">
+                            <p className="break-words text-xs font-semibold leading-6 [overflow-wrap:anywhere]">
+                              {document.title.trim() ||
+                                formatDocumentType(document.type)}
+                            </p>
+                            {document.issuingInstitution.trim() && (
+                              <p className="mt-1 break-words text-xs leading-6 text-muted-foreground [overflow-wrap:anywhere]">
+                                {document.issuingInstitution.trim()}
+                              </p>
+                            )}
+                            <p className="mt-1 break-words text-[11px] leading-6 text-muted-foreground [overflow-wrap:anywhere]">
+                              {document.file.name} · Will be submitted for
+                              review
+                            </p>
+                          </li>
+                        ))}
+                      </ul>
+                      <p className="mt-3 text-[11px] leading-6 text-muted-foreground">
+                        Credential details can appear publicly before
+                        verification. No credential is marked verified during
+                        setup.
+                      </p>
+                    </section>
+                  )}
                   <div
                     className={[
                       "mt-7 rounded-xl border p-4",
@@ -1954,14 +2317,30 @@ function CreateAllocatProfileSkeleton() {
     </div>
   );
 }
-function validateStep(step: number, form: FormState, countries: OperatingCountry[], cities: OperatingCity[]) {
+function validateStep(
+  step: number,
+  form: FormState,
+  countries: OperatingCountry[],
+  cities: OperatingCity[],
+) {
   switch (step) {
     case 1: {
-      const country = countries.find((item) => item.code === form.countryCode && item.supportsAllocatOperations);
+      const country = countries.find(
+        (item) =>
+          item.code === form.countryCode && item.supportsAllocatOperations,
+      );
       if (!country) return "Select the country where you operate.";
-      if (!form.cityId || !cities.some((city) => String(city.id) === form.cityId && city.countryCode === country.code))
+      if (
+        !form.cityId ||
+        !cities.some(
+          (city) =>
+            String(city.id) === form.cityId &&
+            city.countryCode === country.code,
+        )
+      )
         return "Select your city.";
-      if (!PROFILE_CURRENCIES[country.code]) return "Profile currency is not configured for this operating country yet.";
+      if (!PROFILE_CURRENCIES[country.code])
+        return "Profile currency is not configured for this operating country yet.";
       if (form.phoneNumber.trim().length > 30)
         return "Phone number is too long.";
       return null;
@@ -2000,7 +2379,11 @@ function validateStep(step: number, form: FormState, countries: OperatingCountry
       return null;
   }
 }
-function validateAll(form: FormState, countries: OperatingCountry[], cities: OperatingCity[]) {
+function validateAll(
+  form: FormState,
+  countries: OperatingCountry[],
+  cities: OperatingCity[],
+) {
   for (let step = 0; step < 6; step += 1) {
     const error = validateStep(step, form, countries, cities);
     if (error) return error;
@@ -2008,16 +2391,21 @@ function validateAll(form: FormState, countries: OperatingCountry[], cities: Ope
   return null;
 }
 function validateCredentialDrafts(documents: VerificationDocumentDraft[]) {
-  if (documents.length > MAX_DOCUMENTS) return `You can add up to ${MAX_DOCUMENTS} professional documents.`;
+  if (documents.length > MAX_DOCUMENTS)
+    return `You can add up to ${MAX_DOCUMENTS} professional documents.`;
   for (const document of documents) {
     const fileError = validateDocumentFile(document.file, MAX_DOCUMENT_SIZE);
     if (fileError) return `${document.file.name}: ${fileError}`;
     if (document.type === "Qualification") {
-      if (!document.title.trim()) return `Enter a qualification title for ${document.file.name}.`;
-      if (!document.issuingInstitution.trim()) return `Enter the issuing institution for ${document.file.name}.`;
+      if (!document.title.trim())
+        return `Enter a qualification title for ${document.file.name}.`;
+      if (!document.issuingInstitution.trim())
+        return `Enter the issuing institution for ${document.file.name}.`;
     }
-    if (document.title.trim().length > 200) return `The title for ${document.file.name} cannot exceed 200 characters.`;
-    if (document.issuingInstitution.trim().length > 200) return `The issuing institution for ${document.file.name} cannot exceed 200 characters.`;
+    if (document.title.trim().length > 200)
+      return `The title for ${document.file.name} cannot exceed 200 characters.`;
+    if (document.issuingInstitution.trim().length > 200)
+      return `The issuing institution for ${document.file.name} cannot exceed 200 characters.`;
   }
   return null;
 }

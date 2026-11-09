@@ -33,6 +33,7 @@ import { toast } from "sonner";
 import api from "@/api/axios";
 import { useAuth } from "@/auth/AuthContext";
 import DashboardMainNav from "@/components/DashboardMainNav";
+import WorkspaceDiscoverySidebar from "@/components/WorkspaceDiscoverySidebar";
 import LoadingState from "@/components/LoadingState";
 import { GridView, ListView } from "@/components/ProjectCard";
 import { Badge } from "@/components/ui/badge";
@@ -553,8 +554,8 @@ function ProjectsPage() {
           <NewClientWelcome firstName={firstName} />
         </main>
       ) : (
-        <>
-          <div className="container mx-auto px-4 pt-4 sm:px-5 sm:pt-5 md:px-8 lg:pt-6">
+        <main className="container mx-auto grid flex-1 items-start gap-8 px-4 pb-28 pt-4 sm:px-5 sm:pb-28 sm:pt-5 md:px-8 lg:pt-6 xl:grid-cols-[minmax(0,1fr)_288px] xl:pb-12 2xl:gap-10">
+          <div className="min-w-0">
             <WorkspaceMasthead
               firstName={firstName}
               isAllocat={Boolean(user?.isAllocat)}
@@ -565,10 +566,8 @@ function ProjectsPage() {
               invitationCount={invitations.length}
               items={summaryItems}
             />
-          </div>
-
-          <main className="container mx-auto flex-1 px-4 pb-10 pt-8 sm:px-5 sm:pb-12 sm:pt-10 md:px-8">
             <motion.section
+              className="mt-8 min-w-0 sm:mt-10"
               initial={{ opacity: 0, y: 7 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.04, duration: 0.3, ease: "easeOut" }}
@@ -729,8 +728,9 @@ function ProjectsPage() {
                 </>
               )}
             </motion.section>
-          </main>
-        </>
+          </div>
+          <WorkspaceDiscoverySidebar excludeUserId={user?.userId} />
+        </main>
       )}
     </div>
   );
@@ -931,19 +931,19 @@ function WorkspaceMasthead({
             asChild
             size="icon"
             className={
-              "group h-11 w-11 rounded-lg shadow-none sm:w-auto sm:px-4 " +
+              "group h-11 w-11 rounded-lg shadow-none md:w-auto md:px-4 " +
               primaryActionButton
             }
           >
             <Link to="/projects/new" aria-label="New project">
               <PlusIcon size={13} aria-hidden="true" />
-              <span className="hidden text-xs font-semibold sm:inline">
+              <span className="hidden text-xs font-semibold md:inline">
                 New project
               </span>
               <ArrowRightIcon
                 size={12}
                 aria-hidden="true"
-                className="hidden transition-transform duration-200 group-hover:translate-x-0.5 motion-reduce:transform-none motion-reduce:transition-none sm:block"
+                className="hidden transition-transform duration-200 group-hover:translate-x-0.5 motion-reduce:transform-none motion-reduce:transition-none md:block"
               />
             </Link>
           </Button>
@@ -952,13 +952,13 @@ function WorkspaceMasthead({
             variant="outline"
             size="icon"
             className={
-              "h-11 w-11 rounded-lg shadow-none sm:w-auto sm:px-4 " +
+              "h-11 w-11 rounded-lg shadow-none md:w-auto md:px-4 " +
               secondaryActionButton
             }
           >
             <Link to="/discover" aria-label="Discover Allocats">
               <SearchIcon size={13} aria-hidden="true" />
-              <span className="hidden text-xs font-semibold sm:inline">
+              <span className="hidden text-xs font-semibold md:inline">
                 Discover Allocats
               </span>
             </Link>
@@ -1393,7 +1393,7 @@ function ProjectGrid<T extends Project>({
       className={[
         compactSpacing ? "mt-4" : "mt-5",
         view === "grid"
-          ? "grid min-w-0 gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4"
+          ? "grid min-w-0 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-2 2xl:grid-cols-3"
           : "flex min-w-0 flex-col gap-3",
       ].join(" ")}
     >

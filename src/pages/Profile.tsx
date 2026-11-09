@@ -256,20 +256,19 @@ export default function Profile() {
     profileForm.phoneNumber.trim() !==
       (profileUser?.phoneNumber ?? "").trim() ||
     residenceHasChanges;
-  const profileCompletion = useMemo(() => {
-    if (!profileUser) return 0;
-    const requirements = [
-      Boolean(profileUser.fullName?.trim()),
-      Boolean(profileUser.email?.trim()),
-      profileUser.emailConfirmed,
-      Boolean(profileUser.phoneNumber?.trim()),
-      Boolean(profileUser.countryCode?.trim()),
-      Boolean(profileUser.avatarUrl),
-    ];
-    return Math.round(
-      (requirements.filter(Boolean).length / requirements.length) * 100,
-    );
-  }, [profileUser]);
+  const completionItems = useMemo(
+    () => (profileUser ? getProfileChecklist(profileUser) : []),
+    [profileUser],
+  );
+  const profileCompletion = completionItems.length
+    ? Math.round(
+        (completionItems.filter((item) => item.complete).length /
+          completionItems.length) *
+          100,
+      )
+    : 0;
+  const accountVerified =
+    profileCompletion === 100 && profileUser?.emailConfirmed === true;
   function openAvatarEditor() {
     setAvatarError(null);
     setAvatarEditorOpen(true);
@@ -523,12 +522,13 @@ export default function Profile() {
                   >
                     <CameraIcon size={14} />
                   </button>
-                  {profileUser.emailConfirmed && (
+                  {accountVerified && (
                     <span
                       className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-lg border-[3px] border-card bg-brand-secondary-highlight text-primary-foreground dark:bg-secondary dark:text-secondary-foreground"
-                      title="Verified account email"
+                      title="Verified"
+                      aria-label="Verified"
                     >
-                      <BadgeCheckIcon size={14} />
+                      <BadgeCheckIcon size={14} aria-hidden="true" />
                     </span>
                   )}
                 </div>
@@ -555,12 +555,6 @@ export default function Profile() {
                     <p className="truncate text-sm text-muted-foreground">
                       {profileUser.email || "No email available"}
                     </p>
-                    {profileUser.emailConfirmed && (
-                      <BadgeCheckIcon
-                        size={13}
-                        className="shrink-0 text-status-complete-foreground"
-                      />
-                    )}
                   </div>
                   <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-muted-foreground">
                     <span className="inline-flex items-center gap-1.5">
@@ -574,25 +568,14 @@ export default function Profile() {
                   </div>
                 </div>
               </div>
-              <div
-                className={[
-                  "inline-flex w-fit items-center gap-2 rounded-lg border px-3 py-2",
-                  profileUser.emailConfirmed
-                    ? "border-status-complete/15 bg-status-complete/[0.055] text-status-complete-foreground"
-                    : "border-status-pending/20 bg-status-pending/[0.055] text-status-pending-foreground",
-                ].join(" ")}
-              >
-                {profileUser.emailConfirmed ? (
-                  <BadgeCheckIcon size={13} />
-                ) : (
-                  <MailCheckIcon size={13} />
-                )}
-                <span className="text-xs font-semibold">
-                  {profileUser.emailConfirmed
-                    ? "Email verified"
-                    : "Email verification pending"}
-                </span>
-              </div>
+              {!profileUser.emailConfirmed && (
+                <div className="inline-flex w-fit items-center gap-2 self-start rounded-lg border border-status-pending/20 bg-status-pending/[0.055] px-3 py-2 text-status-pending-foreground lg:self-auto">
+                  <MailCheckIcon size={13} aria-hidden="true" />
+                  <span className="text-xs font-semibold">
+                    Email not verified
+                  </span>
+                </div>
+              )}
             </div>
           </div>
           <div className="border-t border-border/55">
@@ -649,6 +632,8 @@ export default function Profile() {
                       <Input
                         id="fullName"
                         name="fullName"
+                        autoComplete="name"
+                        aria-required="true"
                         value={profileForm.fullName}
                         onChange={handleProfileFieldChange}
                         placeholder="Enter your full name"
@@ -682,12 +667,7 @@ export default function Profile() {
                           className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/55"
                         />
                       </div>
-                      {profileUser.emailConfirmed ? (
-                        <div className="flex h-11 shrink-0 items-center gap-1.5 rounded-lg border border-status-complete/15 bg-status-complete/[0.055] px-3.5 text-xs font-semibold text-status-complete-foreground">
-                          <BadgeCheckIcon size={13} />
-                          Verified
-                        </div>
-                      ) : (
+                      {!profileUser.emailConfirmed && (
                         <VerificationButton
                           sending={sendingVerification}
                           disabled={!profileUser.email}
@@ -711,6 +691,7 @@ export default function Profile() {
                         id="phoneNumber"
                         name="phoneNumber"
                         type="tel"
+                        autoComplete="tel"
                         value={profileForm.phoneNumber}
                         onChange={handleProfileFieldChange}
                         placeholder="+263..."
@@ -960,14 +941,13 @@ export default function Profile() {
             >
               <div className="grid gap-3 sm:grid-cols-2">
                 <AccountItem
-                  icon={MailIcon}
-                  label="Email"
+                  icon={ShieldCheckIcon}
+                  label="Account readiness"
                   value={
-                    profileUser.emailConfirmed
-                      ? "Verified"
-                      : "Verification required"
+                    accountVerified
+                      ? "Complete"
+                      : "Account essentials remaining"
                   }
-                  status={profileUser.emailConfirmed ? "success" : "pending"}
                 />
                 <AccountItem
                   icon={Clock3Icon}
@@ -1012,8 +992,9 @@ export default function Profile() {
               </div>
               <ContrastProgress value={profileCompletion} className="mt-5" />
               <p className="mt-4 text-xs leading-6 text-white/65">
-                Complete your account information and verify your email to keep
-                your profile ready for projects.
+                {accountVerified
+                  ? "Your account essentials are complete and your email is confirmed. You're ready for your next project."
+                  : "Complete the checklist below and confirm your email to earn your Verified badge."}
               </p>
             </section>
             <ProfileChecklist profile={profileUser} />
@@ -1279,7 +1260,7 @@ function ProfilePictureDialog({
     </div>
   );
 }
-function ProfileChecklist({ profile }: { profile: ProfileUser }) {
+function getProfileChecklist(profile: ProfileUser) {
   const items = [
     {
       label: "Full name",
@@ -1298,7 +1279,7 @@ function ProfileChecklist({ profile }: { profile: ProfileUser }) {
     {
       label: "Email verification",
       description: profile.emailConfirmed
-        ? "Verified"
+        ? "Confirmed"
         : "Verification required",
       complete: Boolean(profile.emailConfirmed),
     },
@@ -1320,10 +1301,16 @@ function ProfileChecklist({ profile }: { profile: ProfileUser }) {
     },
     {
       label: "Profile picture",
-      description: profile.avatarUrl ? "Added" : "Add a profile picture",
-      complete: Boolean(profile.avatarUrl),
+      description: profile.avatarUrl?.trim()
+        ? "Added"
+        : "Add a profile picture",
+      complete: Boolean(profile.avatarUrl?.trim()),
     },
   ];
+  return items;
+}
+function ProfileChecklist({ profile }: { profile: ProfileUser }) {
+  const items = getProfileChecklist(profile);
   const completeCount = items.filter((item) => item.complete).length;
   return (
     <section
@@ -1430,7 +1417,9 @@ function EmailVerificationWarning({
             <p className="mt-1 text-xs leading-5 text-muted-foreground">
               Confirm{" "}
               {email ? (
-                <span className="font-medium text-foreground">{email}</span>
+                <span className="break-all font-medium text-foreground">
+                  {email}
+                </span>
               ) : (
                 "your email address"
               )}{" "}
@@ -1688,7 +1677,7 @@ function AccountItem({
         <p className="text-[0.625rem] font-medium text-muted-foreground">
           {label}
         </p>
-        <p className="mt-0.5 truncate text-sm font-semibold text-foreground">
+        <p className="mt-0.5 break-words text-sm font-semibold text-foreground">
           {value}
         </p>
       </div>

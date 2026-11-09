@@ -1,162 +1,95 @@
-import api from "@/api/axios";
-import { useAuth } from "@/auth/useAuth";
-
-import { Button } from "@/components/ui/button";
-
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
+import { isAxiosError } from "axios";
 import {
   AlertCircleIcon,
   BadgeCheckIcon,
-  CheckCircle2Icon,
+  CheckIcon,
   LoaderCircleIcon,
   LogInIcon,
+  PawPrintIcon,
   RefreshCwIcon,
 } from "lucide-react";
-
-import { isAxiosError } from "axios";
-
+import api from "@/api/axios";
+import { useAuth } from "@/auth/useAuth";
+import { nextAccountPath, safeReturnTo, withReturnTo } from "@/auth/onboarding";
+import { Button } from "@/components/ui/button";
 import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
-
-import {
-  Link,
-  useSearchParams,
-} from "react-router";
-
-/* =========================================================
-   TYPES
-========================================================= */
+  primaryActionButton,
+  secondaryActionButton,
+  resultsControlFocus,
+} from "@/components/allocat-results-theme";
+import allocatrLogoDark from "@/assets/allocatr-dark-02.svg";
+import allocatrLogoLight from "@/assets/allocatr-neg-light.svg";
 
 type VerificationState =
   | "verifying"
   | "verified"
   | "already-verified"
   | "error";
+type ConfirmEmailResponse = { message: string; alreadyVerified: boolean };
 
-type ConfirmEmailResponse = {
-  message: string;
-  alreadyVerified: boolean;
-};
+const actionClass =
+  "h-auto min-h-11 w-full whitespace-normal rounded-lg px-5 py-3 text-xs font-semibold shadow-none transition-colors duration-150 motion-reduce:transition-none sm:w-auto " +
+  resultsControlFocus;
 
-/* =========================================================
-   HELPERS
-========================================================= */
-
-function getApiErrorMessage(
-  error: unknown,
-  fallback: string,
-) {
+function getApiErrorMessage(error: unknown, fallback: string) {
   if (
     isAxiosError(error) &&
     typeof error.response?.data?.message === "string"
   ) {
     return error.response.data.message;
   }
-
   return fallback;
 }
 
-/* =========================================================
-   PAGE
-========================================================= */
-
 export default function VerifyEmail() {
   const { user, refreshUser } = useAuth();
-
   const [searchParams] = useSearchParams();
-
   const userId = searchParams.get("userId");
   const token = searchParams.get("token");
-
   const hasStarted = useRef(false);
-
-  const [status, setStatus] =
-    useState<VerificationState>("verifying");
-
+  const returnTo = safeReturnTo(searchParams.get("returnTo"));
+  const [status, setStatus] = useState<VerificationState>("verifying");
   const [message, setMessage] = useState(
     "We're confirming your email address.",
   );
 
-  /* =======================================================
-     VERIFY
-  ======================================================= */
-
   const verifyEmail = useCallback(async () => {
     if (!userId || !token) {
       setStatus("error");
-
-      setMessage(
-        "This verification link is incomplete or invalid.",
-      );
-
+      setMessage("This verification link is incomplete or invalid.");
       return;
     }
 
     try {
       setStatus("verifying");
-
-      setMessage(
-        "We're confirming your email address.",
+      setMessage("We're confirming your email address.");
+      const response = await api.post<ConfirmEmailResponse>(
+        "/auth/confirm-email",
+        { userId, token },
+        { withCredentials: true },
       );
-
-      const response =
-        await api.post<ConfirmEmailResponse>(
-          "/auth/confirm-email",
-          {
-            userId,
-            token,
-          },
-          {
-            withCredentials: true,
-          },
-        );
 
       if (response.data.alreadyVerified) {
         setStatus("already-verified");
-
-        setMessage(
-          "Your email address has already been verified.",
-        );
+        setMessage("Your email address has already been verified.");
       } else {
         setStatus("verified");
-
-        setMessage(
-          "Your email address has been successfully verified.",
-        );
+        setMessage("Your email address has been successfully verified.");
       }
 
-      /*
-       * If the user still has an active Allocatr session,
-       * refresh global authentication state.
-       *
-       * If they are not signed in, refreshUser simply leaves
-       * AuthContext unauthenticated.
-       */
-      await refreshUser();
-
-      /*
-       * Remove the token from the visible browser URL after
-       * successful verification.
-       *
-       * There is no reason to leave a security token sitting
-       * in browser history longer than necessary.
-       */
-      window.history.replaceState(
-        {},
-        document.title,
-        "/verify-email",
-      );
+      // Confirmation succeeded independently of session refresh. A temporary
+      // /me failure must not turn a confirmed email into a verification failure.
+      window.history.replaceState({}, document.title, "/verify-email");
+      try {
+        await refreshUser();
+      } catch {
+        /* Continue resolves through RequireAuth. */
+      }
     } catch (error) {
-      console.error(
-        "Could not verify email:",
-        error,
-      );
-
+      console.error("Could not verify email:", error);
       setStatus("error");
-
       setMessage(
         getApiErrorMessage(
           error,
@@ -166,226 +99,186 @@ export default function VerifyEmail() {
     }
   }, [userId, token, refreshUser]);
 
-  /* =======================================================
-     AUTO VERIFY
-  ======================================================= */
-
   useEffect(() => {
-    /*
-     * React StrictMode can run effects twice in development.
-     * This guard prevents us from submitting the same token
-     * twice unnecessarily.
-     */
-    if (hasStarted.current) {
-      return;
-    }
-
+    if (hasStarted.current) return;
     hasStarted.current = true;
-
     void verifyEmail();
   }, [verifyEmail]);
 
-  /* =======================================================
-     RENDER
-  ======================================================= */
+  const verifying = status === "verifying";
+  const failed = status === "error";
+  const completed = status === "verified" || status === "already-verified";
+  const title = verifying
+    ? "Verifying your email"
+    : failed
+      ? "We couldn't verify this link"
+      : status === "already-verified"
+        ? "Your email is already verified"
+        : "Email verified";
+  const eyebrow = verifying
+    ? "Email verification"
+    : failed
+      ? "Verification failed"
+      : status === "already-verified"
+        ? "Already confirmed"
+        : "Verification complete";
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-background px-5 py-16 text-foreground">
-      <div className="w-full max-w-md">
-        {/* =================================================
-            BRAND
-        ================================================= */}
+    <main className="flex min-h-[100svh] items-center justify-center bg-surface-2/55 px-3 py-4 text-foreground sm:px-6 sm:py-8 dark:bg-background">
+      <section
+        aria-labelledby="verification-title"
+        aria-busy={verifying}
+        className="flex min-h-[calc(100svh-2rem)] w-full max-w-[720px] flex-col items-center rounded-3xl border border-border/40 bg-card px-5 py-7 text-center sm:min-h-[680px] sm:px-12 sm:py-9 dark:border-border"
+      >
+        <Link
+          to="/"
+          aria-label="Allocatr home"
+          className={`inline-flex shrink-0 rounded-md transition-opacity hover:opacity-80 motion-reduce:transition-none ${resultsControlFocus}`}
+        >
+          <img
+            src={allocatrLogoDark}
+            alt="Allocatr"
+            className="h-7 w-auto max-w-full object-contain dark:hidden"
+          />
+          <img
+            src={allocatrLogoLight}
+            alt="Allocatr"
+            className="hidden h-7 w-auto max-w-full object-contain dark:block"
+          />
+        </Link>
 
-        <div className="mb-10 text-center">
-          <p className="text-xl font-black tracking-[-0.04em]">
-            Allocatr
+        <div className="flex w-full flex-1 flex-col items-center justify-center pb-8 pt-14 sm:pb-12 sm:pt-16">
+          <p
+            className={`text-[0.58rem] font-semibold uppercase tracking-[0.17em] ${failed ? "text-destructive" : "text-brand-secondary-highlight dark:text-secondary"}`}
+          >
+            {eyebrow}
           </p>
-        </div>
+          <h1
+            id="verification-title"
+            className="mt-3 max-w-lg break-words text-3xl font-semibold leading-tight tracking-[-0.035em] text-foreground/85 sm:text-4xl"
+          >
+            {title}
+          </h1>
 
-        {/* =================================================
-            VERIFYING
-        ================================================= */}
+          <div className="mt-9 sm:mt-11">
+            <VerificationMark status={status} />
+          </div>
 
-        {status === "verifying" && (
-          <section className="text-center">
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/[0.07] text-primary">
-              <LoaderCircleIcon
-                size={24}
-                className="animate-spin"
-              />
-            </div>
-
-            <p className="mt-7 text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-primary">
-              Email verification
+          <div
+            role={failed ? "alert" : "status"}
+            aria-live={failed ? "assertive" : "polite"}
+            aria-atomic="true"
+            className="mt-7 max-w-sm"
+          >
+            <p className="text-base font-semibold leading-7 text-foreground/85">
+              {verifying
+                ? "Paws at work…"
+                : completed
+                  ? "Purr-fect. You’re all set."
+                  : "A little cat-ch in the link."}
             </p>
-
-            <h1 className="mt-2 text-2xl font-black tracking-[-0.035em] sm:text-3xl">
-              Verifying your email
-            </h1>
-
-            <p className="mx-auto mt-3 max-w-sm text-sm leading-7 text-muted-foreground">
+            <p className="mt-2 break-words text-sm leading-7 text-muted-foreground">
               {message}
             </p>
-          </section>
-        )}
+          </div>
 
-        {/* =================================================
-            VERIFIED
-        ================================================= */}
-
-        {status === "verified" && (
-          <section className="text-center">
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-400/[0.08] text-emerald-600 dark:text-emerald-300">
-              <CheckCircle2Icon size={25} />
-            </div>
-
-            <p className="mt-7 text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-emerald-600 dark:text-emerald-300">
-              Verification complete
-            </p>
-
-            <h1 className="mt-2 text-2xl font-black tracking-[-0.035em] sm:text-3xl">
-              Email verified
-            </h1>
-
-            <p className="mx-auto mt-3 max-w-sm text-sm leading-7 text-muted-foreground">
-              {message}
-            </p>
-
-            <div className="mt-8">
-              {user ? (
-                <Button
-                  asChild
-                  className="h-11 rounded-lg px-5 text-xs font-semibold shadow-none"
-                >
-                  <Link to="/profile">
-                    <BadgeCheckIcon size={14} />
-                    Return to profile
-                  </Link>
-                </Button>
-              ) : (
-                <Button
-                  asChild
-                  className="h-11 rounded-lg px-5 text-xs font-semibold shadow-none"
-                >
-                  <Link to="/login">
-                    <LogInIcon size={14} />
-                    Sign in to Allocatr
-                  </Link>
-                </Button>
-              )}
-            </div>
-          </section>
-        )}
-
-        {/* =================================================
-            ALREADY VERIFIED
-        ================================================= */}
-
-        {status === "already-verified" && (
-          <section className="text-center">
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-400/[0.08] text-emerald-600 dark:text-emerald-300">
-              <BadgeCheckIcon size={25} />
-            </div>
-
-            <p className="mt-7 text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-emerald-600 dark:text-emerald-300">
-              Account verified
-            </p>
-
-            <h1 className="mt-2 text-2xl font-black tracking-[-0.035em] sm:text-3xl">
-              You're already verified
-            </h1>
-
-            <p className="mx-auto mt-3 max-w-sm text-sm leading-7 text-muted-foreground">
-              {message}
-            </p>
-
-            <div className="mt-8">
-              {user ? (
-                <Button
-                  asChild
-                  className="h-11 rounded-lg px-5 text-xs font-semibold shadow-none"
-                >
-                  <Link to="/profile">
-                    Return to profile
-                  </Link>
-                </Button>
-              ) : (
-                <Button
-                  asChild
-                  className="h-11 rounded-lg px-5 text-xs font-semibold shadow-none"
-                >
-                  <Link to="/login">
-                    <LogInIcon size={14} />
-                    Sign in
-                  </Link>
-                </Button>
-              )}
-            </div>
-          </section>
-        )}
-
-        {/* =================================================
-            ERROR
-        ================================================= */}
-
-        {status === "error" && (
-          <section className="text-center">
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-destructive/[0.07] text-destructive">
-              <AlertCircleIcon size={25} />
-            </div>
-
-            <p className="mt-7 text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-destructive">
-              Verification failed
-            </p>
-
-            <h1 className="mt-2 text-2xl font-black tracking-[-0.035em] sm:text-3xl">
-              We couldn't verify this link
-            </h1>
-
-            <p className="mx-auto mt-3 max-w-sm text-sm leading-7 text-muted-foreground">
-              {message}
-            </p>
-
-            <div className="mt-8 flex flex-col justify-center gap-2 sm:flex-row">
-              {userId && token && (
+          {!verifying && (
+            <div className="mt-7 flex w-full flex-col justify-center gap-2 sm:w-auto sm:flex-row sm:flex-wrap">
+              {failed && userId && token && (
                 <Button
                   type="button"
-                  onClick={() => void verifyEmail()}
                   variant="outline"
-                  className="h-11 rounded-lg bg-transparent px-5 text-xs font-semibold shadow-none"
+                  onClick={() => void verifyEmail()}
+                  className={`${actionClass} ${secondaryActionButton}`}
                 >
-                  <RefreshCwIcon size={14} />
+                  <RefreshCwIcon size={14} aria-hidden="true" />
                   Try again
                 </Button>
               )}
-
               <Button
                 asChild
-                className="h-11 rounded-lg px-5 text-xs font-semibold shadow-none"
+                variant="ghost"
+                className={`${actionClass} ${primaryActionButton}`}
               >
                 <Link
                   to={
                     user
-                      ? "/profile"
-                      : "/login"
+                      ? failed
+                        ? withReturnTo("/check-email", returnTo)
+                        : nextAccountPath(user, returnTo)
+                      : withReturnTo("/login", returnTo)
                   }
                 >
+                  {user ? (
+                    <BadgeCheckIcon size={14} aria-hidden="true" />
+                  ) : (
+                    <LogInIcon size={14} aria-hidden="true" />
+                  )}
                   {user
-                    ? "Return to profile"
-                    : "Go to sign in"}
+                    ? failed
+                      ? "Request a fresh link"
+                      : "Continue"
+                    : failed
+                      ? "Go to sign in"
+                      : "Sign in to continue"}
                 </Link>
               </Button>
             </div>
+          )}
 
-            {user && (
-              <p className="mx-auto mt-6 max-w-sm text-[0.68rem] leading-5 text-muted-foreground">
-                If the link has expired, return to your profile
-                and request a new verification email.
-              </p>
-            )}
-          </section>
-        )}
-      </div>
+          {failed && user && (
+            <p className="mx-auto mt-5 max-w-sm text-xs leading-6 text-muted-foreground">
+              If the link has expired, request a fresh verification email from
+              the inbox screen.
+            </p>
+          )}
+        </div>
+
+        <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground/65">
+          Work, properly allocated
+        </p>
+      </section>
     </main>
+  );
+}
+
+function VerificationMark({ status }: { status: VerificationState }) {
+  const verifying = status === "verifying";
+  const failed = status === "error";
+  const Badge = verifying
+    ? LoaderCircleIcon
+    : failed
+      ? AlertCircleIcon
+      : CheckIcon;
+
+  return (
+    <div aria-hidden="true">
+      <div
+        className={`mx-auto flex h-32 w-32 items-center justify-center rounded-full sm:h-36 sm:w-36 ${
+          failed
+            ? "bg-destructive/[0.08] text-destructive ring-1 ring-inset ring-destructive/15"
+            : "bg-gradient-to-br from-brand-secondary-highlight via-brand-secondary-highlight to-primary text-primary-foreground dark:from-secondary dark:via-secondary dark:to-brand-secondary-highlight dark:text-secondary-foreground"
+        }`}
+      >
+        <Badge
+          size={64}
+          strokeWidth={verifying || failed ? 1.8 : 3.5}
+          className={verifying ? "animate-spin motion-reduce:animate-none" : ""}
+        />
+      </div>
+      <div className="mt-5 flex justify-center gap-2.5 text-brand-secondary-highlight/50 dark:text-secondary/50">
+        {[0, 150, 300].map((delay) => (
+          <PawPrintIcon
+            key={delay}
+            size={12}
+            strokeWidth={1.7}
+            className={
+              verifying ? "animate-pulse motion-reduce:animate-none" : ""
+            }
+            style={verifying ? { animationDelay: `${delay}ms` } : undefined}
+          />
+        ))}
+      </div>
+    </div>
   );
 }
