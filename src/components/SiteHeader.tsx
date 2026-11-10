@@ -54,7 +54,7 @@ import {
 type AccountUser = {
   fullName?: string;
   email?: string;
-  avatarUrl?: string;
+  avatarUrl?: string | null;
   isAllocat?: boolean;
 };
 type MenuLink = {
@@ -198,6 +198,11 @@ const LANDING_NAV_TOKENS = {
 const HeaderThemeContext = createContext(false);
 const actionBase =
   "inline-flex items-center justify-center gap-2 rounded-lg border text-xs font-medium shadow-none transition-opacity duration-150 motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-background";
+// Compact desktop actions are separate from the larger mobile touch controls.
+const desktopActionBase =
+  "inline-flex h-8 items-center justify-center gap-2 whitespace-nowrap rounded-md border px-3 text-xs font-medium shadow-none transition-[background-color,border-color,color,opacity] duration-150 motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-background";
+const desktopSecondary =
+  "border-border/70 bg-surface-2/35 text-foreground/85 hover:border-border hover:bg-surface-3/55 hover:text-foreground focus-visible:ring-ring/25";
 // Set the pair directly as well as through utilities: the landing palette
 // changes the accent to lime, so inherited white foreground is unsuitable.
 const LANDING_CTA_STYLE: CSSProperties = {
@@ -362,7 +367,7 @@ export default function SiteHeader({ appearance = "auto" }: SiteHeaderProps) {
       setLoggingOut(false);
     }
   }
-  const cta = `${actionBase} ${landing ? landingPrimary : autoPrimary}`;
+  const cta = `${desktopActionBase} ${landing ? landingPrimary : autoPrimary}`;
   const container = landing
     ? "max-w-[1440px] px-5 sm:px-8 lg:px-14 xl:px-20"
     : "max-w-7xl px-4 sm:px-6 md:px-8 xl:px-10";
@@ -464,27 +469,18 @@ export default function SiteHeader({ appearance = "auto" }: SiteHeaderProps) {
             {!user && (
               <Link
                 to="/login"
-                className={`${actionBase} ${ghostAction} h-10 whitespace-nowrap px-1.5 sm:px-3`}
+                className={`${desktopActionBase} ${desktopSecondary}`}
               >
-                Log in
+                Sign in
               </Link>
             )}
             <Link
               to={postProjectHref}
               aria-label="Post a project"
               style={landing ? LANDING_CTA_STYLE : undefined}
-              className={`${cta} h-11 whitespace-nowrap px-3 sm:px-4`}
+              className={cta}
             >
-              <span
-                style={landing ? { color: "inherit" } : undefined}
-                className="sm:hidden"
-              >
-                Post
-              </span>
-              <span
-                style={landing ? { color: "inherit" } : undefined}
-                className="hidden sm:inline"
-              >
+              <span style={landing ? { color: "inherit" } : undefined}>
                 Post a project
               </span>
             </Link>
@@ -611,10 +607,10 @@ function ExploreMenu({
       <DropdownMenuTrigger asChild>
         <button
           type="button"
-          className="group inline-flex h-10 shrink-0 items-center gap-2 rounded-lg border border-transparent px-3 text-xs font-medium text-foreground/85 transition-colors duration-150 hover:bg-surface-2 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30 data-[state=open]:bg-surface-2 data-[state=open]:text-foreground motion-reduce:transition-none"
+          className="group inline-flex h-8 shrink-0 items-center gap-2 rounded-md border border-transparent px-2.5 text-xs font-medium text-foreground/85 transition-colors duration-150 hover:bg-surface-2 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30 data-[state=open]:bg-surface-2 data-[state=open]:text-foreground motion-reduce:transition-none"
         >
           <CompassIcon
-            size={16}
+            size={14}
             strokeWidth={1.7}
             aria-hidden="true"
             className={accent}
@@ -784,7 +780,7 @@ function MobileMenu({
           <DropdownMenuItem asChild className={itemStyle}>
             <Link to="/login">
               <LogInIcon size={15} />
-              Log in
+              Sign in
             </Link>
           </DropdownMenuItem>
         ) : (
@@ -854,7 +850,7 @@ function MobileMenu({
             className="min-h-11 gap-3 rounded-lg px-3 py-3 text-xs text-muted-foreground focus:bg-destructive/[0.07] focus:text-destructive"
           >
             <LogOutIcon size={14} />
-            {loggingOut ? "Logging out…" : "Log out"}
+            {loggingOut ? "Signing out…" : "Sign out"}
           </DropdownMenuItem>
         )}
       </DropdownMenuContent>
@@ -896,7 +892,7 @@ function NavSearch({
       role="search"
       aria-label="Find Allocats"
       onSubmit={submitSearch}
-      className="flex h-11 w-full min-w-0 items-center gap-1 rounded-lg border border-border/65 bg-surface-2/50 pl-3 pr-1 transition-[border-color,box-shadow] duration-150 focus-within:border-ring/45 focus-within:ring-2 focus-within:ring-ring/10 motion-reduce:transition-none"
+      className="flex h-11 w-full min-w-0 items-center gap-1 rounded-lg border border-border/65 bg-surface-2/50 pl-3 pr-1 transition-[border-color,box-shadow] duration-150 focus-within:border-ring/45 focus-within:ring-2 focus-within:ring-ring/10 motion-reduce:transition-none lg:h-9"
     >
       <SearchIcon
         size={15}
@@ -924,7 +920,7 @@ function NavSearch({
             onQueryChange("");
             inputRef.current?.focus();
           }}
-          className={`${actionBase} ${ghostAction} h-10 w-9 shrink-0 sm:h-9`}
+          className={`${actionBase} ${ghostAction} h-10 w-9 shrink-0 sm:h-9 lg:h-7 lg:w-7`}
         >
           <XIcon size={14} aria-hidden="true" />
         </button>
@@ -932,7 +928,7 @@ function NavSearch({
       <button
         type="submit"
         aria-label="Find Allocats"
-        className={`${actionBase} h-9 w-9 shrink-0 border-transparent bg-surface-3/65 hover:opacity-75 focus-visible:ring-ring/30 ${accent}`}
+        className={`${actionBase} h-9 w-9 shrink-0 border-transparent bg-surface-3/65 lg:h-7 lg:w-7 hover:opacity-75 focus-visible:ring-ring/30 ${accent}`}
       >
         <ArrowRightIcon size={16} strokeWidth={1.8} aria-hidden="true" />
       </button>
@@ -1012,7 +1008,7 @@ function UserAvatar({
   return (
     <Avatar className={`${size} shrink-0 border border-border/80`}>
       <AvatarImage
-        src={user.avatarUrl}
+        src={user.avatarUrl ?? undefined}
         alt={user.fullName ? `${user.fullName}'s profile` : "User profile"}
         className="object-cover"
       />
@@ -1040,7 +1036,7 @@ function AccountMenu({
         <button
           type="button"
           aria-label="Open account menu"
-          className="group flex h-10 items-center gap-2 rounded-lg border border-transparent px-2 text-foreground transition-colors duration-150 hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30 data-[state=open]:border-border/65 data-[state=open]:bg-surface-2 motion-reduce:transition-none"
+          className="group flex h-8 items-center gap-2 rounded-md border border-transparent px-2 text-foreground transition-colors duration-150 hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30 data-[state=open]:border-border/65 data-[state=open]:bg-surface-2 motion-reduce:transition-none"
         >
           <UserAvatar user={user} initials={initials} />
           <span className="hidden max-w-28 truncate text-xs font-medium xl:block">

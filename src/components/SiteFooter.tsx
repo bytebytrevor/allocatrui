@@ -8,6 +8,15 @@ import { useAuth } from "@/auth/useAuth";
 
 type FooterLinkItem = { label: string; href: string; badge?: string };
 
+type SocialPlatform = "LinkedIn" | "Facebook" | "Instagram" | "X";
+// Replace each placeholder with Allocatr's public profile URL when ready.
+const SOCIAL_LINKS: { label: SocialPlatform; href: string }[] = [
+  { label: "LinkedIn", href: "#" },
+  { label: "Facebook", href: "#" },
+  { label: "Instagram", href: "#" },
+  { label: "X", href: "#" },
+];
+
 const platformLinks: FooterLinkItem[] = [
   { label: "How it works", href: "/how-it-works" },
   { label: "Project workspace", href: "/platform/workspace" },
@@ -107,6 +116,22 @@ export default function SiteFooter() {
                 Work, properly allocated
               </p>
             </div>
+            <nav
+              aria-label="Social media"
+              className="mt-4 flex flex-wrap items-center gap-2"
+            >
+              {SOCIAL_LINKS.map(({ label, href }) => (
+                <a
+                  key={label}
+                  href={href}
+                  aria-label={`Allocatr on ${label}`}
+                  title={label}
+                  className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-md text-muted-foreground no-underline transition-colors duration-150 hover:bg-surface-2 hover:text-foreground hover:no-underline focus-visible:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transition-none sm:h-9 sm:w-9"
+                >
+                  <SocialIcon platform={label} />
+                </a>
+              ))}
+            </nav>
           </div>
           <div className="grid min-w-0 grid-cols-1 gap-x-6 gap-y-7 min-[360px]:grid-cols-2 sm:gap-x-8 sm:gap-y-9 md:grid-cols-4">
             <FooterColumn
@@ -225,5 +250,57 @@ function FooterPawMark() {
     >
       <PawPrintIcon size={13} strokeWidth={1.8} className="-rotate-6" />
     </span>
+  );
+}
+
+function SocialIcon({ platform }: { platform: SocialPlatform }) {
+  const artwork: Record<SocialPlatform, ReactNode> = {
+    LinkedIn: (
+      <>
+        <circle cx="5" cy="5" r="2" />
+        <path d="M3 9h4v12H3zM10 9h4v1.7c.8-1.3 2-2 3.7-2 3 0 4.3 1.9 4.3 5.3v7h-4v-6.4c0-1.8-.6-2.7-1.9-2.7-1.4 0-2.1 1-2.1 2.7V21h-4z" />
+      </>
+    ),
+    Facebook: (
+      <path d="M14 22v-9h3l.5-4H14V6.5c0-1.2.3-2 2-2h2V1.2c-.4-.1-1.6-.2-3-.2-3 0-5 1.8-5 5V9H7v4h3v9z" />
+    ),
+    Instagram: (
+      <>
+        <rect
+          x="3"
+          y="3"
+          width="18"
+          height="18"
+          rx="5"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+        />
+        <circle
+          cx="12"
+          cy="12"
+          r="4"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+        />
+        <circle cx="17.5" cy="6.5" r="1.1" />
+      </>
+    ),
+    X: (
+      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231 5.451-6.231zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77z" />
+    ),
+  };
+  return (
+    <svg
+      width="17"
+      height="17"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden="true"
+      focusable="false"
+    >
+      {artwork[platform]}
+    </svg>
   );
 }

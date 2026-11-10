@@ -30,7 +30,7 @@ const focus =
 const accountItem =
   "flex min-h-11 gap-2.5 rounded-lg px-3 py-2 text-xs font-medium text-foreground/80 transition-colors focus:bg-surface-3/60 focus:text-foreground data-[highlighted]:bg-surface-3/60 data-[highlighted]:text-foreground dark:focus:bg-surface-3/70 dark:data-[highlighted]:bg-surface-3/70 motion-reduce:transition-none [&_svg]:shrink-0 [&_svg]:text-muted-foreground";
 const quietAction = [
-  "h-11 rounded-xl px-3 text-xs font-medium text-muted-foreground shadow-none",
+  "h-11 rounded-xl px-3 lg:h-8 lg:rounded-md text-xs font-medium text-muted-foreground shadow-none",
   "transition-colors hover:bg-surface-2/80 hover:text-foreground",
   "dark:hover:bg-surface-3/65 motion-reduce:transition-none",
   focus,
@@ -87,8 +87,10 @@ export default function MinimalNavMenu() {
     .slice(0, 2)
     .map((part) => part.charAt(0).toUpperCase())
     .join("");
-  const accountAvatar = (
-    <Avatar className="h-8 w-8 shrink-0 border border-border/60 ring-2 ring-background">
+  const accountAvatar = (compact = false) => (
+    <Avatar
+      className={`${compact ? "h-8 w-8 lg:h-6 lg:w-6" : "h-8 w-8"} shrink-0 border border-border/60 ring-2 ring-background`}
+    >
       <AvatarImage
         src={user?.avatarUrl || undefined}
         alt={user?.fullName ? `${user.fullName}'s profile` : "Your profile"}
@@ -108,7 +110,7 @@ export default function MinimalNavMenu() {
         to={signedIn ? "/projects" : "/"}
         aria-label={signedIn ? "Go to projects" : "Allocatr home"}
         className={[
-          "group flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border",
+          "group flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border lg:h-8 lg:w-8 lg:rounded-md",
           "border-border/60 bg-card",
           "transition-[background-color,border-color] duration-200",
           "hover:border-border hover:bg-surface-2/60",
@@ -139,7 +141,7 @@ export default function MinimalNavMenu() {
             setTheme((current) => (current === "dark" ? "light" : "dark"))
           }
           className={
-            "h-11 w-11 rounded-xl text-muted-foreground shadow-none transition-colors hover:bg-surface-2/80 hover:text-foreground motion-reduce:transition-none " +
+            "h-11 w-11 rounded-xl lg:h-8 lg:w-8 lg:rounded-md text-muted-foreground shadow-none transition-colors hover:bg-surface-2/80 hover:text-foreground motion-reduce:transition-none " +
             focus
           }
           aria-label={
@@ -164,17 +166,14 @@ export default function MinimalNavMenu() {
                   type="button"
                   aria-label="Open account menu"
                   className={
-                    "group ml-0.5 flex h-11 min-w-0 items-center gap-2.5 rounded-xl border border-transparent px-1.5 text-foreground transition-colors hover:border-border/55 hover:bg-surface-2/60 data-[state=open]:border-border/65 data-[state=open]:bg-surface-2/70 dark:hover:bg-surface-3/65 motion-reduce:transition-none lg:pr-3 " +
+                    "group ml-0.5 flex h-11 min-w-0 items-center gap-2.5 rounded-xl border border-transparent px-1.5 text-foreground transition-colors hover:border-border/55 hover:bg-surface-2/60 data-[state=open]:border-border/65 data-[state=open]:bg-surface-2/70 dark:hover:bg-surface-3/65 motion-reduce:transition-none lg:h-8 lg:gap-2 lg:rounded-md lg:px-2 " +
                     focus
                   }
                 >
-                  {accountAvatar}
+                  {accountAvatar(true)}
                   <span className="hidden min-w-0 max-w-[132px] text-left lg:block">
                     <span className="block truncate text-xs font-medium text-foreground/85">
                       {user.fullName || "Your account"}
-                    </span>
-                    <span className="mt-0.5 block text-[10px] text-muted-foreground">
-                      {user.isAllocat ? "Allocat account" : "Account"}
                     </span>
                   </span>
                   <ChevronDownIcon
@@ -192,7 +191,7 @@ export default function MinimalNavMenu() {
               >
                 <DropdownMenuLabel className="rounded-xl bg-surface-2/40 p-3 font-normal">
                   <div className="flex min-w-0 items-center gap-3">
-                    {accountAvatar}
+                    {accountAvatar()}
                     <div className="min-w-0">
                       <p className="truncate text-sm font-semibold">
                         {user.fullName || "Your account"}
@@ -240,7 +239,7 @@ export default function MinimalNavMenu() {
                   }
                 >
                   <LogOutIcon size={16} aria-hidden="true" />
-                  {loggingOut ? "Logging out..." : "Log out"}
+                  {loggingOut ? "Signing out..." : "Sign out"}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -251,7 +250,7 @@ export default function MinimalNavMenu() {
             asChild
             variant="outline"
             className={
-              "ml-1 h-11 rounded-xl border-border/65 bg-card px-4 text-xs font-medium text-foreground/85 shadow-none hover:border-border hover:bg-surface-2/60 hover:text-foreground motion-reduce:transition-none " +
+              "ml-1 h-11 rounded-xl border-border/65 bg-card px-4 lg:h-8 lg:rounded-md lg:px-3 text-xs font-medium text-foreground/85 shadow-none hover:border-border hover:bg-surface-2/60 hover:text-foreground motion-reduce:transition-none " +
               focus
             }
           >

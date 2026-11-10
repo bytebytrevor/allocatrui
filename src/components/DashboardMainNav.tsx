@@ -7,6 +7,7 @@ import {
   ChevronDownIcon,
   EllipsisVerticalIcon,
   FolderPlusIcon,
+  UsersIcon,
   LogOutIcon,
   MoonIcon,
   SettingsIcon,
@@ -43,7 +44,7 @@ type AccountUser = {
 const focus =
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35";
 const navIconButton = [
-  "relative h-11 w-11 shrink-0 rounded-xl text-muted-foreground shadow-none",
+  "relative h-11 w-11 shrink-0 rounded-xl lg:h-8 lg:w-8 lg:rounded-md text-muted-foreground shadow-none",
   "transition-colors duration-200 motion-reduce:transition-none",
   "hover:bg-surface-2/80 hover:text-foreground data-[state=open]:bg-surface-2 data-[state=open]:text-foreground",
   "dark:hover:bg-surface-3/65",
@@ -165,7 +166,7 @@ export default function DashboardMainNav({
               focus
             }
           >
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border/60 bg-card transition-colors group-hover:border-border group-hover:bg-surface-2/60 motion-reduce:transition-none">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl lg:h-8 lg:w-8 lg:rounded-md border border-border/60 bg-card transition-colors group-hover:border-border group-hover:bg-surface-2/60 motion-reduce:transition-none">
               <span className="flex h-6 w-6 items-center justify-center overflow-hidden rounded-full [&_img]:h-[22px] [&_img]:w-[22px] [&_img]:object-contain [&_svg]:h-[22px] [&_svg]:w-[22px]">
                 <AllocatrIconLogo theme="" />
               </span>
@@ -206,7 +207,7 @@ export default function DashboardMainNav({
             </NavIconButton>
             <QuickActionsMenu
               onNewProject={() => navigate("/projects/new")}
-              onSettings={() => navigate("/settings")}
+              onDiscover={() => navigate("/discover")}
               onHelp={() => navigate("/help")}
             />
             <span className="mx-1.5 hidden h-5 w-px bg-border/60 md:block" />
@@ -260,7 +261,7 @@ function NavIconButton({
       {notification && (
         <span
           aria-hidden="true"
-          className="absolute right-[9px] top-[9px] flex h-1.5 w-1.5"
+          className="absolute right-[9px] top-[9px] lg:right-1 lg:top-1 flex h-1.5 w-1.5"
         >
           <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-status-pending ring-2 ring-background" />
         </span>
@@ -270,11 +271,11 @@ function NavIconButton({
 }
 function QuickActionsMenu({
   onNewProject,
-  onSettings,
+  onDiscover,
   onHelp,
 }: {
   onNewProject: () => void;
-  onSettings: () => void;
+  onDiscover: () => void;
   onHelp: () => void;
 }) {
   return (
@@ -305,9 +306,9 @@ function QuickActionsMenu({
           <FolderPlusIcon size={16} aria-hidden="true" />
           New project
         </DropdownMenuItem>
-        <DropdownMenuItem onSelect={onSettings} className={dropdownItem}>
-          <SettingsIcon size={16} aria-hidden="true" />
-          Settings
+        <DropdownMenuItem onSelect={onDiscover} className={dropdownItem}>
+          <UsersIcon size={16} aria-hidden="true" />
+          Discover Allocats
         </DropdownMenuItem>
         <DropdownMenuItem onSelect={onHelp} className={dropdownItem}>
           <CircleHelpIcon size={16} aria-hidden="true" />
@@ -337,7 +338,7 @@ function AccountMenu({
   const avatar = (large = false) => (
     <Avatar
       className={
-        (large ? "h-10 w-10" : "h-8 w-8") +
+        (large ? "h-10 w-10" : "h-8 w-8 lg:h-6 lg:w-6") +
         " shrink-0 border border-border/60 ring-2 ring-background"
       }
     >
@@ -362,7 +363,7 @@ function AccountMenu({
           type="button"
           aria-label="Open account menu"
           className={
-            "group ml-0.5 flex h-11 min-w-0 items-center gap-2.5 rounded-xl border border-transparent px-1.5 text-foreground transition-colors hover:border-border/55 hover:bg-surface-2/60 data-[state=open]:border-border/65 data-[state=open]:bg-surface-2/70 dark:hover:bg-surface-3/65 motion-reduce:transition-none lg:pr-3 " +
+            "group ml-0.5 flex h-11 min-w-0 items-center gap-2.5 rounded-xl border border-transparent px-1.5 text-foreground transition-colors hover:border-border/55 hover:bg-surface-2/60 data-[state=open]:border-border/65 data-[state=open]:bg-surface-2/70 dark:hover:bg-surface-3/65 motion-reduce:transition-none lg:h-8 lg:gap-2 lg:rounded-md lg:px-2 " +
             focus
           }
         >
@@ -370,9 +371,6 @@ function AccountMenu({
           <span className="hidden min-w-0 max-w-[132px] text-left lg:block">
             <span className="block truncate text-xs font-medium text-foreground/85">
               {user.fullName || "Your account"}
-            </span>
-            <span className="mt-0.5 block text-[10px] text-muted-foreground">
-              {user.isAllocat ? "Allocat account" : "Account"}
             </span>
           </span>
           <ChevronDownIcon
@@ -442,7 +440,7 @@ function AccountMenu({
           className={destructiveDropdownItem}
         >
           <LogOutIcon size={16} aria-hidden="true" />
-          {loggingOut ? "Logging out..." : "Log out"}
+          {loggingOut ? "Signing out..." : "Sign out"}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
