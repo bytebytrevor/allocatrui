@@ -82,6 +82,78 @@ const TIPS: Tip[] = [
 const PAGE_SIZE = 24;
 const MAX_SPOTLIGHTS = 6;
 const ROTATION_MS = 8000;
+const SPOTLIGHT_CACHE_MS = 5 * 60 * 1000;
+
+// One account-scoped, in-memory entry; no profile data is written to storage.
+// Sharing the pending read also prevents duplicate requests under StrictMode.
+type SpotlightCache = {
+  key: string;
+  expiresAt: number;
+  profiles?: SpotlightProfile[];
+  pending?: Promise<SpotlightProfile[]>;
+};
+let spotlightCache: SpotlightCache | undefined;
+
+function cachedProfiles(excludeUserId?: string) {
+  return spotlightCache?.key === (excludeUserId ?? "guest") &&
+    spotlightCache.expiresAt > Date.now()
+    ? spotlightCache.profiles
+    : undefined;
+}
+
+function loadSpotlights(excludeUserId?: string): Promise<SpotlightProfile[]> {
+  const key = excludeUserId ?? "guest";
+  if (spotlightCache?.key === key && spotlightCache.pending)
+    return spotlightCache.pending;
+  const cached = cachedProfiles(excludeUserId);
+  if (cached) return Promise.resolve(cached);
+
+  const entry: SpotlightCache = { key, expiresAt: 0 };
+  spotlightCache = entry;
+  entry.pending = (async () => {
+    async function requestPage(page: number, pageSize = PAGE_SIZE) {
+      const response = await api.get<ProfilesPage>("/allocats/profiles", {
+        params: { page, pageSize },
+        withCredentials: true,
+        timeout: 15000,
+      });
+      if (!Array.isArray(response.data?.items))
+        throw new Error("Invalid profiles response.");
+      return response.data;
+    }
+    const first = await requestPage(1);
+    const pages = Number.isFinite(first.totalPages)
+      ? Math.max(1, Math.floor(first.totalPages!))
+      : 1;
+    const pageSize =
+      Number.isFinite(first.pageSize) && first.pageSize! > 0
+        ? first.pageSize!
+        : PAGE_SIZE;
+    const randomPage = 1 + Math.floor(Math.random() * pages);
+    let pool = first.items;
+    if (randomPage > 1) {
+      try {
+        const sampled = await requestPage(randomPage, pageSize);
+        if (sampled.items.length) pool = sampled.items;
+      } catch {
+        // Keep the usable first page when the sampled page is unavailable.
+      }
+    }
+    const unique = new Map<string, SpotlightProfile>();
+    for (const raw of pool) {
+      const profile = normalizeProfile(raw);
+      if (profile && profile.id !== excludeUserId && !unique.has(profile.id))
+        unique.set(profile.id, profile);
+    }
+    const profiles = shuffle([...unique.values()]).slice(0, MAX_SPOTLIGHTS);
+    entry.profiles = profiles;
+    entry.expiresAt = Date.now() + SPOTLIGHT_CACHE_MS;
+    return profiles;
+  })().finally(() => {
+    entry.pending = undefined;
+  });
+  return entry.pending;
+}
 const focus =
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30 focus-visible:ring-offset-2 focus-visible:ring-offset-card";
 const iconButton =
@@ -89,18 +161,33 @@ const iconButton =
   focus;
 const accent = "text-brand-secondary-highlight dark:text-secondary";
 const card =
-  "min-w-0 overflow-hidden rounded-2xl border border-border/65 bg-card shadow-sm shadow-black/[0.025] dark:border-border dark:shadow-none";
+  "min-w-0 overflow-hidden rounded-xl border border-border/60 bg-card dark:border-border";
 
 export default function WorkspaceDiscoverySidebar({
   excludeUserId,
 }: {
   excludeUserId?: string;
 }) {
+  return (
+    <DiscoverySidebar
+      key={excludeUserId ?? "guest"}
+      excludeUserId={excludeUserId}
+    />
+  );
+}
+
+function DiscoverySidebar({ excludeUserId }: { excludeUserId?: string }) {
   const [wide, setWide] = useState(
     () => window.matchMedia("(min-width: 1280px)").matches,
   );
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const model = useDiscoveryModel(excludeUserId, wide || open);
+  const { setHovered, setFocused } = model;
+  useEffect(() => {
+    setHovered(false);
+    setFocused(false);
+  }, [wide, open, setHovered, setFocused]);
   useEffect(() => {
     const media = window.matchMedia("(min-width: 1280px)");
     const update = () => setWide(media.matches);
@@ -111,7 +198,20 @@ export default function WorkspaceDiscoverySidebar({
   useEffect(() => {
     if (wide) setOpen(false);
   }, [wide]);
-  if (wide) return <DiscoveryContent excludeUserId={excludeUserId} />;
+  if (wide)
+    return (
+      <div
+        role="region"
+        aria-label="Allocats and tips"
+        tabIndex={0}
+        className={
+          "h-full min-h-0 max-h-full self-stretch overflow-y-auto overscroll-contain pb-8 pt-6 focus-visible:ring-inset [scrollbar-width:none] [&::-webkit-scrollbar]:hidden " +
+          focus
+        }
+      >
+        <DiscoveryContent model={model} />
+      </div>
+    );
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <button
@@ -145,18 +245,23 @@ export default function WorkspaceDiscoverySidebar({
             Meet Allocats and pick up a tip for your next project.
           </DialogDescription>
         </DialogHeader>
-        <div className="min-h-0 overflow-y-auto overscroll-contain px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-4">
-          <DiscoveryContent excludeUserId={excludeUserId} />
+        <div className="min-h-0 overflow-y-auto overscroll-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-4">
+          <DiscoveryContent model={model} />
         </div>
       </DialogContent>
     </Dialog>
   );
 }
 
-function DiscoveryContent({ excludeUserId }: { excludeUserId?: string }) {
+function useDiscoveryModel(
+  excludeUserId: string | undefined,
+  visible: boolean,
+) {
   const reduceMotion = useReducedMotion();
-  const [profiles, setProfiles] = useState<SpotlightProfile[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [profiles, setProfiles] = useState<SpotlightProfile[]>(
+    () => cachedProfiles(excludeUserId) ?? [],
+  );
+  const [loading, setLoading] = useState(() => !cachedProfiles(excludeUserId));
   const [failed, setFailed] = useState(false);
   const [retry, setRetry] = useState(0);
   const [index, setIndex] = useState(0);
@@ -168,70 +273,29 @@ function DiscoveryContent({ excludeUserId }: { excludeUserId?: string }) {
   );
 
   useEffect(() => {
-    const controller = new AbortController();
+    if (!visible) return;
     let active = true;
-    setLoading(true);
+    setLoading(!cachedProfiles(excludeUserId));
     setFailed(false);
-    setProfiles([]);
-    setIndex(0);
-    async function requestPage(
-      page: number,
-      pageSize = PAGE_SIZE,
-    ): Promise<ProfilesPage> {
-      const response = await api.get<ProfilesPage>("/allocats/profiles", {
-        params: { page, pageSize },
-        withCredentials: true,
-        signal: controller.signal,
-      });
-      if (!Array.isArray(response.data?.items))
-        throw new Error("Invalid profiles response.");
-      return response.data;
-    }
-    async function loadProfiles() {
-      try {
-        const first = await requestPage(1);
-        const pages = Number.isFinite(first.totalPages)
-          ? Math.max(1, Math.floor(first.totalPages!))
-          : 1;
-        const pageSize =
-          Number.isFinite(first.pageSize) && first.pageSize! > 0
-            ? first.pageSize!
-            : PAGE_SIZE;
-        const randomPage = 1 + Math.floor(Math.random() * pages);
-        let pool = first.items;
-        if (randomPage > 1) {
-          try {
-            const selected = await requestPage(randomPage, pageSize);
-            if (selected.items.length) pool = selected.items;
-          } catch (error) {
-            if (controller.signal.aborted) throw error;
-            // The first public page still provides a useful preview if the sampled page fails.
-          }
-        }
+    void loadSpotlights(excludeUserId)
+      .then((profiles) => {
         if (!active) return;
-        const unique = new Map<string, SpotlightProfile>();
-        for (const raw of pool) {
-          const profile = normalizeProfile(raw);
-          if (
-            profile &&
-            profile.id !== excludeUserId &&
-            !unique.has(profile.id)
-          )
-            unique.set(profile.id, profile);
-        }
-        setProfiles(shuffle([...unique.values()]).slice(0, MAX_SPOTLIGHTS));
-      } catch {
-        if (active && !controller.signal.aborted) setFailed(true);
-      } finally {
+        setProfiles(profiles);
+        setIndex((current) =>
+          profiles.length ? current % profiles.length : 0,
+        );
+      })
+      .catch(() => {
+        if (active) setFailed(true);
+      })
+      .finally(() => {
         if (active) setLoading(false);
-      }
-    }
-    void loadProfiles();
+      });
+    // Let a shared public read finish for the cache; only detach this view.
     return () => {
       active = false;
-      controller.abort();
     };
-  }, [excludeUserId, retry]);
+  }, [excludeUserId, retry, visible]);
 
   useEffect(() => {
     const onVisibility = () => setHidden(document.hidden);
@@ -239,7 +303,12 @@ function DiscoveryContent({ excludeUserId }: { excludeUserId?: string }) {
     return () => document.removeEventListener("visibilitychange", onVisibility);
   }, []);
   const rotating =
-    profiles.length > 1 && !hovered && !focused && !hidden && !reduceMotion;
+    visible &&
+    profiles.length > 1 &&
+    !hovered &&
+    !focused &&
+    !hidden &&
+    !reduceMotion;
   useEffect(() => {
     if (!rotating) return;
     const timer = window.setInterval(
@@ -249,14 +318,49 @@ function DiscoveryContent({ excludeUserId }: { excludeUserId?: string }) {
     return () => window.clearInterval(timer);
   }, [rotating, profiles.length]);
 
-  const current = profiles[index];
-  const tip = TIPS[tipIndex];
   function move(direction: number) {
     setIndex(
       (current) => (current + direction + profiles.length) % profiles.length,
     );
   }
 
+  return {
+    profiles,
+    loading,
+    failed,
+    setRetry,
+    index,
+    move,
+    setHovered,
+    setFocused,
+    rotating,
+    reduceMotion,
+    tipIndex,
+    setTipIndex,
+  };
+}
+
+function DiscoveryContent({
+  model,
+}: {
+  model: ReturnType<typeof useDiscoveryModel>;
+}) {
+  const {
+    profiles,
+    loading,
+    failed,
+    setRetry,
+    index,
+    move,
+    setHovered,
+    setFocused,
+    rotating,
+    reduceMotion,
+    tipIndex,
+    setTipIndex,
+  } = model;
+  const current = profiles[index];
+  const tip = TIPS[tipIndex];
   return (
     <aside
       aria-label="Community spotlights and daily tips"
@@ -282,7 +386,7 @@ function DiscoveryContent({ excludeUserId }: { excludeUserId?: string }) {
             id="spotlight-heading"
             className="mt-4 text-lg font-semibold leading-snug tracking-[-0.025em] text-foreground/90"
           >
-            A little extra paw-power.
+            Good company. Great work.
           </h2>
           <p className="mt-2 text-xs leading-6 text-muted-foreground">
             Great work starts with good company. Meet an Allocat for whatever
@@ -306,7 +410,7 @@ function DiscoveryContent({ excludeUserId }: { excludeUserId?: string }) {
             <div
               role="status"
               aria-label="Loading community spotlights"
-              className="min-h-[256px] px-5 py-5"
+              className="min-h-[280px] px-5 py-5"
             >
               <Skeleton className="h-14 w-14 rounded-full" />
               <Skeleton className="mt-4 h-4 w-36" />

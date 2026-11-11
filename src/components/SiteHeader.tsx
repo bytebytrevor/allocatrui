@@ -850,7 +850,7 @@ function MobileMenu({
             className="min-h-11 gap-3 rounded-lg px-3 py-3 text-xs text-muted-foreground focus:bg-destructive/[0.07] focus:text-destructive"
           >
             <LogOutIcon size={14} />
-            {loggingOut ? "Signing out…" : "Sign out"}
+            {loggingOut ? "Signing out…" : " out"}
           </DropdownMenuItem>
         )}
       </DropdownMenuContent>

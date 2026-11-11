@@ -436,7 +436,7 @@ function HeroPanel({ postProjectHref }: { postProjectHref: string }) {
           initial={reducedMotion ? false : { opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
-          className="relative mt-6 max-w-[760px] text-[clamp(2.25rem,5vw,4.8rem)] font-medium leading-[1.06] tracking-[-0.04em] lg:max-w-[64%]"
+          className="relative mt-6 max-w-[760px] text-[clamp(2.1rem,4.6vw,4.4rem)] font-medium leading-[1.06] tracking-[-0.04em] lg:max-w-[64%]"
         >
           Good work starts
           <br />
@@ -458,7 +458,7 @@ function HeroPanel({ postProjectHref }: { postProjectHref: string }) {
             Browse Allocats
           </ActionLink>
         </div>
-        <div className="mt-10 hidden max-w-[760px] flex-wrap items-center sm:flex gap-x-6 gap-y-3 border-t border-primary-foreground/15 pt-6 lg:mt-12">
+        <div className="mt-10 hidden max-w-[760px] flex-wrap items-center sm:flex gap-x-6 gap-y-3 pt-6 lg:mt-12">
           <HeroBenefit
             icon={BriefcaseBusinessIcon}
             title="Professional expertise"
@@ -585,12 +585,12 @@ function HeroBenefit({
   return (
     <div
       data-paw-block="true"
-      className="flex min-w-0 items-center gap-3 px-1 py-1"
+      className="flex min-w-0 items-center gap-2.5 px-1 py-1"
     >
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-primary/[0.08] text-brand-primary ring-1 ring-inset ring-brand-primary/15   ">
-        <Icon size={18} aria-hidden="true" />
+      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-primary/[0.08] text-brand-primary ring-1 ring-inset ring-brand-primary/15   ">
+        <Icon size={16} aria-hidden="true" />
       </span>
-      <span className="text-xs font-medium leading-5">{title}</span>
+      <span className="text-[11px] font-medium leading-5">{title}</span>
     </div>
   );
 }

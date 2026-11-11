@@ -32,15 +32,11 @@
 // import WorkspaceDiscoverySidebar from "@/components/WorkspaceDiscoverySidebar";
 // import LoadingState from "@/components/LoadingState";
 // import { GridView, ListView } from "@/components/ProjectCard";
-// import { Badge } from "@/components/ui/badge";
 // import { Button } from "@/components/ui/button";
-// import {
-//   Dialog,
-//   DialogContent,
-//   DialogDescription,
-//   DialogHeader,
-//   DialogTitle,
-// } from "@/components/ui/dialog";
+// import ProjectInvitationDialog, {
+//   InvitationActions,
+//   type InvitationAction,
+// } from "@/components/ProjectInvitationDialog";
 // import ViewModeToggle from "@/components/ViewModeToggle";
 // import SortDropdown from "@/components/SortDropdown";
 // import type { Project } from "@/Types/project";
@@ -53,7 +49,6 @@
 // type WorkspaceSection = "projects" | "work";
 // type WorkFilter = "invitations" | "active" | "completed";
 // type ProjectSort = "newest" | "oldest" | "title-asc" | "title-desc";
-// type InvitationAction = "accept" | "decline";
 // type WorkspaceIcon = ComponentType<{
 //   size?: number;
 //   className?: string;
@@ -128,8 +123,6 @@
 //   "focus-visible:ring-2 focus-visible:ring-ring/35",
 //   "motion-reduce:transition-none",
 // ].join(" ");
-// const elevatedSurface =
-//   "border-border/65 bg-card shadow-sm shadow-black/[0.025] dark:border-border dark:shadow-none";
 // const softIconSurface = [
 //   "bg-surface-3/65 text-brand-secondary-highlight",
 //   "ring-1 ring-inset ring-border/35",
@@ -538,16 +531,24 @@
 //         ? "Your completed and closed client projects."
 //         : "The client work currently on your plate.";
 //   return (
-//     <div className="flex min-h-screen flex-col bg-background text-foreground">
+//     <div className="flex min-h-screen flex-col bg-background text-foreground xl:grid xl:h-dvh xl:min-h-0 xl:grid-rows-[auto_minmax(0,1fr)] xl:overflow-hidden">
 //       <WorkspaceHeader />
 
 //       {showNewClientState ? (
-//         <main className="container mx-auto flex flex-1 items-center justify-center px-4 py-10 sm:px-5 sm:py-14 md:px-8">
+//         <main className="container mx-auto flex flex-1 items-center justify-center px-4 py-10 sm:px-5 sm:py-14 md:px-8 xl:min-h-0 xl:overflow-y-auto">
 //           <NewClientWelcome firstName={firstName} />
 //         </main>
 //       ) : (
-//         <main className="container mx-auto grid flex-1 items-start gap-8 px-4 pb-28 pt-4 sm:px-5 sm:pb-28 sm:pt-5 md:px-8 lg:pt-6 xl:grid-cols-[minmax(0,1fr)_288px] xl:pb-12 2xl:gap-10">
-//           <div className="min-w-0">
+//         <main className="container mx-auto grid flex-1 items-start gap-8 px-4 pb-28 pt-4 sm:px-5 sm:pb-28 sm:pt-5 md:px-8 lg:pt-6 xl:h-full xl:min-h-0 xl:grid-cols-[minmax(0,1fr)_288px] xl:grid-rows-[minmax(0,1fr)] xl:items-stretch xl:overflow-hidden xl:pb-0 xl:pt-0 2xl:gap-10">
+//           <div
+//             role="region"
+//             aria-label="Projects workspace"
+//             tabIndex={0}
+//             className={
+//               "min-w-0 xl:min-h-0 xl:overflow-y-auto xl:overscroll-contain xl:pb-10 xl:pt-6 focus-visible:ring-inset [scrollbar-width:none] [&::-webkit-scrollbar]:hidden " +
+//               focusStyle
+//             }
+//           >
 //             <WorkspaceMasthead
 //               firstName={firstName}
 //               isAllocat={Boolean(user?.isAllocat)}
@@ -559,7 +560,7 @@
 //               items={summaryItems}
 //             />
 //             <motion.section
-//               className="mt-8 min-w-0 sm:mt-10"
+//               className="mt-5 min-w-0 sm:mt-6"
 //               initial={{ opacity: 0, y: 7 }}
 //               animate={{ opacity: 1, y: 0 }}
 //               transition={{ delay: 0.04, duration: 0.3, ease: "easeOut" }}
@@ -568,7 +569,7 @@
 //                 <SectionEyebrow>
 //                   {isWorkSection ? "Client work" : "Your workspace"}
 //                 </SectionEyebrow>
-//                 <h2 className="mt-3 text-lg font-medium leading-snug tracking-[-0.02em] text-foreground/90 sm:text-xl dark:text-foreground">
+//                 <h2 className="mt-2 text-lg font-semibold leading-snug tracking-[-0.02em] text-foreground/90 sm:text-xl dark:text-foreground">
 //                   {sectionTitle}
 //                 </h2>
 //                 <p className="mt-2 max-w-2xl text-[13px] leading-6 text-muted-foreground sm:text-sm">
@@ -576,7 +577,7 @@
 //                 </p>
 //               </div>
 
-//               <div className="mt-5 flex flex-col gap-3 sm:mt-6 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-4">
+//               <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-4">
 //                 <ProjectSearch
 //                   value={search}
 //                   onChange={setSearch}
@@ -729,7 +730,7 @@
 // ========================================================= */
 // function WorkspaceHeader() {
 //   return (
-//     <header className="sticky top-0 z-50 border-b border-border/60 bg-background dark:border-border">
+//     <header className="sticky top-0 z-50 shrink-0 border-b border-border/60 bg-background dark:border-border">
 //       <div className="container mx-auto px-4 sm:px-5 md:px-8">
 //         <DashboardMainNav />
 //       </div>
@@ -885,115 +886,93 @@
 //       initial={{ opacity: 0, y: 5 }}
 //       animate={{ opacity: 1, y: 0 }}
 //       transition={{ duration: 0.28, ease: "easeOut" }}
-//       className={"overflow-hidden rounded-2xl border " + elevatedSurface}
+//       aria-label="Workspace overview"
 //     >
-//       <div className="grid grid-cols-1 items-center gap-5 bg-surface-2/20 md:grid-cols-[minmax(0,1fr)_auto] px-4 py-5 sm:gap-6 sm:px-6 sm:py-6 lg:px-7 dark:bg-card">
+//       <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-5">
 //         <div className="min-w-0">
-//           <div className="flex items-center gap-2.5">
-//             <span
-//               className={
-//                 "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg " +
-//                 softIconSurface
-//               }
-//             >
-//               <BriefcaseBusinessIcon size={13} aria-hidden="true" />
-//             </span>
-//             <p className="text-[10px] font-semibold uppercase tracking-[0.17em] text-muted-foreground">
-//               Workspace
-//             </p>
-//           </div>
-//           <h1 className="mt-3 break-words text-2xl font-medium leading-[1.15] tracking-[-0.035em] text-foreground/95 sm:text-3xl lg:text-[2rem] dark:text-foreground">
+//           <h1 className="break-words text-2xl font-medium leading-[1.2] tracking-[-0.03em] text-foreground/95 sm:text-3xl dark:text-foreground">
 //             Welcome back,{" "}
 //             <span className="text-brand-secondary-highlight dark:text-secondary">
 //               {firstName}
 //             </span>
 //             .
 //           </h1>
-//           <p className="mt-1.5 hidden max-w-xl text-xs leading-6 text-muted-foreground md:block">
+//           <p className="mt-1.5 max-w-xl text-xs leading-6 text-muted-foreground">
 //             {workspaceSection === "projects"
 //               ? "Your active, pending and completed projects."
 //               : "Your client work, active jobs and invitations."}
 //           </p>
 //         </div>
-//         <div className="grid min-w-0 grid-cols-1 gap-2 min-[400px]:grid-cols-2 md:flex md:shrink-0 md:items-center">
+//         <div className="flex flex-wrap items-center gap-2">
 //           <Button
 //             asChild
 //             className={
-//               "group h-11 w-full rounded-lg px-4 shadow-none md:h-10 md:w-auto " +
+//               "group h-10 rounded-lg px-4 text-xs font-medium shadow-none " +
 //               primaryActionButton
 //             }
 //           >
 //             <Link to="/projects/new" aria-label="New project">
 //               <PlusIcon size={13} aria-hidden="true" />
-//               <span className="text-xs font-medium">New project</span>
-//               <ArrowRightIcon
-//                 size={12}
-//                 aria-hidden="true"
-//                 className="hidden transition-transform duration-200 group-hover:translate-x-0.5 motion-reduce:transform-none motion-reduce:transition-none md:block"
-//               />
+//               New project
 //             </Link>
 //           </Button>
 //           <Button
 //             asChild
 //             variant="outline"
 //             className={
-//               "h-11 w-full rounded-lg px-4 shadow-none md:h-10 md:w-auto " +
+//               "h-10 rounded-lg px-4 text-xs font-medium shadow-none " +
 //               secondaryActionButton
 //             }
 //           >
 //             <Link to="/discover" aria-label="Discover Allocats">
 //               <SearchIcon size={13} aria-hidden="true" />
-//               <span className="text-xs font-medium">Discover Allocats</span>
+//               Discover Allocats
 //             </Link>
 //           </Button>
 //         </div>
 //       </div>
-
-//       <div className="border-t border-border/50 bg-surface-2/25 px-1.5 py-1.5 sm:px-2 dark:border-border dark:bg-surface-2/40">
-//         <div className="flex min-w-0 flex-col gap-2 p-0.5 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-//           <div className="min-w-0 shrink-0">
-//             {isAllocat ? (
-//               <div
-//                 role="group"
-//                 aria-label="Workspace section"
-//                 className="inline-flex w-full items-center rounded-lg border border-border/60 bg-surface-3/25 sm:w-auto p-0.5 dark:border-border dark:bg-surface-1"
-//               >
-//                 <WorkspaceTab
-//                   active={workspaceSection === "projects"}
-//                   onClick={() => onSectionChange("projects")}
-//                   icon={BriefcaseBusinessIcon}
-//                   label="My projects"
-//                   count={projectCount}
-//                 />
-//                 <WorkspaceTab
-//                   active={workspaceSection === "work"}
-//                   onClick={() => onSectionChange("work")}
-//                   icon={SparklesIcon}
-//                   label="My work"
-//                   count={workCount}
-//                   attention={invitationCount > 0}
-//                 />
-//               </div>
-//             ) : (
-//               <p className="hidden whitespace-nowrap text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground/70 sm:block">
-//                 Project overview
-//               </p>
-//             )}
-//           </div>
+//       <div className="mt-5 flex min-w-0 flex-col gap-3 border-b border-border/55 pb-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between dark:border-border">
+//         {isAllocat ? (
 //           <div
 //             role="group"
-//             aria-label="Filter by status"
-//             className="grid min-w-0 grid-cols-3 gap-1 sm:flex sm:shrink-0 sm:items-center"
+//             aria-label="Workspace section"
+//             className="inline-flex max-w-full items-center rounded-lg border border-border/55 bg-surface-2/25 p-0.5 dark:border-border"
 //           >
-//             {items.map((item) => (
-//               <WorkspaceMetric key={item.label} item={item} />
-//             ))}
+//             <WorkspaceTab
+//               active={workspaceSection === "projects"}
+//               onClick={() => onSectionChange("projects")}
+//               icon={BriefcaseBusinessIcon}
+//               label="My projects"
+//               count={projectCount}
+//             />
+//             <WorkspaceTab
+//               active={workspaceSection === "work"}
+//               onClick={() => onSectionChange("work")}
+//               icon={SparklesIcon}
+//               label="My work"
+//               count={workCount}
+//               attention={invitationCount > 0}
+//             />
 //           </div>
+//         ) : (
+//           <p className="hidden text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground sm:block">
+//             Project overview
+//           </p>
+//         )}
+//         <div
+//           role="group"
+//           aria-label="Filter by status"
+//           className="grid min-w-0 grid-cols-3 gap-1 sm:flex sm:items-center"
+//         >
+//           {items.map((item) => (
+//             <WorkspaceMetric key={item.label} item={item} />
+//           ))}
 //         </div>
 //       </div>
 //     </motion.section>
 //   );
 // }
+
 // /* =========================================================
 //    WORKSPACE METRIC AND TAB
 // ========================================================= */
@@ -1114,15 +1093,9 @@
 // }
 // function SectionEyebrow({ children }: { children: ReactNode }) {
 //   return (
-//     <div className="flex items-center gap-2.5">
-//       <span aria-hidden="true" className="flex items-center gap-1">
-//         <span className="h-1.5 w-5 rounded-full bg-brand-secondary-highlight/80 dark:bg-secondary" />
-//         <span className="h-1.5 w-2 rounded-full bg-brand-secondary-highlight/30 dark:bg-secondary/35" />
-//       </span>
-//       <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-//         {children}
-//       </p>
-//     </div>
+//     <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+//       {children}
+//     </p>
 //   );
 // }
 // /* =========================================================
@@ -1352,7 +1325,9 @@
 //           </div>
 //           <InvitationActions
 //             responding={responding}
-//             onAccept={() => respond("accept")}
+//             onAccept={async () => {
+//               setDetailsOpen(true);
+//             }}
 //             onDecline={() => respond("decline")}
 //           />
 //         </div>
@@ -1368,161 +1343,6 @@
 //         onDecline={() => respond("decline")}
 //       />
 //     </>
-//   );
-// }
-// function InvitationActions({
-//   responding,
-//   onAccept,
-//   onDecline,
-//   dialog = false,
-// }: {
-//   responding: InvitationAction | null;
-//   onAccept: () => Promise<void>;
-//   onDecline: () => Promise<void>;
-//   dialog?: boolean;
-// }) {
-//   return (
-//     <div
-//       className={
-//         dialog
-//           ? "flex flex-col-reverse gap-2.5 sm:flex-row sm:justify-end"
-//           : "flex items-center gap-2 sm:justify-end"
-//       }
-//     >
-//       <Button
-//         type="button"
-//         variant="ghost"
-//         disabled={responding !== null}
-//         onClick={() => void onDecline()}
-//         className={
-//           (dialog ? "h-10 px-5 sm:h-11 " : "h-9 px-3 text-xs ") +
-//           "rounded-lg text-muted-foreground shadow-none hover:bg-surface-3/60 hover:text-foreground dark:hover:bg-surface-3/70"
-//         }
-//       >
-//         {responding === "decline" ? (
-//           <LoaderCircleIcon
-//             size={15}
-//             aria-hidden="true"
-//             className="animate-spin motion-reduce:animate-none"
-//           />
-//         ) : (
-//           <XIcon size={14} aria-hidden="true" />
-//         )}
-//         Decline
-//       </Button>
-//       <Button
-//         type="button"
-//         disabled={responding !== null}
-//         onClick={() => void onAccept()}
-//         className={
-//           (dialog ? "h-10 px-6 sm:h-11 " : "h-9 px-4 text-xs ") +
-//           "rounded-lg font-semibold shadow-none " +
-//           primaryActionButton
-//         }
-//       >
-//         {responding === "accept" ? (
-//           <LoaderCircleIcon
-//             size={15}
-//             aria-hidden="true"
-//             className="animate-spin"
-//           />
-//         ) : (
-//           <CheckCircle2Icon size={14} aria-hidden="true" />
-//         )}
-//         {dialog ? "Accept project" : "Accept"}
-//       </Button>
-//     </div>
-//   );
-// }
-// /* =========================================================
-//    INVITATION DIALOG
-// ========================================================= */
-// function ProjectInvitationDialog({
-//   project,
-//   open,
-//   onOpenChange,
-//   responding,
-//   onAccept,
-//   onDecline,
-// }: {
-//   project: WorkProject;
-//   open: boolean;
-//   onOpenChange: (open: boolean) => void;
-//   responding: InvitationAction | null;
-//   onAccept: () => Promise<void>;
-//   onDecline: () => Promise<void>;
-// }) {
-//   return (
-//     <Dialog open={open} onOpenChange={onOpenChange}>
-//       <DialogContent className="max-h-[90dvh] overflow-y-auto rounded-2xl border-border/70 bg-card p-0 text-card-foreground shadow-xl shadow-black/10 sm:max-w-2xl dark:border-border">
-//         <DialogHeader className="border-b border-border/60 px-5 pb-5 pt-6 text-left sm:px-8 sm:pb-6 sm:pt-7 dark:border-border">
-//           <Badge
-//             variant="outline"
-//             className="mb-3 w-fit rounded-md border-status-pending/20 bg-status-pending/[0.07] text-status-pending-foreground"
-//           >
-//             Project invitation
-//           </Badge>
-//           <DialogTitle className="break-words pr-6 text-xl font-semibold leading-tight tracking-[-0.025em] text-foreground/90 sm:text-2xl dark:text-foreground">
-//             {project.title}
-//           </DialogTitle>
-//           <DialogDescription className="mt-2 max-w-xl leading-7 text-muted-foreground">
-//             Review the project before deciding whether you want to join the
-//             work.
-//           </DialogDescription>
-//         </DialogHeader>
-//         <div className="space-y-6 px-5 py-6 sm:space-y-7 sm:px-8 sm:py-7">
-//           <section>
-//             <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
-//               Project description
-//             </p>
-//             <p className="mt-3 whitespace-pre-line break-words text-sm leading-7 text-foreground/80 dark:text-foreground/90">
-//               {project.description || "No project description was provided."}
-//             </p>
-//           </section>
-//           <div className="grid gap-5 border-y border-border/60 py-5 sm:grid-cols-3 dark:border-border">
-//             <ProjectDetail label="Status" value="Awaiting response" />
-//             {project.invitedAt && (
-//               <ProjectDetail
-//                 label="Invited"
-//                 value={formatShortDate(project.invitedAt)}
-//               />
-//             )}
-//             {project.dueDate && (
-//               <ProjectDetail
-//                 label="Due"
-//                 value={formatShortDate(project.dueDate)}
-//               />
-//             )}
-//           </div>
-//           <div className="rounded-xl border border-border/60 bg-surface-2/40 px-4 py-3">
-//             <p className="text-xs leading-6 text-foreground/70 dark:text-foreground/80">
-//               Accepting gives you access to the project workspace and its tasks.
-//               Until then, you can only review these project details.
-//             </p>
-//           </div>
-//           <div className="border-t border-border/60 pt-6 dark:border-border">
-//             <InvitationActions
-//               responding={responding}
-//               onAccept={onAccept}
-//               onDecline={onDecline}
-//               dialog
-//             />
-//           </div>
-//         </div>
-//       </DialogContent>
-//     </Dialog>
-//   );
-// }
-// function ProjectDetail({ label, value }: { label: string; value: ReactNode }) {
-//   return (
-//     <div className="min-w-0">
-//       <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
-//         {label}
-//       </p>
-//       <div className="mt-1.5 break-words text-sm font-semibold text-foreground/80 dark:text-foreground/90">
-//         {value}
-//       </div>
-//     </div>
 //   );
 // }
 // /* =========================================================
@@ -1888,8 +1708,6 @@ const secondaryActionButton = [
   "focus-visible:ring-2 focus-visible:ring-ring/35",
   "motion-reduce:transition-none",
 ].join(" ");
-const elevatedSurface =
-  "border-border/65 bg-card shadow-sm shadow-black/[0.025] dark:border-border dark:shadow-none";
 const softIconSurface = [
   "bg-surface-3/65 text-brand-secondary-highlight",
   "ring-1 ring-inset ring-border/35",
@@ -2298,16 +2116,24 @@ function ProjectsPage() {
         ? "Your completed and closed client projects."
         : "The client work currently on your plate.";
   return (
-    <div className="flex min-h-screen flex-col bg-background text-foreground">
+    <div className="flex min-h-screen flex-col bg-background text-foreground xl:grid xl:h-dvh xl:min-h-0 xl:grid-rows-[auto_minmax(0,1fr)] xl:overflow-hidden">
       <WorkspaceHeader />
 
       {showNewClientState ? (
-        <main className="container mx-auto flex flex-1 items-center justify-center px-4 py-10 sm:px-5 sm:py-14 md:px-8">
+        <main className="container mx-auto flex flex-1 items-center justify-center px-4 py-10 sm:px-5 sm:py-14 md:px-8 xl:min-h-0 xl:overflow-y-auto">
           <NewClientWelcome firstName={firstName} />
         </main>
       ) : (
-        <main className="container mx-auto grid flex-1 items-start gap-8 px-4 pb-28 pt-4 sm:px-5 sm:pb-28 sm:pt-5 md:px-8 lg:pt-6 xl:grid-cols-[minmax(0,1fr)_288px] xl:pb-12 2xl:gap-10">
-          <div className="min-w-0">
+        <main className="container mx-auto grid flex-1 items-start gap-8 px-4 pb-28 pt-4 sm:px-5 sm:pb-28 sm:pt-5 md:px-8 lg:pt-6 xl:h-full xl:min-h-0 xl:grid-cols-[minmax(0,1fr)_288px] xl:grid-rows-[minmax(0,1fr)] xl:items-stretch xl:overflow-hidden xl:pb-0 xl:pt-0 2xl:gap-10">
+          <div
+            role="region"
+            aria-label="Projects workspace"
+            tabIndex={0}
+            className={
+              "min-w-0 xl:min-h-0 xl:overflow-y-auto xl:overscroll-contain xl:pb-10 xl:pt-6 focus-visible:ring-inset [scrollbar-width:none] [&::-webkit-scrollbar]:hidden " +
+              focusStyle
+            }
+          >
             <WorkspaceMasthead
               firstName={firstName}
               isAllocat={Boolean(user?.isAllocat)}
@@ -2319,7 +2145,7 @@ function ProjectsPage() {
               items={summaryItems}
             />
             <motion.section
-              className="mt-8 min-w-0 sm:mt-10"
+              className="mt-5 min-w-0 sm:mt-6"
               initial={{ opacity: 0, y: 7 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.04, duration: 0.3, ease: "easeOut" }}
@@ -2328,7 +2154,7 @@ function ProjectsPage() {
                 <SectionEyebrow>
                   {isWorkSection ? "Client work" : "Your workspace"}
                 </SectionEyebrow>
-                <h2 className="mt-3 text-lg font-medium leading-snug tracking-[-0.02em] text-foreground/90 sm:text-xl dark:text-foreground">
+                <h2 className="mt-2 text-lg font-semibold leading-snug tracking-[-0.02em] text-foreground/90 sm:text-xl dark:text-foreground">
                   {sectionTitle}
                 </h2>
                 <p className="mt-2 max-w-2xl text-[13px] leading-6 text-muted-foreground sm:text-sm">
@@ -2336,7 +2162,7 @@ function ProjectsPage() {
                 </p>
               </div>
 
-              <div className="mt-5 flex flex-col gap-3 sm:mt-6 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-4">
+              <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-4">
                 <ProjectSearch
                   value={search}
                   onChange={setSearch}
@@ -2489,7 +2315,7 @@ function ProjectsPage() {
 ========================================================= */
 function WorkspaceHeader() {
   return (
-    <header className="sticky top-0 z-50 border-b border-border/60 bg-background dark:border-border">
+    <header className="sticky top-0 z-50 shrink-0 border-b border-border/60 bg-background dark:border-border">
       <div className="container mx-auto px-4 sm:px-5 md:px-8">
         <DashboardMainNav />
       </div>
@@ -2645,115 +2471,94 @@ function WorkspaceMasthead({
       initial={{ opacity: 0, y: 5 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.28, ease: "easeOut" }}
-      className={"overflow-hidden rounded-2xl border " + elevatedSurface}
+      aria-label="Workspace overview"
     >
-      <div className="grid grid-cols-1 items-center gap-5 bg-surface-2/20 md:grid-cols-[minmax(0,1fr)_auto] px-4 py-5 sm:gap-6 sm:px-6 sm:py-6 lg:px-7 dark:bg-card">
+      <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-5">
         <div className="min-w-0">
-          <div className="flex items-center gap-2.5">
-            <span
-              className={
-                "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg " +
-                softIconSurface
-              }
-            >
-              <BriefcaseBusinessIcon size={13} aria-hidden="true" />
-            </span>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.17em] text-muted-foreground">
-              Workspace
-            </p>
-          </div>
-          <h1 className="mt-3 break-words text-2xl font-medium leading-[1.15] tracking-[-0.035em] text-foreground/95 sm:text-3xl lg:text-[2rem] dark:text-foreground">
-            Welcome back,{" "}
+          <h1 className="break-words text-2xl font-medium leading-[1.2] tracking-[-0.03em] text-foreground/95 sm:text-3xl dark:text-foreground">
+            Hi,{" "}
             <span className="text-brand-secondary-highlight dark:text-secondary">
               {firstName}
+            </span>{" "}
+            <span role="img" aria-label="waving hand" className="text-[0.8em]">
+              👋
             </span>
-            .
           </h1>
-          <p className="mt-1.5 hidden max-w-xl text-xs leading-6 text-muted-foreground md:block">
+          <p className="mt-1.5 max-w-xl text-xs leading-6 text-muted-foreground">
             {workspaceSection === "projects"
               ? "Your active, pending and completed projects."
               : "Your client work, active jobs and invitations."}
           </p>
         </div>
-        <div className="grid min-w-0 grid-cols-1 gap-2 min-[400px]:grid-cols-2 md:flex md:shrink-0 md:items-center">
+        <div className="flex flex-wrap items-center gap-2">
           <Button
             asChild
             className={
-              "group h-11 w-full rounded-lg px-4 shadow-none md:h-10 md:w-auto " +
+              "group h-10 rounded-lg px-4 text-xs font-medium shadow-none " +
               primaryActionButton
             }
           >
             <Link to="/projects/new" aria-label="New project">
               <PlusIcon size={13} aria-hidden="true" />
-              <span className="text-xs font-medium">New project</span>
-              <ArrowRightIcon
-                size={12}
-                aria-hidden="true"
-                className="hidden transition-transform duration-200 group-hover:translate-x-0.5 motion-reduce:transform-none motion-reduce:transition-none md:block"
-              />
+              New project
             </Link>
           </Button>
           <Button
             asChild
             variant="outline"
             className={
-              "h-11 w-full rounded-lg px-4 shadow-none md:h-10 md:w-auto " +
+              "h-10 rounded-lg px-4 text-xs font-medium shadow-none " +
               secondaryActionButton
             }
           >
             <Link to="/discover" aria-label="Discover Allocats">
               <SearchIcon size={13} aria-hidden="true" />
-              <span className="text-xs font-medium">Discover Allocats</span>
+              Discover Allocats
             </Link>
           </Button>
         </div>
       </div>
-
-      <div className="border-t border-border/50 bg-surface-2/25 px-1.5 py-1.5 sm:px-2 dark:border-border dark:bg-surface-2/40">
-        <div className="flex min-w-0 flex-col gap-2 p-0.5 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-          <div className="min-w-0 shrink-0">
-            {isAllocat ? (
-              <div
-                role="group"
-                aria-label="Workspace section"
-                className="inline-flex w-full items-center rounded-lg border border-border/60 bg-surface-3/25 sm:w-auto p-0.5 dark:border-border dark:bg-surface-1"
-              >
-                <WorkspaceTab
-                  active={workspaceSection === "projects"}
-                  onClick={() => onSectionChange("projects")}
-                  icon={BriefcaseBusinessIcon}
-                  label="My projects"
-                  count={projectCount}
-                />
-                <WorkspaceTab
-                  active={workspaceSection === "work"}
-                  onClick={() => onSectionChange("work")}
-                  icon={SparklesIcon}
-                  label="My work"
-                  count={workCount}
-                  attention={invitationCount > 0}
-                />
-              </div>
-            ) : (
-              <p className="hidden whitespace-nowrap text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground/70 sm:block">
-                Project overview
-              </p>
-            )}
-          </div>
-          <div
-            role="group"
-            aria-label="Filter by status"
-            className="grid min-w-0 grid-cols-3 gap-1 sm:flex sm:shrink-0 sm:items-center"
-          >
-            {items.map((item) => (
-              <WorkspaceMetric key={item.label} item={item} />
-            ))}
-          </div>
+      <div className="mt-5 flex min-w-0 flex-col gap-3 border-b border-border/55 pb-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between dark:border-border">
+        {
+          isAllocat ? (
+            <div
+              role="group"
+              aria-label="Workspace section"
+              className="inline-flex max-w-full items-center rounded-lg border border-border/55 bg-surface-2/25 p-0.5 dark:border-border"
+            >
+              <WorkspaceTab
+                active={workspaceSection === "projects"}
+                onClick={() => onSectionChange("projects")}
+                label="My projects"
+                count={projectCount}
+              />
+              <WorkspaceTab
+                active={workspaceSection === "work"}
+                onClick={() => onSectionChange("work")}
+                label="My work"
+                count={workCount}
+                attention={invitationCount > 0}
+              />
+            </div>
+          ) : null
+          // <p className="hidden items-center rounded-md border border-border/60 bg-surface-2/60 px-2.5 py-1.5 text-[11px] font-medium text-foreground/75 sm:inline-flex dark:border-border dark:bg-surface-3/50">
+          //   Project summary
+          // </p>
+        }
+        <div
+          role="group"
+          aria-label="Filter by status"
+          className="grid min-w-0 grid-cols-3 gap-1 sm:flex sm:items-center"
+        >
+          {items.map((item) => (
+            <WorkspaceMetric key={item.label} item={item} />
+          ))}
         </div>
       </div>
     </motion.section>
   );
 }
+
 /* =========================================================
    WORKSPACE METRIC AND TAB
 ========================================================= */
@@ -2802,14 +2607,12 @@ function WorkspaceMetric({ item }: { item: SummaryItem }) {
 function WorkspaceTab({
   active,
   onClick,
-  icon: Icon,
   label,
   count,
   attention = false,
 }: {
   active: boolean;
   onClick: () => void;
-  icon: WorkspaceIcon;
   label: string;
   count?: number;
   attention?: boolean;
@@ -2838,12 +2641,11 @@ function WorkspaceTab({
       )}
       <span className="relative z-10 flex items-center gap-1.5">
         <span className="relative">
+          {label}
           {attention && !active && (
             <AttentionDot className="-right-1.5 -top-1" />
           )}
-          <Icon size={11} />
         </span>
-        {label}
         {typeof count === "number" && count > 0 && (
           <span
             className={
@@ -2874,15 +2676,9 @@ function AttentionDot({ className }: { className: string }) {
 }
 function SectionEyebrow({ children }: { children: ReactNode }) {
   return (
-    <div className="flex items-center gap-2.5">
-      <span aria-hidden="true" className="flex items-center gap-1">
-        <span className="h-1.5 w-5 rounded-full bg-brand-secondary-highlight/80 dark:bg-secondary" />
-        <span className="h-1.5 w-2 rounded-full bg-brand-secondary-highlight/30 dark:bg-secondary/35" />
-      </span>
-      <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-        {children}
-      </p>
-    </div>
+    <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+      {children}
+    </p>
   );
 }
 /* =========================================================

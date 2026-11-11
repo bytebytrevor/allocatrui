@@ -326,29 +326,44 @@ export function AllocatCardGrid({
     <>
       {viewMode === "list" ? (
         <article className={`${CARD} p-4 sm:p-5`} aria-busy={inviting}>
-          <div className="flex min-w-0 flex-col gap-4 xl:flex-row xl:items-center xl:gap-6">
-            <div className="flex min-w-0 flex-1 items-start gap-3 sm:gap-4">
+          <div className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-start gap-x-3 gap-y-3 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:gap-x-4">
+            <div className="col-start-1 row-start-1">
               <ProfileAvatar
                 name={name}
                 url={allocat.avatarUrl}
                 verified={verified}
               />
-              <div className="min-w-0 flex-1">
-                <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-2">
-                  <div className="min-w-0 flex-1">{identity()}</div>
-                  {match}
-                </div>
-                <div className="mt-2.5">{trustLine()}</div>
-                <div className="mt-2">{locationLine()}</div>
-                {skills.length > 0 && (
-                  <div
-                    aria-label="Skills"
-                    className="mt-3 flex flex-wrap gap-1.5"
-                  >
-                    {skillBadges()}
-                  </div>
-                )}
+            </div>
+            {match && (
+              <div
+                data-card-match="true"
+                className="col-start-2 row-start-1 justify-self-end sm:col-start-3"
+              >
+                {match}
               </div>
+            )}
+            <div
+              className={
+                match
+                  ? "col-span-2 col-start-1 row-start-2 min-w-0 sm:col-span-1 sm:col-start-2 sm:row-start-1"
+                  : "col-start-2 row-start-1 min-w-0"
+              }
+            >
+              {identity()}
+            </div>
+          </div>
+          <div className="mt-3 flex min-w-0 flex-col gap-4 sm:pl-[72px] xl:flex-row xl:items-end xl:gap-6">
+            <div className="min-w-0 flex-1">
+              <div>{trustLine()}</div>
+              <div className="mt-2">{locationLine()}</div>
+              {skills.length > 0 && (
+                <div
+                  aria-label="Skills"
+                  className="mt-3 flex flex-wrap gap-1.5"
+                >
+                  {skillBadges()}
+                </div>
+              )}
             </div>
             <div className="flex min-w-0 flex-col gap-3 border-t border-border/65 pt-4 sm:flex-row sm:items-center sm:justify-between sm:gap-5 xl:shrink-0 xl:border-t-0 xl:pt-0">
               <div className="flex items-baseline justify-between gap-3 sm:block">
@@ -366,19 +381,32 @@ export function AllocatCardGrid({
           className={`${CARD} flex h-full flex-col p-5`}
           aria-busy={inviting}
         >
-          <div className="flex min-w-0 items-start gap-3.5">
-            <ProfileAvatar
-              name={name}
-              url={allocat.avatarUrl}
-              verified={verified}
-            />
-            <div className="min-w-0 flex-1">{identity()}</div>
-          </div>
+          {match ? (
+            <>
+              <div className="flex min-w-0 items-start justify-between gap-3.5">
+                <ProfileAvatar
+                  name={name}
+                  url={allocat.avatarUrl}
+                  verified={verified}
+                />
+                <div data-card-match="true" className="shrink-0">
+                  {match}
+                </div>
+              </div>
+              <div className="mt-3 min-w-0">{identity()}</div>
+            </>
+          ) : (
+            <div className="flex min-w-0 items-start gap-3.5">
+              <ProfileAvatar
+                name={name}
+                url={allocat.avatarUrl}
+                verified={verified}
+              />
+              <div className="min-w-0 flex-1">{identity()}</div>
+            </div>
+          )}
           <div className="mt-4">{trustLine()}</div>
-          <div className="mt-3 flex min-w-0 flex-wrap items-center justify-between gap-2">
-            {locationLine()}
-            {match}
-          </div>
+          <div className="mt-3 min-w-0">{locationLine()}</div>
           <div
             aria-label="Skills"
             className="mt-4 flex min-h-14 flex-wrap content-start items-start gap-1.5"

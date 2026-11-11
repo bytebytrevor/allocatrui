@@ -44,7 +44,7 @@ const ROUTES = {
   register: "/register",
   discover: "/discover",
   howItWorks: "/how-it-works",
-  becomeAllocat: "/become-an-allocat",
+  becomeAllocat: "/register",
 };
 
 // Replace these with your own photography when available.
@@ -125,23 +125,37 @@ const HERO_TOKENS = {
   "--ring": "var(--brand-primary)",
   "--brand-secondary-highlight": "var(--brand-primary)",
 } as CSSProperties;
+const TIMELINE_TOKENS = {
+  colorScheme: "dark",
+  "--background": "var(--brand-secondary)",
+  "--foreground": "var(--primary-foreground)",
+  "--card":
+    "color-mix(in srgb, var(--brand-secondary) 88%, var(--brand-charcoal))",
+  "--card-foreground": "var(--primary-foreground)",
+  "--muted-foreground":
+    "color-mix(in srgb, var(--primary-foreground) 76%, var(--brand-secondary))",
+  "--border":
+    "color-mix(in srgb, var(--primary-foreground) 18%, var(--brand-secondary))",
+  "--brand-secondary-highlight": "var(--brand-primary)",
+} as CSSProperties;
+
 const CONTAINER =
   "mx-auto w-full max-w-[1440px] px-4 sm:px-8 lg:px-14 xl:px-20";
 const HEADING =
-  "text-[clamp(1.7rem,2.8vw,2.85rem)] font-medium leading-[1.16] tracking-[-0.035em]";
+  "text-[clamp(1.9rem,3vw,3.1rem)] font-medium leading-[1.12] tracking-[-0.035em]";
 const ACCENT = "text-brand-secondary-highlight ";
 const DEMO_CARD =
   "rounded-xl border border-primary/15 bg-primary p-4 text-primary-foreground shadow-none sm:p-5 lg:p-6";
 const PAPER_CARD =
   "rounded-xl border border-border/55 bg-card p-4 text-card-foreground shadow-none sm:p-5 lg:p-6";
 const ACTION_BASE =
-  "inline-flex min-h-11 items-center justify-center gap-3 rounded-lg border px-5 py-2.5 text-[13px] font-medium shadow-none pointer-events-auto relative z-10 transition-opacity duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-background";
+  "inline-flex min-h-11 items-center justify-center gap-3 rounded-lg border px-5 py-3 text-[13px] font-medium shadow-none pointer-events-auto relative z-10 transition-[background-color,border-color,color,opacity] duration-150 motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-background";
 const PRIMARY_BUTTON =
-  "border-brand-secondary-highlight/15 bg-brand-secondary-highlight text-primary-foreground hover:bg-brand-secondary-highlight hover:text-primary-foreground hover:opacity-[0.86] focus-visible:ring-brand-secondary-highlight/25       ";
+  "border-brand-secondary-highlight/15 bg-brand-secondary-highlight text-primary-foreground hover:bg-brand-secondary-highlight hover:text-primary-foreground hover:opacity-90 focus-visible:ring-brand-secondary-highlight/25       ";
 const SECONDARY_BUTTON =
-  "border-border/65 bg-surface-2/35 text-foreground/70 hover:bg-surface-2/35 hover:text-foreground/70 hover:opacity-[0.72] focus-visible:ring-brand-secondary-highlight/18       ";
+  "border-border/75 bg-surface-1 text-foreground/85 hover:bg-surface-2 hover:text-foreground focus-visible:ring-brand-secondary-highlight/25       ";
 const TEAL_BUTTON =
-  "border-brand-primary/20 bg-brand-primary text-secondary-foreground hover:bg-brand-primary hover:text-secondary-foreground hover:opacity-[0.84] focus-visible:ring-brand-primary/30 focus-visible:ring-offset-primary";
+  "border-brand-primary/20 bg-brand-primary text-secondary-foreground hover:bg-brand-primary hover:text-secondary-foreground hover:opacity-90 focus-visible:ring-brand-primary/30 focus-visible:ring-offset-primary";
 
 export default function LandingPage() {
   const { user } = useAuth();
@@ -169,9 +183,20 @@ export default function LandingPage() {
       window.removeEventListener("resize", measure);
     };
   }, []);
-  const postProjectHref = user ? "/projects/new" : ROUTES.register;
-  const allocatHref = user?.isAllocat ? "/projects" : ROUTES.becomeAllocat;
-  const allocatLabel = user?.isAllocat ? "View my work" : "Become an Allocat";
+  const postProjectHref = user
+    ? "/projects/new"
+    : `${ROUTES.register}?returnTo=${encodeURIComponent("/projects/new")}`;
+  const allocatHref = user ? "/projects" : ROUTES.becomeAllocat;
+  const profileHref = user
+    ? user.isAllocat
+      ? "/allocats/profile"
+      : "/profile"
+    : ROUTES.register;
+  const allocatLabel = user?.isAllocat
+    ? "View my work"
+    : user
+      ? "Open my workspace"
+      : "Become an Allocat";
 
   return (
     <div
@@ -195,14 +220,22 @@ export default function LandingPage() {
       <BlankSpacePaws rootRef={pageRef} />
       <main className="relative isolate w-full">
         <HeroPanel postProjectHref={postProjectHref} />
-        <SlidingSection order={1} className="bg-surface-1">
+        <SlidingSection
+          order={1}
+          id="choose-your-path"
+          className="bg-surface-1"
+        >
           <AdventurePanel
             postProjectHref={postProjectHref}
             allocatHref={allocatHref}
             allocatLabel={allocatLabel}
           />
         </SlidingSection>
-        <SlidingSection order={2} className="bg-background">
+        <SlidingSection
+          order={2}
+          className="bg-primary text-primary-foreground"
+          style={TIMELINE_TOKENS}
+        >
           <OperatingTimeline />
         </SlidingSection>
         <SlidingSection order={3} className="bg-surface-teal">
@@ -215,7 +248,7 @@ export default function LandingPage() {
           <ExecutionPanel />
         </SlidingSection>
         <SlidingSection order={5} className="bg-surface-1">
-          <ProfilePanel allocatHref={allocatHref} />
+          <ProfilePanel allocatHref={profileHref} signedIn={Boolean(user)} />
         </SlidingSection>
         <SlidingSection order={6} className="bg-surface-2">
           <FaqPanel />
@@ -240,10 +273,14 @@ function SlidingSection({
   children,
   order,
   className = "",
+  style,
+  id,
 }: {
   children: ReactNode;
   order: number;
   className?: string;
+  style?: CSSProperties;
+  id?: string;
 }) {
   const ref = useRef<HTMLElement | null>(null);
   const reducedMotion = useReducedMotion();
@@ -255,9 +292,17 @@ function SlidingSection({
   return (
     <section
       ref={ref}
+      id={id}
+      tabIndex={id ? -1 : undefined}
       data-paw-tone={className.includes("bg-primary") ? "dark" : undefined}
-      className={`relative w-full border-t border-border/55 ${className}`}
-      style={{ zIndex: order }}
+      className={`relative w-full border-t border-border/55 focus:outline-none ${className}`}
+      style={{
+        ...style,
+        zIndex: order,
+        scrollMarginTop: id
+          ? "calc(var(--landing-header-height, 64px) + 1rem)"
+          : undefined,
+      }}
     >
       <motion.div style={{ y: reducedMotion ? 0 : lift }}>
         {children}
@@ -349,12 +394,16 @@ function ActionLink({
 function Eyebrow({
   children,
   dark = false,
+  center = false,
 }: {
   children: ReactNode;
   dark?: boolean;
+  center?: boolean;
 }) {
   return (
-    <div className="flex items-center gap-2.5">
+    <div
+      className={`flex items-center gap-2.5 ${center ? "justify-center" : ""}`}
+    >
       <span
         className={`h-1.5 w-7 rounded-full ${dark ? "bg-brand-primary" : "bg-brand-secondary-highlight "}`}
       />
@@ -371,58 +420,110 @@ function HeroPanel({ postProjectHref }: { postProjectHref: string }) {
   const reducedMotion = useReducedMotion();
   return (
     <section
-      className="relative flex min-h-[calc(100svh-var(--landing-header-height))] w-full flex-col bg-background text-foreground"
+      aria-labelledby="landing-title"
+      className="relative flex min-h-[calc(100svh-var(--landing-header-height))] w-full flex-col overflow-hidden bg-background text-foreground"
       data-paw-tone="dark"
       style={HERO_TOKENS}
     >
       <HeroAtmosphere />
       <CatBackground />
       <div
-        className={`${CONTAINER} relative z-10 flex flex-1 flex-col items-center justify-center pb-12 pt-10 text-center sm:pb-16 sm:pt-12`}
+        className={`${CONTAINER} relative z-10 flex flex-1 flex-col items-start justify-center pb-8 pt-10 text-left sm:pb-9 sm:pt-14 lg:pb-10 lg:pt-16`}
       >
         <Eyebrow dark>Work, better allocated</Eyebrow>
         <motion.h1
-          initial={reducedMotion ? false : { opacity: 0, y: 18 }}
+          id="landing-title"
+          initial={reducedMotion ? false : { opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-          className="relative mt-5 max-w-[1000px] text-[clamp(2rem,4.5vw,4.5rem)] font-medium leading-[1.06] tracking-[-0.035em]"
+          transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
+          className="relative mt-6 max-w-[760px] text-[clamp(2.25rem,5vw,4.8rem)] font-medium leading-[1.06] tracking-[-0.04em] lg:max-w-[64%]"
         >
           Good work starts
-          <br className="hidden sm:block" /> with the right
           <br />
-          <span className="text-brand-secondary-highlight ">
+          with the right
+          <br />
+          <span className="text-brand-secondary-highlight">
             skilled people.
           </span>
         </motion.h1>
-        <p className="mt-7 max-w-3xl text-sm font-normal tracking-[-0.015em] sm:text-base lg:text-lg">
-          Real expertise.{" "}
-          <span className="mx-1 text-brand-secondary-highlight ">+</span> Clear
-          responsibility.
-          <span className="mx-1 text-brand-secondary-highlight ">+</span> One
-          connected workspace.
-        </p>
-        <p className="mt-4 max-w-[620px] text-sm leading-relaxed text-muted-foreground sm:text-base">
+        <p className="mt-6 max-w-[480px] text-pretty text-sm leading-7 text-muted-foreground sm:text-base sm:leading-8 lg:max-w-[44%]">
           Find experienced professionals, skilled tradespeople and specialists.
-          Bring the right capability together around the work that needs doing.
+          Bring your team and your project together in one connected workspace.
         </p>
-        <div className="mt-6 flex w-full flex-col gap-2.5 sm:mt-8 sm:w-auto sm:flex-row sm:flex-wrap sm:justify-center sm:gap-3">
+        <div className="mt-8 flex w-full max-w-sm flex-col gap-3 sm:w-auto sm:max-w-none sm:flex-row sm:flex-wrap">
           <ActionLink to={postProjectHref} onTeal>
             Post a project
           </ActionLink>
           <ActionLink to={ROUTES.discover} onDark>
-            Browse all Allocats
+            Browse Allocats
           </ActionLink>
         </div>
-        <div className="mt-8 hidden w-full max-w-[850px] gap-3 text-left sm:grid sm:grid-cols-3 lg:mt-10">
+        <div className="mt-10 hidden max-w-[760px] flex-wrap items-center sm:flex gap-x-6 gap-y-3 border-t border-primary-foreground/15 pt-6 lg:mt-12">
           <HeroBenefit
             icon={BriefcaseBusinessIcon}
             title="Professional expertise"
           />
           <HeroBenefit icon={HardHatIcon} title="Skilled trades" />
-          <HeroBenefit icon={UsersIcon} title="People who deliver" />
+          <HeroBenefit icon={UsersIcon} title="One shared workspace" />
         </div>
       </div>
+      <HeroScrollCue />
     </section>
+  );
+}
+
+function HeroScrollCue() {
+  const ref = useRef<HTMLAnchorElement>(null);
+  const visible = useInView(ref, { amount: 0.2 });
+  const reducedMotion = useReducedMotion();
+  return (
+    <div
+      className="relative z-10 flex shrink-0 justify-center px-5 pb-5 pt-2 sm:pb-6"
+      style={{ paddingBottom: "max(1.25rem, env(safe-area-inset-bottom))" }}
+    >
+      <a
+        ref={ref}
+        href="#choose-your-path"
+        aria-label="Scroll to Choose your path"
+        onClick={(event) => {
+          if (
+            event.button !== 0 ||
+            event.metaKey ||
+            event.ctrlKey ||
+            event.shiftKey ||
+            event.altKey
+          )
+            return;
+          const target = document.getElementById("choose-your-path");
+          if (!target) return;
+          event.preventDefault();
+          target.focus({ preventScroll: true });
+          target.scrollIntoView({
+            behavior: reducedMotion ? "instant" : "smooth",
+            block: "start",
+          });
+        }}
+        className="group inline-flex h-11 w-11 items-center justify-center rounded-full border border-primary-foreground/25 bg-primary-foreground/[0.035] text-brand-primary transition-colors hover:border-brand-primary/40 hover:bg-primary-foreground/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/60 focus-visible:ring-offset-4 focus-visible:ring-offset-background motion-reduce:transition-none"
+      >
+        <motion.span
+          aria-hidden="true"
+          className="flex"
+          animate={visible && !reducedMotion ? { y: [0, 4, 0] } : { y: 0 }}
+          transition={
+            visible && !reducedMotion
+              ? {
+                  duration: 1.8,
+                  repeat: Infinity,
+                  repeatDelay: 0.6,
+                  ease: "easeInOut",
+                }
+              : { duration: 0 }
+          }
+        >
+          <ChevronDownIcon size={18} strokeWidth={1.7} />
+        </motion.span>
+      </a>
+    </div>
   );
 }
 
@@ -462,7 +563,7 @@ function CatBackground() {
           className="h-full w-full object-cover object-[50%_42%]"
         />
       </div>
-      {/* A broad tonal veil gives the centred headline a quiet reading area. */}
+      {/* A broad tonal veil keeps the left-aligned content readable beside the photograph. */}
       <div
         className="absolute inset-0"
         style={{
@@ -484,7 +585,7 @@ function HeroBenefit({
   return (
     <div
       data-paw-block="true"
-      className="flex items-center gap-3 rounded-xl border border-border/55 bg-primary-foreground/[0.04] px-4 py-3.5"
+      className="flex min-w-0 items-center gap-3 px-1 py-1"
     >
       <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-primary/[0.08] text-brand-primary ring-1 ring-inset ring-brand-primary/15   ">
         <Icon size={18} aria-hidden="true" />
@@ -666,7 +767,7 @@ function BlankSpacePaws({
             rotate: step.rotation,
           }}
           initial={{ opacity: 0, scale: 0.85 }}
-          animate={{ opacity: [0, 0.23, 0.17, 0], scale: [0.85, 1, 1, 0.96] }}
+          animate={{ opacity: [0, 0.15, 0.1, 0], scale: [0.85, 1, 1, 0.96] }}
           transition={{
             duration: 1.25,
             times: [0, 0.12, 0.55, 1],
@@ -693,9 +794,9 @@ function AdventurePanel({
   allocatLabel: string;
 }) {
   return (
-    <div className={`${CONTAINER} py-12 sm:py-16 lg:py-20`}>
+    <div className={`${CONTAINER} py-16 sm:py-20 lg:py-24`}>
       <div className="text-center">
-        <Eyebrow>Two ways to start</Eyebrow>
+        <Eyebrow center>Two ways to start</Eyebrow>
         <h2 className={`${HEADING} mt-4`}>Choose your path</h2>
         <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
           Different goals. One connected platform. Built for people who want to
@@ -765,9 +866,9 @@ function ChoiceCard({
   labels: string[];
 }) {
   return (
-    <article className="grid h-full overflow-hidden rounded-xl border border-border/55 bg-card text-card-foreground  sm:grid-cols-[1.12fr_0.88fr]">
+    <article className="grid h-full overflow-hidden rounded-2xl border border-border/60 bg-card text-card-foreground sm:grid-cols-[1.12fr_0.88fr]">
       <div className="flex flex-col items-start p-5 sm:p-6 xl:p-8">
-        <h3 className="text-lg font-medium tracking-[-0.025em] sm:text-2xl">
+        <h3 className="text-xl font-medium tracking-[-0.025em] sm:text-2xl">
           {title}
         </h3>
         <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
@@ -777,7 +878,7 @@ function ChoiceCard({
           {points.map((point) => (
             <li
               key={point}
-              className="flex items-start gap-2.5 text-xs leading-relaxed sm:text-sm"
+              className="flex items-start gap-2.5 text-sm leading-6"
             >
               <CheckDot />
               <span>{point}</span>
@@ -831,8 +932,7 @@ const OPERATING_STAGES = [
     title: "Start with the outcome.",
     copy: "Set the scope and expectations before looking for people.",
     icon: FileTextIcon,
-    color: "var(--brand-secondary-highlight)",
-    ink: "var(--brand-secondary-highlight)",
+    color: "var(--brand-secondary)",
   },
   {
     label: "Shape",
@@ -840,7 +940,6 @@ const OPERATING_STAGES = [
     copy: "Understand the practical skills and expertise the work requires.",
     icon: WrenchIcon,
     color: "var(--brand-amber)",
-    ink: "color-mix(in srgb, var(--brand-amber) 60%, var(--brand-charcoal))",
   },
   {
     label: "Allocate",
@@ -848,7 +947,6 @@ const OPERATING_STAGES = [
     copy: "Bring in skilled people who can take responsibility.",
     icon: UsersIcon,
     color: "var(--brand-cyan)",
-    ink: "color-mix(in srgb, var(--brand-cyan) 60%, var(--brand-charcoal))",
   },
   {
     label: "Deliver",
@@ -856,65 +954,75 @@ const OPERATING_STAGES = [
     copy: "Follow the tasks, decisions and completion together.",
     icon: CircleCheckBigIcon,
     color: "var(--brand-green)",
-    ink: "color-mix(in srgb, var(--brand-green) 60%, var(--brand-charcoal))",
   },
 ];
 
 type TimelinePoint = { x: number; y: number };
 type TimelineSegment = { from: TimelinePoint; to: TimelinePoint };
+const TIMELINE_TRAVEL_SECONDS = 1.3;
+const TIMELINE_NODE_PAUSE_MS = 1000;
+const TIMELINE_BOUNCE_SECONDS = 0.72;
+const TIMELINE_REWIND_SECONDS = 1.25;
 
-function insetTimelinePoint(
-  from: TimelinePoint,
-  to: TimelinePoint,
-  distance: number,
-): TimelinePoint {
-  const length = Math.hypot(to.x - from.x, to.y - from.y);
-  if (!length) return from;
-  const offset = Math.min(distance, length / 2) / length;
-  return {
-    x: from.x + (to.x - from.x) * offset,
-    y: from.y + (to.y - from.y) * offset,
-  };
-}
-
-// One marker follows the same path in either orientation, hiding behind nodes.
-function timelineMarker(phase: number, segments: TimelineSegment[]) {
-  if (!segments.length) return { x: 0, y: 0, opacity: 0 };
-  const last = segments.length - 1;
-  const stops = [
-    insetTimelinePoint(segments[0].from, segments[0].to, 4),
-    ...segments.slice(0, last).map((segment, index) => ({
-      x: (segment.to.x + segments[index + 1].from.x) / 2,
-      y: (segment.to.y + segments[index + 1].from.y) / 2,
-    })),
-    insetTimelinePoint(segments[last].to, segments[last].from, 4),
-  ];
-  const position = Math.max(0, Math.min(segments.length, phase));
-  const index = Math.min(last, Math.floor(position));
-  const progress = position - index;
-  const point = {
-    x: stops[index].x + (stops[index + 1].x - stops[index].x) * progress,
-    y: stops[index].y + (stops[index + 1].y - stops[index].y) * progress,
-  };
-  let opacity = 0;
-  for (const segment of segments) {
-    const dx = segment.to.x - segment.from.x;
-    const dy = segment.to.y - segment.from.y;
-    const length = Math.hypot(dx, dy);
-    if (!length) continue;
-    const along =
-      ((point.x - segment.from.x) * dx + (point.y - segment.from.y) * dy) /
-      length;
-    const across =
-      Math.abs(
-        (point.x - segment.from.x) * dy - (point.y - segment.from.y) * dx,
-      ) / length;
-    if (across < 0.5 && along >= 0 && along <= length) {
-      opacity = Math.max(0, Math.min(1, along / 4, (length - along) / 4));
-      break;
-    }
-  }
-  return { ...point, opacity };
+function TimelineConnector({
+  segment,
+  index,
+  progress,
+  gradientId,
+}: {
+  segment: TimelineSegment;
+  index: number;
+  progress: ReturnType<typeof useMotionValue<number>>;
+  gradientId: string;
+}) {
+  const length = Math.hypot(
+    segment.to.x - segment.from.x,
+    segment.to.y - segment.from.y,
+  );
+  const offset = useTransform(
+    progress,
+    (value) => length * (1 - Math.max(0, Math.min(1, value - index))),
+  );
+  const opacity = useTransform(progress, (value) => (value > index ? 1 : 0));
+  return (
+    <g>
+      <defs>
+        <linearGradient
+          id={gradientId}
+          gradientUnits="userSpaceOnUse"
+          x1={segment.from.x}
+          y1={segment.from.y}
+          x2={segment.to.x}
+          y2={segment.to.y}
+        >
+          <stop offset="0%" stopColor={OPERATING_STAGES[index].color} />
+          <stop offset="100%" stopColor={OPERATING_STAGES[index + 1].color} />
+        </linearGradient>
+      </defs>
+      <line
+        x1={segment.from.x}
+        y1={segment.from.y}
+        x2={segment.to.x}
+        y2={segment.to.y}
+        stroke="var(--border)"
+        strokeOpacity={1}
+        strokeWidth={2.5}
+        strokeLinecap="round"
+      />
+      <motion.line
+        data-timeline-fill={index}
+        x1={segment.from.x}
+        y1={segment.from.y}
+        x2={segment.to.x}
+        y2={segment.to.y}
+        stroke={`url(#${gradientId})`}
+        strokeWidth={3}
+        strokeLinecap="round"
+        strokeDasharray={`${length} ${length}`}
+        style={{ strokeDashoffset: offset, opacity }}
+      />
+    </g>
+  );
 }
 
 function OperatingTimeline() {
@@ -922,55 +1030,50 @@ function OperatingTimeline() {
   const ref = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const iconRefs = useRef<Array<HTMLDivElement | null>>([]);
-  const visible = useInView(ref, { amount: 0.25 });
+  const visible = useInView(ref, { amount: 0.2 });
   const reducedMotion = useReducedMotion();
-  const phase = useMotionValue(0);
-  const [active, setActive] = useState(0);
+  const progress = useMotionValue(0);
+  const [hidden, setHidden] = useState(() => document.hidden);
+  const [reached, setReached] = useState(-1);
+  const [arrival, setArrival] = useState({ index: -1, sequence: 0 });
   const [segments, setSegments] = useState<TimelineSegment[]>([]);
-  const markerX = useTransform(
-    phase,
-    (value) => timelineMarker(value, segments).x,
-  );
-  const markerY = useTransform(
-    phase,
-    (value) => timelineMarker(value, segments).y,
-  );
-  const markerOpacity = useTransform(
-    phase,
-    (value) => timelineMarker(value, segments).opacity,
-  );
 
-  useMotionValueEvent(phase, "change", (value) => {
-    const next = Math.min(
-      OPERATING_STAGES.length - 1,
-      Math.max(0, Math.round(value)),
+  useMotionValueEvent(progress, "change", (value) => {
+    const next = Math.max(
+      0,
+      Math.min(OPERATING_STAGES.length - 1, Math.floor(value)),
     );
-    setActive((current) => (current === next ? current : next));
+    setReached((current) => (current === next ? current : next));
   });
+  useEffect(() => {
+    const update = () => setHidden(document.hidden);
+    document.addEventListener("visibilitychange", update);
+    return () => document.removeEventListener("visibilitychange", update);
+  }, []);
 
   useEffect(() => {
     const track = trackRef.current;
     if (!track) return;
     function measure() {
-      const horizontal = window.innerWidth >= 1024;
+      const horizontal = window.matchMedia("(min-width: 1024px)").matches;
       const bounds = track!.getBoundingClientRect();
       const icons = iconRefs.current.map((element) =>
         element?.getBoundingClientRect(),
       );
       const next: TimelineSegment[] = [];
-      for (let index = 0; index < OPERATING_STAGES.length - 1; index += 1) {
-        const from = icons[index];
-        const to = icons[index + 1];
+      for (let index = 0; index < OPERATING_STAGES.length - 1; index++) {
+        const from = icons[index],
+          to = icons[index + 1];
         if (!from || !to) return;
         if (horizontal) {
-          const x1 = from.right - bounds.left + 10;
-          const x2 = to.left - bounds.left - 10;
+          const x1 = from.right - bounds.left + 7;
+          const x2 = to.left - bounds.left - 7;
           if (x2 <= x1) return;
           const y = from.top - bounds.top + from.height / 2;
           next.push({ from: { x: x1, y }, to: { x: x2, y } });
         } else {
-          const y1 = from.bottom - bounds.top + 10;
-          const y2 = to.top - bounds.top - 10;
+          const y1 = from.bottom - bounds.top + 7;
+          const y2 = to.top - bounds.top - 7;
           if (y2 <= y1) return;
           const x = from.left - bounds.left + from.width / 2;
           next.push({ from: { x, y: y1 }, to: { x, y: y2 } });
@@ -994,44 +1097,103 @@ function OperatingTimeline() {
   }, []);
 
   useEffect(() => {
-    if (!visible || reducedMotion) {
-      phase.set(0);
+    if (reducedMotion) {
+      progress.set(OPERATING_STAGES.length - 1);
+      setReached(OPERATING_STAGES.length - 1);
+      setArrival((current) => ({ ...current, index: -1 }));
       return;
     }
-    phase.set(0);
-    // 2.2 seconds per forward stage, then 0.4 seconds per reverse stage.
-    // Easing is applied independently between each pair of icon positions.
-    const playback = animate(phase, [0, 1, 2, 3, 2, 1, 0], {
-      duration: 7.8,
-      times: [0, 2.2 / 7.8, 4.4 / 7.8, 6.6 / 7.8, 7 / 7.8, 7.4 / 7.8, 1],
-      repeat: Infinity,
-      repeatDelay: 0.25,
-      ease: "easeInOut",
+    if (!visible || hidden || !segments.length) {
+      progress.set(0);
+      setReached(-1);
+      setArrival((current) => ({ ...current, index: -1 }));
+      return;
+    }
+    let stopped = false;
+    let playback: ReturnType<typeof animate> | undefined;
+    let pauseTimer: number | undefined;
+    let releaseStop: () => void = () => {};
+    const stopSignal = new Promise<void>((resolve) => {
+      releaseStop = resolve;
     });
-    return () => playback.stop();
-  }, [visible, reducedMotion, phase]);
+    function arrive(index: number) {
+      setReached(index);
+      setArrival((current) => ({ index, sequence: current.sequence + 1 }));
+    }
+    async function pause() {
+      await Promise.race([
+        new Promise<void>((resolve) => {
+          pauseTimer = window.setTimeout(
+            resolve,
+            TIMELINE_BOUNCE_SECONDS * 1000 + TIMELINE_NODE_PAUSE_MS,
+          );
+        }),
+        stopSignal,
+      ]);
+      if (pauseTimer !== undefined) window.clearTimeout(pauseTimer);
+      pauseTimer = undefined;
+    }
+    async function fillTo(value: number, duration: number) {
+      playback = animate(progress, value, { duration, ease: "easeInOut" });
+      await Promise.race([Promise.resolve(playback), stopSignal]);
+    }
+    async function loop() {
+      progress.set(0);
+      while (!stopped) {
+        arrive(0);
+        await pause();
+        for (
+          let stage = 1;
+          stage < OPERATING_STAGES.length && !stopped;
+          stage++
+        ) {
+          await fillTo(stage, TIMELINE_TRAVEL_SECONDS);
+          if (stopped) return;
+          arrive(stage);
+          await pause();
+        }
+        if (stopped) return;
+        // One continuous reverse: no repeated node bounces on the way back.
+        setArrival((current) => ({ ...current, index: -1 }));
+        await fillTo(0, TIMELINE_REWIND_SECONDS);
+      }
+    }
+    void loop();
+    return () => {
+      stopped = true;
+      playback?.stop();
+      if (pauseTimer !== undefined) window.clearTimeout(pauseTimer);
+      releaseStop();
+    };
+  }, [visible, hidden, reducedMotion, progress, segments.length]);
 
   return (
-    <div ref={ref} className={`${CONTAINER} py-12 sm:py-16`}>
+    <div ref={ref} className={`${CONTAINER} py-16 sm:py-20 lg:py-24`}>
       <Reveal>
-        <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <Eyebrow>From brief to delivery</Eyebrow>
-            <h2 className="mt-3 text-lg font-medium tracking-[-0.025em] sm:text-2xl">
-              Different expertise. One shared outcome.
+        <div className="mb-9 flex flex-wrap items-end justify-between gap-6 lg:mb-12">
+          <div className="max-w-2xl">
+            <Eyebrow dark>From brief to delivery</Eyebrow>
+            <h2 className={`${HEADING} mt-4 text-primary-foreground`}>
+              Different expertise.
+              <br className="hidden sm:block" /> One shared outcome.
             </h2>
+            <p className="mt-4 max-w-lg text-sm leading-7 text-primary-foreground/75">
+              A clear brief. The right capability. A shared plan for getting the
+              work done.
+            </p>
           </div>
           <Link
             to={ROUTES.howItWorks}
-            className={`pointer-events-auto relative z-10 inline-flex items-center gap-2 text-sm font-medium ${ACCENT}`}
+            className="relative z-10 inline-flex min-h-11 items-center gap-3 rounded-lg border border-primary-foreground/25 bg-primary-foreground/[0.04] px-4 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary-foreground/[0.10] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-primary motion-reduce:transition-none"
           >
             See the process
-            <ArrowRightIcon size={16} />
+            <ArrowRightIcon size={15} aria-hidden="true" />
           </Link>
         </div>
         <div
           data-paw-block="true"
-          className="rounded-xl border border-border/55 bg-card p-5 sm:p-8"
+          style={LANDING_TOKENS}
+          className="rounded-2xl border border-border/60 bg-card px-5 py-7 text-card-foreground sm:px-8 sm:py-9 lg:px-10 lg:py-10"
         >
           <div ref={trackRef} className="relative">
             {segments.length > 0 && (
@@ -1039,106 +1201,98 @@ function OperatingTimeline() {
                 aria-hidden="true"
                 className="pointer-events-none absolute inset-0 h-full w-full overflow-visible"
               >
-                <defs>
-                  {segments.map((segment, index) => (
-                    <linearGradient
-                      key={index}
-                      id={`${timelineId}-connector-${index}`}
-                      gradientUnits="userSpaceOnUse"
-                      x1={segment.from.x}
-                      y1={segment.from.y}
-                      x2={segment.to.x}
-                      y2={segment.to.y}
-                    >
-                      <stop
-                        offset="0%"
-                        stopColor={OPERATING_STAGES[index].color}
-                      />
-                      <stop
-                        offset="100%"
-                        stopColor={OPERATING_STAGES[index + 1].color}
-                      />
-                    </linearGradient>
-                  ))}
-                </defs>
                 {segments.map((segment, index) => (
-                  <line
+                  <TimelineConnector
                     key={index}
-                    x1={segment.from.x}
-                    x2={segment.to.x}
-                    y1={segment.from.y}
-                    y2={segment.to.y}
-                    stroke={`url(#${timelineId}-connector-${index})`}
-                    strokeWidth={1.5}
-                    strokeOpacity={0.35}
-                    strokeLinecap="round"
+                    segment={segment}
+                    index={index}
+                    progress={progress}
+                    gradientId={`${timelineId}-stage-${index}`}
                   />
                 ))}
-                {!reducedMotion && (
-                  <motion.circle
-                    r={4}
-                    cx={markerX}
-                    cy={markerY}
-                    fill="var(--brand-secondary-highlight)"
-                    style={{ opacity: markerOpacity }}
-                  />
-                )}
               </svg>
             )}
-            <ol className="grid grid-cols-1 gap-9 lg:grid-cols-4 lg:gap-8">
+            <ol
+              aria-label="From brief to delivery"
+              className="grid grid-cols-1 gap-9 lg:grid-cols-4 lg:gap-9"
+            >
               {OPERATING_STAGES.map(
-                ({ label, title, copy, icon: Icon, color, ink }, index) => (
-                  <li
-                    key={label}
-                    className="relative grid grid-cols-[48px_minmax(0,1fr)] items-start gap-x-5 lg:block"
-                  >
-                    <div
-                      ref={(element) => {
-                        iconRefs.current[index] = element;
-                      }}
-                      className="relative z-10 h-12 w-12 rounded-full bg-card"
+                ({ label, title, copy, icon: Icon, color }, index) => {
+                  const complete = reducedMotion || reached >= index;
+                  const bounce = !reducedMotion && arrival.index === index;
+                  return (
+                    <li
+                      key={label}
+                      className="relative grid grid-cols-[56px_minmax(0,1fr)] items-start gap-x-5 lg:flex lg:flex-col lg:items-center lg:text-center"
                     >
-                      <motion.span
-                        animate={{
-                          scale: !reducedMotion && active === index ? 1.05 : 1,
+                      <div
+                        ref={(element) => {
+                          iconRefs.current[index] = element;
                         }}
-                        transition={{ duration: reducedMotion ? 0 : 0.45 }}
-                        style={{
-                          backgroundColor: `color-mix(in srgb, ${color} ${active === index ? 16 : 9}%, var(--card))`,
-                          color: ink,
-                          borderColor: `color-mix(in srgb, ${color} 24%, var(--card))`,
-                        }}
-                        className="flex h-12 w-12 items-center justify-center rounded-full border"
+                        className="relative z-10 h-14 w-14 shrink-0 rounded-full bg-card"
                       >
-                        <Icon size={20} aria-hidden="true" />
-                      </motion.span>
-                    </div>
-                    <div className="min-w-0 pb-1 lg:mt-6 lg:pb-0">
-                      <div className="flex items-center justify-between gap-3">
-                        <p className="text-[10px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
+                        <motion.span
+                          key={`${label}-${bounce ? arrival.sequence : 0}`}
+                          data-timeline-node={label}
+                          initial={false}
+                          animate={
+                            bounce
+                              ? {
+                                  scale: [1, 1.16, 0.97, 1.025, 1],
+                                  y: [0, -4, 0, -1, 0],
+                                }
+                              : { scale: 1, y: 0 }
+                          }
+                          transition={
+                            bounce
+                              ? {
+                                  duration: TIMELINE_BOUNCE_SECONDS,
+                                  times: [0, 0.3, 0.58, 0.8, 1],
+                                  ease: "easeInOut",
+                                }
+                              : { duration: 0 }
+                          }
+                          style={{
+                            backgroundColor: `color-mix(in srgb, ${color} ${complete ? 15 : 5}%, var(--card))`,
+                            borderColor: `color-mix(in srgb, ${color} ${complete ? 48 : 22}%, var(--card))`,
+                            color: `color-mix(in srgb, ${color} 65%, var(--brand-charcoal))`,
+                          }}
+                          className="flex h-14 w-14 items-center justify-center rounded-full border transition-colors duration-300 motion-reduce:transition-none"
+                        >
+                          <Icon
+                            size={22}
+                            strokeWidth={1.7}
+                            aria-hidden="true"
+                          />
+                        </motion.span>
+                      </div>
+                      <div className="min-w-0 pb-1 lg:mt-6 lg:pb-0">
+                        <p className="text-[10px] font-medium uppercase tracking-[0.17em] text-muted-foreground">
+                          <span
+                            className="mr-2 tabular-nums"
+                            style={{
+                              color: `color-mix(in srgb, ${color} 60%, var(--brand-charcoal))`,
+                            }}
+                          >
+                            0{index + 1}
+                          </span>
                           {label}
                         </p>
-                        <span
-                          className="text-xs font-semibold"
-                          style={{
-                            color: `color-mix(in srgb, ${color} 25%, var(--brand-charcoal))`,
-                          }}
-                        >
-                          0{index + 1}
-                        </span>
+                        <h3 className="mt-2.5 text-sm font-medium leading-6 text-foreground sm:text-base">
+                          {title}
+                        </h3>
+                        <p className="mt-2 max-w-xs text-xs leading-6 text-muted-foreground">
+                          {copy}
+                        </p>
                       </div>
-                      <h3 className="mt-2 text-sm font-medium">{title}</h3>
-                      <p className="mt-2 text-xs leading-6 text-muted-foreground">
-                        {copy}
-                      </p>
-                    </div>
-                  </li>
-                ),
+                    </li>
+                  );
+                },
               )}
             </ol>
           </div>
         </div>
-        <div className="mt-6 flex flex-wrap gap-2 text-xs text-muted-foreground">
+        <div className="mt-7 flex flex-wrap gap-x-7 gap-y-4 border-t border-primary-foreground/15 pt-6 text-xs text-primary-foreground/75">
           {(
             [
               [BriefcaseBusinessIcon, "Advisory"],
@@ -1147,11 +1301,12 @@ function OperatingTimeline() {
               [ShieldCheckIcon, "Specialist expertise"],
             ] as const
           ).map(([Icon, label]) => (
-            <span
-              key={label}
-              className="flex items-center gap-2 rounded-full border border-border/55 px-3 py-2"
-            >
-              <Icon size={14} className={ACCENT} aria-hidden="true" />
+            <span key={label} className="flex items-center gap-2">
+              <Icon
+                size={14}
+                className="text-brand-primary"
+                aria-hidden="true"
+              />
               {label}
             </span>
           ))}
@@ -1172,7 +1327,7 @@ function ConnectedWorkPanel() {
   ];
   return (
     <div
-      className={`${CONTAINER} grid items-center gap-7 sm:gap-10 py-12 sm:py-16 lg:py-20 lg:grid-cols-[0.95fr_1.05fr] lg:gap-16`}
+      className={`${CONTAINER} grid items-center gap-7 sm:gap-10 py-16 sm:py-20 lg:py-24 lg:grid-cols-[0.95fr_1.05fr] lg:gap-16`}
     >
       <div>
         <Eyebrow>How it works</Eyebrow>
@@ -1234,7 +1389,7 @@ function ConnectedWorkPanel() {
 function Photo({ src, alt }: { src: string; alt: string }) {
   const reducedMotion = useReducedMotion();
   return (
-    <div className="aspect-[16/10] overflow-hidden lg:aspect-[1.12] rounded-xl bg-muted">
+    <div className="aspect-[16/10] overflow-hidden lg:aspect-[1.12] rounded-2xl bg-muted">
       <motion.img
         src={src}
         alt={alt}
@@ -1331,7 +1486,7 @@ function CommentCard({
 function ExecutionPanel() {
   return (
     <div
-      className={`${CONTAINER} grid items-center gap-7 sm:gap-10 py-12 sm:py-16 lg:py-20 lg:grid-cols-[0.95fr_1.05fr] lg:gap-16`}
+      className={`${CONTAINER} grid items-center gap-7 sm:gap-10 py-16 sm:py-20 lg:py-24 lg:grid-cols-[0.95fr_1.05fr] lg:gap-16`}
     >
       <div>
         <Eyebrow dark>Built for real projects</Eyebrow>
@@ -1433,10 +1588,16 @@ function ProjectResponsibilityCard() {
   );
 }
 
-function ProfilePanel({ allocatHref }: { allocatHref: string }) {
+function ProfilePanel({
+  allocatHref,
+  signedIn,
+}: {
+  allocatHref: string;
+  signedIn: boolean;
+}) {
   return (
     <div
-      className={`${CONTAINER} grid items-center gap-8 sm:gap-12 py-12 sm:py-16 lg:py-20 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16`}
+      className={`${CONTAINER} grid items-center gap-8 sm:gap-12 py-16 sm:py-20 lg:py-24 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16`}
     >
       <div
         data-paw-block="true"
@@ -1471,13 +1632,15 @@ function ProfilePanel({ allocatHref }: { allocatHref: string }) {
             ))}
           </div>
           <p className="mt-3 text-[10px] text-muted-foreground">
-            Example professional profile
+            Illustrative professional profile
           </p>
         </div>
         <div
           className={`absolute bottom-0 right-0 hidden w-[min(82%,290px)] lg:block ${PAPER_CARD}`}
         >
-          <p className="text-xs font-medium leading-5">Project context</p>
+          <p className="text-xs font-medium leading-5">
+            Example project context
+          </p>
           <div className="mt-4 space-y-4">
             {[
               "Completed a site assessment",
@@ -1506,7 +1669,9 @@ function ProfilePanel({ allocatHref }: { allocatHref: string }) {
           projects, your contributions add useful context to the work you do.
         </p>
         <div className="mt-8">
-          <ActionLink to={allocatHref}>Build your profile</ActionLink>
+          <ActionLink to={allocatHref}>
+            {signedIn ? "Manage your profile" : "Build your profile"}
+          </ActionLink>
         </div>
       </div>
     </div>
@@ -1542,7 +1707,7 @@ const FAQS = [
   {
     question: "How do I become an Allocat?",
     answer:
-      "Select Build your profile or Put your skills to work, then follow the Allocat setup process to present your skills and experience.",
+      "Select Become an Allocat or Build your profile. Choose an Allocat account during registration, confirm your email and complete your professional profile.",
   },
 ];
 
@@ -1552,7 +1717,7 @@ function FaqPanel() {
 
   return (
     <div
-      className={`${CONTAINER} grid gap-9 py-12 sm:py-16 lg:py-20 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16`}
+      className={`${CONTAINER} grid gap-9 py-16 sm:py-20 lg:py-24 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16`}
     >
       <div>
         <Eyebrow>FAQ</Eyebrow>
@@ -1582,7 +1747,7 @@ function FaqPanel() {
                       current === index ? null : index,
                     )
                   }
-                  className="pointer-events-auto relative z-10 flex w-full items-center justify-between gap-5 rounded-xl px-5 py-4 text-left text-[13px] font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                  className="pointer-events-auto relative z-10 flex w-full items-center justify-between gap-5 rounded-xl px-5 py-4 text-left text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                 >
                   {question}
                   <motion.span
@@ -1614,7 +1779,7 @@ function FaqPanel() {
                 }}
                 className="overflow-hidden"
               >
-                <p className="px-5 pb-5 pt-1 text-[13px] font-normal leading-7 text-muted-foreground">
+                <p className="px-5 pb-5 pt-1 text-sm font-normal leading-7 text-muted-foreground">
                   {answer}
                 </p>
               </motion.div>
@@ -1628,9 +1793,9 @@ function FaqPanel() {
 
 function ClosingPanel({ postProjectHref }: { postProjectHref: string }) {
   return (
-    <div className={`${CONTAINER} py-12 sm:py-16 lg:py-20`}>
+    <div className={`${CONTAINER} py-16 sm:py-20 lg:py-24`}>
       <div className="flex flex-col items-center text-center">
-        <Eyebrow>Get started today</Eyebrow>
+        <Eyebrow center>Get started today</Eyebrow>
         <h2 className={`${HEADING} mt-4 max-w-[1000px]`}>
           Something needs doing.
           <br />
