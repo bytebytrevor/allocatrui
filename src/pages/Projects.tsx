@@ -2519,32 +2519,27 @@ function WorkspaceMasthead({
         </div>
       </div>
       <div className="mt-5 flex min-w-0 flex-col gap-3 border-b border-border/55 pb-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between dark:border-border">
-        {
-          isAllocat ? (
-            <div
-              role="group"
-              aria-label="Workspace section"
-              className="inline-flex max-w-full items-center rounded-lg border border-border/55 bg-surface-2/25 p-0.5 dark:border-border"
-            >
-              <WorkspaceTab
-                active={workspaceSection === "projects"}
-                onClick={() => onSectionChange("projects")}
-                label="My projects"
-                count={projectCount}
-              />
-              <WorkspaceTab
-                active={workspaceSection === "work"}
-                onClick={() => onSectionChange("work")}
-                label="My work"
-                count={workCount}
-                attention={invitationCount > 0}
-              />
-            </div>
-          ) : null
-          // <p className="hidden items-center rounded-md border border-border/60 bg-surface-2/60 px-2.5 py-1.5 text-[11px] font-medium text-foreground/75 sm:inline-flex dark:border-border dark:bg-surface-3/50">
-          //   Project summary
-          // </p>
-        }
+        {isAllocat ? (
+          <div
+            role="group"
+            aria-label="Workspace section"
+            className="inline-flex max-w-full items-center rounded-lg border border-border/55 bg-surface-2/25 p-0.5 dark:border-border"
+          >
+            <WorkspaceTab
+              active={workspaceSection === "projects"}
+              onClick={() => onSectionChange("projects")}
+              label="My projects"
+              count={projectCount}
+            />
+            <WorkspaceTab
+              active={workspaceSection === "work"}
+              onClick={() => onSectionChange("work")}
+              label="My work"
+              count={workCount}
+              attention={invitationCount > 0}
+            />
+          </div>
+        ) : null}
         <div
           role="group"
           aria-label="Filter by status"

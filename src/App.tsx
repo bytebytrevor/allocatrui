@@ -1,164 +1,3 @@
-// import { createBrowserRouter, RouterProvider } from "react-router-dom";
-// import Discover from "./pages/DiscoverAllocats";
-// import AllocatProfilePage from "./pages/AllocatProfile";
-// import Dashboard from "./pages/Dashboard";
-// import Calendar from "./components/Calendar";
-// import ProjectManager from "./components/ProjectManager";
-// import Messaging from "./components/Messaging";
-// import NotFoundErrorPage from "./components/NotFoundErrorPage";
-// import LandingPage from "./pages/LandingPage";
-// import Projects from "./pages/Projects";
-// import Analytics from "./components/Analytics";
-// import Transactions from "./components/Transactions";
-// import Favorites from "./components/Favorites";
-// import CreateProject from "./pages/CreateProject";
-// import FindAllocats from "./pages/FindAllocats";
-// import VerifyEmail from "@/pages/Auth/VerifyEmail";
-// import { useEffect } from "react";
-// import "./App.css";
-// import Register from "./pages/Register";
-// import Login from "./pages/Login";
-// import Profile from "./pages/Profile";
-// import PricingPage from "./pages/PricingPage";
-// import AppToaster from "@/components/AppToaster";
-
-// import { AuthProvider } from "./auth/AuthContext";
-// import { RequireAuth } from "./auth/RequireAuth";
-// import CreateAllocatProfile from "./pages/CreateAllocatProfile";
-// import AboutPage from "./pages/AboutPage";
-// import HowItWorksPage from "./pages/HowItWorksPage";
-// import RequireAllocatSetup from "./auth/RequireAllocatSetup";
-// import AllocatPublicProfilePage from "./pages/AllocatPublicProfile";
-// import ProjectFilesWorkspace from "./pages/ProjectFilesWorkspace";
-
-// function CreateAllocatProfileRoute() {
-//   return (
-//     <RequireAllocatSetup>
-//       <CreateAllocatProfile />
-//     </RequireAllocatSetup>
-//   );
-// }
-
-// function App() {
-//   const theme = localStorage.getItem("theme") || "light";
-
-//   useEffect(() => {
-//     const root = document.documentElement;
-//     if (theme === "light") {
-//       root.classList.add("light");
-//       root.classList.remove("dark");
-//     } else {
-//       root.classList.add("dark");
-//       root.classList.remove("light");
-//     }
-//     localStorage.setItem("theme", theme);
-//   }, [theme]);
-
-//   const router = createBrowserRouter([
-//     {
-//       path: "/",
-//       Component: LandingPage,
-//       errorElement: <NotFoundErrorPage />,
-//     },
-//     {
-//       path: "/register",
-//       Component: Register,
-//     },
-//     {
-//       path: "/login",
-//       Component: Login,
-//     },
-//     {
-//       path: "/discover",
-//       Component: Discover,
-//     },
-//     // {
-//     //   path: "/allocats/:profileId",
-//     //   Component: AllocatProfilePage,
-//     // },
-//     {
-//       path: "/allocats/:profileId",
-//       Component: AllocatPublicProfilePage,
-//     },
-//     {
-//       path: "/verify-email",
-//       Component: VerifyEmail,
-//     },
-//     {
-//       path: "/about",
-//       Component: AboutPage,
-//       errorElement: <NotFoundErrorPage />,
-//     },
-//     {
-//       path: "/how-it-works",
-//       Component: HowItWorksPage,
-//       errorElement: <NotFoundErrorPage />,
-//     },
-//     {
-//       path: "/plans",
-//       Component: PricingPage,
-//       errorElement: <NotFoundErrorPage />,
-//     },
-
-//     // PROTECTED ROUTES
-//     {
-//       element: <RequireAuth />,
-//       children: [
-//         {
-//           path: "/projects",
-//           children: [
-//             { index: true, Component: Projects },
-//             { path: "new", Component: CreateProject },
-//             { path: ":projectId/allocats/find", Component: FindAllocats },
-//             {
-//               path: ":projectId",
-//               Component: Dashboard,
-//               children: [
-//                 { index: true, Component: ProjectManager },
-//                 { path: "calendar", Component: Calendar },
-//                 { path: "files", Component: ProjectFilesWorkspace },
-//                 { path: "messaging", Component: Messaging },
-//                 { path: "analytics", Component: Analytics },
-//                 { path: "transactions", Component: Transactions },
-//               ],
-//             },
-//           ],
-//         },
-
-//         // PROFILE PROTECTED
-//         {
-//           path: "/profile",
-//           Component: Profile,
-//         },
-//         {
-//           path: "allocats/profile",
-//           Component: AllocatProfilePage,
-//         },
-//         {
-//           path: "allocats/profile/create",
-//           Component: CreateAllocatProfileRoute,
-//         },
-
-//         // {
-//         //   path: "/profile/edit",
-//         //   Component: EditProfile,
-//         // },
-//       ],
-//     },
-//   ]);
-
-//   return (
-//     <>
-//       <AuthProvider>
-//         <RouterProvider router={router} />
-//       </AuthProvider>
-//       <AppToaster />
-//     </>
-//   );
-// }
-
-// export default App;
-
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { useEffect } from "react";
 import Discover from "./pages/DiscoverAllocats";
@@ -177,6 +16,8 @@ import CreateProject from "./pages/CreateProject";
 import FindAllocats from "./pages/FindAllocats";
 import VerifyEmail from "@/pages/Auth/VerifyEmail";
 import CheckEmail from "@/pages/Auth/CheckEmail";
+import ForgotPassword from "@/pages/Auth/ForgotPassword";
+import ResetPassword from "@/pages/Auth/ResetPassword";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 import Profile from "./pages/Profile";
@@ -195,6 +36,8 @@ const router = createBrowserRouter([
   { path: "/", Component: LandingPage, errorElement: <NotFoundErrorPage /> },
   { path: "/register", Component: Register },
   { path: "/login", Component: Login },
+  { path: "/forgot-password", Component: ForgotPassword },
+  { path: "/reset-password", Component: ResetPassword },
   { path: "/discover", Component: Discover },
   { path: "/allocats/:profileId", Component: AllocatPublicProfilePage },
   // The inbox has its own signed-in check; confirmation links remain public.
