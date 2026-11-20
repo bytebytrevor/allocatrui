@@ -10,7 +10,6 @@ import {
   AlertCircleIcon,
   CheckCircle2Icon,
   CheckIcon,
-  CircleDollarSignIcon,
   CopyIcon,
   EyeIcon,
   FilmIcon,
@@ -18,8 +17,6 @@ import {
   FileTextIcon,
   LoaderCircleIcon,
   SendIcon,
-  SparklesIcon,
-  UserRoundIcon,
   UsersIcon,
   XIcon,
 } from "lucide-react";
@@ -32,23 +29,19 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-
 export type InvitationAction = "accept" | "decline";
-
 type InvitationSkill = {
   id: string;
   name: string;
   categoryId?: string;
   category?: string;
 };
-
 type InvitationFile = {
   id: string;
   originalFileName: string;
   contentType: string;
   sizeBytes: number;
 };
-
 type InvitationPreview = {
   id: string;
   projectCode: string | null;
@@ -71,7 +64,10 @@ type InvitationPreview = {
   files: InvitationFile[];
 };
 type Props = {
-  project: { id: string; title: string };
+  project: {
+    id: string;
+    title: string;
+  };
   open: boolean;
   onOpenChange: (open: boolean) => void;
   responding: InvitationAction | null;
@@ -80,12 +76,11 @@ type Props = {
 };
 const primaryActionButton = [
   "border border-brand-secondary-highlight/20 bg-brand-secondary-highlight text-primary-foreground",
-  "hover:bg-brand-secondary-highlight hover:text-primary-foreground hover:opacity-90",
+  "hover:bg-brand-secondary-highlight/90 hover:text-primary-foreground",
   "dark:border-secondary/20 dark:bg-secondary dark:text-secondary-foreground",
-  "dark:hover:bg-secondary dark:hover:text-secondary-foreground",
+  "dark:hover:bg-secondary/90 dark:hover:text-secondary-foreground",
   "focus-visible:ring-2 focus-visible:ring-ring/35 motion-reduce:transition-none",
 ].join(" ");
-
 /** Loads only the brief the authenticated Allocat has been invited to review. */
 export default function ProjectInvitationDialog({
   project,
@@ -100,7 +95,6 @@ export default function ProjectInvitationDialog({
   const [error, setError] = useState<string | null>(null);
   const [attempt, setAttempt] = useState(0);
   const requestedId = useRef<string | null>(null);
-
   useEffect(() => {
     if (!open) return;
     const controller = new AbortController();
@@ -166,7 +160,6 @@ export default function ProjectInvitationDialog({
       controller.abort();
     };
   }, [open, project.id, attempt]);
-
   const details = preview?.id === project.id ? preview : null;
   const teamProject = details
     ? hasMultipleSkillCategories(details.skills)
@@ -205,34 +198,31 @@ export default function ProjectInvitationDialog({
               "color-mix(in srgb, var(--brand-amber) 48%, var(--foreground))",
           } as CSSProperties
         }
-        className="flex max-h-[90dvh] flex-col gap-0 overflow-hidden rounded-xl border-border/70 bg-card p-0 text-card-foreground shadow-xl shadow-black/10 sm:max-w-2xl dark:border-border"
+        className="flex max-h-[92dvh] w-[calc(100%-2rem)] flex-col gap-0 overflow-hidden rounded-2xl border-border/65 bg-card p-0 text-card-foreground shadow-[0_24px_80px_-24px_rgba(0,0,0,0.28)] sm:max-w-[720px] dark:border-border"
       >
-        <DialogHeader className="shrink-0 border-b border-border/60 px-5 pb-5 pt-6 text-left sm:px-7 sm:pt-7">
-          <p className="mb-3 inline-flex w-fit items-center gap-2 rounded-md bg-brand-amber/15 px-2.5 py-1.5 text-[10px] font-medium uppercase tracking-[0.12em] text-[color:var(--invitation-warm-ink)]">
-            <SendIcon
-              size={13}
-              strokeWidth={1.7}
-              aria-hidden="true"
-              className="shrink-0"
-            />
+        <DialogHeader className="shrink-0 border-b border-border/50 bg-surface-2/25 px-5 pb-5 pt-6 text-left sm:px-8 sm:pb-6 sm:pt-7">
+          <p className="mb-4 flex items-center gap-2.5 text-[10px] font-medium uppercase tracking-[0.13em] text-[color:var(--invitation-warm-ink)]">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-amber/10 text-[color:var(--invitation-warm-ink)]">
+              <SendIcon size={14} strokeWidth={1.7} aria-hidden="true" />
+            </span>
             Project invitation
           </p>
-          <DialogTitle className="break-words pr-6 text-xl font-medium leading-snug tracking-[-0.025em] sm:text-2xl [overflow-wrap:anywhere]">
+          <DialogTitle className="break-words pr-7 text-xl font-semibold leading-snug tracking-[-0.03em] sm:text-[23px] [overflow-wrap:anywhere]">
             {details?.title ?? project.title}
           </DialogTitle>
-          <DialogDescription className="mt-2 text-[13px] leading-6 text-muted-foreground">
-            Review the brief before accepting the invitation.
+          <DialogDescription className="mt-2 text-xs leading-6 text-muted-foreground">
+            Review the scope, timeline and requirements before joining.
           </DialogDescription>
         </DialogHeader>
 
         <div
           aria-busy={loading}
-          className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-6 sm:px-7"
+          className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-6 sm:px-8 sm:py-7"
         >
           {!ready && !error && (
             <div
               role="status"
-              className="flex min-h-56 items-center justify-center gap-2.5 text-[13px] text-muted-foreground"
+              className="flex min-h-56 items-center justify-center gap-2.5 text-xs text-muted-foreground"
             >
               <LoaderCircleIcon
                 size={16}
@@ -243,7 +233,7 @@ export default function ProjectInvitationDialog({
             </div>
           )}
           {error && (
-            <div role="alert" className="py-6">
+            <div role="alert" className="py-8">
               <AlertCircleIcon
                 size={21}
                 strokeWidth={1.7}
@@ -266,23 +256,17 @@ export default function ProjectInvitationDialog({
             </div>
           )}
           {ready && details && (
-            <div className="space-y-6">
+            <div>
               <section
                 aria-label="Budget and schedule"
-                className="border-b border-border/60 pb-6"
+                className="rounded-xl border border-brand-secondary-highlight/10 bg-brand-secondary-highlight/[0.035] p-4 sm:p-5 dark:border-border/60 dark:bg-surface-2/35"
               >
-                <dl className="grid min-w-0 grid-cols-2 items-center gap-x-5 gap-y-5 sm:grid-cols-[1.3fr_1fr_1fr]">
+                <dl className="grid min-w-0 grid-cols-2 gap-x-5 gap-y-5 sm:grid-cols-[1.15fr_1fr_1fr] sm:gap-x-6">
                   <div className="col-span-2 min-w-0 sm:col-span-1">
-                    <dt className="flex items-start gap-2 text-[11px] leading-5 text-muted-foreground">
-                      <CircleDollarSignIcon
-                        size={14}
-                        strokeWidth={1.7}
-                        aria-hidden="true"
-                        className="mt-0.5 shrink-0"
-                      />
-                      <span>Estimated project budget</span>
+                    <dt className="text-[11px] leading-5 text-muted-foreground">
+                      Estimated budget
                     </dt>
-                    <dd className="mt-2 break-words text-lg font-medium leading-snug tracking-[-0.025em] [overflow-wrap:anywhere]">
+                    <dd className="mt-1 break-words text-[15px] font-semibold leading-6 tracking-[-0.02em] text-brand-secondary-highlight dark:text-foreground/90 [overflow-wrap:anywhere]">
                       {formatBudget(details.budget, details.currency)}
                     </dd>
                   </div>
@@ -295,171 +279,152 @@ export default function ProjectInvitationDialog({
                     value={formatDate(details.dueDate)}
                   />
                 </dl>
-                <p className="mt-4 text-[11px] leading-5 text-muted-foreground">
-                  This is the overall project estimate. Agree your individual
-                  fee and payment terms with the client.
+                <p className="mt-4 border-t border-border/45 pt-3 text-[11px] leading-5 text-muted-foreground">
+                  Overall project estimate. Agree your individual fee and
+                  payment terms with the client.
                 </p>
               </section>
 
-              <section aria-labelledby="invitation-scope-heading">
-                <SectionHeading
-                  id="invitation-scope-heading"
-                  icon={
-                    <FileTextIcon
-                      size={15}
-                      strokeWidth={1.7}
-                      aria-hidden="true"
-                    />
-                  }
-                >
-                  Project scope
-                </SectionHeading>
-                <p className="mt-2.5 whitespace-pre-line break-words text-[13px] leading-7 text-foreground/80 [overflow-wrap:anywhere]">
-                  {details.description?.trim() ||
-                    "No project description was provided."}
-                </p>
-              </section>
-
-              <InvitationProjectFiles
-                key={details.id}
-                projectId={details.id}
-                files={details.files}
-                disabled={Boolean(responding)}
-              />
-
-              <section aria-labelledby="invitation-skills-heading">
-                <SectionHeading
-                  id="invitation-skills-heading"
-                  warm
-                  icon={
-                    <SparklesIcon
-                      size={15}
-                      strokeWidth={1.7}
-                      aria-hidden="true"
-                    />
-                  }
-                >
-                  Skills needed
-                </SectionHeading>
-                {teamProject && (
-                  <section
-                    aria-label="Team project"
-                    className="mt-3 flex items-start gap-3 rounded-lg border border-brand-secondary-highlight/10 bg-brand-secondary-highlight/[0.045] px-4 py-3 dark:border-secondary/15 dark:bg-secondary/[0.045]"
-                  >
-                    <UsersIcon
-                      size={16}
-                      strokeWidth={1.7}
-                      aria-hidden="true"
-                      className="mt-0.5 shrink-0 text-brand-secondary-highlight dark:text-secondary"
-                    />
-                    <p className="text-[13px] leading-6 text-foreground/80">
-                      This is a team project that brings together Allocats with
-                      different skills.
-                    </p>
-                  </section>
-                )}
-                {details.skills.length ? (
-                  <ul className="mt-3 flex flex-wrap gap-2">
-                    {details.skills.map((skill) => (
-                      <li
-                        key={skill.id}
-                        className="max-w-full break-words rounded-md bg-surface-2 px-2.5 py-1.5 text-xs leading-5 text-foreground/80 [overflow-wrap:anywhere]"
-                      >
-                        {skill.name}
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="mt-2.5 text-xs leading-6 text-muted-foreground">
-                    No required skills have been listed.
+              <div className="mt-4 rounded-xl border border-border/60 bg-card p-4 sm:p-5">
+                <section aria-labelledby="invitation-scope-heading">
+                  <SectionHeading id="invitation-scope-heading">
+                    Project scope
+                  </SectionHeading>
+                  <p className="mt-3 whitespace-pre-line break-words text-[13px] leading-7 text-foreground/80 [overflow-wrap:anywhere]">
+                    {details.description?.trim() ||
+                      "No project description was provided."}
                   </p>
-                )}
-              </section>
+                </section>
 
-              <section
-                aria-labelledby="invitation-client-heading"
-                className="border-t border-border/60 pt-5"
-              >
-                <SectionHeading
-                  id="invitation-client-heading"
-                  icon={
-                    <UserRoundIcon
-                      size={15}
-                      strokeWidth={1.7}
-                      aria-hidden="true"
+                <section
+                  aria-labelledby="invitation-skills-heading"
+                  className="mt-6"
+                >
+                  <SectionHeading id="invitation-skills-heading">
+                    Skills needed
+                  </SectionHeading>
+                  {teamProject && (
+                    <div
+                      aria-label="Team project"
+                      className="mt-2.5 flex items-start gap-2 rounded-md border border-brand-amber/[0.10] bg-brand-amber/[0.035] px-3 py-2 dark:border-brand-amber/[0.12] dark:bg-brand-amber/[0.035]"
+                    >
+                      <UsersIcon
+                        size={12}
+                        strokeWidth={1.7}
+                        aria-hidden="true"
+                        className="mt-1 shrink-0 text-[color:var(--invitation-warm-ink)]"
+                      />
+                      <p className="text-[11px] leading-5 text-muted-foreground">
+                        This is a team project that brings together Allocats
+                        with different skills.
+                      </p>
+                    </div>
+                  )}
+                  {details.skills.length ? (
+                    <ul className="mt-3 flex flex-wrap gap-1.5">
+                      {details.skills.map((skill) => (
+                        <li
+                          key={skill.id}
+                          className="max-w-full break-words rounded-md border border-brand-secondary-highlight/10 bg-brand-secondary-highlight/[0.035] px-2.5 py-0.5 text-[11px] font-medium leading-5 text-brand-secondary-highlight dark:border-border/60 dark:bg-surface-2/50 dark:text-foreground/75 [overflow-wrap:anywhere]"
+                        >
+                          {skill.name}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="mt-2.5 text-xs leading-6 text-muted-foreground">
+                      No required skills have been listed.
+                    </p>
+                  )}
+                </section>
+
+                <div className="mt-6">
+                  <InvitationProjectFiles
+                    key={details.id}
+                    projectId={details.id}
+                    files={details.files}
+                    disabled={Boolean(responding)}
+                  />
+                </div>
+              </div>
+              <div className="mt-4 grid min-w-0 gap-5 rounded-xl border border-border/60 bg-surface-2/20 p-4 sm:grid-cols-2 sm:gap-0 sm:p-5">
+                <section
+                  aria-labelledby="invitation-client-heading"
+                  className="min-w-0 sm:pr-5"
+                >
+                  <SectionHeading id="invitation-client-heading">
+                    About the client
+                  </SectionHeading>
+                  <dl className="mt-3 grid min-w-0 gap-3">
+                    <Detail
+                      label="Client"
+                      value={
+                        details.client.fullName?.trim() || "Name not provided"
+                      }
                     />
-                  }
+                    <Detail
+                      label="Client based in"
+                      value={location || "Location not provided"}
+                    />
+                  </dl>
+                  <p className="mt-3 text-[11px] leading-5 text-muted-foreground">
+                    The client’s location may differ from the work site. Confirm
+                    where the work will happen and whether travel is required.
+                  </p>
+                </section>
+                <section
+                  aria-labelledby="invitation-details-heading"
+                  className="min-w-0 border-t border-border/50 pt-5 sm:border-l sm:border-t-0 sm:pl-5 sm:pt-0"
                 >
-                  About the client
-                </SectionHeading>
-                <dl className="mt-3 grid min-w-0 gap-4 sm:grid-cols-2">
-                  <Detail
-                    label="Client"
-                    value={
-                      details.client.fullName?.trim() || "Name not provided"
-                    }
-                  />
-                  <Detail
-                    label="Client based in"
-                    value={location || "Location not provided"}
-                  />
-                </dl>
-                <p className="mt-3 text-[11px] leading-5 text-muted-foreground">
-                  The client’s location may differ from the work site. Confirm
-                  where the work will happen and whether travel is required.
-                </p>
-              </section>
-
-              <section
-                aria-labelledby="invitation-details-heading"
-                className="border-t border-border/60 pt-5"
-              >
-                <h3
-                  id="invitation-details-heading"
-                  className="text-sm font-medium"
-                >
-                  Project details
-                </h3>
-                <dl className="mt-3 grid min-w-0 grid-cols-2 gap-x-5 gap-y-4">
-                  <Detail
-                    label="Category"
-                    value={details.category?.trim() || "Not specified"}
-                  />
-                  <Detail
-                    label="Priority"
-                    value={<PriorityMark value={details.priority} />}
-                  />
-                  <Detail
-                    label="Invited"
-                    value={formatDate(details.invitedAt)}
-                  />
-                  <ProjectReference
-                    key={details.projectCode ?? "missing-reference"}
-                    value={details.projectCode}
-                  />
-                </dl>
-              </section>
+                  <SectionHeading id="invitation-details-heading">
+                    Project details
+                  </SectionHeading>
+                  <dl className="mt-3 grid min-w-0 grid-cols-2 gap-x-4 gap-y-3">
+                    <Detail
+                      label="Category"
+                      value={
+                        <span className="inline-flex max-w-full rounded-md border border-border/55 bg-card px-2 py-0.5 text-[11px] font-medium leading-5 [overflow-wrap:anywhere]">
+                          {details.category?.trim() || "Not specified"}
+                        </span>
+                      }
+                    />
+                    <Detail
+                      label="Priority"
+                      value={<PriorityMark value={details.priority} />}
+                    />
+                    <Detail
+                      label="Invited"
+                      value={formatDate(details.invitedAt)}
+                    />
+                    <ProjectReference
+                      key={details.projectCode ?? "missing-reference"}
+                      value={details.projectCode}
+                    />
+                  </dl>
+                </section>
+              </div>
             </div>
           )}
         </div>
 
-        <div className="shrink-0 border-t border-border/60 bg-surface-2/35 px-5 py-4 sm:px-7">
-          <p className="mb-3 text-[11px] leading-5 text-muted-foreground">
-            Accepting adds you to the project workspace and its tasks.
-          </p>
-          <InvitationActions
-            responding={responding}
-            onAccept={onAccept}
-            onDecline={onDecline}
-            acceptDisabled={!ready}
-            dialog
-          />
+        <div className="shrink-0 border-t border-border/55 bg-surface-2/25 px-5 py-4 sm:px-8">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-5">
+            <p className="max-w-[250px] text-[11px] leading-5 text-muted-foreground">
+              Accepting adds you to the project workspace and its tasks.
+            </p>
+            <InvitationActions
+              responding={responding}
+              onAccept={onAccept}
+              onDecline={onDecline}
+              acceptDisabled={!ready}
+              dialog
+            />
+          </div>
         </div>
       </DialogContent>
     </Dialog>
   );
 }
-
 export function InvitationActions({
   responding,
   onAccept,
@@ -486,7 +451,7 @@ export function InvitationActions({
         variant={dialog ? "outline" : "ghost"}
         disabled={responding !== null}
         onClick={() => void onDecline()}
-        className={`${dialog ? "h-11 border-border/70 bg-card px-5 text-xs" : "h-9 px-3 text-xs"} rounded-lg font-medium text-muted-foreground shadow-none hover:bg-surface-3/60 hover:text-foreground dark:hover:bg-surface-3/70`}
+        className={`${dialog ? "h-10 border-border/65 bg-transparent px-4 text-xs" : "h-9 px-3 text-xs"} rounded-lg font-medium text-muted-foreground shadow-none hover:bg-surface-3/60 hover:text-foreground dark:hover:bg-surface-3/70`}
       >
         {responding === "decline" ? (
           <LoaderCircleIcon
@@ -503,7 +468,7 @@ export function InvitationActions({
         type="button"
         disabled={responding !== null || acceptDisabled}
         onClick={() => void onAccept()}
-        className={`${dialog ? "h-11 px-5 text-xs" : "h-9 px-4 text-xs"} rounded-lg font-medium shadow-none ${primaryActionButton}`}
+        className={`${dialog ? "h-10 px-5 text-xs" : "h-9 px-4 text-xs"} rounded-lg font-medium shadow-none ${primaryActionButton}`}
       >
         {responding === "accept" ? (
           <LoaderCircleIcon
@@ -519,7 +484,6 @@ export function InvitationActions({
     </div>
   );
 }
-
 function ProjectReference({ value }: { value: string | null }) {
   const reference = value?.trim();
   const [copyState, setCopyState] = useState<
@@ -535,7 +499,6 @@ function ProjectReference({ value }: { value: string | null }) {
       if (timer.current !== null) clearTimeout(timer.current);
     };
   }, []);
-
   async function copyReference() {
     if (!reference || busy.current) return;
     busy.current = true;
@@ -557,7 +520,6 @@ function ProjectReference({ value }: { value: string | null }) {
       busy.current = false;
     }
   }
-
   return (
     <div className="col-span-2 min-w-0">
       <dt className="text-[11px] font-normal leading-5 text-muted-foreground">
@@ -567,7 +529,7 @@ function ProjectReference({ value }: { value: string | null }) {
         {reference ? (
           <>
             <div className="inline-flex max-w-full items-start gap-1.5">
-              <code className="min-w-0 select-all break-all py-2.5 font-mono text-[11px] leading-5 text-foreground/85 sm:py-1">
+              <code className="min-w-0 select-all break-all py-2 font-mono text-[11px] leading-5 text-foreground/85 sm:py-1">
                 {reference}
               </code>
               <button
@@ -583,7 +545,7 @@ function ProjectReference({ value }: { value: string | null }) {
                     size={14}
                     strokeWidth={1.7}
                     aria-hidden="true"
-                    className="text-brand-secondary-highlight dark:text-secondary"
+                    className="text-foreground/75"
                   />
                 ) : (
                   <CopyIcon size={14} strokeWidth={1.7} aria-hidden="true" />
@@ -594,7 +556,11 @@ function ProjectReference({ value }: { value: string | null }) {
               role="status"
               aria-live="polite"
               aria-atomic="true"
-              className="min-h-5 text-[11px] font-normal leading-5 text-muted-foreground"
+              className={
+                copyState === "idle"
+                  ? "sr-only"
+                  : "mt-1 text-[11px] leading-5 text-muted-foreground"
+              }
             >
               {copyState === "copied"
                 ? "Copied"
@@ -614,7 +580,6 @@ function ProjectReference({ value }: { value: string | null }) {
     </div>
   );
 }
-
 function Detail({ label, value }: { label: string; value: ReactNode }) {
   return (
     <div className="min-w-0">
@@ -627,24 +592,12 @@ function Detail({ label, value }: { label: string; value: ReactNode }) {
     </div>
   );
 }
-function SectionHeading({
-  id,
-  icon,
-  children,
-  warm = false,
-}: {
-  id: string;
-  icon: ReactNode;
-  children: ReactNode;
-  warm?: boolean;
-}) {
+function SectionHeading({ id, children }: { id: string; children: ReactNode }) {
   return (
-    <h3 id={id} className="flex items-center gap-2.5 text-sm font-medium">
-      <span
-        className={`inline-flex h-5 w-5 shrink-0 items-center justify-center ${warm ? "text-[color:var(--invitation-warm-ink)]" : "text-brand-secondary-highlight dark:text-secondary"}`}
-      >
-        {icon}
-      </span>
+    <h3
+      id={id}
+      className="text-[13px] font-semibold leading-5 tracking-[-0.01em] text-foreground/90"
+    >
       {children}
     </h3>
   );
@@ -658,7 +611,7 @@ function PriorityMark({ value }: { value: string | null }) {
         ? "bg-status-pending"
         : "bg-muted-foreground/50";
   return (
-    <span className="inline-flex items-center gap-2 text-foreground/85">
+    <span className="inline-flex items-center gap-1.5 rounded-md border border-border/55 bg-card px-2 py-0.5 text-[11px] font-medium leading-5 text-foreground/85">
       <span
         aria-hidden="true"
         className={`h-1.5 w-1.5 shrink-0 rounded-full ${dot}`}
@@ -723,7 +676,6 @@ function validPreview(value: InvitationPreview, id: string) {
     )
   );
 }
-
 function hasMultipleSkillCategories(skills: InvitationSkill[]) {
   const normalizeCategory = (value?: string) =>
     value?.trim().toLowerCase() || "";
@@ -745,7 +697,6 @@ function hasMultipleSkillCategories(skills: InvitationSkill[]) {
   }
   return categories.size > 1;
 }
-
 function InvitationProjectFiles({
   projectId,
   files,
@@ -758,27 +709,24 @@ function InvitationProjectFiles({
   const [selected, setSelected] = useState<InvitationFile | null>(null);
   return (
     <section aria-labelledby="invitation-files-heading">
-      <SectionHeading
-        id="invitation-files-heading"
-        icon={<FileTextIcon size={15} strokeWidth={1.7} aria-hidden="true" />}
-      >
+      <SectionHeading id="invitation-files-heading">
         Project files
       </SectionHeading>
       {files.length ? (
-        <ul className="mt-3 flex flex-wrap gap-3">
+        <ul className="mt-3 flex flex-wrap gap-2.5">
           {files.map((file) => (
-            <li key={file.id} className="w-32 min-w-0 sm:w-36">
+            <li key={file.id} className="w-28 min-w-0 sm:w-32">
               <button
                 type="button"
                 disabled={disabled}
                 onClick={() => setSelected(file)}
                 aria-label={`Preview ${file.originalFileName}`}
                 aria-pressed={selected?.id === file.id}
-                className="group block w-full overflow-hidden rounded-lg border border-border/65 bg-surface-2/30 text-left transition-colors hover:border-brand-secondary-highlight/35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35 disabled:opacity-50 dark:hover:border-secondary/35"
+                className="group block w-full overflow-hidden rounded-lg border border-border/55 bg-card text-left transition-[border-color,box-shadow] duration-150 motion-reduce:transition-none hover:border-foreground/25 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35 disabled:opacity-50 dark:hover:border-foreground/25"
               >
                 <span className="relative flex aspect-square w-full items-center justify-center overflow-hidden bg-surface-2">
                   <InvitationFileThumbnail projectId={projectId} file={file} />
-                  <span className="absolute bottom-2 right-2 flex h-6 w-6 items-center justify-center rounded-md bg-card/90 text-foreground/80">
+                  <span className="absolute bottom-2 right-2 flex h-6 w-6 items-center justify-center rounded-md bg-card/95 text-foreground/75 shadow-sm">
                     <EyeIcon size={12} aria-hidden="true" />
                   </span>
                 </span>
@@ -813,7 +761,6 @@ function InvitationProjectFiles({
     </section>
   );
 }
-
 type InvitationPreviewKind = "image" | "video" | "pdf" | "text" | "unsupported";
 function invitationPreviewKind(file: InvitationFile): InvitationPreviewKind {
   const mime = file.contentType.split(";")[0].trim().toLowerCase();
@@ -847,7 +794,9 @@ async function invitationFileUrl(
   fileId: string,
   signal: AbortSignal,
 ) {
-  const { data } = await api.get<{ url: string }>(
+  const { data } = await api.get<{
+    url: string;
+  }>(
     `/projects/${encodeURIComponent(projectId)}/invitation-preview/files/${encodeURIComponent(fileId)}/download`,
     { withCredentials: true, signal },
   );
@@ -1019,7 +968,7 @@ function InvitationFilePreview({
           <button
             type="button"
             onClick={() => setAttempt((current) => current + 1)}
-            className="mt-2 rounded px-2 py-2 text-xs font-medium text-brand-secondary-highlight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35 dark:text-secondary"
+            className="mt-2 rounded px-2 py-2 text-xs font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35"
           >
             Try again
           </button>
