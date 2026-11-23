@@ -1,5 +1,6 @@
+import NotificationBell from "@/components/NotificationBell";
 import { useEffect, useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   ArrowUpRightIcon,
   ChevronDownIcon,
@@ -47,10 +48,42 @@ function getInitialTheme(): Theme {
     ? "light"
     : "dark";
 }
-/** Shared public header for Discover and Allocat public profiles. */
+function getPageLabel(pathname: string): string {
+  const path = pathname.replace(/\/+$/, "") || "/";
+  const pages: Record<string, string> = {
+    "/": "Home",
+    "/projects": "Projects",
+    "/projects/new": "New project",
+    "/discover": "Discover Allocats",
+    "/profile": "Profile",
+    "/allocats/profile": "Allocat profile",
+    "/allocats/profile/create": "Create Allocat profile",
+    "/notifications": "Notifications",
+    "/settings": "Settings",
+    "/help": "Help & support",
+  };
+  if (pages[path]) return pages[path];
+  if (/^\/projects\/[^/]+\/allocats\/find$/.test(path)) return "Find Allocats";
+  if (/^\/projects\/[^/]+(?:\/|$)/.test(path)) {
+    const sections: Record<string, string> = {
+      calendar: "Calendar",
+      files: "Files",
+      messaging: "Messaging",
+      analytics: "Analytics",
+      transactions: "Transactions",
+    };
+    return sections[path.split("/")[3]] ?? "Project workspace";
+  }
+  if (/^\/allocats\/[^/]+$/.test(path)) return "Allocat profile";
+  return "Workspace";
+}
+
+/** Shared navigation for public profiles, discovery and project setup. */
 export default function MinimalNavMenu() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const pageLabel = getPageLabel(pathname);
   const [loggingOut, setLoggingOut] = useState(false);
   const logoutBusy = useRef(false);
   const signedIn = Boolean(user?.userId);
@@ -106,24 +139,23 @@ export default function MinimalNavMenu() {
       aria-label="Public navigation"
       className="flex h-16 min-w-0 items-center justify-between gap-3 bg-background"
     >
-      <Link
-        to={signedIn ? "/projects" : "/"}
-        aria-label={signedIn ? "Go to projects" : "Allocatr home"}
-        className={[
-          "group flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border lg:h-8 lg:w-8 lg:rounded-md",
-          "border-border/60 bg-card",
-          "transition-[background-color,border-color] duration-200",
-          "hover:border-border hover:bg-surface-2/60",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35",
-          "dark:border-border",
-          "dark:hover:bg-surface-2/60",
-          "motion-reduce:transition-none",
-        ].join(" ")}
-      >
-        <span className="flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-full [&_img]:h-[22px] [&_img]:w-[22px] [&_img]:max-h-[22px] [&_img]:max-w-[22px] [&_img]:object-contain [&_svg]:h-[22px] [&_svg]:w-[22px] [&_svg]:max-h-[22px] [&_svg]:max-w-[22px]">
-          <AllocatrIconLogo theme="" />
+      <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
+        <Link
+          to={signedIn ? "/projects" : "/"}
+          aria-label={signedIn ? "Go to projects" : "Allocatr home"}
+          className={
+            "flex h-11 w-11 shrink-0 items-center justify-center rounded-lg lg:h-8 lg:w-8 " +
+            focus
+          }
+        >
+          <span className="flex h-6 w-6 items-center justify-center [&_img]:h-6 [&_img]:w-6 [&_img]:object-contain [&_svg]:h-6 [&_svg]:w-6">
+            <AllocatrIconLogo theme={theme} className="h-6 w-6 object-contain" />
+          </span>
+        </Link>
+        <span aria-current="page" className="min-w-0 truncate text-xs font-medium text-foreground/75">
+          {pageLabel}
         </span>
-      </Link>
+      </div>
       <div className="flex shrink-0 items-center gap-1 sm:gap-2">
         {signedIn && (
           <Button asChild variant="ghost" className={quietAction}>
@@ -157,6 +189,7 @@ export default function MinimalNavMenu() {
             <MoonIcon size={16} aria-hidden="true" />
           )}
         </Button>
+        {signedIn && <NotificationBell />}
         {signedIn && user && (
           <>
             <span className="mx-1 hidden h-5 w-px bg-border/70 sm:block" />

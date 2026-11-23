@@ -4,9 +4,7 @@ import { isAxiosError } from "axios";
 import {
   AlertCircleIcon,
   LoaderCircleIcon,
-  LogOutIcon,
   MailCheckIcon,
-  PawPrintIcon,
   RefreshCwIcon,
 } from "lucide-react";
 import api from "@/api/axios";
@@ -28,7 +26,7 @@ import lightLogo from "@/assets/allocatr-dark-02.svg";
 import darkLogo from "@/assets/allocatr-neg-light.svg";
 
 const action =
-  "h-auto min-h-11 whitespace-normal rounded-lg px-5 py-3 text-xs font-semibold shadow-none " +
+  "min-h-11 w-full whitespace-normal rounded-lg px-4 py-2.5 text-xs font-semibold shadow-none sm:w-auto " +
   resultsControlFocus;
 function apiMessage(error: unknown, fallback: string) {
   return isAxiosError(error) &&
@@ -215,78 +213,55 @@ export default function CheckEmail() {
   const target = returnTo ?? rememberedReturnTo(user.userId);
 
   return (
-    <main className="flex min-h-[100svh] items-center justify-center bg-surface-2/55 px-3 py-4 text-foreground sm:px-6 sm:py-8 dark:bg-background">
-      <section
-        aria-labelledby="check-email-title"
-        className="flex min-h-[calc(100svh-2rem)] w-full max-w-[720px] flex-col items-center rounded-3xl border border-border/40 bg-card px-5 py-7 text-center sm:min-h-[680px] sm:px-12 sm:py-9 dark:border-border"
-      >
+    <main className="flex min-h-[100svh] items-center justify-center bg-surface-2/40 px-5 py-10 text-foreground dark:bg-background">
+      <div className="w-full max-w-[420px]">
         <Link
           to="/"
           aria-label="Allocatr home"
-          className={`inline-flex rounded-md ${resultsControlFocus}`}
+          className={`mx-auto mb-7 flex w-fit items-center rounded-md transition-opacity hover:opacity-80 motion-reduce:transition-none ${resultsControlFocus}`}
         >
           <img
             src={lightLogo}
             alt="Allocatr"
-            className="h-7 w-auto dark:hidden"
+            className="h-6 w-auto max-w-[120px] object-contain dark:hidden"
           />
           <img
             src={darkLogo}
             alt="Allocatr"
-            className="hidden h-7 w-auto dark:block"
+            className="hidden h-6 w-auto max-w-[120px] object-contain dark:block"
           />
         </Link>
-        <div className="flex w-full flex-1 flex-col items-center justify-center py-12 sm:py-16">
-          <p className="text-[0.58rem] font-semibold uppercase tracking-[0.17em] text-brand-secondary-highlight dark:text-secondary">
-            Email verification
-          </p>
-          <h1
-            id="check-email-title"
-            className="mt-3 text-3xl font-semibold leading-tight tracking-[-0.035em] text-foreground/85 sm:text-4xl"
-          >
-            You’ve got meow.
-          </h1>
+
+        <section
+          aria-labelledby="check-email-title"
+          className="rounded-2xl border border-border/60 bg-card px-6 py-8 text-center sm:px-8 sm:py-9 dark:border-border"
+        >
           <div
             aria-hidden="true"
-            className="mt-9 flex h-28 w-28 items-center justify-center rounded-full bg-brand-secondary-highlight/[0.08] text-brand-secondary-highlight dark:bg-secondary/[0.08] dark:text-secondary"
+            className="mx-auto flex h-11 w-11 items-center justify-center rounded-xl bg-brand-secondary-highlight/[0.08] text-brand-secondary-highlight dark:bg-secondary/[0.07] dark:text-secondary"
           >
-            <MailCheckIcon size={48} strokeWidth={1.5} />
+            <MailCheckIcon size={21} strokeWidth={1.7} />
           </div>
-          <p className="mt-7 max-w-sm text-sm leading-7 text-muted-foreground">
-            Confirm your email address to{" "}
-            {user.isAllocat
-              ? "start setting up your professional profile"
-              : "continue to your workspace"}
-            .
+          <h1
+            id="check-email-title"
+            className="mt-5 text-2xl font-semibold leading-snug tracking-[-0.025em] text-foreground/90"
+          >
+            Check your email
+          </h1>
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">
+            Open the verification link for
           </p>
-          <p className="mt-2 max-w-full break-all text-sm font-semibold text-foreground/85">
+          <p className="mt-1 break-all text-sm font-medium leading-6 text-foreground/85">
             {user.email}
           </p>
-          <p className="mt-3 max-w-sm text-xs leading-6 text-muted-foreground">
-            Open the verification link in your inbox. If it’s hiding, check your
-            spam or junk folder.
+          <p className="mt-3 text-xs leading-5 text-muted-foreground">
+            Can’t find it? Check your spam or junk folder.
           </p>
-          {registrationDelivery === "failed" && !sent && (
-            <p
-              role="status"
-              className="mt-4 max-w-sm text-xs leading-6 text-status-pending-foreground"
-            >
-              Your account is saved. We couldn’t send the first email—use Resend
-              email below.
-            </p>
-          )}
-          {notice && (
-            <p
-              role="status"
-              className="mt-4 max-w-sm text-xs leading-6 text-muted-foreground"
-            >
-              {notice}
-            </p>
-          )}
-          {error && (
+
+          {error ? (
             <p
               role="alert"
-              className="mt-4 flex max-w-sm items-start gap-2 text-left text-xs leading-6 text-destructive"
+              className="mt-4 flex items-start justify-center gap-2 text-left text-xs leading-6 text-destructive"
             >
               <AlertCircleIcon
                 size={14}
@@ -295,11 +270,26 @@ export default function CheckEmail() {
               />
               {error}
             </p>
-          )}
-          <div className="mt-7 flex w-full flex-col justify-center gap-2 sm:w-auto sm:flex-row sm:flex-wrap">
+          ) : notice ? (
+            <p
+              role="status"
+              className="mt-4 text-xs leading-6 text-muted-foreground"
+            >
+              {notice}
+            </p>
+          ) : registrationDelivery === "failed" && !sent ? (
+            <p
+              role="status"
+              className="mt-4 text-xs leading-6 text-status-pending-foreground"
+            >
+              Your account is saved. The email couldn’t be sent. Select Resend
+              email to try again.
+            </p>
+          ) : null}
+
+          <div className="mt-6 flex flex-col justify-center gap-2 sm:flex-row sm:flex-wrap">
             <Button
               type="button"
-              variant="ghost"
               disabled={checking || signingOut || sending}
               onClick={() => void checkStatus(true)}
               className={`${action} ${primaryActionButton}`}
@@ -327,7 +317,7 @@ export default function CheckEmail() {
                   aria-hidden="true"
                 />
               ) : (
-                <RefreshCwIcon size={14} aria-hidden="true" />
+                <RefreshCwIcon size={13} aria-hidden="true" />
               )}
               {sending
                 ? "Sending…"
@@ -336,14 +326,9 @@ export default function CheckEmail() {
                   : "Resend email"}
             </Button>
           </div>
-          <p className="mt-5 inline-flex items-center gap-2 text-[11px] text-muted-foreground">
-            <PawPrintIcon
-              size={12}
-              className="text-brand-secondary-highlight dark:text-secondary"
-              aria-hidden="true"
-            />
-            One small paw-step before you’re in.
-          </p>
+        </section>
+
+        <div className="mt-3 text-center">
           <button
             type="button"
             disabled={signingOut || sending || checking}
@@ -359,16 +344,12 @@ export default function CheckEmail() {
                 if (mounted.current) setSigningOut(false);
               }
             }}
-            className={`mt-6 inline-flex min-h-9 items-center gap-2 rounded-md px-2 text-xs text-muted-foreground hover:text-foreground disabled:opacity-50 ${resultsControlFocus}`}
+            className={`inline-flex min-h-11 items-center justify-center rounded-md px-2 text-xs text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50 motion-reduce:transition-none ${resultsControlFocus}`}
           >
-            <LogOutIcon size={13} aria-hidden="true" />
             {signingOut ? "Signing out…" : "Use another account"}
           </button>
         </div>
-        <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground/65">
-          Work, properly allocated
-        </p>
-      </section>
+      </div>
     </main>
   );
 }

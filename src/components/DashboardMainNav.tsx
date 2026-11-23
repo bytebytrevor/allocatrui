@@ -1,21 +1,21 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   BadgeCheckIcon,
-  BellIcon,
-  CircleHelpIcon,
   ChevronDownIcon,
+  CircleHelpIcon,
   EllipsisVerticalIcon,
   FolderPlusIcon,
-  UsersIcon,
   LogOutIcon,
   MoonIcon,
   SettingsIcon,
   SunIcon,
   User2Icon,
   UserCircleIcon,
+  UsersIcon,
 } from "lucide-react";
 import api from "@/api/axios";
+import NotificationBell from "@/components/NotificationBell";
 import { useAuth } from "@/auth/useAuth";
 import AllocatrIconLogo from "@/components/AllocatrIconLogo";
 import BecomeAllocatDialog from "@/components/BecomeAllocatDialog";
@@ -30,37 +30,51 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+
 type Theme = "light" | "dark";
+
 type Props = {
   children?: ReactNode;
   notificationCount?: number;
 };
+
 type AccountUser = {
   fullName?: string | null;
   email?: string | null;
   avatarUrl?: string | null;
   isAllocat?: boolean;
 };
+
 const focus =
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35";
+
 const navIconButton = [
-  "relative h-11 w-11 shrink-0 rounded-xl lg:h-8 lg:w-8 lg:rounded-md text-muted-foreground shadow-none",
+  "relative h-11 w-11 shrink-0 rounded-xl text-muted-foreground shadow-none lg:h-8 lg:w-8 lg:rounded-md",
   "transition-colors duration-200 motion-reduce:transition-none",
   "hover:bg-surface-2/80 hover:text-foreground data-[state=open]:bg-surface-2 data-[state=open]:text-foreground",
   "dark:hover:bg-surface-3/65",
   focus,
 ].join(" ");
+
 const dropdownSurface =
   "rounded-2xl border border-border/70 bg-popover p-1.5 text-popover-foreground shadow-lg shadow-black/5";
-const dropdownItem =
-  "flex min-h-11 gap-2.5 rounded-lg px-3 py-2 text-xs font-medium text-foreground/80 transition-colors focus:bg-surface-3/60 focus:text-foreground data-[highlighted]:bg-surface-3/60 data-[highlighted]:text-foreground dark:focus:bg-surface-3/70 dark:data-[highlighted]:bg-surface-3/70 motion-reduce:transition-none [&_svg]:shrink-0 [&_svg]:text-muted-foreground";
+
+const dropdownItem = [
+  "flex min-h-11 gap-2.5 rounded-lg px-3 py-2 text-xs font-medium text-foreground/80",
+  "transition-colors motion-reduce:transition-none",
+  "focus:bg-surface-3/60 focus:text-foreground data-[highlighted]:bg-surface-3/60 data-[highlighted]:text-foreground",
+  "dark:focus:bg-surface-3/70 dark:data-[highlighted]:bg-surface-3/70",
+  "[&_svg]:shrink-0 [&_svg]:text-muted-foreground",
+].join(" ");
+
 const destructiveDropdownItem = [
   dropdownItem,
-  "font-medium focus:bg-destructive/[0.07] focus:text-destructive",
+  "focus:bg-destructive/[0.07] focus:text-destructive",
   "data-[highlighted]:bg-destructive/[0.07] data-[highlighted]:text-destructive",
-  "[&_svg]:text-muted-foreground focus:[&_svg]:text-destructive data-[highlighted]:[&_svg]:text-destructive",
+  "focus:[&_svg]:text-destructive data-[highlighted]:[&_svg]:text-destructive",
   "dark:focus:bg-destructive/[0.12] dark:data-[highlighted]:bg-destructive/[0.12]",
 ].join(" ");
+
 function getInitials(name?: string | null) {
   return (
     name
@@ -71,6 +85,7 @@ function getInitials(name?: string | null) {
       .join("") || "U"
   );
 }
+
 function getInitialTheme(): Theme {
   if (typeof window === "undefined") return "dark";
   try {
@@ -79,16 +94,46 @@ function getInitialTheme(): Theme {
   } catch {
     // Theme switching still works when browser storage is unavailable.
   }
-  return document.documentElement.classList.contains("light")
-    ? "light"
-    : "dark";
+  return document.documentElement.classList.contains("light") ? "light" : "dark";
 }
+
+function getPageLabel(pathname: string): string {
+  const path = pathname.replace(/\/+$/, "") || "/";
+  const pages: Record<string, string> = {
+    "/": "Home",
+    "/projects": "Projects",
+    "/projects/new": "New project",
+    "/discover": "Discover Allocats",
+    "/profile": "Profile",
+    "/allocats/profile": "Allocat profile",
+    "/allocats/profile/create": "Create Allocat profile",
+    "/notifications": "Notifications",
+    "/settings": "Settings",
+    "/help": "Help & support",
+  };
+  if (pages[path]) return pages[path];
+  if (/^\/projects\/[^/]+\/allocats\/find$/.test(path)) return "Find Allocats";
+  if (/^\/projects\/[^/]+(?:\/|$)/.test(path)) {
+    const sections: Record<string, string> = {
+      calendar: "Calendar",
+      files: "Files",
+      messaging: "Messaging",
+      analytics: "Analytics",
+      transactions: "Transactions",
+    };
+    return sections[path.split("/")[3]] ?? "Project workspace";
+  }
+  if (/^\/allocats\/[^/]+$/.test(path)) return "Allocat profile";
+  return "Workspace";
+}
+
 /** Account navigation for authenticated workspace pages. */
 export default function DashboardMainNav({
   children,
-  notificationCount = 0,
 }: Props) {
   const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const pageLabel = getPageLabel(pathname);
   const { user, logout, refreshUser } = useAuth();
   const signedIn = Boolean(user?.userId);
   const [theme, setTheme] = useState<Theme>(getInitialTheme);
@@ -98,9 +143,7 @@ export default function DashboardMainNav({
   const logoutBusy = useRef(false);
   const becomeBusy = useRef(false);
   const initials = useMemo(() => getInitials(user?.fullName), [user?.fullName]);
-  const count = Number.isFinite(notificationCount)
-    ? Math.max(0, Math.floor(notificationCount))
-    : 0;
+
   useEffect(() => {
     const root = document.documentElement;
     root.classList.toggle("dark", theme === "dark");
@@ -109,12 +152,14 @@ export default function DashboardMainNav({
     try {
       window.localStorage.setItem("theme", theme);
     } catch {
-      /* Storage is optional. */
+      // Storage is optional.
     }
   }, [theme]);
+
   useEffect(() => {
     if (!signedIn) setBecomeAllocatOpen(false);
   }, [signedIn]);
+
   async function handleLogout() {
     if (!signedIn || logoutBusy.current) return;
     logoutBusy.current = true;
@@ -129,16 +174,13 @@ export default function DashboardMainNav({
       setLoggingOut(false);
     }
   }
+
   async function handleBecomeAllocat() {
     if (!signedIn || user?.isAllocat || becomeBusy.current) return;
     becomeBusy.current = true;
     setBecomingAllocat(true);
     try {
-      await api.patch(
-        "/users/me/become-allocat",
-        {},
-        { withCredentials: true },
-      );
+      await api.patch("/users/me/become-allocat", {}, { withCredentials: true });
       await refreshUser();
       setBecomeAllocatOpen(false);
       navigate("/allocats/profile/create");
@@ -150,44 +192,39 @@ export default function DashboardMainNav({
       setBecomingAllocat(false);
     }
   }
+
   if (!user?.userId) return null;
+
   return (
     <>
       <nav
         aria-label="Workspace navigation"
         className="flex h-16 min-w-0 items-center justify-between gap-3 bg-background sm:gap-4"
       >
-        <div className="flex min-w-0 items-center gap-3">
+        <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
           <Link
             to="/projects"
-            aria-label="Go to projects"
+            aria-label="Allocatr — go to projects"
             className={
-              "group flex min-w-0 shrink-0 items-center gap-2.5 rounded-xl " +
+              "group flex h-11 shrink-0 items-center rounded-lg " +
               focus
             }
           >
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl lg:h-8 lg:w-8 lg:rounded-md border border-border/60 bg-card transition-colors group-hover:border-border group-hover:bg-surface-2/60 motion-reduce:transition-none">
-              <span className="flex h-6 w-6 items-center justify-center overflow-hidden rounded-full [&_img]:h-[22px] [&_img]:w-[22px] [&_img]:object-contain [&_svg]:h-[22px] [&_svg]:w-[22px]">
-                <AllocatrIconLogo theme="" />
+            <span className="flex h-11 w-11 items-center justify-center lg:h-8 lg:w-8">
+              <span className="flex h-6 w-6 items-center justify-center [&_img]:h-6 [&_img]:w-6 [&_img]:object-contain [&_svg]:h-6 [&_svg]:w-6">
+                <AllocatrIconLogo theme={theme} className="h-6 w-6 object-contain" />
               </span>
             </span>
           </Link>
-          {children && (
-            <>
-              <span className="hidden h-5 w-px bg-border/60 md:block" />
-              <div className="hidden min-w-0 truncate md:block">{children}</div>
-            </>
-          )}
+          <div className="min-w-0 truncate text-xs font-medium text-foreground/75">
+            {children ?? <span aria-current="page">{pageLabel}</span>}
+          </div>
         </div>
 
         <div className="flex shrink-0 items-center gap-0.5 sm:gap-1">
           <NavIconButton
-            label={
-              theme === "dark" ? "Switch to light mode" : "Switch to dark mode"
-            }
-            onClick={() =>
-              setTheme((current) => (current === "dark" ? "light" : "dark"))
-            }
+            label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+            onClick={() => setTheme((current) => (current === "dark" ? "light" : "dark"))}
           >
             {theme === "dark" ? (
               <SunIcon size={16} aria-hidden="true" />
@@ -195,37 +232,25 @@ export default function DashboardMainNav({
               <MoonIcon size={16} aria-hidden="true" />
             )}
           </NavIconButton>
-          <>
-            <NavIconButton
-              label={
-                count > 0 ? `${count} unread notifications` : "Notifications"
-              }
-              onClick={() => navigate("/notifications")}
-              notification={count > 0}
-            >
-              <BellIcon size={16} aria-hidden="true" />
-            </NavIconButton>
-            <QuickActionsMenu
-              onNewProject={() => navigate("/projects/new")}
-              onDiscover={() => navigate("/discover")}
-              onHelp={() => navigate("/help")}
-            />
-            <span className="mx-1.5 hidden h-5 w-px bg-border/60 md:block" />
-            <AccountMenu
-              user={user}
-              initials={initials}
-              loggingOut={loggingOut}
-              onLogout={() => void handleLogout()}
-              onProfile={() =>
-                navigate(user.isAllocat ? "/allocats/profile" : "/profile")
-              }
-              onSettings={() => navigate("/settings")}
-              onBecomeAllocat={() => setBecomeAllocatOpen(true)}
-            />
-          </>
+          <NotificationBell />
+          <QuickActionsMenu
+            onNewProject={() => navigate("/projects/new")}
+            onDiscover={() => navigate("/discover")}
+            onHelp={() => navigate("/help")}
+          />
+          <span className="mx-1.5 hidden h-5 w-px bg-border/60 md:block" />
+          <AccountMenu
+            user={user}
+            initials={initials}
+            loggingOut={loggingOut}
+            onLogout={() => void handleLogout()}
+            onProfile={() => navigate(user.isAllocat ? "/allocats/profile" : "/profile")}
+            onSettings={() => navigate("/settings")}
+            onBecomeAllocat={() => setBecomeAllocatOpen(true)}
+          />
         </div>
       </nav>
-      {signedIn && !user?.isAllocat && (
+      {!user.isAllocat && (
         <BecomeAllocatDialog
           open={becomeAllocatOpen}
           onOpenChange={setBecomeAllocatOpen}
@@ -236,16 +261,15 @@ export default function DashboardMainNav({
     </>
   );
 }
+
 function NavIconButton({
   children,
   label,
   onClick,
-  notification = false,
 }: {
   children: ReactNode;
   label: string;
   onClick: () => void;
-  notification?: boolean;
 }) {
   return (
     <Button
@@ -258,22 +282,12 @@ function NavIconButton({
       title={label}
     >
       {children}
-      {notification && (
-        <span
-          aria-hidden="true"
-          className="absolute right-[9px] top-[9px] lg:right-1 lg:top-1 flex h-1.5 w-1.5"
-        >
-          <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-status-pending ring-2 ring-background" />
-        </span>
-      )}
+
     </Button>
   );
 }
-function QuickActionsMenu({
-  onNewProject,
-  onDiscover,
-  onHelp,
-}: {
+
+function QuickActionsMenu({ onNewProject, onDiscover, onHelp }: {
   onNewProject: () => void;
   onDiscover: () => void;
   onHelp: () => void;
@@ -318,6 +332,7 @@ function QuickActionsMenu({
     </DropdownMenu>
   );
 }
+
 function AccountMenu({
   user,
   initials,
@@ -335,27 +350,6 @@ function AccountMenu({
   onSettings: () => void;
   onBecomeAllocat: () => void;
 }) {
-  const avatar = (large = false) => (
-    <Avatar
-      className={
-        (large ? "h-10 w-10" : "h-8 w-8 lg:h-6 lg:w-6") +
-        " shrink-0 border border-border/60 ring-2 ring-background"
-      }
-    >
-      <AvatarImage
-        src={user.avatarUrl || undefined}
-        alt={user.fullName ? `${user.fullName}'s profile` : "User profile"}
-        className="object-cover"
-      />
-      <AvatarFallback className="bg-surface-3/75 text-xs font-semibold text-brand-secondary-highlight dark:bg-surface-2 dark:text-secondary">
-        {user.fullName ? (
-          initials
-        ) : (
-          <UserCircleIcon size={16} aria-hidden="true" />
-        )}
-      </AvatarFallback>
-    </Avatar>
-  );
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -367,7 +361,7 @@ function AccountMenu({
             focus
           }
         >
-          {avatar()}
+          <AccountAvatar user={user} initials={initials} />
           <span className="hidden min-w-0 max-w-[132px] text-left lg:block">
             <span className="block truncate text-xs font-medium text-foreground/85">
               {user.fullName || "Your account"}
@@ -388,7 +382,7 @@ function AccountMenu({
       >
         <DropdownMenuLabel className="rounded-xl bg-surface-2/40 p-3 font-normal">
           <span className="flex min-w-0 items-center gap-3">
-            {avatar(true)}
+            <AccountAvatar user={user} initials={initials} large />
             <span className="min-w-0">
               <span className="block truncate text-sm font-semibold">
                 {user.fullName || "Your account"}
@@ -417,10 +411,7 @@ function AccountMenu({
             Settings
           </DropdownMenuItem>
           {!user.isAllocat && (
-            <DropdownMenuItem
-              onSelect={onBecomeAllocat}
-              className={dropdownItem}
-            >
+            <DropdownMenuItem onSelect={onBecomeAllocat} className={dropdownItem}>
               <BadgeCheckIcon
                 size={16}
                 aria-hidden="true"
@@ -444,5 +435,29 @@ function AccountMenu({
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
+  );
+}
+
+function AccountAvatar({ user, initials, large = false }: {
+  user: AccountUser;
+  initials: string;
+  large?: boolean;
+}) {
+  return (
+    <Avatar
+      className={
+        (large ? "h-10 w-10" : "h-8 w-8 lg:h-6 lg:w-6") +
+        " shrink-0 border border-border/60 ring-2 ring-background"
+      }
+    >
+      <AvatarImage
+        src={user.avatarUrl || undefined}
+        alt={user.fullName ? `${user.fullName}'s profile` : "User profile"}
+        className="object-cover"
+      />
+      <AvatarFallback className="bg-surface-3/75 text-xs font-semibold text-brand-secondary-highlight dark:bg-surface-2 dark:text-secondary">
+        {user.fullName ? initials : <UserCircleIcon size={16} aria-hidden="true" />}
+      </AvatarFallback>
+    </Avatar>
   );
 }

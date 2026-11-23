@@ -69,6 +69,7 @@ type StatusResult = {
 };
 export default function ProjectManager() {
   const { projectId } = useParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [project, setProject] = useState<Project>();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [permissions, setPermissions] = useState<ProjectPermissions>();
@@ -86,7 +87,7 @@ export default function ProjectManager() {
     taskId: string;
     commentId?: string | null;
   } | null>(null);
-  const [searchParams, setSearchParams] = useSearchParams();
+  const openedSourceRef = useRef<string | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [overdueOnly, setOverdueOnly] = useState(false);
@@ -176,6 +177,31 @@ export default function ProjectManager() {
     measure();
     return () => observer.disconnect();
   }, [loading, error]);
+  const sourceTaskId = searchParams.get("taskId");
+  const sourceCommentId = searchParams.get("commentId");
+  useEffect(() => {
+    if (!sourceTaskId) {
+      openedSourceRef.current = null;
+      return;
+    }
+    if (loading || error || activeTaskId) return;
+    const source = `${projectId}:${sourceTaskId}:${sourceCommentId ?? ""}`;
+    if (openedSourceRef.current === source) return;
+    openedSourceRef.current = source;
+    if (tasks.some((task) => task.id === sourceTaskId)) {
+      setFileTarget({ taskId: sourceTaskId, commentId: sourceCommentId });
+    } else {
+      toast.error("The source task is no longer available in this project.");
+    }
+  }, [
+    projectId,
+    loading,
+    error,
+    activeTaskId,
+    sourceTaskId,
+    sourceCommentId,
+    tasks,
+  ]);
   const refreshWorkspace = useCallback(async () => {
     if (!projectId) return;
     if (operationsRef.current.size) {
@@ -358,16 +384,6 @@ export default function ProjectManager() {
     if (canManageTasks && event.over && isWorkflowStatus(event.over.id))
       await moveTask(String(event.active.id), event.over.id);
   }
-  const sourceTaskId = searchParams.get("taskId");
-  const sourceCommentId = searchParams.get("commentId");
-  useEffect(() => {
-    if (loading || error || !sourceTaskId) return;
-    if (tasks.some((task) => task.id === sourceTaskId)) {
-      setFileTarget({ taskId: sourceTaskId, commentId: sourceCommentId });
-    } else {
-      toast.error("The source task is no longer available in this project.");
-    }
-  }, [loading, error, sourceTaskId, sourceCommentId, tasks]);
   const fileTask = tasks.find((task) => task.id === fileTarget?.taskId);
   const activeTask = tasks.find((task) => String(task.id) === activeTaskId);
   const groups = useMemo(

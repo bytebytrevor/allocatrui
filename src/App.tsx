@@ -1,3 +1,5 @@
+import Notifications from "@/pages/Notifications";
+import { NotificationProvider } from "@/notifications/NotificationProvider";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { useEffect } from "react";
 import Discover from "./pages/DiscoverAllocats";
@@ -77,6 +79,7 @@ const router = createBrowserRouter([
           },
         ],
       },
+      { path: "/notifications", Component: Notifications },
       { path: "/profile", Component: Profile },
       { path: "/allocats/profile", Component: AllocatProfilePage },
       // RequireAuth enforces email confirmation. The setup page handles account
@@ -103,7 +106,9 @@ function App() {
   return (
     <>
       <AuthProvider>
-        <RouterProvider router={router} />
+        <NotificationProvider>
+          <RouterProvider router={router} />
+        </NotificationProvider>
       </AuthProvider>
       <AppToaster />
     </>

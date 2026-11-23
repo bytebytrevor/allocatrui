@@ -470,9 +470,8 @@ export function GridView({ project, onProjectUpdated }: ViewProps) {
 }
 export function ListView({ project, onProjectUpdated }: ViewProps) {
   const [currentProject, setCurrentProject] = useSyncedProject(project);
-  const progress = clampProgress(currentProject.progress),
-    category = getProjectCategoryContext(currentProject),
-    status = getStatusAppearance(currentProject.status);
+  const progress = clampProgress(currentProject.progress);
+  const category = getProjectCategoryContext(currentProject);
   function handleProjectUpdated(updatedProject: Project) {
     setCurrentProject(updatedProject);
     onProjectUpdated?.(updatedProject);
@@ -487,18 +486,9 @@ export function ListView({ project, onProjectUpdated }: ViewProps) {
         y: { duration: 0.18, ease: "easeOut" },
         layout: { type: "spring", stiffness: 420, damping: 34, mass: 0.8 },
       }}
-      className={[
-        "group relative min-w-0 overflow-hidden rounded-xl border",
-        projectCardSurface,
-      ].join(" ")}
+      className="group relative min-w-0 bg-transparent transition-colors duration-150 hover:bg-surface-2/40 focus-within:bg-surface-2/40 dark:hover:bg-surface-2/35 dark:focus-within:bg-surface-2/35 motion-reduce:transition-none"
     >
-      <span
-        className={[
-          "absolute inset-y-4 left-0 w-[2px] rounded-full",
-          status.rail,
-        ].join(" ")}
-      />
-      <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 px-4 py-4 pl-5 sm:gap-4 sm:px-5 sm:pl-6 md:hidden">
+      <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 py-4 pr-4 pl-0 sm:gap-4 sm:pr-5 md:hidden">
         <span
           className={[
             "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
@@ -557,7 +547,7 @@ export function ListView({ project, onProjectUpdated }: ViewProps) {
           />
         </div>
       </div>
-      <div className="hidden min-w-0 gap-6 px-6 py-5 pl-7 md:grid md:items-center md:grid-cols-[minmax(0,1fr)_72px_150px_auto]">
+      <div className="hidden min-w-0 gap-6 py-5 pr-6 pl-0 md:grid md:items-center md:grid-cols-[minmax(0,1fr)_72px_150px_auto]">
         <div className="flex min-w-0 items-start gap-4">
           <span
             className={[
@@ -645,10 +635,9 @@ function ProjectCompletionNotice({
   const isClientWork = isClientWorkProject(project);
   return (
     <div
-      className={[
-        compact ? "mt-3" : "mt-4",
-        "flex items-center gap-2 border-l-2 border-status-pending/45 pl-3",
-      ].join(" ")}
+      className={[compact ? "mt-3" : "mt-4", "flex items-center gap-2"].join(
+        " ",
+      )}
     >
       <span className="relative flex h-1.5 w-1.5 shrink-0">
         {!isClientWork && (
