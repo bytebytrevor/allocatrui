@@ -149,10 +149,22 @@ export default function MinimalNavMenu() {
           }
         >
           <span className="flex h-6 w-6 items-center justify-center [&_img]:h-6 [&_img]:w-6 [&_img]:object-contain [&_svg]:h-6 [&_svg]:w-6">
-            <AllocatrIconLogo theme={theme} className="h-6 w-6 object-contain" />
+            <AllocatrIconLogo
+              theme={theme}
+              className="h-6 w-6 object-contain"
+            />
           </span>
         </Link>
-        <span aria-current="page" className="min-w-0 truncate text-xs font-medium text-foreground/75">
+        <span
+          aria-hidden="true"
+          className="shrink-0 select-none text-sm font-light leading-none text-muted-foreground/35"
+        >
+          /
+        </span>
+        <span
+          aria-current="page"
+          className="min-w-0 truncate text-xs font-medium text-foreground/75"
+        >
           {pageLabel}
         </span>
       </div>

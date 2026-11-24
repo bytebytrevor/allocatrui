@@ -81,6 +81,13 @@ const primaryActionButton = [
   "dark:hover:bg-secondary/90 dark:hover:text-secondary-foreground",
   "focus-visible:ring-2 focus-visible:ring-ring/35 motion-reduce:transition-none",
 ].join(" ");
+const secondaryActionButton = [
+  "border-border/70 bg-card text-foreground/85",
+  "hover:bg-card hover:text-foreground/85 hover:opacity-75",
+  "dark:border-border dark:bg-card dark:text-foreground/85",
+  "dark:hover:bg-card dark:hover:text-foreground/85",
+  "transition-opacity duration-150 focus-visible:ring-2 focus-visible:ring-ring/35 motion-reduce:transition-none",
+].join(" ");
 /** Loads only the brief the authenticated Allocat has been invited to review. */
 export default function ProjectInvitationDialog({
   project,
@@ -94,6 +101,9 @@ export default function ProjectInvitationDialog({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [attempt, setAttempt] = useState(0);
+  const [unavailableProjectId, setUnavailableProjectId] = useState<
+    string | null
+  >(null);
   const requestedId = useRef<string | null>(null);
   useEffect(() => {
     if (!open) return;
@@ -140,11 +150,13 @@ export default function ProjectInvitationDialog({
             };
           }),
         });
+        setUnavailableProjectId(null);
       } catch (failure) {
         if (cancelled) return;
         const unavailable =
           isAxiosError(failure) &&
           [403, 404].includes(failure.response?.status ?? 0);
+        if (unavailable) setUnavailableProjectId(project.id);
         setError(
           unavailable
             ? "This invitation is no longer available to review. Refresh your invitations to check its status."
@@ -160,6 +172,7 @@ export default function ProjectInvitationDialog({
       controller.abort();
     };
   }, [open, project.id, attempt]);
+  const unavailable = unavailableProjectId === project.id;
   const details = preview?.id === project.id ? preview : null;
   const teamProject = details
     ? hasMultipleSkillCategories(details.skills)
@@ -249,7 +262,10 @@ export default function ProjectInvitationDialog({
                 variant="outline"
                 disabled={loading}
                 onClick={() => setAttempt((value) => value + 1)}
-                className="mt-4 h-10 rounded-lg border-border/70 bg-card px-4 text-xs font-medium shadow-none"
+                className={
+                  "mt-4 h-10 rounded-lg px-4 text-xs font-medium shadow-none " +
+                  secondaryActionButton
+                }
               >
                 Try again
               </Button>
@@ -408,18 +424,35 @@ export default function ProjectInvitationDialog({
         </div>
 
         <div className="shrink-0 border-t border-border/55 bg-surface-2/25 px-5 py-4 sm:px-8">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-5">
-            <p className="max-w-[250px] text-[11px] leading-5 text-muted-foreground">
-              Accepting adds you to the project workspace and its tasks.
-            </p>
-            <InvitationActions
-              responding={responding}
-              onAccept={onAccept}
-              onDecline={onDecline}
-              acceptDisabled={!ready}
-              dialog
-            />
-          </div>
+          {unavailable ? (
+            <div className="flex justify-end">
+              <Button
+                type="button"
+                variant="outline"
+                disabled={responding !== null}
+                onClick={() => onOpenChange(false)}
+                className={
+                  "h-10 rounded-lg px-4 text-xs font-medium shadow-none " +
+                  secondaryActionButton
+                }
+              >
+                Close
+              </Button>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-5">
+              <p className="max-w-[250px] text-[11px] leading-5 text-muted-foreground">
+                Accepting adds you to the project workspace and its tasks.
+              </p>
+              <InvitationActions
+                responding={responding}
+                onAccept={onAccept}
+                onDecline={onDecline}
+                acceptDisabled={!ready}
+                dialog
+              />
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>

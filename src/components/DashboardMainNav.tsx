@@ -94,7 +94,9 @@ function getInitialTheme(): Theme {
   } catch {
     // Theme switching still works when browser storage is unavailable.
   }
-  return document.documentElement.classList.contains("light") ? "light" : "dark";
+  return document.documentElement.classList.contains("light")
+    ? "light"
+    : "dark";
 }
 
 function getPageLabel(pathname: string): string {
@@ -128,9 +130,7 @@ function getPageLabel(pathname: string): string {
 }
 
 /** Account navigation for authenticated workspace pages. */
-export default function DashboardMainNav({
-  children,
-}: Props) {
+export default function DashboardMainNav({ children }: Props) {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const pageLabel = getPageLabel(pathname);
@@ -180,7 +180,11 @@ export default function DashboardMainNav({
     becomeBusy.current = true;
     setBecomingAllocat(true);
     try {
-      await api.patch("/users/me/become-allocat", {}, { withCredentials: true });
+      await api.patch(
+        "/users/me/become-allocat",
+        {},
+        { withCredentials: true },
+      );
       await refreshUser();
       setBecomeAllocatOpen(false);
       navigate("/allocats/profile/create");
@@ -206,16 +210,24 @@ export default function DashboardMainNav({
             to="/projects"
             aria-label="Allocatr — go to projects"
             className={
-              "group flex h-11 shrink-0 items-center rounded-lg " +
-              focus
+              "group flex h-11 shrink-0 items-center rounded-lg " + focus
             }
           >
             <span className="flex h-11 w-11 items-center justify-center lg:h-8 lg:w-8">
               <span className="flex h-6 w-6 items-center justify-center [&_img]:h-6 [&_img]:w-6 [&_img]:object-contain [&_svg]:h-6 [&_svg]:w-6">
-                <AllocatrIconLogo theme={theme} className="h-6 w-6 object-contain" />
+                <AllocatrIconLogo
+                  theme={theme}
+                  className="h-6 w-6 object-contain"
+                />
               </span>
             </span>
           </Link>
+          <span
+            aria-hidden="true"
+            className="shrink-0 select-none text-sm font-light leading-none text-muted-foreground/35"
+          >
+            /
+          </span>
           <div className="min-w-0 truncate text-xs font-medium text-foreground/75">
             {children ?? <span aria-current="page">{pageLabel}</span>}
           </div>
@@ -223,8 +235,12 @@ export default function DashboardMainNav({
 
         <div className="flex shrink-0 items-center gap-0.5 sm:gap-1">
           <NavIconButton
-            label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-            onClick={() => setTheme((current) => (current === "dark" ? "light" : "dark"))}
+            label={
+              theme === "dark" ? "Switch to light mode" : "Switch to dark mode"
+            }
+            onClick={() =>
+              setTheme((current) => (current === "dark" ? "light" : "dark"))
+            }
           >
             {theme === "dark" ? (
               <SunIcon size={16} aria-hidden="true" />
@@ -244,7 +260,9 @@ export default function DashboardMainNav({
             initials={initials}
             loggingOut={loggingOut}
             onLogout={() => void handleLogout()}
-            onProfile={() => navigate(user.isAllocat ? "/allocats/profile" : "/profile")}
+            onProfile={() =>
+              navigate(user.isAllocat ? "/allocats/profile" : "/profile")
+            }
             onSettings={() => navigate("/settings")}
             onBecomeAllocat={() => setBecomeAllocatOpen(true)}
           />
@@ -282,12 +300,15 @@ function NavIconButton({
       title={label}
     >
       {children}
-
     </Button>
   );
 }
 
-function QuickActionsMenu({ onNewProject, onDiscover, onHelp }: {
+function QuickActionsMenu({
+  onNewProject,
+  onDiscover,
+  onHelp,
+}: {
   onNewProject: () => void;
   onDiscover: () => void;
   onHelp: () => void;
@@ -411,7 +432,10 @@ function AccountMenu({
             Settings
           </DropdownMenuItem>
           {!user.isAllocat && (
-            <DropdownMenuItem onSelect={onBecomeAllocat} className={dropdownItem}>
+            <DropdownMenuItem
+              onSelect={onBecomeAllocat}
+              className={dropdownItem}
+            >
               <BadgeCheckIcon
                 size={16}
                 aria-hidden="true"
@@ -438,7 +462,11 @@ function AccountMenu({
   );
 }
 
-function AccountAvatar({ user, initials, large = false }: {
+function AccountAvatar({
+  user,
+  initials,
+  large = false,
+}: {
   user: AccountUser;
   initials: string;
   large?: boolean;
@@ -456,7 +484,11 @@ function AccountAvatar({ user, initials, large = false }: {
         className="object-cover"
       />
       <AvatarFallback className="bg-surface-3/75 text-xs font-semibold text-brand-secondary-highlight dark:bg-surface-2 dark:text-secondary">
-        {user.fullName ? initials : <UserCircleIcon size={16} aria-hidden="true" />}
+        {user.fullName ? (
+          initials
+        ) : (
+          <UserCircleIcon size={16} aria-hidden="true" />
+        )}
       </AvatarFallback>
     </Avatar>
   );
