@@ -53,9 +53,7 @@ function MainNav() {
   }, [theme]);
 
   function toggleTheme() {
-    setTheme((currentTheme) =>
-      currentTheme === "dark" ? "light" : "dark",
-    );
+    setTheme((currentTheme) => (currentTheme === "dark" ? "light" : "dark"));
   }
 
   function closeMobileMenu() {
@@ -71,10 +69,7 @@ function MainNav() {
           className="inline-flex shrink-0 items-center"
           aria-label="Go to Allocatr home"
         >
-          <AllocatrLogo
-            theme={theme}
-            className="w-24 sm:w-28"
-          />
+          <AllocatrLogo theme={theme} className="w-24 sm:w-28" />
         </Link>
 
         {/* Desktop navigation */}
@@ -108,20 +103,14 @@ function MainNav() {
                 : "Switch to dark theme"
             }
           >
-            {theme === "dark" ? (
-              <SunIcon size={18} />
-            ) : (
-              <MoonIcon size={18} />
-            )}
+            {theme === "dark" ? <SunIcon size={18} /> : <MoonIcon size={18} />}
           </Button>
 
           <Button
             asChild
             className="hidden h-10 rounded-xl px-5 text-sm font-semibold sm:inline-flex"
           >
-            <Link to="/login">
-              Log in
-            </Link>
+            <Link to="/login">Log in</Link>
           </Button>
 
           <Button
@@ -129,21 +118,13 @@ function MainNav() {
             variant="outline"
             size="icon"
             className="rounded-xl md:hidden"
-            onClick={() =>
-              setMobileMenuOpen((current) => !current)
-            }
+            onClick={() => setMobileMenuOpen((current) => !current)}
             aria-label={
-              mobileMenuOpen
-                ? "Close navigation menu"
-                : "Open navigation menu"
+              mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"
             }
             aria-expanded={mobileMenuOpen}
           >
-            {mobileMenuOpen ? (
-              <XIcon size={19} />
-            ) : (
-              <MenuIcon size={19} />
-            )}
+            {mobileMenuOpen ? <XIcon size={19} /> : <MenuIcon size={19} />}
           </Button>
         </div>
       </div>
@@ -173,14 +154,8 @@ function MainNav() {
           </div>
 
           <div className="mt-3 border-t border-border pt-3">
-            <Button
-              asChild
-              className="h-11 w-full rounded-xl font-semibold"
-            >
-              <Link
-                to="/login"
-                onClick={closeMobileMenu}
-              >
+            <Button asChild className="h-11 w-full rounded-xl font-semibold">
+              <Link to="/login" onClick={closeMobileMenu}>
                 Log in
               </Link>
             </Button>

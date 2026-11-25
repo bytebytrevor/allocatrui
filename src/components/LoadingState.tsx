@@ -56,7 +56,6 @@
 
 // export default LoadingState;
 
-
 import { LoaderCircleIcon } from "lucide-react";
 
 type LoadingStateProps = {
@@ -86,9 +85,7 @@ function LoadingState({
           className="shrink-0 animate-spin text-primary"
         />
 
-        <span className="font-medium">
-          {label}
-        </span>
+        <span className="font-medium">{label}</span>
       </div>
     );
   }
@@ -114,10 +111,7 @@ function LoadingState({
           {label}
         </p>
 
-        <div
-          className="mt-3 flex items-center gap-1.5"
-          aria-hidden="true"
-        >
+        <div className="mt-3 flex items-center gap-1.5" aria-hidden="true">
           <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-primary [animation-duration:900ms]" />
 
           <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-primary/60 [animation-delay:150ms] [animation-duration:900ms]" />

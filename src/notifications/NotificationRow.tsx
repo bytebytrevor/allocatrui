@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
 import { forwardRef, type HTMLAttributes, type Ref } from "react";
 import {
+  BanIcon,
+  LogOutIcon,
   CheckCircle2Icon,
   InboxIcon,
   MessageSquareIcon,
@@ -29,15 +31,20 @@ const NotificationRow = forwardRef<HTMLElement, Props>(function NotificationRow(
   ref,
 ) {
   const { markRead, reviewInvitation } = useNotifications();
-  const Icon = item.kind.startsWith("invitation")
-    ? InboxIcon
-    : ["message-received", "task-comment"].includes(item.kind)
-      ? MessageSquareIcon
-      : item.kind === "file-added"
-        ? PaperclipIcon
-        : ["task-assigned", "task-created"].includes(item.kind)
-          ? ClipboardListIcon
-          : CheckCircle2Icon;
+  const Icon =
+    item.kind === "project-cancelled"
+      ? BanIcon
+      : item.kind === "allocat-left"
+        ? LogOutIcon
+        : item.kind.startsWith("invitation")
+          ? InboxIcon
+          : ["message-received", "task-comment"].includes(item.kind)
+            ? MessageSquareIcon
+            : item.kind === "file-added"
+              ? PaperclipIcon
+              : ["task-assigned", "task-created"].includes(item.kind)
+                ? ClipboardListIcon
+                : CheckCircle2Icon;
   const content = (
     <>
       <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-surface-2 text-muted-foreground">

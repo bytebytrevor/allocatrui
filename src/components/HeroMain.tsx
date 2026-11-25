@@ -1,7 +1,4 @@
-import {
-  ArrowRightIcon,
-  CheckCircle2Icon,
-} from "lucide-react";
+import { ArrowRightIcon, CheckCircle2Icon } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 
@@ -68,9 +65,8 @@ function HeroMain() {
                 ease: "easeOut",
               }}
             >
-              Allocatr connects you with skilled professionals,
-              keeps projects organised and gives everyone a clear
-              view of the work ahead.
+              Allocatr connects you with skilled professionals, keeps projects
+              organised and gives everyone a clear view of the work ahead.
             </motion.p>
 
             <motion.div
@@ -98,9 +94,7 @@ function HeroMain() {
                 variant="outline"
                 className="h-[52px] rounded-2xl px-6 text-sm font-semibold"
               >
-                <Link to="/register">
-                  Create an account
-                </Link>
+                <Link to="/register">Create an account</Link>
               </Button>
             </motion.div>
 
@@ -114,10 +108,7 @@ function HeroMain() {
               }}
             >
               {highlights.map((highlight) => (
-                <div
-                  key={highlight}
-                  className="flex items-center gap-2"
-                >
+                <div key={highlight} className="flex items-center gap-2">
                   <CheckCircle2Icon
                     size={17}
                     className="shrink-0 text-primary"
@@ -151,9 +142,7 @@ function HeroMain() {
                       Active workspace
                     </p>
 
-                    <h2 className="mt-2 text-xl font-bold">
-                      Website Redesign
-                    </h2>
+                    <h2 className="mt-2 text-xl font-bold">Website Redesign</h2>
 
                     <p className="mt-1 text-xs text-muted-foreground">
                       Hippo Car Rental
@@ -172,9 +161,7 @@ function HeroMain() {
                     </p>
 
                     <div className="mt-2 flex items-end justify-between gap-3">
-                      <p className="text-2xl font-black">
-                        68%
-                      </p>
+                      <p className="text-2xl font-black">68%</p>
 
                       <span className="text-xs font-medium text-primary">
                         +12%
@@ -191,9 +178,7 @@ function HeroMain() {
                       Tasks remaining
                     </p>
 
-                    <p className="mt-2 text-2xl font-black">
-                      12
-                    </p>
+                    <p className="mt-2 text-2xl font-black">12</p>
 
                     <p className="mt-4 text-xs text-muted-foreground">
                       4 due this week

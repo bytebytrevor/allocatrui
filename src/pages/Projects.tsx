@@ -11,6 +11,7 @@ import { MotionConfig, motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import {
   ArrowRightIcon,
+  BanIcon,
   BriefcaseBusinessIcon,
   CheckCircle2Icon,
   CircleDotIcon,
@@ -45,9 +46,9 @@ import type { ProjectAllocatStatus } from "@/Types/enums";
    TYPES
 ========================================================= */
 type ProjectView = "grid" | "list";
-type ProjectFilter = "active" | "pending" | "closed";
+type ProjectFilter = "active" | "pending" | "closed" | "cancelled";
 type WorkspaceSection = "projects" | "work";
-type WorkFilter = "invitations" | "active" | "completed";
+type WorkFilter = "invitations" | "active" | "completed" | "cancelled";
 type ProjectSort = "newest" | "oldest" | "title-asc" | "title-desc";
 type WorkspaceIcon = ComponentType<{
   size?: number;
@@ -57,7 +58,7 @@ type SummaryItem = {
   label: string;
   value: number;
   icon: WorkspaceIcon;
-  emphasis?: "primary" | "warning" | "success";
+  emphasis?: "primary" | "warning" | "success" | "danger";
   active?: boolean;
   attention?: boolean;
   onClick?: () => void;
@@ -88,13 +89,8 @@ type ProjectSearchGroup =
 /* =========================================================
    CONSTANTS
 ========================================================= */
-const CLOSED_PROJECT_STATUSES = new Set([
-  "closed",
-  "complete",
-  "completed",
-  "cancelled",
-  "canceled",
-]);
+const CLOSED_PROJECT_STATUSES = new Set(["closed", "complete", "completed"]);
+const CANCELLED_PROJECT_STATUSES = new Set(["cancelled", "canceled"]);
 const PAUSED_PROJECT_STATUSES = new Set(["paused", "onhold"]);
 const SORT_OPTIONS: SortOption[] = [
   { value: "newest", label: "Newest first" },
@@ -235,6 +231,44 @@ function ProjectsPage() {
   useEffect(() => {
     if (user?.isAllocat) void fetchWorkProjects();
   }, [user?.isAllocat, fetchWorkProjects]);
+  useEffect(() => {
+    const cancelled = (event: Event) => {
+      const project = (event as CustomEvent<Project>).detail;
+      if (
+        !project ||
+        typeof project.id !== "string" ||
+        project.status !== "cancelled"
+      )
+        return;
+      projectsRequestRef.current += 1;
+      setProjects((current) =>
+        current.map((item) =>
+          item.id === project.id ? { ...item, ...project } : item,
+        ),
+      );
+      setWorkProjects((current) =>
+        current.map((item) =>
+          item.id === project.id ? { ...item, ...project } : item,
+        ),
+      );
+      if (user?.isAllocat) void fetchWorkProjects();
+    };
+    const left = (event: Event) => {
+      const detail = (event as CustomEvent<{ projectId: string }>).detail;
+      if (!detail || typeof detail.projectId !== "string") return;
+      workRequestRef.current += 1;
+      setWorkProjects((current) =>
+        current.filter((item) => item.id !== detail.projectId),
+      );
+      if (user?.isAllocat) void fetchWorkProjects();
+    };
+    window.addEventListener("allocatr:project-cancelled", cancelled);
+    window.addEventListener("allocatr:project-left", left);
+    return () => {
+      window.removeEventListener("allocatr:project-cancelled", cancelled);
+      window.removeEventListener("allocatr:project-left", left);
+    };
+  }, [fetchWorkProjects, user?.isAllocat]);
   /* PROJECT UPDATES */
   const handleOwnedProjectUpdated = useCallback((updated: Project) => {
     setProjects((current) =>
@@ -256,10 +290,17 @@ function ProjectsPage() {
   }
   /* OWN PROJECT CLASSIFICATION */
   const ownedProjectGroups = useMemo<OwnedProjectGroups>(() => {
-    const groups: OwnedProjectGroups = { active: [], pending: [], closed: [] };
+    const groups: OwnedProjectGroups = {
+      active: [],
+      pending: [],
+      closed: [],
+      cancelled: [],
+    };
     for (const project of projects) {
       const status = normalizeProjectStatus(project.status);
-      if (CLOSED_PROJECT_STATUSES.has(status)) groups.closed.push(project);
+      if (CANCELLED_PROJECT_STATUSES.has(status))
+        groups.cancelled.push(project);
+      else if (CLOSED_PROJECT_STATUSES.has(status)) groups.closed.push(project);
       else if (PAUSED_PROJECT_STATUSES.has(status))
         groups.pending.push(project);
       else if (
@@ -275,6 +316,7 @@ function ProjectsPage() {
   const activeProjects = ownedProjectGroups.active;
   const pendingProjects = ownedProjectGroups.pending;
   const closedProjects = ownedProjectGroups.closed;
+  const cancelledProjects = ownedProjectGroups.cancelled;
   const completionRequests = useMemo(
     () =>
       projects.filter(
@@ -302,7 +344,12 @@ function ProjectsPage() {
       workProjects.filter(
         (project) =>
           normalizeProjectStatus(project.projectAllocatStatus) === "accepted" &&
-          !CLOSED_PROJECT_STATUSES.has(normalizeProjectStatus(project.status)),
+          !CLOSED_PROJECT_STATUSES.has(
+            normalizeProjectStatus(project.status),
+          ) &&
+          !CANCELLED_PROJECT_STATUSES.has(
+            normalizeProjectStatus(project.status),
+          ),
       ),
     [workProjects],
   );
@@ -315,12 +362,25 @@ function ProjectsPage() {
       ),
     [workProjects],
   );
+  const cancelledWork = useMemo(
+    () =>
+      workProjects.filter(
+        (project) =>
+          normalizeProjectStatus(project.projectAllocatStatus) === "accepted" &&
+          CANCELLED_PROJECT_STATUSES.has(
+            normalizeProjectStatus(project.status),
+          ),
+      ),
+    [workProjects],
+  );
   const selectedWork =
     workFilter === "invitations"
       ? invitations
       : workFilter === "completed"
         ? completedWork
-        : activeWork;
+        : workFilter === "cancelled"
+          ? cancelledWork
+          : activeWork;
   const visibleWork = useMemo(
     () => sortProjectItems(selectedWork, sort),
     [selectedWork, sort],
@@ -355,6 +415,12 @@ function ProjectsPage() {
               kind: "projects",
               projects: findMatches(ownedProjectGroups.closed),
             },
+            {
+              key: "owned-cancelled",
+              label: "Cancelled",
+              kind: "projects",
+              projects: findMatches(ownedProjectGroups.cancelled),
+            },
           ]
         : [
             {
@@ -375,6 +441,12 @@ function ProjectsPage() {
               kind: "projects",
               projects: findMatches(completedWork),
             },
+            {
+              key: "work-cancelled",
+              label: "Cancelled work",
+              kind: "projects",
+              projects: findMatches(cancelledWork),
+            },
           ];
     return groups.filter((group) => group.projects.length > 0);
   }, [
@@ -385,6 +457,7 @@ function ProjectsPage() {
     activeWork,
     invitations,
     completedWork,
+    cancelledWork,
   ]);
   /* INVITATION RESPONSES */
   async function respondToInvitation(
@@ -446,7 +519,10 @@ function ProjectsPage() {
   const isInvitationSection = isWorkSection && workFilter === "invitations";
   const searchActive = Boolean(search.trim());
   const workCount =
-    invitations.length + activeWork.length + completedWork.length;
+    invitations.length +
+    activeWork.length +
+    completedWork.length +
+    cancelledWork.length;
   const currentCount = isWorkSection ? workCount : projects.length;
   const visibleCount = searchGroups.reduce(
     (total, group) => total + group.projects.length,
@@ -480,6 +556,14 @@ function ProjectsPage() {
           active: filter === "closed",
           onClick: () => setFilter("closed"),
         },
+        {
+          label: "Cancelled",
+          value: cancelledProjects.length,
+          icon: BanIcon,
+          emphasis: "danger",
+          active: filter === "cancelled",
+          onClick: () => setFilter("cancelled"),
+        },
       ]
     : [
         {
@@ -507,29 +591,46 @@ function ProjectsPage() {
           active: workFilter === "completed",
           onClick: () => setWorkFilter("completed"),
         },
+        {
+          label: "Cancelled",
+          value: cancelledWork.length,
+          icon: BanIcon,
+          emphasis: "danger",
+          active: workFilter === "cancelled",
+          onClick: () => setWorkFilter("cancelled"),
+        },
       ];
-  const sectionTitle = !isWorkSection
-    ? filter === "pending"
-      ? "Pending projects"
-      : filter === "closed"
-        ? "Completed projects"
-        : "Active projects"
-    : workFilter === "invitations"
-      ? "Invitations"
-      : workFilter === "completed"
-        ? "Completed work"
-        : "Active work";
-  const sectionDescription = !isWorkSection
-    ? filter === "pending"
-      ? "Projects waiting for an Allocat or the next step."
-      : filter === "closed"
-        ? "Your completed and closed projects."
-        : "The projects currently moving through your workspace."
-    : workFilter === "invitations"
-      ? "Projects clients have invited you to join."
-      : workFilter === "completed"
-        ? "Your completed and closed client projects."
-        : "The client work currently on your plate.";
+  const sectionTitle =
+    !isWorkSection && filter === "cancelled"
+      ? "Cancelled projects"
+      : isWorkSection && workFilter === "cancelled"
+        ? "Cancelled work"
+        : !isWorkSection
+          ? filter === "pending"
+            ? "Pending projects"
+            : filter === "closed"
+              ? "Completed projects"
+              : "Active projects"
+          : workFilter === "invitations"
+            ? "Invitations"
+            : workFilter === "completed"
+              ? "Completed work"
+              : "Active work";
+  const sectionDescription =
+    (!isWorkSection && filter === "cancelled") ||
+    (isWorkSection && workFilter === "cancelled")
+      ? "Cancelled projects remain available for history and discussion."
+      : !isWorkSection
+        ? filter === "pending"
+          ? "Projects waiting for an Allocat or the next step."
+          : filter === "closed"
+            ? "Your completed and closed projects."
+            : "The projects currently moving through your workspace."
+        : workFilter === "invitations"
+          ? "Projects clients have invited you to join."
+          : workFilter === "completed"
+            ? "Your completed and closed client projects."
+            : "The client work currently on your plate.";
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground xl:grid xl:h-dvh xl:min-h-0 xl:grid-rows-[auto_minmax(0,1fr)] xl:overflow-hidden">
       <WorkspaceHeader />
@@ -701,14 +802,18 @@ function ProjectsPage() {
                       ) : (
                         <EmptyCollection
                           title={
-                            workFilter === "completed"
-                              ? "No completed work"
-                              : "No active work"
+                            workFilter === "cancelled"
+                              ? "No cancelled work"
+                              : workFilter === "completed"
+                                ? "No completed work"
+                                : "No active work"
                           }
                           description={
-                            workFilter === "completed"
-                              ? "Completed and closed client projects will appear here."
-                              : "Projects you accept from clients will appear here."
+                            workFilter === "cancelled"
+                              ? "Cancelled client projects will appear here."
+                              : workFilter === "completed"
+                                ? "Completed and closed client projects will appear here."
+                                : "Projects you accept from clients will appear here."
                           }
                           icon={BriefcaseBusinessIcon}
                         />
@@ -958,7 +1063,7 @@ function WorkspaceMasthead({
         <div
           role="group"
           aria-label="Filter by status"
-          className="grid min-w-0 grid-cols-3 gap-1 sm:flex sm:items-center"
+          className="grid min-w-0 grid-cols-4 gap-1 sm:flex sm:items-center"
         >
           {items.map((item) => (
             <WorkspaceMetric key={item.label} item={item} />
@@ -1514,6 +1619,11 @@ function getMetricAppearance(emphasis?: SummaryItem["emphasis"]): {
   icon: string;
   line: string;
 } {
+  if (emphasis === "danger")
+    return {
+      icon: "text-status-overdue-foreground",
+      line: "bg-status-overdue",
+    };
   if (emphasis === "warning")
     return {
       icon: "text-status-pending-foreground",

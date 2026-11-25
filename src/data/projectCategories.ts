@@ -4,7 +4,7 @@ export const projectCategories = [
   "Plumbing & Electrical",
   "Landscaping & Gardening",
   "Property Management",
-  "Fashion & Style",  
+  "Fashion & Style",
   "Construction",
   "Architecture & Drafting",
   "Carpentry & Joinery",

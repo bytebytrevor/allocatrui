@@ -31,11 +31,8 @@ import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import {
-  discoverIconSurface,
-  filterIconSurface,
   inputSurface,
   primaryActionButton,
-  selectedFilterSurface,
   unselectedFilterSurface,
   rateSliderClass,
   resultsControlFocus,
@@ -46,6 +43,13 @@ import ViewModeToggle, {
 import SortDropdown, {
   type SortDropdownOption,
 } from "@/components/SortDropdown";
+const discoverIconSurface =
+  "bg-brand-secondary-highlight/[0.07] text-brand-secondary-highlight dark:bg-secondary/[0.08] dark:text-secondary";
+const filterIconSurface =
+  "bg-surface-2 text-muted-foreground dark:bg-surface-2 dark:text-secondary";
+const selectedFilterSurface =
+  "border-brand-secondary-highlight/25 bg-brand-secondary-highlight/[0.07] text-brand-secondary-highlight dark:border-secondary/25 dark:bg-secondary/[0.08] dark:text-secondary";
+
 type SortOption = "match" | "rating" | "experience" | "rate-low" | "recent";
 type FilterName = "location" | "rate" | "experience";
 type SkillSummary = {
@@ -467,7 +471,7 @@ export default function FindAllocats() {
               value={location}
               onChange={(event) => setLocation(event.target.value)}
               placeholder="City or area"
-              className={`h-10 rounded-lg pl-9 ${mobile ? "" : "text-xs"} ${inputSurface}`}
+              className={`h-11 w-full rounded-lg pl-9 text-base sm:text-xs ${inputSurface}`}
             />
           </div>
         );
@@ -492,54 +496,22 @@ export default function FindAllocats() {
   }
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <header className="sticky top-0 z-40 border-b border-border/60 bg-background/95 backdrop-blur-xl">
+      <header className="sticky top-0 z-40 border-b border-border/60 bg-background">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <MinimalNavMenu />
         </div>
       </header>
-      <main className="container mx-auto px-4 py-7 sm:px-5 md:px-8 lg:py-10">
-        <section aria-labelledby="find-allocats-title" className="pb-7">
-          <div className="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-end">
-            <div className="min-w-0 max-w-4xl">
-              <div className="flex items-center gap-2.5">
-                <span
-                  aria-hidden="true"
-                  className={`flex h-9 w-9 items-center justify-center rounded-lg ${discoverIconSurface}`}
-                >
-                  <UsersIcon size={15} />
-                </span>
-                <p className="text-[0.58rem] font-semibold uppercase tracking-[0.17em] text-muted-foreground">
-                  Find Allocats
-                </p>
-              </div>
-              <h1
-                id="find-allocats-title"
-                className="mt-4 max-w-4xl break-words text-3xl font-semibold leading-[1.05] tracking-[-0.035em] text-foreground/90 sm:text-4xl lg:text-[2.7rem] [overflow-wrap:anywhere]"
-              >
-                Find Allocats for{" "}
-                {pending ? "your project" : project?.title || "your project"}
-              </h1>
-              <p className="mt-3 max-w-2xl text-sm leading-7 text-muted-foreground sm:text-[0.93rem]">
-                Explore professionals with the skills this project needs, then
-                review their profiles and invite the right people to your team.
-              </p>
-            </div>
-            {!pending && !error && (
-              <div className="hidden items-center gap-3 border-l border-border/55 pl-5 sm:flex">
-                <span className="text-3xl font-semibold tracking-[-0.04em] text-foreground/80">
-                  {resultCount}
-                </span>
-                <div>
-                  <p className="text-xs font-semibold text-foreground/75">
-                    {resultCount === 1 ? "Allocat" : "Allocats"}
-                  </p>
-                  <p className="text-[0.66rem] text-muted-foreground">
-                    matching project skills
-                  </p>
-                </div>
-              </div>
-            )}
-          </div>
+      <main className="container mx-auto px-5 py-5 md:px-8 lg:py-6">
+        <section aria-labelledby="find-allocats-title" className="pb-4 sm:pb-5">
+          <h1
+            id="find-allocats-title"
+            className="text-2xl font-medium leading-tight tracking-[-0.03em] text-foreground"
+          >
+            Find Allocats
+          </h1>
+          <p className="mt-1 max-w-4xl break-words text-sm leading-6 text-muted-foreground [overflow-wrap:anywhere]">
+            {pending ? "Your project" : project?.title || "Your project"}
+          </p>
         </section>
         {pending ? (
           <AllocatLoadingState />
@@ -552,12 +524,12 @@ export default function FindAllocats() {
             }
           />
         ) : (
-          <div className="border-t border-border/55 lg:grid lg:grid-cols-[245px_minmax(0,1fr)] lg:gap-8 xl:grid-cols-[265px_minmax(0,1fr)] xl:gap-10">
+          <div className="lg:grid lg:grid-cols-[240px_minmax(0,1fr)] lg:gap-7 xl:grid-cols-[252px_minmax(0,1fr)] xl:gap-9">
             <aside
               aria-label="Refine project matches"
-              className="hidden lg:block lg:self-stretch"
+              className="hidden lg:sticky lg:top-24 lg:block lg:self-start [&_*]:[scrollbar-width:none] [&_*::-webkit-scrollbar]:hidden"
             >
-              <div className="py-7 lg:sticky lg:top-24">
+              <div className="max-h-[calc(100dvh-7rem)] overflow-y-auto pb-4 pr-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2.5">
                     <span
@@ -566,11 +538,11 @@ export default function FindAllocats() {
                     >
                       <SlidersHorizontalIcon size={14} />
                     </span>
-                    <h2 className="text-sm font-semibold text-foreground/85">
+                    <h2 className="text-sm font-medium text-foreground/85">
                       Refine
                     </h2>
                     {activeCount > 0 && (
-                      <span className="text-[0.62rem] font-semibold tabular-nums text-brand-secondary-highlight dark:text-secondary">
+                      <span className="text-[11px] font-medium tabular-nums text-brand-secondary-highlight dark:text-secondary">
                         {activeCount}
                       </span>
                     )}
@@ -579,16 +551,13 @@ export default function FindAllocats() {
                     <button
                       type="button"
                       onClick={resetFilters}
-                      className={`text-[0.65rem] font-semibold text-muted-foreground transition-colors hover:text-foreground ${resultsControlFocus}`}
+                      className={`text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground ${resultsControlFocus}`}
                     >
                       Reset
                     </button>
                   )}
                 </div>
-                <p className="mt-2 text-xs leading-5 text-muted-foreground">
-                  Narrow down the professionals shown for this project.
-                </p>
-                <div className="mt-6 divide-y divide-border/55">
+                <div className="mt-2">
                   {FILTERS.map(({ value, label }) => (
                     <DesktopFilterSection key={value} title={label}>
                       {controls(value)}
@@ -607,7 +576,7 @@ export default function FindAllocats() {
               <section aria-label="Refine results" className="py-4 lg:hidden">
                 <div
                   ref={mobileFilters}
-                  className="flex items-center gap-1.5 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:gap-2"
+                  className="flex flex-wrap items-center gap-2"
                 >
                   <div className="mr-auto flex shrink-0 items-center gap-2">
                     <span
@@ -616,11 +585,11 @@ export default function FindAllocats() {
                     >
                       <SlidersHorizontalIcon size={14} />
                     </span>
-                    <span className="hidden text-xs font-semibold text-foreground/80 sm:inline">
+                    <span className="hidden text-xs font-medium text-foreground/80 sm:inline">
                       Refine
                     </span>
                     {activeCount > 0 && (
-                      <span className="text-[0.6rem] font-semibold tabular-nums text-brand-secondary-highlight dark:text-secondary">
+                      <span className="text-[11px] font-medium tabular-nums text-brand-secondary-highlight dark:text-secondary">
                         {activeCount}
                       </span>
                     )}
@@ -651,10 +620,10 @@ export default function FindAllocats() {
                     aria-label="Verified only"
                     aria-pressed={verifiedOnly}
                     onClick={() => setVerifiedOnly((current) => !current)}
-                    className={`flex h-9 shrink-0 items-center justify-center rounded-lg border px-2.5 text-xs font-semibold transition-[background-color,border-color,color] duration-150 sm:gap-2 sm:px-3 ${verifiedOnly ? selectedFilterSurface : unselectedFilterSurface} ${resultsControlFocus}`}
+                    className={`flex min-h-11 shrink-0 items-center justify-center rounded-lg border px-2.5 text-xs font-medium transition-[background-color,border-color,color] duration-150 gap-2 px-3 ${verifiedOnly ? selectedFilterSurface : unselectedFilterSurface} ${resultsControlFocus}`}
                   >
                     <BadgeCheckIcon size={13} aria-hidden="true" />
-                    <span className="hidden sm:inline">Verified</span>
+                    <span>Verified</span>
                   </button>
                   {activeCount > 0 && (
                     <button
@@ -662,10 +631,10 @@ export default function FindAllocats() {
                       title="Clear filters"
                       aria-label="Clear filters"
                       onClick={resetFilters}
-                      className={`flex h-9 shrink-0 items-center justify-center rounded-lg px-2.5 text-muted-foreground transition-colors hover:bg-surface-3/55 hover:text-foreground/85 sm:gap-1.5 sm:text-xs ${resultsControlFocus}`}
+                      className={`flex min-h-11 shrink-0 items-center justify-center rounded-lg px-2.5 text-muted-foreground transition-colors hover:bg-surface-3/55 hover:text-foreground/85 sm:gap-1.5 sm:text-xs ${resultsControlFocus}`}
                     >
                       <XIcon size={13} aria-hidden="true" />
-                      <span className="hidden sm:inline">Clear</span>
+                      <span>Clear</span>
                     </button>
                   )}
                 </div>
@@ -674,7 +643,7 @@ export default function FindAllocats() {
                     id={panelId}
                     role="region"
                     aria-label={`${FILTERS.find((item) => item.value === openFilter)?.label} filter`}
-                    className="mt-3 rounded-xl border border-border/60 bg-surface-2/40 p-3 dark:border-border dark:bg-surface-2/60"
+                    className="mt-3 rounded-xl border border-border/70 bg-card p-4"
                   >
                     {controls(openFilter, true)}
                   </div>
@@ -682,23 +651,16 @@ export default function FindAllocats() {
               </section>
               <section
                 aria-label="Results controls"
-                className="relative flex flex-wrap items-center justify-between gap-x-3 gap-y-3 border-t border-border/55 py-5 lg:border-t-0 lg:py-7"
+                className="relative flex flex-wrap items-center justify-between gap-3 pb-4 pt-1"
               >
-                {!isMultiCategory && (
-                  <div className="min-w-0">
-                    <p className="hidden text-[0.58rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground sm:block">
-                      Recommendations
-                    </p>
-                    <div className="flex min-w-0 items-center gap-2 sm:mt-1.5">
-                      <h2 className="truncate text-sm font-semibold tracking-[-0.02em] text-foreground/85 sm:text-lg">
-                        Best matches
-                      </h2>
-                      <span className="shrink-0 text-[0.6rem] font-semibold tabular-nums text-muted-foreground sm:hidden">
-                        {resultCount}
-                      </span>
-                    </div>
-                  </div>
-                )}
+                <div className="flex min-w-0 items-center gap-2">
+                  <h2 className="text-sm font-medium tracking-[-0.02em] text-foreground sm:text-lg">
+                    {isMultiCategory ? "Project matches" : "Best matches"}
+                  </h2>
+                  <span className="text-xs tabular-nums text-muted-foreground">
+                    {resultCount}
+                  </span>
+                </div>
                 <p
                   role="status"
                   aria-live="polite"
@@ -720,16 +682,16 @@ export default function FindAllocats() {
               </section>
               <section aria-label="Allocat results" className="pb-10">
                 {isMultiCategory ? (
-                  <div className="space-y-9">
+                  <div className="space-y-7">
                     {categoryResults.map((category) => (
                       <section
                         key={category.key}
                         aria-label={`${category.name} matches`}
                         className="min-w-0"
                       >
-                        <div className="mb-4 border-b border-border/55 pb-4">
+                        <div className="mb-4">
                           <div className="flex flex-wrap items-center justify-between gap-3">
-                            <h3 className="text-base font-semibold tracking-[-0.02em] text-foreground/90 sm:text-lg">
+                            <h3 className="text-base font-medium tracking-[-0.02em] text-foreground sm:text-lg">
                               {category.name}
                             </h3>
                             <span className="text-xs tabular-nums text-muted-foreground">
@@ -741,8 +703,7 @@ export default function FindAllocats() {
                           </div>
                           <p className="mt-1.5 text-[11px] leading-5 text-muted-foreground">
                             {category.skills.length} required{" "}
-                            {category.skills.length === 1 ? "skill" : "skills"}{" "}
-                            · Matches scored for {category.name}
+                            {category.skills.length === 1 ? "skill" : "skills"}
                           </p>
                           <ul
                             aria-label={`Required ${category.name} skills`}
@@ -867,8 +828,8 @@ function DesktopFilterSection({
   children: ReactNode;
 }) {
   return (
-    <section className="py-5">
-      <h3 className="mb-3 text-xs font-semibold text-foreground/80">{title}</h3>
+    <section className="py-3">
+      <h3 className="mb-3 text-xs font-medium text-foreground/80">{title}</h3>
       {children}
     </section>
   );
@@ -889,10 +850,10 @@ function RateFilter({
       {mobile ? (
         <div className="mb-4 flex items-center justify-between gap-4">
           <div>
-            <p className="text-xs font-semibold text-foreground/80">
+            <p className="text-xs font-medium text-foreground/80">
               Maximum hourly rate
             </p>
-            <p className="mt-1 text-[0.65rem] text-muted-foreground">
+            <p className="mt-1 text-[11px] text-muted-foreground">
               {value === null ? "No rate limit" : `Up to ${value} per hour`}
             </p>
           </div>
@@ -900,7 +861,7 @@ function RateFilter({
             <button
               type="button"
               onClick={() => onChange(null)}
-              className={`text-[0.65rem] font-semibold text-foreground/70 transition-colors hover:text-foreground ${resultsControlFocus}`}
+              className={`text-[11px] font-medium text-foreground/70 transition-colors hover:text-foreground ${resultsControlFocus}`}
             >
               Any rate
             </button>
@@ -908,8 +869,8 @@ function RateFilter({
         </div>
       ) : (
         <div className="mb-4 flex items-center justify-between">
-          <span className="text-[0.67rem] text-muted-foreground">Maximum</span>
-          <span className="text-xs font-semibold text-foreground/80">
+          <span className="text-[11px] text-muted-foreground">Maximum</span>
+          <span className="text-xs font-medium text-foreground/80">
             {value === null ? "Any" : `${value}/hr`}
           </span>
         </div>
@@ -924,24 +885,22 @@ function RateFilter({
         className={rateSliderClass}
       />
       <div
-        className={`mt-3 flex items-center justify-between ${mobile ? "text-[0.62rem] text-muted-foreground" : ""}`}
+        className={`mt-3 flex items-center justify-between ${mobile ? "text-[11px] text-muted-foreground" : ""}`}
       >
-        <span className="text-[0.62rem] text-muted-foreground">0</span>
+        <span className="text-[11px] text-muted-foreground">0</span>
         {value !== null && !mobile ? (
           <button
             type="button"
             onClick={() => onChange(null)}
-            className={`text-[0.62rem] font-semibold text-foreground/70 transition-colors hover:text-foreground ${resultsControlFocus}`}
+            className={`text-[11px] font-medium text-foreground/70 transition-colors hover:text-foreground ${resultsControlFocus}`}
           >
             Any rate
           </button>
         ) : (
-          <span className="text-[0.62rem] text-muted-foreground">
-            {ceiling}+
-          </span>
+          <span className="text-[11px] text-muted-foreground">{ceiling}+</span>
         )}
       </div>
-      <p className="mt-2 text-[0.62rem] leading-5 text-muted-foreground">
+      <p className="mt-2 text-[11px] leading-5 text-muted-foreground">
         Rates use each profile’s listed currency. Rates on request are included.
       </p>
     </div>
@@ -960,10 +919,10 @@ function ExperienceFilter({
     <div>
       {!mobile && (
         <div className="mb-3 flex items-center justify-between">
-          <span className="text-[0.65rem] text-muted-foreground">
+          <span className="text-[11px] text-muted-foreground">
             Minimum experience
           </span>
-          <span className="text-[0.65rem] font-semibold text-foreground/80">
+          <span className="text-[11px] font-medium text-foreground/80">
             {value === 0 ? "Any" : `${value}+ years`}
           </span>
         </div>
@@ -986,13 +945,13 @@ function ExperienceFilter({
               className={`flex ${mobile ? "min-h-10 px-1.5" : "h-12 min-w-0"} flex-col items-center justify-center rounded-lg border transition-[background-color,border-color,color] duration-150 ${selected ? selectedFilterSurface : unselectedFilterSurface} ${resultsControlFocus}`}
             >
               <span
-                className={`${mobile ? "text-[0.65rem]" : "text-[0.68rem] leading-none"} font-semibold`}
+                className={`${mobile ? "text-[11px]" : "text-[11px] leading-none"} font-medium`}
               >
                 {option.shortLabel}
               </span>
               {option.suffix && (
                 <span
-                  className={`${mobile ? "text-[0.48rem] uppercase" : "mt-1 text-[0.5rem] uppercase tracking-[0.08em]"} font-semibold ${selected ? "text-foreground/55 dark:text-secondary/60" : "text-muted-foreground/70"}`}
+                  className={`${mobile ? "text-[10px] uppercase" : "mt-1 text-[10px] uppercase tracking-[0.08em]"} font-medium ${selected ? "text-foreground/55 dark:text-secondary/60" : "text-muted-foreground/70"}`}
                 >
                   {option.suffix}
                 </span>
@@ -1018,7 +977,7 @@ function VerifiedControl({
       aria-label="Verified profiles only"
       aria-checked={value}
       onClick={() => onChange(!value)}
-      className={`flex w-full items-center gap-3 rounded-lg border px-3 py-3 text-left transition-[background-color,border-color] duration-150 ${value ? "border-foreground/[0.09] bg-foreground/[0.035] dark:border-secondary/15 dark:bg-secondary/[0.04]" : "border-border/60 bg-surface-2/30 hover:border-border/80 hover:bg-surface-3/50 dark:border-border dark:bg-surface-2/55 dark:hover:bg-surface-3/60"} ${resultsControlFocus}`}
+      className={`flex w-full items-center gap-3 rounded-lg border px-3 py-3 text-left transition-[background-color,border-color] duration-150 ${value ? "border-brand-secondary-highlight/25 bg-brand-secondary-highlight/[0.05] dark:border-secondary/25 dark:bg-secondary/[0.06]" : "border-border/60 bg-surface-2/30 hover:border-border/80 hover:bg-surface-3/50 dark:border-border dark:bg-surface-2/55 dark:hover:bg-surface-3/60"} ${resultsControlFocus}`}
     >
       <span
         className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ring-1 ring-inset ${value ? "bg-brand-secondary-highlight/[0.08] text-brand-secondary-highlight ring-brand-secondary-highlight/10 dark:bg-secondary/[0.07] dark:text-secondary dark:ring-secondary/10" : "bg-surface-3/70 text-muted-foreground ring-border/40 dark:bg-surface-3/60 dark:ring-border"}`}
@@ -1026,16 +985,16 @@ function VerifiedControl({
         <BadgeCheckIcon size={15} aria-hidden="true" />
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block text-xs font-semibold text-foreground/80">
+        <span className="block text-xs font-medium text-foreground/80">
           Verified only
         </span>
-        <span className="mt-0.5 block text-[0.62rem] text-muted-foreground">
+        <span className="mt-0.5 block text-[11px] text-muted-foreground">
           Show verified profiles.
         </span>
       </span>
       <span
         aria-hidden="true"
-        className={`relative h-5 w-9 shrink-0 rounded-full transition-colors duration-150 ${value ? "bg-brand-secondary-highlight/70 dark:bg-secondary/80" : "bg-surface-3 dark:bg-surface-3"}`}
+        className={`relative h-5 w-9 shrink-0 rounded-full transition-colors duration-150 ${value ? "bg-brand-secondary-highlight dark:bg-secondary" : "bg-surface-3 dark:bg-surface-3"}`}
       >
         <span
           className={`absolute top-0.5 h-4 w-4 rounded-full bg-surface-1 ring-1 ring-border/50 transition-transform duration-150 ${value ? "translate-x-[18px]" : "translate-x-0.5"}`}
@@ -1072,14 +1031,14 @@ function ResponsiveFilterChip({
       aria-expanded={open}
       aria-controls={open ? panelId : undefined}
       onClick={onClick}
-      className={`flex h-9 shrink-0 items-center justify-center rounded-lg border px-2.5 text-xs font-semibold transition-[background-color,border-color,color] duration-150 sm:gap-2 sm:px-3 ${active || open ? selectedFilterSurface : unselectedFilterSurface} ${resultsControlFocus}`}
+      className={`flex min-h-11 shrink-0 items-center justify-center rounded-lg border px-2.5 text-xs font-medium transition-[background-color,border-color,color] duration-150 gap-2 px-3 ${active || open ? selectedFilterSurface : unselectedFilterSurface} ${resultsControlFocus}`}
     >
       {icon}
-      <span className="hidden max-w-32 truncate sm:inline">{label}</span>
+      <span className="max-w-32 truncate">{label}</span>
       <ChevronDownIcon
         size={10}
         aria-hidden="true"
-        className={`hidden transition-transform sm:block ${open ? "rotate-180" : ""}`}
+        className={`transition-transform ${open ? "rotate-180" : ""}`}
       />
     </button>
   );
@@ -1100,14 +1059,14 @@ function StatePanel({
   return (
     <div
       role={kind === "error" ? "alert" : undefined}
-      className={`flex min-h-[320px] flex-col items-center justify-center border-y border-border/55 px-6 py-12 text-center ${kind === "error" ? "mt-8" : ""}`}
+      className={`flex min-h-[320px] flex-col items-center justify-center px-6 py-10 text-center ${kind === "error" ? "mt-8" : ""}`}
     >
       <span
         className={`flex h-11 w-11 items-center justify-center rounded-lg ${kind === "error" ? "bg-destructive/[0.07] text-destructive" : discoverIconSurface}`}
       >
         <Icon size={kind === "error" ? 19 : 18} aria-hidden="true" />
       </span>
-      <h2 className="mt-5 text-xl font-semibold tracking-[-0.02em] text-foreground/85">
+      <h2 className="mt-5 text-xl font-medium tracking-[-0.02em] text-foreground">
         {kind === "error"
           ? "Project matches are unavailable"
           : kind === "skills"
@@ -1128,7 +1087,7 @@ function StatePanel({
         <Button
           type="button"
           onClick={onAction}
-          className={`mt-6 h-10 rounded-lg px-5 text-xs font-semibold shadow-none ${primaryActionButton}`}
+          className={`mt-6 h-10 rounded-lg px-5 text-xs font-medium shadow-none ${primaryActionButton}`}
         >
           {kind === "error" ? "Try again" : "Reset filters"}
         </Button>

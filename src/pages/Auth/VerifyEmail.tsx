@@ -20,10 +20,7 @@ import allocatrLogoDark from "@/assets/allocatr-dark-02.svg";
 import allocatrLogoLight from "@/assets/allocatr-neg-light.svg";
 
 type VerificationState =
-  | "verifying"
-  | "verified"
-  | "already-verified"
-  | "error";
+  "verifying" | "verified" | "already-verified" | "error";
 type ConfirmEmailResponse = { message: string; alreadyVerified: boolean };
 
 const actionClass =

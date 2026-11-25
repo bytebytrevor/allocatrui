@@ -6,48 +6,41 @@ export type ProjectSkill = {
   categoryId: string;
   category: string;
 };
-
 export type Project = {
-  id: string; // GUID
+  id: string;
   projectCode: string;
-
   title: string;
   description: string;
   category: string;
-
   skills: ProjectSkill[];
-
   tags?: string[];
-
   createdAt: string;
   updatedAt?: string;
-
   startDate?: string;
   dueDate?: string;
   completedAt?: string;
-
-  status: "pending" | "active" | "complete" | "cancelled" | "overdue";
-
+  status:
+    | "pending"
+    | "active"
+    | "complete"
+    | "completed"
+    | "completion_requested"
+    | "cancelled"
+    | "overdue";
+  cancelledAt?: string | null;
+  cancelledByUserId?: string | null;
+  cancellationReason?: string | null;
   progress?: number;
-
   priority: "standard" | "high" | "urgent";
-
   userId?: string;
-
   allocatAssignments: string[];
-
   messagesCount?: number;
   lastActivity?: string;
-
   isPublic?: boolean;
   allowBids?: boolean;
-
   budget?: number;
   currency?: string;
-
   hasAcceptedAllocat: boolean;
-
   attachments?: string[];
-
   tasks?: Task[];
 };

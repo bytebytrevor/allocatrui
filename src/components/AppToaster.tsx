@@ -16,30 +16,10 @@ export default function AppToaster() {
       gap={10}
       offset={20}
       icons={{
-        success: (
-          <CheckCircle2Icon
-            size={16}
-            className="text-primary"
-          />
-        ),
-        error: (
-          <AlertCircleIcon
-            size={16}
-            className="text-destructive"
-          />
-        ),
-        info: (
-          <InfoIcon
-            size={16}
-            className="text-primary"
-          />
-        ),
-        warning: (
-          <TriangleAlertIcon
-            size={16}
-            className="text-primary"
-          />
-        ),
+        success: <CheckCircle2Icon size={16} className="text-primary" />,
+        error: <AlertCircleIcon size={16} className="text-destructive" />,
+        info: <InfoIcon size={16} className="text-primary" />,
+        warning: <TriangleAlertIcon size={16} className="text-primary" />,
       }}
       toastOptions={{
         classNames: {

@@ -1,6 +1,13 @@
+import ProjectLifecycleDialog from "./ProjectLifecycleDialog";
+import ProjectCancellationNotice from "./ProjectCancellationNotice";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Link, useParams, useSearchParams } from "react-router-dom";
+import {
+  Link,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
 import {
   CalendarDaysIcon,
   CopyIcon,
@@ -69,6 +76,10 @@ type StatusResult = {
 };
 export default function ProjectManager() {
   const { projectId } = useParams();
+  const navigate = useNavigate();
+  const [lifecycleAction, setLifecycleAction] = useState<
+    "cancel" | "leave" | null
+  >(null);
   const [searchParams, setSearchParams] = useSearchParams();
   const [project, setProject] = useState<Project>();
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -102,7 +113,9 @@ export default function ProjectManager() {
   const operationsRef = useRef(new Set<string>());
   const reconcileRef = useRef(false);
   const refreshRef = useRef(0);
-  const canManageTasks = permissions?.canManageTasks === true;
+  const workOpen =
+    project?.status === "pending" || project?.status === "active";
+  const canManageTasks = permissions?.canManageTasks === true && workOpen;
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
   );
@@ -491,6 +504,19 @@ export default function ProjectManager() {
               <EyeIcon size={14} aria-hidden="true" />
               Details
             </button>
+            {workOpen &&
+              (permissions.isOwner || permissions.isAcceptedAllocat) && (
+                <button
+                  type="button"
+                  disabled={busyTaskIds.size > 0 || activeTaskId !== null}
+                  onClick={() =>
+                    setLifecycleAction(permissions.isOwner ? "cancel" : "leave")
+                  }
+                  className={secondaryAction}
+                >
+                  {permissions.isOwner ? "Cancel project" : "Leave project"}
+                </button>
+              )}
             {canManageTasks && (
               <CreateTaskDialog
                 projectId={project.id}
@@ -557,6 +583,25 @@ export default function ProjectManager() {
         </div>
       </section>
 
+      <ProjectCancellationNotice project={project} />
+      {lifecycleAction && (
+        <ProjectLifecycleDialog
+          key={`${project.id}:${lifecycleAction}`}
+          project={project}
+          action={lifecycleAction}
+          open
+          onOpenChange={(value) => {
+            if (!value) setLifecycleAction(null);
+          }}
+          onProjectUpdated={(updated) => {
+            setProject(updated);
+            setPermissions((current) =>
+              current ? { ...current, canManageTasks: false } : current,
+            );
+          }}
+          onLeft={() => navigate("/projects", { replace: true })}
+        />
+      )}
       <div ref={boardRef} className="min-w-0 pt-6">
         <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>

@@ -126,9 +126,10 @@ export default function ProjectInvitationDialog({
           // The invitation endpoint currently returns skill IDs/names only.
           // Resolve categories from the catalogue without opening the project workspace.
           api
-            .get<
-              InvitationSkill[]
-            >("/skills", { withCredentials: true, signal: controller.signal })
+            .get<InvitationSkill[]>("/skills", {
+              withCredentials: true,
+              signal: controller.signal,
+            })
             .catch(() => null),
         ]);
         if (cancelled) return;

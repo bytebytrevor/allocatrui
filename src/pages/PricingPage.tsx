@@ -256,9 +256,9 @@ function PricingPage() {
               </h1>
 
               <p className="mx-auto mt-6 max-w-2xl text-base leading-8 text-muted-foreground sm:text-lg">
-                Start with everything you need to find skilled professionals
-                and get work moving. Go Pro when the work gets bigger, more
-                complex and needs a complete team.
+                Start with everything you need to find skilled professionals and
+                get work moving. Go Pro when the work gets bigger, more complex
+                and needs a complete team.
               </p>
 
               <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
@@ -284,9 +284,7 @@ function PricingPage() {
                     secondaryButton,
                   ].join(" ")}
                 >
-                  <a href="#compare-plans">
-                    Compare plans
-                  </a>
+                  <a href="#compare-plans">Compare plans</a>
                 </Button>
               </div>
 
@@ -346,29 +344,19 @@ function PricingPage() {
                   </p>
 
                   <div className="mt-4 space-y-3">
-                    <PlanFeature>
-                      Post and manage projects
-                    </PlanFeature>
+                    <PlanFeature>Post and manage projects</PlanFeature>
 
-                    <PlanFeature>
-                      Discover skilled Allocats
-                    </PlanFeature>
+                    <PlanFeature>Discover skilled Allocats</PlanFeature>
 
-                    <PlanFeature>
-                      Invite Allocats to your projects
-                    </PlanFeature>
+                    <PlanFeature>Invite Allocats to your projects</PlanFeature>
 
                     <PlanFeature>
                       Tasks, milestones and project communication
                     </PlanFeature>
 
-                    <PlanFeature>
-                      Reviews and ratings
-                    </PlanFeature>
+                    <PlanFeature>Reviews and ratings</PlanFeature>
 
-                    <PlanFeature>
-                      Single-practice projects
-                    </PlanFeature>
+                    <PlanFeature>Single-practice projects</PlanFeature>
                   </div>
                 </div>
 
@@ -380,9 +368,7 @@ function PricingPage() {
                     secondaryButton,
                   ].join(" ")}
                 >
-                  <Link to="/register">
-                    Get started
-                  </Link>
+                  <Link to="/register">Get started</Link>
                 </Button>
               </article>
 
@@ -438,9 +424,7 @@ function PricingPage() {
                         Multidisciplinary projects
                       </ContrastPlanFeature>
 
-                      <ContrastPlanFeature>
-                        Team Builder
-                      </ContrastPlanFeature>
+                      <ContrastPlanFeature>Team Builder</ContrastPlanFeature>
 
                       <ContrastPlanFeature>
                         AI-assisted team planning
@@ -599,8 +583,8 @@ function PricingPage() {
 
                 <p className="mt-3 text-sm leading-7 text-white/60">
                   Redesign the customer experience, build the frontend,
-                  integrate existing banking APIs, test the platform and
-                  prepare launch communications.
+                  integrate existing banking APIs, test the platform and prepare
+                  launch communications.
                 </p>
 
                 <div className="mt-6 border-t border-white/[0.10] pt-6">
@@ -639,11 +623,7 @@ function PricingPage() {
                       count={1}
                     />
 
-                    <TeamRole
-                      practice="Content"
-                      role="Copywriter"
-                      count={1}
-                    />
+                    <TeamRole practice="Content" role="Copywriter" count={1} />
                   </div>
 
                   <div className="mt-6 flex flex-wrap gap-x-6 gap-y-3 text-xs text-white/55">
@@ -860,10 +840,7 @@ function PricingPage() {
             COMPARISON
         ================================================= */}
 
-        <section
-          id="compare-plans"
-          className="border-b border-border/45"
-        >
+        <section id="compare-plans" className="border-b border-border/45">
           <div className="container mx-auto px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
             <SectionHeading
               eyebrow="Compare plans"
@@ -909,8 +886,7 @@ function PricingPage() {
                       <tr
                         key={row.label}
                         className={
-                          index <
-                          comparisonRows.length - 1
+                          index < comparisonRows.length - 1
                             ? "border-b border-border/45"
                             : ""
                         }
@@ -924,10 +900,7 @@ function PricingPage() {
                         </td>
 
                         <td className="border-l border-border/55 bg-primary/[0.025] px-5 py-4 text-center dark:bg-secondary/[0.02]">
-                          <FeatureValue
-                            value={row.pro}
-                            pro
-                          />
+                          <FeatureValue value={row.pro} pro />
                         </td>
                       </tr>
                     ))}
@@ -939,10 +912,7 @@ function PricingPage() {
 
               <div className="divide-y divide-border/50 md:hidden">
                 {comparisonRows.map((row) => (
-                  <div
-                    key={row.label}
-                    className="p-4"
-                  >
+                  <div key={row.label} className="p-4">
                     <p className="text-xs font-semibold text-foreground">
                       {row.label}
                     </p>
@@ -954,9 +924,7 @@ function PricingPage() {
                         </p>
 
                         <div className="mt-1.5">
-                          <FeatureValue
-                            value={row.standard}
-                          />
+                          <FeatureValue value={row.standard} />
                         </div>
                       </div>
 
@@ -966,10 +934,7 @@ function PricingPage() {
                         </p>
 
                         <div className="mt-1.5">
-                          <FeatureValue
-                            value={row.pro}
-                            pro
-                          />
+                          <FeatureValue value={row.pro} pro />
                         </div>
                       </div>
                     </div>
@@ -1030,9 +995,7 @@ function PricingPage() {
                     secondaryButton,
                   ].join(" ")}
                 >
-                  <a href="#team-builder">
-                    Explore Allocatr Pro
-                  </a>
+                  <a href="#team-builder">Explore Allocatr Pro</a>
                 </Button>
               </div>
             </div>
@@ -1085,11 +1048,7 @@ function SectionHeading({
    PLAN FEATURE
 ========================================================= */
 
-function PlanFeature({
-  children,
-}: {
-  children: ReactNode;
-}) {
+function PlanFeature({ children }: { children: ReactNode }) {
   return (
     <div className="flex items-start gap-2.5">
       <span
@@ -1101,9 +1060,7 @@ function PlanFeature({
         <CheckIcon size={11} />
       </span>
 
-      <p className="text-xs leading-6 text-foreground/75">
-        {children}
-      </p>
+      <p className="text-xs leading-6 text-foreground/75">{children}</p>
     </div>
   );
 }
@@ -1112,20 +1069,14 @@ function PlanFeature({
    CONTRAST PLAN FEATURE
 ========================================================= */
 
-function ContrastPlanFeature({
-  children,
-}: {
-  children: ReactNode;
-}) {
+function ContrastPlanFeature({ children }: { children: ReactNode }) {
   return (
     <div className="flex items-start gap-2.5">
       <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-secondary text-secondary-foreground">
         <CheckIcon size={11} />
       </span>
 
-      <p className="text-xs leading-6 text-white/75">
-        {children}
-      </p>
+      <p className="text-xs leading-6 text-white/75">{children}</p>
     </div>
   );
 }
@@ -1150,13 +1101,9 @@ function ContrastDetail({
       </span>
 
       <div>
-        <p className="text-xs font-semibold text-white">
-          {title}
-        </p>
+        <p className="text-xs font-semibold text-white">{title}</p>
 
-        <p className="mt-1 text-xs leading-6 text-white/55">
-          {description}
-        </p>
+        <p className="mt-1 text-xs leading-6 text-white/55">{description}</p>
       </div>
     </div>
   );
@@ -1178,18 +1125,12 @@ function TeamRole({
   return (
     <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 py-3.5">
       <div className="min-w-0">
-        <p className="text-[0.57rem] font-medium text-white/40">
-          {practice}
-        </p>
+        <p className="text-[0.57rem] font-medium text-white/40">{practice}</p>
 
-        <p className="mt-1 truncate text-xs font-semibold text-white">
-          {role}
-        </p>
+        <p className="mt-1 truncate text-xs font-semibold text-white">{role}</p>
       </div>
 
-      <span className="text-xs font-semibold text-secondary">
-        ×{count}
-      </span>
+      <span className="text-xs font-semibold text-secondary">×{count}</span>
     </div>
   );
 }

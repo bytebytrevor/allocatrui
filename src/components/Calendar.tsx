@@ -61,10 +61,7 @@ type CalendarView = "month" | "week";
 type CalendarScope = "all" | "mine" | "work";
 
 type CalendarEventType =
-  | "project-start"
-  | "project-due"
-  | "task"
-  | "plan-block";
+  "project-start" | "project-due" | "task" | "plan-block";
 
 type CalendarRelationship = "owner" | "allocat" | "planning";
 

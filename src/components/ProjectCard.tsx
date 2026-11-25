@@ -1,3 +1,5 @@
+import ProjectLifecycleDialog from "@/components/ProjectLifecycleDialog";
+import ProjectCancellationNotice from "@/components/ProjectCancellationNotice";
 import { type FormEvent, useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
@@ -19,6 +21,7 @@ import {
   UserPlusIcon,
   XIcon,
   BanIcon,
+  LogOutIcon,
 } from "lucide-react";
 import { toast } from "sonner";
 import api from "@/api/axios";
@@ -631,6 +634,8 @@ function ProjectCompletionNotice({
   project: Project;
   compact?: boolean;
 }) {
+  if (normalizeStatus(project.status) === "cancelled")
+    return <ProjectCancellationNotice project={project} compact={compact} />;
   if (!isCompletionRequested(project)) return null;
   const isClientWork = isClientWorkProject(project);
   return (
@@ -660,6 +665,9 @@ function ProjectMenu({
   header = false,
 }: ProjectMenuProps) {
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [lifecycleAction, setLifecycleAction] = useState<
+    "cancel" | "leave" | null
+  >(null);
   const [editOpen, setEditOpen] = useState(false);
   const [completeOpen, setCompleteOpen] = useState(false);
   const [reviewCompletionOpen, setReviewCompletionOpen] = useState(false);
@@ -669,6 +677,9 @@ function ProjectMenu({
 
   const canModifyOwned = canModifyOwnedProject(project);
   const showCancel = canCancelProject(project);
+  const showLeave =
+    isAcceptedClientWorkProject(project) &&
+    ["pending", "active"].includes(normalizeStatus(project.status));
   const showMarkComplete = canMarkProjectComplete(project);
   const showReviewCompletion = canReviewCompletion(project);
   const showManageRatings = canManageProjectRatings(project);
@@ -810,6 +821,7 @@ function ProjectMenu({
                   <DropdownMenuSeparator className="my-1 bg-border/60 dark:bg-border" />
 
                   <DropdownMenuItem
+                    onSelect={() => setLifecycleAction("cancel")}
                     className={[
                       menuItemClass,
 
@@ -827,6 +839,19 @@ function ProjectMenu({
                   </DropdownMenuItem>
                 </>
               )}
+            </>
+          )}
+
+          {showLeave && (
+            <>
+              <DropdownMenuSeparator className="my-1 bg-border/60 dark:bg-border" />
+              <DropdownMenuItem
+                className={menuItemClass}
+                onSelect={() => setLifecycleAction("leave")}
+              >
+                <LogOutIcon size={13} />
+                Leave project
+              </DropdownMenuItem>
             </>
           )}
 
@@ -855,6 +880,19 @@ function ProjectMenu({
           )}
         </DropdownMenuContent>
       </DropdownMenu>
+
+      {lifecycleAction && (
+        <ProjectLifecycleDialog
+          key={`${project.id}:${lifecycleAction}`}
+          project={project}
+          action={lifecycleAction}
+          open
+          onOpenChange={(value) => {
+            if (!value) setLifecycleAction(null);
+          }}
+          onProjectUpdated={onProjectUpdated}
+        />
+      )}
 
       <ProjectDetailsDialog
         project={project}
