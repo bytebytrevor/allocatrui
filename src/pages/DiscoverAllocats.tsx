@@ -1,4 +1,5 @@
 import {
+  type CSSProperties,
   type ReactNode,
   useEffect,
   useId,
@@ -118,6 +119,29 @@ const sortOptions: SortDropdownOption<SortOption>[] = [
 
 export default function Discover() {
   const navigate = useNavigate();
+  const navigationRef = useRef<HTMLElement>(null);
+  const searchBarRef = useRef<HTMLElement>(null);
+  const [navigationHeight, setNavigationHeight] = useState(64);
+  const [searchBarHeight, setSearchBarHeight] = useState(72);
+  useEffect(() => {
+    const navigation = navigationRef.current;
+    if (!navigation) return;
+    const measure = () => {
+      setNavigationHeight(
+        Math.ceil(navigation.getBoundingClientRect().height) || 64,
+      );
+      setSearchBarHeight(
+        Math.ceil(searchBarRef.current?.getBoundingClientRect().height ?? 0) ||
+          72,
+      );
+    };
+    measure();
+    if (typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(measure);
+    observer.observe(navigation);
+    if (searchBarRef.current) observer.observe(searchBarRef.current);
+    return () => observer.disconnect();
+  }, []);
   const [searchParams, setSearchParams] = useSearchParams();
   const search = searchParams.get("search") ?? DEFAULT_SEARCH;
   const [category, setCategory] = useState(DEFAULT_CATEGORY);
@@ -213,6 +237,18 @@ export default function Discover() {
     verifiedOnly,
   ]);
 
+  const hasResultCriteria = Boolean(
+    search.trim() ||
+    category.trim() ||
+    selectedSkills.length > 0 ||
+    location.trim() ||
+    maxHourlyRate !== null ||
+    minExperience > DEFAULT_MIN_EXPERIENCE ||
+    verifiedOnly,
+  );
+  const showResultCount =
+    hasResultCriteria && !error && (!loading || directory.loadingMore);
+
   function toggleFilter(filter: OpenFilter) {
     setOpenFilter((current) => (current === filter ? null : filter));
   }
@@ -259,16 +295,36 @@ export default function Discover() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <header className="sticky top-0 z-40 border-b border-border/60 bg-background">
+    <div
+      className="min-h-screen bg-background text-foreground"
+      style={
+        {
+          "--discover-navigation-height": `${navigationHeight}px`,
+          "--discover-search-height": `${searchBarHeight}px`,
+        } as CSSProperties
+      }
+    >
+      <header
+        ref={navigationRef}
+        className="sticky top-0 z-40 border-b border-border/35 bg-background"
+      >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <MinimalNavMenu />
         </div>
       </header>
-      <main className="container mx-auto px-5 py-5 md:px-8 lg:py-6">
-        <section aria-label="Discover Allocats" className="pb-4 sm:pb-5">
+      <div className="container mx-auto px-5 pb-1 pt-5 md:px-8 lg:hidden">
+        <h1 className="text-2xl font-medium leading-tight tracking-[-0.03em] text-foreground">
+          Discover Allocats
+        </h1>
+      </div>
+      <section
+        ref={searchBarRef}
+        aria-label="Discover Allocats"
+        className="sticky top-[var(--discover-navigation-height)] z-30 bg-background/95 backdrop-blur-sm"
+      >
+        <div className="container mx-auto px-5 py-3 md:px-8">
           <div className="grid gap-3 lg:grid-cols-[240px_minmax(0,1fr)] lg:items-center lg:gap-7 xl:grid-cols-[252px_minmax(0,1fr)] xl:gap-9">
-            <h1 className="shrink-0 text-2xl font-medium leading-tight tracking-[-0.03em] text-foreground">
+            <h1 className="hidden shrink-0 text-2xl font-medium leading-tight tracking-[-0.03em] text-foreground lg:block">
               Discover Allocats
             </h1>
             <div className="relative min-w-0 w-full">
@@ -283,7 +339,7 @@ export default function Discover() {
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
                 placeholder="Search by name, skill or profession"
-                className={`h-12 w-full rounded-xl pl-11 pr-11 text-base sm:text-sm ${inputSurface}`}
+                className={`h-11 w-full rounded-lg pl-11 pr-11 text-base sm:text-sm lg:h-12 lg:rounded-xl ${inputSurface}`}
               />
               {search && (
                 <button
@@ -301,7 +357,9 @@ export default function Discover() {
               )}
             </div>
           </div>
-        </section>
+        </div>
+      </section>
+      <main className="container mx-auto px-5 pb-5 md:px-8 lg:pb-6 lg:pt-5">
         {filterOptions.error && (
           <div
             role="alert"
@@ -327,9 +385,9 @@ export default function Discover() {
           <div className="lg:grid lg:grid-cols-[240px_minmax(0,1fr)] lg:gap-7 xl:grid-cols-[252px_minmax(0,1fr)] xl:gap-9">
             <aside
               aria-label="Refine Allocats"
-              className="hidden lg:sticky lg:top-24 lg:block lg:self-start [&_*]:[scrollbar-width:none] [&_*::-webkit-scrollbar]:hidden"
+              className="hidden lg:sticky lg:top-[calc(var(--discover-navigation-height)+var(--discover-search-height)+1rem)] lg:block lg:self-start [&_*]:[scrollbar-width:none] [&_*::-webkit-scrollbar]:hidden"
             >
-              <div className="max-h-[calc(100dvh-7rem)] overflow-y-auto pb-4 pr-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              <div className="max-h-[calc(100dvh-var(--discover-navigation-height)-var(--discover-search-height)-2rem)] overflow-y-auto pb-4 pr-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2.5">
                     <span
@@ -482,26 +540,11 @@ export default function Discover() {
               </div>
             </aside>
             <div className="min-w-0">
-              <section className="py-4 lg:hidden">
+              <section aria-label="Mobile filters" className="py-3 lg:hidden">
                 <div
                   ref={mobileFiltersRef}
-                  className="flex flex-wrap items-center gap-2"
+                  className={`grid items-center gap-1 md:gap-2 ${activeFilterCount > 0 ? "grid-cols-7" : "grid-cols-6"}`}
                 >
-                  <div className="mr-auto flex shrink-0 items-center gap-2">
-                    <span
-                      className={`flex h-8 w-8 items-center justify-center rounded-lg ${filterIconSurface}`}
-                    >
-                      <SlidersHorizontalIcon size={14} aria-hidden="true" />
-                    </span>
-                    <span className="hidden text-xs font-medium text-foreground sm:inline">
-                      Refine
-                    </span>
-                    {activeFilterCount > 0 && (
-                      <span className="text-[11px] font-medium tabular-nums text-brand-secondary-highlight dark:text-secondary">
-                        {activeFilterCount}
-                      </span>
-                    )}
-                  </div>
                   <ResponsiveFilterChip
                     panelId={filterPanelId}
                     icon={<Layers3Icon size={13} />}
@@ -564,13 +607,15 @@ export default function Discover() {
                     aria-pressed={verifiedOnly}
                     onClick={() => setVerifiedOnly((current) => !current)}
                     className={
-                      `flex min-h-11 shrink-0 items-center justify-center rounded-lg border px-3 text-xs font-medium transition-[background-color,border-color,color] duration-150 gap-2 ${verifiedOnly ? selectedFilterSurface : unselectedFilterSurface}` +
+                      `flex h-10 min-w-0 items-center justify-center gap-1 rounded-lg border px-1 text-xs font-medium transition-[background-color,border-color,color] duration-150 md:gap-2 md:px-2 ${verifiedOnly ? selectedFilterSurface : unselectedFilterSurface}` +
                       " " +
                       FOCUS
                     }
                   >
                     <BadgeCheckIcon size={13} aria-hidden="true" />
-                    <span>Verified</span>
+                    <span className="hidden min-w-0 truncate md:inline">
+                      Verified
+                    </span>
                   </button>
                   {activeFilterCount > 0 && (
                     <button
@@ -579,13 +624,15 @@ export default function Discover() {
                       aria-label="Clear filters"
                       onClick={resetFilters}
                       className={
-                        "flex min-h-11 shrink-0 items-center justify-center rounded-lg px-2.5 text-muted-foreground transition-colors hover:bg-surface-3/55 hover:text-foreground/85 sm:gap-1.5 sm:text-xs" +
+                        "flex h-10 min-w-0 items-center justify-center gap-1 rounded-lg px-1 text-muted-foreground transition-colors hover:bg-surface-3/55 hover:text-foreground/85 md:gap-1.5 md:px-2 md:text-xs" +
                         " " +
                         FOCUS
                       }
                     >
                       <XIcon size={13} aria-hidden="true" />
-                      <span>Clear</span>
+                      <span className="hidden min-w-0 truncate md:inline">
+                        Clear
+                      </span>
                     </button>
                   )}
                 </div>
@@ -699,18 +746,23 @@ export default function Discover() {
                   </MobileFilterPanel>
                 )}
               </section>
-              <section className="relative flex flex-wrap items-center justify-between gap-3 pb-4 pt-1">
+              <section className="relative flex min-w-0 items-center justify-between gap-2 pb-4 pt-1">
                 <div className="min-w-0">
                   <div className="flex min-w-0 items-center gap-2">
                     <h2 className="truncate text-sm font-medium tracking-[-0.02em] text-foreground/85 sm:text-lg">
                       Explore Allocats
                     </h2>
-                    <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
-                      {directory.totalCount}
-                    </span>
+                    {showResultCount && (
+                      <span
+                        aria-label="Matching Allocats"
+                        className="shrink-0 text-xs tabular-nums text-muted-foreground"
+                      >
+                        {directory.totalCount}
+                      </span>
+                    )}
                   </div>
                 </div>
-                <div className="flex shrink-0 items-center gap-2">
+                <div className="flex shrink-0 items-center gap-2 [&>button]:!h-10 [&>button]:!min-h-10 [&>button]:!w-10 [&>button]:!px-0 [&>button>span]:hidden [&>button>svg:last-child]:hidden sm:[&>button]:!w-auto sm:[&>button]:!px-3 sm:[&>button>span]:inline sm:[&>button>svg:last-child]:block">
                   <SortDropdown
                     value={sortBy}
                     onChange={setSortBy}
@@ -754,31 +806,34 @@ export default function Discover() {
                 {error && (
                   <ErrorState message={error} onRetry={directory.retry} />
                 )}
-                {filteredAllocats.length > 0 && (
-                  <div className="mt-7 flex flex-col items-center gap-3 border-t border-border/55 pt-5">
-                    <p
-                      role="status"
-                      aria-live="polite"
-                      className="text-xs text-muted-foreground"
-                    >
-                      Showing {filteredAllocats.length} of{" "}
-                      {directory.totalCount} Allocats
-                    </p>
-                    {directory.hasNext && !error && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={directory.loadMore}
-                        disabled={loading}
-                        className={`h-10 rounded-lg px-5 text-xs font-medium ${secondaryActionButton}`}
-                      >
-                        {directory.loadingMore
-                          ? "Loading more..."
-                          : "Show more Allocats"}
-                      </Button>
-                    )}
-                  </div>
-                )}
+                {filteredAllocats.length > 0 &&
+                  (showResultCount || (directory.hasNext && !error)) && (
+                    <div className="mt-7 flex flex-col items-center gap-3 border-t border-border/55 pt-5">
+                      {showResultCount && (
+                        <p
+                          role="status"
+                          aria-live="polite"
+                          className="text-xs text-muted-foreground"
+                        >
+                          Showing {filteredAllocats.length} of{" "}
+                          {directory.totalCount} Allocats
+                        </p>
+                      )}
+                      {directory.hasNext && !error && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={directory.loadMore}
+                          disabled={loading}
+                          className={`h-10 rounded-lg px-5 text-xs font-medium ${secondaryActionButton}`}
+                        >
+                          {directory.loadingMore
+                            ? "Loading more..."
+                            : "Show more Allocats"}
+                        </Button>
+                      )}
+                    </div>
+                  )}
               </section>
             </div>
           </div>
@@ -1192,7 +1247,7 @@ function MobileFilterPanel({
       id={id}
       role="region"
       aria-label="Filter options"
-      className="mt-3 rounded-xl border border-border/70 bg-card p-4"
+      className="mt-3 rounded-xl border border-border/35 bg-card p-4"
     >
       {children}
     </div>
@@ -1242,19 +1297,21 @@ function ResponsiveFilterChip({
   return (
     <button
       type="button"
-      title={title}
+      title={active ? `${title}: ${label}` : title}
       aria-label={title}
       aria-expanded={open}
       aria-controls={open ? panelId : undefined}
       onClick={onClick}
       className={
-        `flex min-h-11 shrink-0 items-center justify-center rounded-lg border px-3 text-xs font-medium transition-[background-color,border-color,color] duration-150 gap-2 ${active || open ? selectedFilterSurface : unselectedFilterSurface}` +
+        `flex h-10 min-w-0 items-center justify-center gap-1 rounded-lg border px-1 text-xs font-medium transition-[background-color,border-color,color] duration-150 md:gap-2 md:px-2 ${active || open ? selectedFilterSurface : unselectedFilterSurface}` +
         " " +
         FOCUS
       }
     >
       {icon}
-      <span className="max-w-32 truncate">{label}</span>
+      <span className="hidden min-w-0 max-w-32 truncate md:inline">
+        {label}
+      </span>
       <ChevronDownIcon
         size={10}
         aria-hidden="true"

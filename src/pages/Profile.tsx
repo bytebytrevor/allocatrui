@@ -79,11 +79,11 @@ const primaryButton = [
   "dark:focus-visible:ring-secondary/20",
 ].join(" ");
 const secondaryButton = [
-  "border border-border/65 bg-surface-2/35 text-foreground/80 shadow-none",
+  "border border-border/35 bg-card text-foreground/80 shadow-none",
   "transition-colors duration-150 motion-reduce:transition-none",
-  "hover:border-border hover:bg-surface-2/70 hover:text-foreground",
+  "hover:border-border/60 hover:bg-surface-2/70 hover:text-foreground",
   "focus-visible:ring-2 focus-visible:ring-brand-secondary-highlight/20 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-  "dark:border-border dark:bg-surface-2/65 dark:text-foreground/80",
+  "dark:border-border/35 dark:bg-surface-2/40 dark:text-foreground/80",
   "dark:hover:bg-surface-3/60 dark:hover:text-foreground dark:focus-visible:ring-secondary/20",
 ].join(" ");
 const quietIconButton = [
@@ -94,8 +94,8 @@ const quietIconButton = [
 // Override the shared Select's accent defaults here, pairing neutral text with
 // neutral surfaces in normal, selected, hover and keyboard-highlighted states.
 const countryMenuClass = [
-  "rounded-xl border border-border/70 !bg-card p-1.5 !text-foreground",
-  "shadow-lg shadow-black/[0.07] dark:border-border dark:shadow-black/25",
+  "rounded-xl border border-border/35 !bg-card p-1.5 !text-foreground",
+  "shadow-lg shadow-black/[0.07] dark:border-border/35 dark:shadow-black/25",
 ].join(" ");
 const countryItemClass = [
   "min-h-10 cursor-default rounded-lg py-2.5 !text-foreground",
@@ -107,35 +107,36 @@ const countryItemClass = [
   "[&_span]:!text-inherit",
 ].join(" ");
 const fieldClass = [
-  "h-11 rounded-lg border-border/70 bg-surface-1/70 shadow-none",
+  "h-11 rounded-lg border-border/35 bg-surface-2/30 shadow-none",
   "transition-[border-color,box-shadow,background-color] motion-reduce:transition-none",
-  "hover:border-border focus-visible:border-brand-secondary-highlight/40 focus-visible:ring-2 focus-visible:ring-brand-secondary-highlight/15",
+  "hover:border-border/60 focus-visible:border-brand-secondary-highlight/25 focus-visible:ring-2 focus-visible:ring-brand-secondary-highlight/15",
   "dark:bg-surface-2/35 dark:focus-visible:border-secondary/25 dark:focus-visible:ring-secondary/15",
 ].join(" ");
 const disabledFieldClass = [
-  "h-11 rounded-lg border-border/60 bg-surface-2/50 font-medium text-muted-foreground shadow-none",
+  "h-11 rounded-lg border-border/35 bg-surface-2/50 font-medium text-muted-foreground shadow-none",
   "disabled:cursor-not-allowed disabled:opacity-100 disabled:text-muted-foreground",
   "dark:bg-surface-2/65",
 ].join(" ");
-const cardSurface = "border-border/55 bg-card dark:border-border dark:bg-card";
+const cardSurface =
+  "border-border/35 bg-card dark:border-border/35 dark:bg-card";
 const quietSurface =
-  "border-border/55 bg-surface-2/30 dark:border-border dark:bg-surface-2/55";
+  "border-border/35 bg-surface-2/30 dark:border-border/35 dark:bg-surface-2/55";
 const accentIconSurface = [
-  "bg-brand-secondary-highlight/[0.08] text-brand-secondary-highlight ring-1 ring-inset ring-brand-secondary-highlight/10",
-  "dark:bg-secondary/[0.07] dark:text-secondary dark:ring-secondary/10",
+  "bg-surface-2/65 text-brand-secondary-highlight",
+  "dark:bg-surface-3/45 dark:text-secondary",
 ].join(" ");
-const pageCanvas = "bg-surface-2/20 dark:bg-background";
+const pageCanvas = "bg-background";
 const profileSurface = [
-  "rounded-2xl border border-border/60 bg-card shadow-sm shadow-black/[0.025]",
-  "dark:border-border dark:bg-card dark:shadow-none",
+  "rounded-xl border border-border/35 bg-card shadow-none",
+  "dark:border-border/35 dark:bg-card dark:shadow-none",
 ].join(" ");
 const sectionSurface = [
-  "rounded-2xl border border-border/60 bg-card",
-  "dark:border-border dark:bg-card",
+  "rounded-xl border border-border/35 bg-card",
+  "dark:border-border/35 dark:bg-card",
 ].join(" ");
 const accountCompletionSurface = [
-  "border-primary/20 bg-primary text-primary-foreground",
-  "dark:border-brand-secondary-highlight/25 dark:bg-brand-secondary dark:text-white",
+  "border-border/35 bg-card text-card-foreground",
+  "dark:border-border/35 dark:bg-card",
 ].join(" ");
 
 export default function Profile() {
@@ -482,14 +483,14 @@ export default function Profile() {
   );
   return (
     <div className={["min-h-screen text-foreground", pageCanvas].join(" ")}>
-      <header className="sticky top-0 z-40 border-b border-border/60 bg-background/95 backdrop-blur-xl">
+      <header className="sticky top-0 z-40 border-b border-border/35 bg-background/95 backdrop-blur-xl">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <DashboardMainNav>
             <div>
-              <p className="text-[0.625rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+              <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
                 Account
               </p>
-              <p className="mt-0.5 text-xs font-semibold text-foreground">
+              <p className="mt-0.5 text-xs font-medium text-foreground">
                 Profile
               </p>
             </div>
@@ -502,21 +503,21 @@ export default function Profile() {
             <div className="flex flex-col gap-7 lg:flex-row lg:items-end lg:justify-between">
               <div className="flex min-w-0 flex-col gap-5 sm:flex-row sm:items-center">
                 <div className="relative w-fit shrink-0">
-                  <Avatar className="h-24 w-24 border border-border/70 bg-transparent sm:h-28 sm:w-28">
+                  <Avatar className="h-24 w-24 border border-border/35 bg-transparent sm:h-28 sm:w-28">
                     <AvatarImage
                       key={profileUser.avatarUrl ?? "avatar"}
                       src={profileUser.avatarUrl ?? undefined}
                       alt={`${profileUser.fullName}'s profile`}
                       className="object-cover"
                     />
-                    <AvatarFallback className="bg-brand-secondary-highlight/[0.08] text-2xl font-semibold text-brand-secondary-highlight dark:bg-secondary/[0.08] dark:text-secondary">
+                    <AvatarFallback className="bg-surface-2/65 text-2xl font-medium text-foreground/75 dark:bg-surface-3/45">
                       {initials}
                     </AvatarFallback>
                   </Avatar>
                   <button
                     type="button"
                     onClick={openAvatarEditor}
-                    className="absolute -left-1 -top-1 flex h-8 w-8 items-center justify-center rounded-lg border-[3px] border-card bg-brand-secondary-highlight text-primary-foreground transition-opacity duration-150 hover:opacity-85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-secondary-highlight/25 dark:bg-secondary dark:text-secondary-foreground dark:focus-visible:ring-secondary/25"
+                    className="absolute -bottom-1 -left-1 flex h-8 w-8 items-center justify-center rounded-lg border-[3px] border-card bg-brand-secondary-highlight text-primary-foreground transition-opacity duration-150 hover:opacity-85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-secondary-highlight/25 dark:bg-secondary dark:text-secondary-foreground dark:focus-visible:ring-secondary/25"
                     aria-label="Update profile picture"
                     title="Update profile picture"
                   >
@@ -534,17 +535,17 @@ export default function Profile() {
                 </div>
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <p className="text-[0.625rem] font-semibold uppercase tracking-[0.17em] text-brand-secondary-highlight dark:text-secondary">
+                    <p className="text-[11px] font-medium uppercase tracking-[0.17em] text-brand-secondary-highlight dark:text-secondary">
                       Client profile
                     </p>
                     <Badge
                       variant="outline"
-                      className="h-6 rounded-md border-border/55 bg-surface-2/35 px-2 text-[0.625rem] font-semibold text-muted-foreground shadow-none dark:bg-surface-2/55"
+                      className="h-6 rounded-md border-border/35 bg-surface-2/35 px-2 text-[11px] font-medium text-muted-foreground shadow-none dark:bg-surface-2/55"
                     >
                       Client account
                     </Badge>
                   </div>
-                  <h1 className="mt-2 break-words [overflow-wrap:anywhere] text-3xl font-semibold leading-[1.02] tracking-[-0.04em] text-foreground/95 sm:text-4xl lg:text-[2.75rem]">
+                  <h1 className="mt-2 break-words [overflow-wrap:anywhere] text-2xl font-medium leading-tight tracking-[-0.035em] text-foreground/95 sm:text-3xl">
                     {profileUser.fullName}
                   </h1>
                   <div className="mt-3 flex min-w-0 items-center gap-2">
@@ -571,14 +572,14 @@ export default function Profile() {
               {!profileUser.emailConfirmed && (
                 <div className="inline-flex w-fit items-center gap-2 self-start rounded-lg border border-status-pending/20 bg-status-pending/[0.055] px-3 py-2 text-status-pending-foreground lg:self-auto">
                   <MailCheckIcon size={13} aria-hidden="true" />
-                  <span className="text-xs font-semibold">
+                  <span className="text-xs font-medium">
                     Email not verified
                   </span>
                 </div>
               )}
             </div>
           </div>
-          <div className="border-t border-border/55">
+          <div className="border-t border-border/35">
             <div className="grid sm:grid-cols-3">
               <SummaryStat
                 label="Profile"
@@ -811,7 +812,7 @@ export default function Profile() {
                       </div>
                     </ProfileField>
                   </div>
-                  <p className="text-[0.6875rem] leading-5 text-muted-foreground">
+                  <p className="text-[11px] leading-5 text-muted-foreground">
                     Your residence is separate from where you need work done.
                     You can hire Allocats in supported regions while living
                     abroad.
@@ -822,7 +823,7 @@ export default function Profile() {
                         " ",
                       )}
                     >
-                      <p className="text-xs font-semibold text-foreground">
+                      <p className="text-xs font-medium text-foreground">
                         Confirm your residence
                       </p>
                       <p className="mt-1 break-words text-xs leading-6 text-muted-foreground">
@@ -892,10 +893,10 @@ export default function Profile() {
                   )}
                 </div>
                 {profileError && <InlineError message={profileError} />}
-                <div className="mt-7 flex flex-col gap-3 border-t border-border/45 pt-5 sm:flex-row sm:items-center sm:justify-between">
+                <div className="mt-7 flex flex-col gap-3 border-t border-border/25 pt-5 sm:flex-row sm:items-center sm:justify-between">
                   <p
                     className={[
-                      "text-[0.6875rem]",
+                      "text-[11px]",
                       profileHasChanges
                         ? "font-medium text-foreground"
                         : "text-muted-foreground",
@@ -910,7 +911,7 @@ export default function Profile() {
                     variant="ghost"
                     disabled={!profileHasChanges || savingProfile}
                     className={[
-                      "h-9 rounded-lg px-4 text-xs font-semibold",
+                      "h-9 rounded-lg px-4 text-xs font-medium",
                       primaryButton,
                       "disabled:border-border/50 disabled:bg-surface-3 disabled:text-muted-foreground disabled:opacity-60",
                       "dark:disabled:bg-surface-2",
@@ -970,28 +971,28 @@ export default function Profile() {
           <aside className="min-w-0 space-y-5 xl:sticky xl:top-24">
             <section
               className={[
-                "rounded-2xl border p-5",
+                "rounded-xl border p-5",
                 accountCompletionSurface,
               ].join(" ")}
             >
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-[0.625rem] font-semibold uppercase tracking-[0.15em] text-white/55">
+                  <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
                     Account completion
                   </p>
-                  <h2 className="mt-2 text-lg font-semibold tracking-[-0.025em] text-white">
+                  <h2 className="mt-2 text-lg font-medium tracking-[-0.025em] text-foreground">
                     {getCompletionLabel(profileCompletion)}
                   </h2>
                 </div>
-                <p className="shrink-0 text-3xl font-semibold tracking-[-0.04em] text-white">
+                <p className="shrink-0 text-3xl font-medium tracking-[-0.04em] text-foreground">
                   {profileCompletion}
-                  <span className="ml-0.5 text-sm font-medium text-white/55">
+                  <span className="ml-0.5 text-sm font-medium text-muted-foreground">
                     %
                   </span>
                 </p>
               </div>
               <ContrastProgress value={profileCompletion} className="mt-5" />
-              <p className="mt-4 text-xs leading-6 text-white/65">
+              <p className="mt-4 text-xs leading-6 text-muted-foreground">
                 {accountVerified
                   ? "Your account essentials are complete and your email is confirmed. You're ready for your next project."
                   : "Complete the checklist below and confirm your email to earn your Verified badge."}
@@ -999,17 +1000,17 @@ export default function Profile() {
             </section>
             <ProfileChecklist profile={profileUser} />
             <section
-              className={["rounded-2xl border p-5", quietSurface].join(" ")}
+              className={["rounded-xl border p-5", quietSurface].join(" ")}
             >
               <div className="flex items-start gap-3">
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-status-complete/[0.08] text-status-complete-foreground">
                   <ShieldCheckIcon size={15} />
                 </span>
                 <div>
-                  <p className="text-xs font-semibold text-foreground">
+                  <p className="text-xs font-medium text-foreground">
                     Keep your details current
                   </p>
-                  <p className="mt-1 text-[0.625rem] leading-5 text-muted-foreground">
+                  <p className="mt-1 text-[11px] leading-5 text-muted-foreground">
                     Accurate and verified information improves account security
                     and keeps project communication reliable.
                   </p>
@@ -1082,16 +1083,16 @@ function ProfilePictureDialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby="profile-picture-title"
-        className="max-h-[90dvh] w-full max-w-md overflow-y-auto rounded-2xl border border-border/65 bg-card p-5 text-card-foreground shadow-lg shadow-black/[0.07] sm:p-6 dark:border-border dark:bg-card dark:shadow-black/25"
+        className="max-h-[90dvh] w-full max-w-md overflow-y-auto rounded-xl border border-border/35 bg-card p-5 text-card-foreground shadow-lg shadow-black/[0.07] sm:p-6 dark:border-border/35 dark:bg-card dark:shadow-black/25"
       >
         <div className="flex items-start justify-between gap-5">
           <div>
-            <p className="text-[0.625rem] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
+            <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
               Profile image
             </p>
             <h2
               id="profile-picture-title"
-              className="mt-2 text-xl font-semibold tracking-[-0.025em] text-foreground"
+              className="mt-2 text-xl font-medium tracking-[-0.025em] text-foreground"
             >
               Update profile picture
             </h2>
@@ -1123,13 +1124,13 @@ function ProfilePictureDialog({
         />
         <div className="mt-6 flex flex-col items-center">
           <div className="relative">
-            <Avatar className="h-28 w-28 border border-border/70 bg-transparent">
+            <Avatar className="h-28 w-28 border border-border/35 bg-transparent">
               <AvatarImage
                 src={preview ?? currentAvatar}
                 alt="Profile picture preview"
                 className="object-cover"
               />
-              <AvatarFallback className="bg-brand-secondary-highlight/[0.08] text-2xl font-semibold text-brand-secondary-highlight dark:bg-secondary/[0.08] dark:text-secondary">
+              <AvatarFallback className="bg-surface-2/65 text-2xl font-medium text-foreground/75 dark:bg-surface-3/45">
                 {initials}
               </AvatarFallback>
             </Avatar>
@@ -1160,10 +1161,10 @@ function ProfilePictureDialog({
                   <ImageIcon size={14} />
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-xs font-semibold text-foreground">
+                  <p className="truncate text-xs font-medium text-foreground">
                     {file.name}
                   </p>
-                  <p className="mt-0.5 text-[0.625rem] text-muted-foreground">
+                  <p className="mt-0.5 text-[11px] text-muted-foreground">
                     {formatFileSize(file.size)}
                   </p>
                 </div>
@@ -1185,10 +1186,10 @@ function ProfilePictureDialog({
               {uploading && (
                 <div className="mt-3">
                   <div className="mb-2 flex items-center justify-between gap-3">
-                    <p className="text-[0.625rem] font-medium text-muted-foreground">
+                    <p className="text-[11px] font-medium text-muted-foreground">
                       Uploading image
                     </p>
-                    <p className="text-[0.625rem] tabular-nums text-muted-foreground">
+                    <p className="text-[11px] tabular-nums text-muted-foreground">
                       {progress}%
                     </p>
                   </div>
@@ -1203,7 +1204,7 @@ function ProfilePictureDialog({
               onClick={onChoose}
               disabled={uploading}
               className={[
-                "mt-5 h-10 rounded-lg px-4 text-xs font-semibold",
+                "mt-5 h-10 rounded-lg px-4 text-xs font-medium",
                 secondaryButton,
               ].join(" ")}
             >
@@ -1217,14 +1218,14 @@ function ProfilePictureDialog({
             </div>
           )}
         </div>
-        <div className="mt-6 flex justify-end gap-2 border-t border-border/45 pt-5">
+        <div className="mt-6 flex justify-end gap-2 border-t border-border/25 pt-5">
           <Button
             type="button"
             variant="outline"
             onClick={onClose}
             disabled={uploading}
             className={[
-              "h-10 rounded-lg px-4 text-xs font-semibold",
+              "h-10 rounded-lg px-4 text-xs font-medium",
               secondaryButton,
             ].join(" ")}
           >
@@ -1236,7 +1237,7 @@ function ProfilePictureDialog({
             onClick={onUpload}
             disabled={!file || uploading}
             className={[
-              "h-10 rounded-lg px-4 text-xs font-semibold",
+              "h-10 rounded-lg px-4 text-xs font-medium",
               primaryButton,
             ].join(" ")}
           >
@@ -1314,9 +1315,9 @@ function ProfileChecklist({ profile }: { profile: ProfileUser }) {
   const completeCount = items.filter((item) => item.complete).length;
   return (
     <section
-      className={["overflow-hidden rounded-2xl border", cardSurface].join(" ")}
+      className={["overflow-hidden rounded-xl border", cardSurface].join(" ")}
     >
-      <div className="flex items-center justify-between gap-4 border-b border-border/55 px-5 py-4">
+      <div className="flex items-center justify-between gap-4 border-b border-border/35 px-5 py-4">
         <div className="flex items-center gap-3">
           <span
             className={[
@@ -1327,19 +1328,19 @@ function ProfileChecklist({ profile }: { profile: ProfileUser }) {
             <CheckIcon size={14} />
           </span>
           <div>
-            <p className="text-xs font-semibold text-foreground">
+            <p className="text-xs font-medium text-foreground">
               Profile checklist
             </p>
-            <p className="mt-0.5 text-[0.625rem] text-muted-foreground">
+            <p className="mt-0.5 text-[11px] text-muted-foreground">
               Account essentials
             </p>
           </div>
         </div>
-        <span className="text-[0.625rem] font-semibold text-muted-foreground">
+        <span className="text-[11px] font-medium text-muted-foreground">
           {completeCount}/{items.length}
         </span>
       </div>
-      <div className="divide-y divide-border/45 px-5">
+      <div className="px-5">
         {items.map((item) => (
           <ChecklistItem
             key={item.label}
@@ -1374,12 +1375,10 @@ function ChecklistItem({
         {complete ? <CheckIcon size={12} /> : <CircleIcon size={11} />}
       </span>
       <div className="min-w-0 flex-1">
-        <p className="text-[0.625rem] font-medium text-muted-foreground">
-          {label}
-        </p>
+        <p className="text-[11px] font-medium text-muted-foreground">{label}</p>
         <p
           className={[
-            "mt-0.5 truncate text-xs font-semibold",
+            "mt-0.5 truncate text-xs font-medium",
             complete ? "text-foreground" : "text-status-pending-foreground",
           ].join(" ")}
         >
@@ -1411,7 +1410,7 @@ function EmailVerificationWarning({
             <MailCheckIcon size={15} />
           </span>
           <div className="min-w-0">
-            <p className="text-sm font-semibold tracking-[-0.01em] text-foreground">
+            <p className="text-sm font-medium tracking-[-0.01em] text-foreground">
               Email verification required
             </p>
             <p className="mt-1 text-xs leading-5 text-muted-foreground">
@@ -1464,9 +1463,9 @@ function VerificationButton({
       onClick={() => void onVerify()}
       disabled={sending || disabled}
       className={[
-        "shrink-0 rounded-lg text-xs font-semibold",
+        "shrink-0 rounded-lg text-xs font-medium",
         secondaryButton,
-        "disabled:border-border/60 disabled:bg-surface-2/20 disabled:text-muted-foreground disabled:opacity-60",
+        "disabled:border-border/35 disabled:bg-surface-2/20 disabled:text-muted-foreground disabled:opacity-60",
         size === "field" ? "h-11 px-4" : "h-9 px-3.5",
       ].join(" ")}
     >
@@ -1502,7 +1501,7 @@ function ThemeProgress({
     <div
       className={[
         "h-1.5 w-full overflow-hidden rounded-full",
-        "bg-brand-secondary-highlight/[0.10] dark:bg-secondary/[0.10]",
+        "bg-surface-3/65 dark:bg-surface-3/55",
         className,
       ].join(" ")}
       role="progressbar"
@@ -1532,7 +1531,7 @@ function ContrastProgress({
   return (
     <div
       className={[
-        "h-1.5 w-full overflow-hidden rounded-full bg-white/[0.12]",
+        "h-1.5 w-full overflow-hidden rounded-full bg-surface-3/65",
         className,
       ].join(" ")}
       role="progressbar"
@@ -1542,7 +1541,7 @@ function ContrastProgress({
       aria-valuenow={Math.round(safeValue)}
     >
       <div
-        className="h-full rounded-full bg-secondary transition-[width] duration-300 ease-out motion-reduce:transition-none"
+        className="h-full rounded-full bg-brand-secondary-highlight transition-[width] duration-300 ease-out motion-reduce:transition-none dark:bg-secondary"
         style={{ width: `${safeValue}%` }}
       />
     </div>
@@ -1563,18 +1562,18 @@ function SummaryStat({
     <div
       className={[
         "min-w-0 px-5 py-4",
-        divided ? "border-t border-border/55 sm:border-l sm:border-t-0" : "",
+        divided ? "border-t border-border/25 sm:border-t-0" : "",
       ].join(" ")}
     >
-      <p className="text-[0.625rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+      <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
         {label}
       </p>
       <div className="mt-1.5 flex min-w-0 items-baseline gap-1.5">
-        <p className="truncate text-lg font-semibold tracking-[-0.03em] text-foreground sm:text-xl">
+        <p className="truncate text-sm font-medium tracking-[-0.015em] text-foreground sm:text-base">
           {value}
         </p>
         {suffix && (
-          <span className="truncate text-[0.625rem] font-medium text-muted-foreground">
+          <span className="truncate text-[11px] font-medium text-muted-foreground">
             {suffix}
           </span>
         )}
@@ -1597,13 +1596,10 @@ function ProfileSection({
     <section className={sectionSurface}>
       <div className="p-5 sm:p-6">
         <div className="mb-7 max-w-2xl">
-          <div className="flex items-center gap-2.5">
-            <span className="h-1.5 w-5 rounded-full bg-brand-secondary-highlight dark:bg-secondary" />
-            <p className="text-[0.625rem] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
-              {eyebrow}
-            </p>
-          </div>
-          <h2 className="mt-2.5 text-xl font-semibold tracking-[-0.025em] text-foreground sm:text-2xl">
+          <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
+            {eyebrow}
+          </p>
+          <h2 className="mt-2.5 text-lg font-medium tracking-[-0.025em] text-foreground sm:text-xl">
             {title}
           </h2>
           <p className="mt-2 text-sm leading-7 text-muted-foreground">
@@ -1631,12 +1627,12 @@ function ProfileField({
       <div>
         <Label
           htmlFor={htmlFor}
-          className="text-xs font-semibold text-foreground"
+          className="text-xs font-medium text-foreground"
         >
           {label}
         </Label>
         {description && (
-          <p className="mt-1 text-[0.6875rem] leading-5 text-muted-foreground">
+          <p className="mt-1 text-[11px] leading-5 text-muted-foreground">
             {description}
           </p>
         )}
@@ -1668,23 +1664,21 @@ function AccountItem({
           "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
           status === "success"
             ? accentIconSurface
-            : "bg-surface-3/70 text-muted-foreground ring-1 ring-inset ring-border/35 dark:bg-surface-2",
+            : "bg-surface-2/65 text-muted-foreground dark:bg-surface-3/40",
         ].join(" ")}
       >
         <Icon size={14} />
       </span>
       <div className="min-w-0 flex-1">
-        <p className="text-[0.625rem] font-medium text-muted-foreground">
-          {label}
-        </p>
-        <p className="mt-0.5 break-words text-sm font-semibold text-foreground">
+        <p className="text-[11px] font-medium text-muted-foreground">{label}</p>
+        <p className="mt-0.5 break-words text-sm font-medium text-foreground">
           {value}
         </p>
       </div>
       {status && (
         <span
           className={[
-            "shrink-0 rounded-md px-2 py-1 text-[0.625rem] font-semibold",
+            "shrink-0 rounded-md px-2 py-1 text-[11px] font-medium",
             status === "success"
               ? "bg-status-complete/[0.08] text-status-complete-foreground"
               : "bg-status-pending/[0.09] text-status-pending-foreground",
@@ -1721,7 +1715,7 @@ function InlineError({ message }: { message: string }) {
 function ProfileLoading() {
   return (
     <div className={["min-h-screen text-foreground", pageCanvas].join(" ")}>
-      <header className="sticky top-0 z-40 border-b border-border/60 bg-background/95 backdrop-blur-xl">
+      <header className="sticky top-0 z-40 border-b border-border/35 bg-background/95 backdrop-blur-xl">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <DashboardMainNav />
         </div>
@@ -1737,15 +1731,13 @@ function ProfileLoading() {
               <Skeleton className="h-3 w-48 max-w-full" />
             </div>
           </div>
-          <div className="grid border-t border-border/55 sm:grid-cols-3">
+          <div className="grid border-t border-border/35 sm:grid-cols-3">
             {Array.from({ length: 3 }).map((_, index) => (
               <div
                 key={index}
                 className={[
                   "px-5 py-4",
-                  index > 0
-                    ? "border-t border-border/55 sm:border-l sm:border-t-0"
-                    : "",
+                  index > 0 ? "border-t border-border/25 sm:border-t-0" : "",
                 ].join(" ")}
               >
                 <Skeleton className="h-3 w-16" />
@@ -1756,13 +1748,13 @@ function ProfileLoading() {
         </div>
         <div className="mt-5 grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_300px]">
           <div className="space-y-5">
-            <Skeleton className="h-96 rounded-2xl" />
-            <Skeleton className="h-60 rounded-2xl" />
+            <Skeleton className="h-96 rounded-xl" />
+            <Skeleton className="h-60 rounded-xl" />
           </div>
           <div className="hidden space-y-5 xl:block">
-            <Skeleton className="h-48 rounded-2xl" />
-            <Skeleton className="h-96 rounded-2xl" />
-            <Skeleton className="h-36 rounded-2xl" />
+            <Skeleton className="h-48 rounded-xl" />
+            <Skeleton className="h-96 rounded-xl" />
+            <Skeleton className="h-36 rounded-xl" />
           </div>
         </div>
       </main>
@@ -1778,7 +1770,7 @@ function ProfileErrorPage({
 }) {
   return (
     <div className={["min-h-screen text-foreground", pageCanvas].join(" ")}>
-      <header className="sticky top-0 z-40 border-b border-border/60 bg-background/95 backdrop-blur-xl">
+      <header className="sticky top-0 z-40 border-b border-border/35 bg-background/95 backdrop-blur-xl">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <DashboardMainNav />
         </div>
@@ -1788,7 +1780,7 @@ function ProfileErrorPage({
           <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-destructive/[0.08] text-destructive">
             <AlertCircleIcon size={19} />
           </span>
-          <h1 className="mt-5 text-2xl font-semibold tracking-[-0.03em] text-foreground">
+          <h1 className="mt-5 text-2xl font-medium tracking-[-0.03em] text-foreground">
             Could not load your profile
           </h1>
           <p className="mt-2 text-sm leading-7 text-muted-foreground">
@@ -1799,7 +1791,7 @@ function ProfileErrorPage({
             variant="ghost"
             onClick={() => void onRetry()}
             className={[
-              "mt-6 h-10 rounded-lg px-5 text-xs font-semibold",
+              "mt-6 h-10 rounded-lg px-5 text-xs font-medium",
               primaryButton,
             ].join(" ")}
           >

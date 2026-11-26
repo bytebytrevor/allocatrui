@@ -161,7 +161,7 @@ const iconButton =
   focus;
 const accent = "text-brand-secondary-highlight dark:text-secondary";
 const card =
-  "min-w-0 overflow-hidden rounded-xl border border-border/60 bg-card dark:border-border";
+  "min-w-0 overflow-hidden rounded-xl border border-border/35 bg-card dark:border-border/35";
 
 export default function WorkspaceDiscoverySidebar({
   excludeUserId,
@@ -222,7 +222,7 @@ function DiscoverySidebar({ excludeUserId }: { excludeUserId?: string }) {
         aria-expanded={open}
         onClick={() => setOpen(true)}
         className={
-          "fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-4 z-40 inline-flex min-h-12 max-w-[calc(100vw-2rem)] items-center gap-2.5 rounded-xl border border-brand-secondary-highlight/15 bg-brand-secondary-highlight px-4 text-xs font-semibold text-primary-foreground shadow-lg shadow-black/10 transition-opacity hover:opacity-90 dark:border-secondary/15 dark:bg-secondary dark:text-secondary-foreground motion-reduce:transition-none " +
+          "fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-4 z-40 inline-flex min-h-12 max-w-[calc(100vw-2rem)] items-center gap-2.5 rounded-xl bg-brand-secondary-highlight px-4 text-xs font-medium text-primary-foreground shadow-sm shadow-black/10 transition-opacity hover:opacity-90 dark:bg-secondary dark:text-secondary-foreground motion-reduce:transition-none " +
           focus
         }
       >
@@ -235,11 +235,11 @@ function DiscoverySidebar({ excludeUserId }: { excludeUserId?: string }) {
           event.preventDefault();
           triggerRef.current?.focus();
         }}
-        className="!fixed !inset-x-0 !bottom-0 !top-auto z-[70] !mx-auto flex !max-h-[85dvh] !w-full !max-w-lg !translate-x-0 !translate-y-0 flex-col gap-0 overflow-hidden !rounded-b-none !rounded-t-2xl border-border/65 bg-background !p-0 text-foreground shadow-xl shadow-black/15 data-[state=open]:!animate-none data-[state=closed]:!animate-none"
+        className="!fixed !inset-x-0 !bottom-0 !top-auto z-[70] !mx-auto flex !max-h-[85dvh] !w-full !max-w-lg !translate-x-0 !translate-y-0 flex-col gap-0 overflow-hidden !rounded-b-none !rounded-t-2xl !border-0 bg-background !p-0 text-foreground shadow-xl shadow-black/15 data-[state=open]:!animate-none data-[state=closed]:!animate-none"
       >
-        <DialogHeader className="shrink-0 border-b border-border/55 px-5 pb-4 pr-12 pt-5 text-left">
-          <DialogTitle className="text-base font-semibold tracking-[-0.02em]">
-            A little inspiration
+        <DialogHeader className="shrink-0 px-5 pb-2 pr-12 pt-5 text-left">
+          <DialogTitle className="text-base font-medium tracking-[-0.02em]">
+            Allocats & tips
           </DialogTitle>
           <DialogDescription className="mt-1 text-xs leading-6 text-muted-foreground">
             Meet Allocats and pick up a tip for your next project.
@@ -364,33 +364,29 @@ function DiscoveryContent({
   return (
     <aside
       aria-label="Community spotlights and daily tips"
-      className="grid min-w-0 items-start gap-5 xl:self-start"
+      className="grid min-w-0 items-start gap-4 xl:self-start"
     >
       <section className={card} aria-labelledby="spotlight-heading">
-        <div className="border-b border-border/50 bg-surface-2/20 px-5 pb-5 pt-5 dark:bg-card">
+        <div className="px-4 pb-1 pt-4">
           <div className="flex items-center gap-2">
             <span
               aria-hidden="true"
               className={
-                "flex h-7 w-7 items-center justify-center rounded-lg bg-surface-3/65 ring-1 ring-inset ring-border/35 dark:bg-surface-2/80 " +
+                "flex h-7 w-7 items-center justify-center rounded-lg bg-surface-3/60 dark:bg-surface-2 " +
                 accent
               }
             >
-              <SparklesIcon size={12} />
+              <SparklesIcon size={13} />
             </span>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
+            <h2
+              id="spotlight-heading"
+              className="text-sm font-medium tracking-[-0.015em] text-foreground"
+            >
               Community spotlight
-            </p>
+            </h2>
           </div>
-          <h2
-            id="spotlight-heading"
-            className="mt-4 text-lg font-semibold leading-snug tracking-[-0.025em] text-foreground/90"
-          >
-            Good company. Great work.
-          </h2>
           <p className="mt-2 text-xs leading-6 text-muted-foreground">
-            Great work starts with good company. Meet an Allocat for whatever
-            comes next.
+            People for your next project.
           </p>
         </div>
 
@@ -410,7 +406,7 @@ function DiscoveryContent({
             <div
               role="status"
               aria-label="Loading community spotlights"
-              className="min-h-[280px] px-5 py-5"
+              className="min-h-[260px] px-4 py-4"
             >
               <Skeleton className="h-14 w-14 rounded-full" />
               <Skeleton className="mt-4 h-4 w-36" />
@@ -438,10 +434,10 @@ function DiscoveryContent({
                     <article
                       aria-roledescription="slide"
                       aria-label={`${index + 1} of ${profiles.length}`}
-                      className="flex h-[280px] flex-col px-5 py-5"
+                      className="flex min-h-[260px] flex-col px-4 py-4"
                     >
                       <div className="flex min-w-0 items-center gap-3">
-                        <Avatar className="h-14 w-14 shrink-0 border border-border/60">
+                        <Avatar className="h-14 w-14 shrink-0">
                           <AvatarImage
                             src={current.avatarUrl}
                             alt=""
@@ -449,7 +445,7 @@ function DiscoveryContent({
                           />
                           <AvatarFallback
                             className={
-                              "bg-brand-secondary-highlight/[0.08] text-base font-semibold dark:bg-secondary/[0.08] " +
+                              "bg-brand-secondary-highlight/[0.08] text-base font-medium dark:bg-surface-3/65 " +
                               accent
                             }
                           >
@@ -459,7 +455,7 @@ function DiscoveryContent({
                         <div className="min-w-0">
                           <h3
                             title={current.name}
-                            className="line-clamp-2 break-words text-sm font-semibold leading-6 text-foreground/90 [overflow-wrap:anywhere]"
+                            className="line-clamp-2 break-words text-sm font-medium leading-6 text-foreground [overflow-wrap:anywhere]"
                           >
                             {current.name}
                           </h3>
@@ -481,12 +477,12 @@ function DiscoveryContent({
                         </p>
                       )}
                       {current.skills.length > 0 && (
-                        <div className="mt-4 flex gap-1.5 overflow-hidden">
+                        <div className="mt-4 flex flex-wrap gap-1.5">
                           {current.skills.map((skill) => (
                             <span
                               key={skill}
                               title={skill}
-                              className="min-w-0 max-w-full truncate rounded-md border border-border/55 bg-surface-2/45 px-2 py-1 text-[10px] font-medium text-foreground/75 dark:bg-surface-2/65"
+                              className="inline-flex max-w-full items-center break-words rounded-md border border-border/35 bg-surface-2/35 px-2.5 py-1 text-[11px] font-medium leading-5 text-foreground [overflow-wrap:anywhere] dark:bg-surface-2/45"
                             >
                               {skill}
                             </span>
@@ -497,7 +493,7 @@ function DiscoveryContent({
                         <Link
                           to={`/allocats/${encodeURIComponent(current.id)}`}
                           className={
-                            "group flex min-h-10 w-full items-center justify-between gap-2 rounded-lg border border-brand-secondary-highlight/15 bg-brand-secondary-highlight px-3 text-xs font-semibold text-primary-foreground transition-opacity hover:opacity-90 dark:border-secondary/15 dark:bg-secondary dark:text-secondary-foreground motion-reduce:transition-none " +
+                            "group flex min-h-10 w-full items-center justify-between gap-2 rounded-lg bg-card/80 px-3 text-xs font-medium text-brand-secondary-highlight transition-opacity hover:opacity-80 dark:bg-surface-2 dark:text-secondary motion-reduce:transition-none " +
                             focus
                           }
                         >
@@ -514,7 +510,13 @@ function DiscoveryContent({
                 </AnimatePresence>
               </div>
               {profiles.length > 1 && (
-                <div className="flex items-center justify-end border-t border-border/45 px-4 py-2">
+                <div className="flex items-center justify-between px-4 pb-3">
+                  <span
+                    aria-hidden="true"
+                    className="text-[11px] tabular-nums text-muted-foreground"
+                  >
+                    {index + 1} / {profiles.length}
+                  </span>
                   <div className="flex items-center gap-0.5">
                     <button
                       type="button"
@@ -537,7 +539,7 @@ function DiscoveryContent({
               )}
             </>
           ) : (
-            <div className="px-5 py-6">
+            <div className="px-4 py-5">
               <p className="text-xs leading-6 text-muted-foreground">
                 {failed
                   ? "The community is taking a catnap. You can still explore Allocats in Discover."
@@ -548,7 +550,7 @@ function DiscoveryContent({
                   type="button"
                   onClick={() => setRetry((value) => value + 1)}
                   className={
-                    "mt-3 inline-flex min-h-8 items-center gap-1.5 rounded-md text-xs font-semibold " +
+                    "mt-3 inline-flex min-h-8 items-center gap-1.5 rounded-md text-xs font-medium " +
                     accent +
                     " " +
                     focus
@@ -564,13 +566,13 @@ function DiscoveryContent({
       </section>
 
       <section className={card} aria-labelledby="daily-tip-heading">
-        <div className="px-5 pb-5 pt-4">
+        <div className="p-4">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <span
                 aria-hidden="true"
                 className={
-                  "flex h-7 w-7 items-center justify-center rounded-lg bg-brand-secondary-highlight/[0.07] dark:bg-secondary/[0.07] " +
+                  "flex h-7 w-7 items-center justify-center rounded-lg bg-surface-3/60 dark:bg-surface-2 " +
                   accent
                 }
               >
@@ -578,7 +580,7 @@ function DiscoveryContent({
               </span>
               <h2
                 id="daily-tip-heading"
-                className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground"
+                className="text-[11px] font-medium uppercase tracking-[0.1em] text-muted-foreground"
               >
                 Daily tip
               </h2>
@@ -601,17 +603,17 @@ function DiscoveryContent({
             </button>
           </div>
           <div aria-live="polite" aria-atomic="true">
-            <p className={"mt-4 text-[10px] font-medium " + accent}>
+            <p className={"mt-4 text-[11px] font-medium " + accent}>
               {tip.category}
             </p>
-            <h3 className="mt-2 text-sm font-semibold leading-6 tracking-[-0.015em] text-foreground/90">
+            <h3 className="mt-2 text-sm font-medium leading-6 tracking-[-0.015em] text-foreground">
               {tip.title}
             </h3>
             <p className="mt-2 text-xs leading-6 text-muted-foreground">
               {tip.body}
             </p>
           </div>
-          <div className="mt-4 flex items-center gap-2 border-t border-border/45 pt-4 text-[10px] text-muted-foreground/75">
+          <div className="mt-4 flex items-center gap-2 text-[11px] text-muted-foreground/75">
             <PawPrintIcon size={11} aria-hidden="true" className={accent} />
             Small steps. Better projects.
           </div>

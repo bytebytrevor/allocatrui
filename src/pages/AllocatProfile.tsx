@@ -178,32 +178,33 @@ const focus =
 const primaryButton =
   "border border-brand-secondary-highlight/15 bg-brand-secondary-highlight text-primary-foreground shadow-none transition-opacity duration-150 hover:border-brand-secondary-highlight/15 hover:bg-brand-secondary-highlight hover:text-primary-foreground hover:opacity-90 focus-visible:ring-2 focus-visible:ring-brand-secondary-highlight/20 focus-visible:ring-offset-2 focus-visible:ring-offset-background dark:border-secondary/10 dark:bg-secondary dark:text-secondary-foreground dark:hover:border-secondary/10 dark:hover:bg-secondary dark:hover:text-secondary-foreground dark:hover:opacity-90 dark:focus-visible:ring-secondary/20 motion-reduce:transition-none";
 const secondaryButton =
-  "border border-border/65 bg-surface-2/35 text-foreground/75 shadow-none transition-opacity duration-150 hover:border-border/65 hover:bg-surface-2/35 hover:text-foreground/75 hover:opacity-75 focus-visible:ring-2 focus-visible:ring-brand-secondary-highlight/15 focus-visible:ring-offset-2 focus-visible:ring-offset-background dark:border-border dark:bg-surface-2/65 dark:text-foreground/75 dark:hover:border-border dark:hover:bg-surface-2/65 dark:hover:text-foreground/75 dark:hover:opacity-75 dark:focus-visible:ring-secondary/15 motion-reduce:transition-none";
+  "border border-border/35 bg-card text-foreground/75 shadow-none transition-opacity duration-150 hover:border-border/35 hover:bg-surface-2/55 hover:text-foreground/75 hover:opacity-75 focus-visible:ring-2 focus-visible:ring-brand-secondary-highlight/15 focus-visible:ring-offset-2 focus-visible:ring-offset-background dark:border-border/35 dark:bg-surface-2/40 dark:text-foreground/75 dark:hover:border-border dark:hover:bg-surface-3/55 dark:hover:text-foreground/75 dark:hover:opacity-75 dark:focus-visible:ring-secondary/15 motion-reduce:transition-none";
 const quietIconButton =
   "bg-transparent text-muted-foreground shadow-none transition-opacity duration-150 hover:bg-transparent hover:text-foreground hover:opacity-70 motion-reduce:transition-none " +
   focus;
 const fieldClass =
-  "h-11 rounded-lg border-border/70 bg-surface-1/70 shadow-none transition-[border-color,box-shadow,background-color] focus-visible:border-brand-secondary-highlight/35 focus-visible:ring-1 focus-visible:ring-brand-secondary-highlight/20 dark:bg-surface-2/35 dark:focus-visible:border-secondary/25 dark:focus-visible:ring-secondary/15 motion-reduce:transition-none";
+  "h-11 rounded-lg border-border/35 bg-surface-2/30 shadow-none transition-[border-color,box-shadow,background-color] focus-visible:border-brand-secondary-highlight/25 focus-visible:ring-1 focus-visible:ring-brand-secondary-highlight/20 dark:bg-surface-2/35 dark:focus-visible:border-secondary/25 dark:focus-visible:ring-secondary/15 motion-reduce:transition-none";
 const disabledFieldClass =
-  "h-11 rounded-lg border-border/60 bg-surface-2/50 font-medium text-muted-foreground shadow-none disabled:cursor-not-allowed disabled:opacity-100 disabled:text-muted-foreground dark:bg-surface-2/65";
+  "h-11 rounded-lg border-border/35 bg-surface-2/50 font-medium text-muted-foreground shadow-none disabled:cursor-not-allowed disabled:opacity-100 disabled:text-muted-foreground dark:bg-surface-2/65";
 const selectTriggerClass =
-  "h-11 w-full rounded-lg border-border/70 bg-surface-1/70 px-3.5 text-sm text-foreground shadow-none transition-[border-color,box-shadow,background-color] focus:ring-1 focus:ring-brand-secondary-highlight/20 focus:ring-offset-0 data-[placeholder]:text-muted-foreground dark:bg-surface-2/35 dark:focus:ring-secondary/15 motion-reduce:transition-none";
+  "h-11 w-full rounded-lg border-border/35 bg-surface-2/30 px-3.5 text-sm text-foreground shadow-none transition-[border-color,box-shadow,background-color] focus:ring-1 focus:ring-brand-secondary-highlight/20 focus:ring-offset-0 data-[placeholder]:text-muted-foreground dark:bg-surface-2/35 dark:focus:ring-secondary/15 motion-reduce:transition-none";
 const selectContentClass =
-  "rounded-xl border border-border/70 !bg-card !text-foreground shadow-md shadow-black/5 dark:border-border dark:bg-popover";
+  "rounded-xl border border-border/35 !bg-card !text-foreground shadow-md shadow-black/5 dark:border-border/35 dark:bg-popover";
 const selectItemClass =
   "rounded-lg !text-foreground hover:!bg-surface-3 hover:!text-foreground focus:!bg-surface-3 focus:!text-foreground data-[highlighted]:!bg-surface-3 data-[highlighted]:!text-foreground data-[state=checked]:!bg-surface-2 data-[state=checked]:!text-foreground [&_span]:!text-inherit";
-const cardSurface = "border-border/60 bg-card dark:border-border dark:bg-card";
+const cardSurface =
+  "border-border/35 bg-card dark:border-border/35 dark:bg-card";
 const quietSurface =
-  "border-border/55 bg-surface-2/30 dark:border-border dark:bg-surface-2/55";
+  "border-border/35 bg-surface-2/30 dark:border-border/35 dark:bg-surface-2/55";
 const accentIconSurface =
-  "bg-brand-secondary-highlight/[0.08] text-brand-secondary-highlight ring-1 ring-inset ring-brand-secondary-highlight/10 dark:bg-secondary/[0.07] dark:text-secondary dark:ring-secondary/10";
+  "bg-surface-2/65 text-brand-secondary-highlight dark:bg-surface-3/45 dark:text-secondary";
 const professionalScoreSurface =
-  "border-primary/20 bg-primary text-primary-foreground dark:border-brand-secondary-highlight/25 dark:bg-brand-secondary dark:text-white";
-const pageCanvas = "bg-surface-2/20 dark:bg-background";
+  "border-border/35 bg-card text-card-foreground dark:border-border/35 dark:bg-card";
+const pageCanvas = "bg-background";
 const profileSurface =
-  "rounded-2xl border border-border/60 bg-card shadow-sm shadow-black/[0.025] dark:border-border dark:bg-card dark:shadow-none";
+  "rounded-xl border border-border/35 bg-card shadow-none dark:border-border/35 dark:bg-card dark:shadow-none";
 const sectionSurface =
-  "rounded-2xl border border-border/60 bg-card dark:border-border dark:bg-card";
+  "rounded-xl border border-border/35 bg-card dark:border-border/35 dark:bg-card";
 
 function AllocatProfilePage() {
   const navigate = useNavigate();
@@ -1196,14 +1197,14 @@ function AllocatProfilePage() {
             <div className="flex flex-col gap-8 xl:flex-row xl:items-end xl:justify-between">
               <div className="flex min-w-0 flex-col gap-5 sm:flex-row sm:items-center">
                 <div className="relative w-fit shrink-0">
-                  <Avatar className="h-24 w-24 border border-border/70 bg-transparent sm:h-28 sm:w-28">
+                  <Avatar className="h-24 w-24 border border-border/35 bg-transparent sm:h-28 sm:w-28">
                     <AvatarImage
                       key={persistedAvatar}
                       src={persistedAvatar}
                       alt={`${accountProfile.fullName}'s profile`}
                       className="object-cover"
                     />
-                    <AvatarFallback className="bg-brand-secondary-highlight/[0.08] text-2xl font-semibold text-brand-secondary-highlight dark:bg-secondary/[0.08] dark:text-secondary">
+                    <AvatarFallback className="bg-surface-2/65 text-2xl font-medium text-foreground/75 dark:bg-surface-3/45">
                       {initials}
                     </AvatarFallback>
                   </Avatar>
@@ -1219,7 +1220,7 @@ function AllocatProfilePage() {
                     type="button"
                     onClick={openAvatarEditor}
                     className={
-                      "absolute -left-1 -top-1 flex h-8 w-8 items-center justify-center rounded-lg border-[3px] border-card bg-brand-secondary-highlight text-primary-foreground transition-opacity duration-150 hover:opacity-85 dark:bg-secondary dark:text-secondary-foreground motion-reduce:transition-none " +
+                      "absolute -bottom-1 -left-1 flex h-8 w-8 items-center justify-center rounded-lg border-[3px] border-card bg-brand-secondary-highlight text-primary-foreground transition-opacity duration-150 hover:opacity-85 dark:bg-secondary dark:text-secondary-foreground motion-reduce:transition-none " +
                       focus
                     }
                     aria-label="Change profile picture"
@@ -1230,15 +1231,15 @@ function AllocatProfilePage() {
                 </div>
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.17em] text-brand-secondary-highlight dark:text-secondary">
+                    <p className="text-[11px] font-medium uppercase tracking-[0.17em] text-brand-secondary-highlight dark:text-secondary">
                       Professional profile
                     </p>
-                    <span className="rounded-lg bg-brand-secondary-highlight/[0.07] px-2 py-1 text-[10px] font-semibold text-brand-secondary-highlight dark:bg-secondary/[0.07] dark:text-secondary">
+                    <span className="rounded-lg bg-surface-2/65 px-2 py-1 text-[11px] font-medium text-muted-foreground dark:bg-surface-3/45">
                       Level {allocatProfile.level}
                     </span>
                   </div>
                   <div className="mt-2 flex min-w-0 items-start gap-2">
-                    <h1 className="min-w-0 break-words text-3xl font-semibold leading-[1.02] tracking-[-0.04em] text-foreground/95 sm:text-4xl lg:text-[2.75rem] [overflow-wrap:anywhere]">
+                    <h1 className="min-w-0 break-words text-2xl font-medium leading-tight tracking-[-0.035em] text-foreground/95 sm:text-3xl [overflow-wrap:anywhere]">
                       {accountProfile.fullName}
                     </h1>
                     <Button
@@ -1258,7 +1259,7 @@ function AllocatProfilePage() {
                   </div>
                   <p
                     className={
-                      "mt-2 text-sm font-semibold sm:text-base " +
+                      "mt-2 text-sm font-medium sm:text-base " +
                       (allocatProfile.title
                         ? "text-foreground/80"
                         : "text-muted-foreground")
@@ -1297,7 +1298,7 @@ function AllocatProfilePage() {
                 onClick={requestVisibilityToggle}
                 disabled={updatingVisibility}
                 className={
-                  "h-10 shrink-0 rounded-lg px-4 text-xs font-semibold " +
+                  "h-10 shrink-0 rounded-lg px-4 text-xs font-medium " +
                   secondaryButton
                 }
               >
@@ -1322,10 +1323,10 @@ function AllocatProfilePage() {
               >
                 <div className="flex items-start justify-between gap-5">
                   <div>
-                    <p className="text-xs font-semibold text-foreground">
+                    <p className="text-xs font-medium text-foreground">
                       Account details
                     </p>
-                    <p className="mt-1 text-[0.64rem] leading-5 text-muted-foreground">
+                    <p className="mt-1 text-[11px] leading-5 text-muted-foreground">
                       Update your contact and account information.
                     </p>
                   </div>
@@ -1506,7 +1507,7 @@ function AllocatProfilePage() {
               </form>
             )}
           </div>
-          <div className="border-t border-border/55">
+          <div className="border-t border-border/35">
             <div className="grid sm:grid-cols-2 xl:grid-cols-4">
               <ProfileStat
                 label="Hourly rate"
@@ -1624,7 +1625,7 @@ function AllocatProfilePage() {
                     </ProfileField>
                   </div>
                   {!allocatProfile.verified && (
-                    <div className="mt-6 border-t border-border/50 pt-6">
+                    <div className="mt-6 border-t border-border/25 pt-6">
                       <ProfileField label="ID number">
                         <Input
                           aria-label="ID number"
@@ -1638,7 +1639,7 @@ function AllocatProfilePage() {
                           }
                           className={fieldClass}
                         />
-                        <p className="mt-2 text-[0.61rem] leading-5 text-muted-foreground">
+                        <p className="mt-2 text-[11px] leading-5 text-muted-foreground">
                           Private. Your ID number is never shown to clients.
                         </p>
                       </ProfileField>
@@ -1653,7 +1654,7 @@ function AllocatProfilePage() {
                   {!allocatProfile.verified && (
                     <div
                       id="profile-identity"
-                      className="mt-7 scroll-mt-28 border-t border-border/50 pt-6"
+                      className="mt-7 scroll-mt-28 border-t border-border/25 pt-6"
                     >
                       {identityManager}
                     </div>
@@ -1673,7 +1674,7 @@ function AllocatProfilePage() {
                       missingLabel="Not added"
                     />
                   </div>
-                  <div className="mt-6 border-t border-border/50 pt-6">
+                  <div className="mt-6 border-t border-border/25 pt-6">
                     <div className="max-w-3xl">
                       <ReadOnlyField
                         label="Professional bio"
@@ -1685,7 +1686,7 @@ function AllocatProfilePage() {
                   </div>
                   <div
                     id="profile-identity"
-                    className="mt-6 scroll-mt-28 border-t border-border/50 pt-5"
+                    className="mt-6 scroll-mt-28 border-t border-border/25 pt-5"
                   >
                     <ReadOnlyField
                       label="ID number"
@@ -1736,7 +1737,7 @@ function AllocatProfilePage() {
                   {allocatProfile.skills.map((skill) => (
                     <span
                       key={skill.id}
-                      className="rounded-md bg-brand-secondary-highlight/[0.07] px-3 py-1.5 text-xs font-semibold text-brand-secondary-highlight ring-1 ring-inset ring-brand-secondary-highlight/10 dark:bg-secondary/[0.07] dark:text-secondary dark:ring-secondary/10"
+                      className="rounded-md border border-border/35 bg-surface-2/35 px-3 py-1.5 text-xs font-medium text-foreground/80 dark:bg-surface-2/45"
                     >
                       {skill.name}
                     </span>
@@ -2059,10 +2060,10 @@ function AllocatProfilePage() {
                     <LockKeyholeIcon size={15} aria-hidden="true" />
                   </span>
                   <div className="min-w-0">
-                    <p className="text-xs font-semibold text-foreground">
+                    <p className="text-xs font-medium text-foreground">
                       Credential details, private evidence
                     </p>
-                    <p className="mt-1 max-w-2xl text-[0.64rem] leading-5 text-muted-foreground">
+                    <p className="mt-1 max-w-2xl text-[11px] leading-5 text-muted-foreground">
                       Professional credentials with a title appear on your
                       public profile, including while under review.
                       Qualifications also require an issuing institution.
@@ -2079,10 +2080,10 @@ function AllocatProfilePage() {
                         <ShieldCheckIcon size={15} aria-hidden="true" />
                       </span>
                       <div>
-                        <p className="text-xs font-semibold text-foreground">
+                        <p className="text-xs font-medium text-foreground">
                           Add supporting credentials
                         </p>
-                        <p className="mt-1 max-w-2xl text-[0.62rem] leading-5 text-muted-foreground">
+                        <p className="mt-1 max-w-2xl text-[11px] leading-5 text-muted-foreground">
                           Upload professional documents for review. Verification
                           is visible to clients and helps them identify trusted,
                           validated professionals.
@@ -2108,7 +2109,7 @@ function AllocatProfilePage() {
                       onClick={() => void loadDocuments()}
                       disabled={loadingDocuments}
                       className={
-                        "h-8 shrink-0 rounded-lg px-3 text-xs font-semibold " +
+                        "h-8 shrink-0 rounded-lg px-3 text-xs font-medium " +
                         secondaryButton
                       }
                     >
@@ -2119,16 +2120,16 @@ function AllocatProfilePage() {
                 )}
                 <div className="mt-6 flex items-end justify-between gap-4">
                   <div>
-                    <p className="text-xs font-semibold text-foreground">
+                    <p className="text-xs font-medium text-foreground">
                       Uploaded documents
                     </p>
-                    <p className="mt-1 text-[0.61rem] text-muted-foreground">
+                    <p className="mt-1 text-[11px] text-muted-foreground">
                       Preview your private evidence or edit credential details.
                       Changing verified details sends that credential back for
                       review.
                     </p>
                   </div>
-                  <span className="shrink-0 text-[10px] font-medium text-muted-foreground">
+                  <span className="shrink-0 text-[11px] font-medium text-muted-foreground">
                     {professionalDocuments.length} of{" "}
                     {MAX_PROFESSIONAL_DOCUMENTS}
                   </span>
@@ -2159,11 +2160,11 @@ function AllocatProfilePage() {
                       ))}
                     </div>
                   ) : (
-                    <div className="rounded-xl border border-dashed border-border/65 px-4 py-5">
-                      <p className="text-xs font-semibold text-foreground">
+                    <div className="rounded-xl border border-dashed border-border/35 px-4 py-5">
+                      <p className="text-xs font-medium text-foreground">
                         No professional documents uploaded
                       </p>
-                      <p className="mt-1 text-[0.61rem] leading-5 text-muted-foreground">
+                      <p className="mt-1 text-[11px] leading-5 text-muted-foreground">
                         Add qualifications, certifications or licences to
                         support your account verification.
                       </p>
@@ -2171,7 +2172,7 @@ function AllocatProfilePage() {
                   )}
                 </div>
                 {!documentEditorOpen ? (
-                  <div className="mt-6 flex flex-col items-start justify-between gap-3 border-t border-border/50 pt-5 sm:flex-row sm:items-center">
+                  <div className="mt-6 flex flex-col items-start justify-between gap-3 border-t border-border/25 pt-5 sm:flex-row sm:items-center">
                     <p className="max-w-md text-xs leading-6 text-muted-foreground">
                       {professionalDocuments.length >=
                       MAX_PROFESSIONAL_DOCUMENTS
@@ -2189,7 +2190,7 @@ function AllocatProfilePage() {
                           MAX_PROFESSIONAL_DOCUMENTS
                       }
                       className={
-                        "h-11 shrink-0 rounded-lg px-4 text-xs font-semibold " +
+                        "h-11 shrink-0 rounded-lg px-4 text-xs font-medium " +
                         secondaryButton
                       }
                     >
@@ -2205,10 +2206,10 @@ function AllocatProfilePage() {
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div>
-                        <p className="text-xs font-semibold text-foreground">
+                        <p className="text-xs font-medium text-foreground">
                           Add a professional document
                         </p>
-                        <p className="mt-1 text-[0.61rem] leading-5 text-muted-foreground">
+                        <p className="mt-1 text-[11px] leading-5 text-muted-foreground">
                           PDF, JPEG, PNG or WebP · Maximum 10 MB per file.
                         </p>
                       </div>
@@ -2264,7 +2265,7 @@ function AllocatProfilePage() {
                             MAX_PROFESSIONAL_DOCUMENTS
                         }
                         className={
-                          "h-11 rounded-lg px-4 text-xs font-semibold " +
+                          "h-11 rounded-lg px-4 text-xs font-medium " +
                           secondaryButton
                         }
                       >
@@ -2331,7 +2332,7 @@ function AllocatProfilePage() {
                     />
                     {professionalDocuments.length >=
                       MAX_PROFESSIONAL_DOCUMENTS && (
-                      <p className="mt-3 text-[0.61rem] leading-5 text-status-pending-foreground">
+                      <p className="mt-3 text-[11px] leading-5 text-status-pending-foreground">
                         You have reached the professional document limit.
                       </p>
                     )}
@@ -2350,7 +2351,7 @@ function AllocatProfilePage() {
                     {professionalDocumentError && (
                       <InlineError message={professionalDocumentError} />
                     )}
-                    <div className="mt-5 flex justify-end border-t border-border/45 pt-4">
+                    <div className="mt-5 flex justify-end border-t border-border/25 pt-4">
                       <Button
                         type="button"
                         variant="outline"
@@ -2381,10 +2382,10 @@ function AllocatProfilePage() {
                     <ShieldAlertIcon size={15} aria-hidden="true" />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="text-xs font-semibold text-foreground">
+                    <p className="text-xs font-medium text-foreground">
                       Verification not started
                     </p>
-                    <p className="mt-1 text-[0.62rem] leading-5 text-muted-foreground">
+                    <p className="mt-1 text-[11px] leading-5 text-muted-foreground">
                       Upload your identity and supporting professional documents
                       so Allocatr can review your account for verification.
                     </p>
@@ -2393,7 +2394,7 @@ function AllocatProfilePage() {
                       variant="ghost"
                       onClick={scrollToIdentityVerification}
                       className={
-                        "mt-3 h-8 rounded-lg px-3 text-xs font-semibold " +
+                        "mt-3 h-8 rounded-lg px-3 text-xs font-medium " +
                         primaryButton
                       }
                     >
@@ -2442,20 +2443,20 @@ function AllocatProfilePage() {
           </div>
           <aside className="min-w-0 space-y-5 xl:sticky xl:top-24">
             <section
-              className={"rounded-2xl border p-5 " + professionalScoreSurface}
+              className={"rounded-xl border p-5 " + professionalScoreSurface}
             >
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-white/55">
+                  <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
                     Professional score
                   </p>
-                  <h2 className="mt-2 text-lg font-semibold tracking-[-0.025em] text-white">
+                  <h2 className="mt-2 text-lg font-medium tracking-[-0.025em] text-foreground">
                     {getScoreLabel(allocatProfile.professionalScore)}
                   </h2>
                 </div>
-                <p className="shrink-0 text-3xl font-semibold tracking-[-0.04em] text-white">
+                <p className="shrink-0 text-3xl font-medium tracking-[-0.04em] text-foreground">
                   {allocatProfile.professionalScore}
-                  <span className="ml-0.5 text-sm font-medium text-white/55">
+                  <span className="ml-0.5 text-sm font-medium text-muted-foreground">
                     %
                   </span>
                 </p>
@@ -2464,15 +2465,15 @@ function AllocatProfilePage() {
                 value={allocatProfile.professionalScore}
                 className="mt-5"
               />
-              <p className="mt-4 text-xs leading-6 text-white/65">
+              <p className="mt-4 text-xs leading-6 text-muted-foreground">
                 Complete your professional information and build your reputation
                 through skills, experience and successful work.
               </p>
             </section>
             <section
-              className={"overflow-hidden rounded-2xl border " + cardSurface}
+              className={"overflow-hidden rounded-xl border " + cardSurface}
             >
-              <div className="flex items-center gap-3 border-b border-border/55 px-5 py-4">
+              <div className="flex items-center gap-3 border-b border-border/35 px-5 py-4">
                 <span
                   className={
                     "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg " +
@@ -2482,15 +2483,15 @@ function AllocatProfilePage() {
                   <BriefcaseBusinessIcon size={14} aria-hidden="true" />
                 </span>
                 <div>
-                  <p className="text-xs font-semibold text-foreground">
+                  <p className="text-xs font-medium text-foreground">
                     Work preferences
                   </p>
-                  <p className="mt-0.5 text-[0.6rem] text-muted-foreground">
+                  <p className="mt-0.5 text-[11px] text-muted-foreground">
                     Current working setup
                   </p>
                 </div>
               </div>
-              <div className="divide-y divide-border/45 px-5">
+              <div className="px-5">
                 <SidebarDetail
                   label="Availability"
                   value={formatAvailability(allocatProfile.availabilityStatus)}
@@ -2539,13 +2540,13 @@ function AllocatProfilePage() {
                 />
               </div>
             </section>
-            <section className={"rounded-2xl border p-5 " + quietSurface}>
+            <section className={"rounded-xl border p-5 " + quietSurface}>
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-xs font-semibold text-foreground">
+                  <p className="text-xs font-medium text-foreground">
                     Public profile
                   </p>
-                  <p className="mt-1 text-[0.62rem] leading-5 text-muted-foreground">
+                  <p className="mt-1 text-[11px] leading-5 text-muted-foreground">
                     Control whether clients can discover your professional
                     profile.
                   </p>
@@ -2565,7 +2566,7 @@ function AllocatProfilePage() {
                   )}
                 </span>
               </div>
-              <div className="mt-4 flex items-center gap-2 border-y border-border/45 py-3">
+              <div className="mt-4 flex items-center gap-2 border-y border-border/25 py-3">
                 <span
                   className={
                     "h-1.5 w-1.5 shrink-0 rounded-full " +
@@ -2574,7 +2575,7 @@ function AllocatProfilePage() {
                       : "bg-muted-foreground/40")
                   }
                 />
-                <p className="text-[0.61rem] leading-5 text-muted-foreground">
+                <p className="text-[11px] leading-5 text-muted-foreground">
                   {allocatProfile.isVisible
                     ? "Clients can currently discover this profile."
                     : "This profile is currently hidden from clients."}
@@ -2586,7 +2587,7 @@ function AllocatProfilePage() {
                 onClick={requestVisibilityToggle}
                 disabled={updatingVisibility}
                 className={
-                  "mt-4 h-9 w-full rounded-lg text-xs font-semibold " +
+                  "mt-4 h-9 w-full rounded-lg text-xs font-medium " +
                   secondaryButton
                 }
               >
@@ -2679,15 +2680,15 @@ function AllocatProfilePage() {
 
 function ProfileHeader({ context = true }: { context?: boolean }) {
   return (
-    <header className="sticky top-0 z-40 border-b border-border/60 bg-background">
+    <header className="sticky top-0 z-40 border-b border-border/35 bg-background">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <DashboardMainNav>
           {context ? (
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+              <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
                 Allocat
               </p>
-              <p className="mt-0.5 text-xs font-semibold text-foreground">
+              <p className="mt-0.5 text-xs font-medium text-foreground">
                 Profile
               </p>
             </div>
@@ -2705,7 +2706,7 @@ function VerificationDocumentsNotice({ onStart }: { onStart: () => void }) {
           <ShieldCheckIcon size={15} aria-hidden="true" />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="text-xs font-semibold text-foreground">
+          <p className="text-xs font-medium text-foreground">
             Get your account verified
           </p>
           <p className="mt-1 max-w-2xl text-xs leading-6 text-muted-foreground">
@@ -2719,8 +2720,7 @@ function VerificationDocumentsNotice({ onStart }: { onStart: () => void }) {
           variant="ghost"
           onClick={onStart}
           className={
-            "h-9 shrink-0 rounded-lg px-4 text-xs font-semibold " +
-            primaryButton
+            "h-9 shrink-0 rounded-lg px-4 text-xs font-medium " + primaryButton
           }
         >
           Start verification
@@ -2744,10 +2744,8 @@ function CompletedProjectsSection({
     <div className="w-full">
       <div className="flex items-end justify-between gap-4">
         <div>
-          <p className="text-xs font-semibold text-foreground">
-            Completed work
-          </p>
-          <p className="mt-1 text-[0.61rem] text-muted-foreground">
+          <p className="text-xs font-medium text-foreground">Completed work</p>
+          <p className="mt-1 text-[11px] text-muted-foreground">
             Showing {Math.min(projects.length, total)} of {total} completed{" "}
             {total === 1 ? "project" : "projects"}.
           </p>
@@ -2758,7 +2756,7 @@ function CompletedProjectsSection({
             variant="ghost"
             onClick={onViewAll}
             className={
-              "h-8 shrink-0 rounded-lg px-3 text-xs font-semibold " +
+              "h-8 shrink-0 rounded-lg px-3 text-xs font-medium " +
               secondaryButton
             }
           >
@@ -2767,7 +2765,7 @@ function CompletedProjectsSection({
           </Button>
         )}
       </div>
-      <div className="mt-4 overflow-hidden rounded-xl border border-border/55">
+      <div className="mt-4 overflow-hidden rounded-xl border border-border/35">
         {projects.map((project) => (
           <CompletedProjectRow key={project.id} project={project} />
         ))}
@@ -2777,7 +2775,7 @@ function CompletedProjectsSection({
 }
 function CompletedProjectRow({ project }: { project: CompletedProject }) {
   return (
-    <div className="flex items-center gap-4 border-b border-border/45 px-4 py-4 last:border-b-0">
+    <div className="flex items-center gap-4 border-b border-border/25 px-4 py-4 last:border-b-0">
       <span
         className={
           "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg " +
@@ -2787,14 +2785,14 @@ function CompletedProjectRow({ project }: { project: CompletedProject }) {
         <FolderCheckIcon size={15} aria-hidden="true" />
       </span>
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-semibold text-foreground">
+        <p className="truncate text-sm font-medium text-foreground">
           {project.title}
         </p>
-        <p className="mt-1 truncate text-[0.61rem] text-muted-foreground">
+        <p className="mt-1 truncate text-[11px] text-muted-foreground">
           {project.category} · {project.projectCode}
         </p>
       </div>
-      <span className="shrink-0 text-[10px] font-semibold capitalize text-muted-foreground">
+      <span className="shrink-0 text-[11px] font-medium capitalize text-muted-foreground">
         {project.status}
       </span>
     </div>
@@ -2822,16 +2820,16 @@ function CompletedProjectsDialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby="completed-projects-title"
-        className="flex max-h-[86dvh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-border/65 bg-card text-card-foreground shadow-lg shadow-black/5 dark:border-border dark:bg-card"
+        className="flex max-h-[86dvh] w-full max-w-2xl flex-col overflow-hidden rounded-xl border border-border/35 bg-card text-card-foreground shadow-lg shadow-black/5 dark:border-border/35 dark:bg-card"
       >
-        <div className="flex shrink-0 items-start justify-between gap-5 border-b border-border/55 px-5 py-5">
+        <div className="flex shrink-0 items-start justify-between gap-5 border-b border-border/35 px-5 py-5">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
+            <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
               Work history
             </p>
             <h2
               id="completed-projects-title"
-              className="mt-2 text-xl font-semibold tracking-[-0.025em] text-foreground"
+              className="mt-2 text-xl font-medium tracking-[-0.025em] text-foreground"
             >
               Completed projects
             </h2>
@@ -2858,13 +2856,13 @@ function CompletedProjectsDialog({
             ))}
           </div>
         </div>
-        <div className="flex shrink-0 justify-end border-t border-border/55 px-5 py-4">
+        <div className="flex shrink-0 justify-end border-t border-border/35 px-5 py-4">
           <Button
             type="button"
             variant="outline"
             onClick={onClose}
             className={
-              "h-9 rounded-lg px-4 text-xs font-semibold " + secondaryButton
+              "h-9 rounded-lg px-4 text-xs font-medium " + secondaryButton
             }
           >
             Close
@@ -2888,7 +2886,7 @@ function UploadProgress({
   return (
     <div
       className={
-        "h-1.5 w-full overflow-hidden rounded-full bg-brand-secondary-highlight/[0.10] dark:bg-secondary/[0.10] " +
+        "h-1.5 w-full overflow-hidden rounded-full bg-surface-3/65 dark:bg-surface-3/55 " +
         className
       }
       role="progressbar"
@@ -2948,16 +2946,16 @@ function ProfilePictureDialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby="profile-picture-title"
-        className="max-h-[90dvh] w-full max-w-md overflow-y-auto rounded-2xl border border-border/65 bg-card p-5 text-card-foreground shadow-lg shadow-black/5 sm:p-6 dark:border-border dark:bg-card"
+        className="max-h-[90dvh] w-full max-w-md overflow-y-auto rounded-xl border border-border/35 bg-card p-5 text-card-foreground shadow-lg shadow-black/5 sm:p-6 dark:border-border/35 dark:bg-card"
       >
         <div className="flex items-start justify-between gap-5">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
+            <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
               Profile image
             </p>
             <h2
               id="profile-picture-title"
-              className="mt-2 text-xl font-semibold tracking-[-0.025em] text-foreground"
+              className="mt-2 text-xl font-medium tracking-[-0.025em] text-foreground"
             >
               Change profile picture
             </h2>
@@ -2987,13 +2985,13 @@ function ProfilePictureDialog({
         />
         <div className="mt-6 flex flex-col items-center">
           <div className="relative">
-            <Avatar className="h-28 w-28 border border-border/70 bg-transparent">
+            <Avatar className="h-28 w-28 border border-border/35 bg-transparent">
               <AvatarImage
                 src={preview ?? currentAvatar}
                 alt="Profile picture preview"
                 className="object-cover"
               />
-              <AvatarFallback className="bg-brand-secondary-highlight/[0.08] text-2xl font-semibold text-brand-secondary-highlight dark:bg-secondary/[0.08] dark:text-secondary">
+              <AvatarFallback className="bg-surface-2/65 text-2xl font-medium text-foreground/75 dark:bg-surface-3/45">
                 {initials}
               </AvatarFallback>
             </Avatar>
@@ -3026,10 +3024,10 @@ function ProfilePictureDialog({
                   <CameraIcon size={14} aria-hidden="true" />
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-xs font-semibold text-foreground">
+                  <p className="truncate text-xs font-medium text-foreground">
                     {file.name}
                   </p>
-                  <p className="mt-0.5 text-[0.61rem] text-muted-foreground">
+                  <p className="mt-0.5 text-[11px] text-muted-foreground">
                     {formatFileSize(file.size)}
                   </p>
                 </div>
@@ -3057,7 +3055,7 @@ function ProfilePictureDialog({
               onClick={onChoose}
               disabled={uploading}
               className={
-                "mt-5 h-10 rounded-lg px-4 text-xs font-semibold " +
+                "mt-5 h-10 rounded-lg px-4 text-xs font-medium " +
                 secondaryButton
               }
             >
@@ -3071,14 +3069,14 @@ function ProfilePictureDialog({
             </div>
           )}
         </div>
-        <div className="mt-6 flex justify-end gap-2 border-t border-border/45 pt-5">
+        <div className="mt-6 flex justify-end gap-2 border-t border-border/25 pt-5">
           <Button
             type="button"
             variant="outline"
             onClick={onClose}
             disabled={uploading}
             className={
-              "h-10 rounded-lg px-4 text-xs font-semibold " + secondaryButton
+              "h-10 rounded-lg px-4 text-xs font-medium " + secondaryButton
             }
           >
             Cancel
@@ -3089,7 +3087,7 @@ function ProfilePictureDialog({
             onClick={onUpload}
             disabled={!file || uploading}
             className={
-              "h-10 rounded-lg px-4 text-xs font-semibold " + primaryButton
+              "h-10 rounded-lg px-4 text-xs font-medium " + primaryButton
             }
           >
             {uploading ? (
@@ -3146,23 +3144,23 @@ function DocumentPreviewDialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby="document-preview-title"
-        className="flex max-h-[94dvh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-border/65 bg-card text-card-foreground shadow-lg shadow-black/5 dark:border-border dark:bg-card"
+        className="flex max-h-[94dvh] w-full max-w-5xl flex-col overflow-hidden rounded-xl border border-border/35 bg-card text-card-foreground shadow-lg shadow-black/5 dark:border-border/35 dark:bg-card"
       >
-        <div className="flex shrink-0 items-start justify-between gap-5 border-b border-border/55 px-4 py-4 sm:px-5">
+        <div className="flex shrink-0 items-start justify-between gap-5 border-b border-border/35 px-4 py-4 sm:px-5">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
+              <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
                 Document preview
               </p>
               <DocumentStatusBadge status={document.reviewStatus} />
             </div>
             <h2
               id="document-preview-title"
-              className="mt-2 truncate text-base font-semibold tracking-[-0.02em] text-foreground sm:text-lg"
+              className="mt-2 truncate text-base font-medium tracking-[-0.02em] text-foreground sm:text-lg"
             >
               {document.originalFileName}
             </h2>
-            <p className="mt-1 text-[0.61rem] text-muted-foreground">
+            <p className="mt-1 text-[11px] text-muted-foreground">
               {getDocumentTypeLabel(document.documentType)} ·{" "}
               {formatFileSize(document.sizeBytes)} ·{" "}
               {formatDocumentDate(document.createdAt)}
@@ -3196,7 +3194,7 @@ function DocumentPreviewDialog({
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto bg-surface-2/30 p-3 sm:p-4 dark:bg-surface-2/45">
           {loading ? (
-            <div className="flex h-[65vh] min-h-80 items-center justify-center rounded-xl border border-border/55 bg-card">
+            <div className="flex h-[65vh] min-h-80 items-center justify-center rounded-xl border border-border/35 bg-card">
               <div className="text-center">
                 <LoaderCircleIcon
                   size={22}
@@ -3209,12 +3207,12 @@ function DocumentPreviewDialog({
               </div>
             </div>
           ) : error ? (
-            <div className="flex h-[50vh] min-h-72 items-center justify-center rounded-xl border border-border/55 bg-card px-6">
+            <div className="flex h-[50vh] min-h-72 items-center justify-center rounded-xl border border-border/35 bg-card px-6">
               <div className="max-w-sm text-center">
                 <span className="mx-auto flex h-10 w-10 items-center justify-center rounded-lg bg-destructive/[0.07] text-destructive">
                   <AlertCircleIcon size={17} aria-hidden="true" />
                 </span>
-                <p className="mt-4 text-sm font-semibold text-foreground">
+                <p className="mt-4 text-sm font-medium text-foreground">
                   Preview unavailable
                 </p>
                 <p className="mt-2 text-xs leading-6 text-muted-foreground">
@@ -3225,7 +3223,7 @@ function DocumentPreviewDialog({
                   variant="outline"
                   onClick={() => onRetry(document)}
                   className={
-                    "mt-5 h-9 rounded-lg px-4 text-xs font-semibold " +
+                    "mt-5 h-9 rounded-lg px-4 text-xs font-medium " +
                     secondaryButton
                   }
                 >
@@ -3235,7 +3233,7 @@ function DocumentPreviewDialog({
               </div>
             </div>
           ) : url && isImage ? (
-            <div className="flex h-[68vh] min-h-80 items-center justify-center overflow-auto rounded-xl border border-border/55 bg-card p-3 sm:p-5">
+            <div className="flex h-[68vh] min-h-80 items-center justify-center overflow-auto rounded-xl border border-border/35 bg-card p-3 sm:p-5">
               <img
                 src={url}
                 alt={document.originalFileName}
@@ -3243,7 +3241,7 @@ function DocumentPreviewDialog({
               />
             </div>
           ) : url && isPdf ? (
-            <div className="h-[68vh] min-h-80 overflow-hidden rounded-xl border border-border/55 bg-card">
+            <div className="h-[68vh] min-h-80 overflow-hidden rounded-xl border border-border/35 bg-card">
               <iframe
                 src={url}
                 title={document.originalFileName}
@@ -3251,7 +3249,7 @@ function DocumentPreviewDialog({
               />
             </div>
           ) : (
-            <div className="flex h-[50vh] min-h-72 items-center justify-center rounded-xl border border-border/55 bg-card px-6">
+            <div className="flex h-[50vh] min-h-72 items-center justify-center rounded-xl border border-border/35 bg-card px-6">
               <div className="max-w-sm text-center">
                 <span
                   className={
@@ -3261,7 +3259,7 @@ function DocumentPreviewDialog({
                 >
                   <FileTextIcon size={17} aria-hidden="true" />
                 </span>
-                <p className="mt-4 text-sm font-semibold text-foreground">
+                <p className="mt-4 text-sm font-medium text-foreground">
                   This file cannot be previewed here
                 </p>
                 <p className="mt-2 text-xs leading-6 text-muted-foreground">
@@ -3273,7 +3271,7 @@ function DocumentPreviewDialog({
                     variant="outline"
                     onClick={openExternally}
                     className={
-                      "mt-5 h-9 rounded-lg px-4 text-xs font-semibold " +
+                      "mt-5 h-9 rounded-lg px-4 text-xs font-medium " +
                       secondaryButton
                     }
                   >
@@ -3285,8 +3283,8 @@ function DocumentPreviewDialog({
             </div>
           )}
         </div>
-        <div className="flex shrink-0 flex-col-reverse gap-2 border-t border-border/55 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
-          <div className="flex items-center gap-2 text-[0.6rem] text-muted-foreground">
+        <div className="flex shrink-0 flex-col-reverse gap-2 border-t border-border/35 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+          <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
             <LockKeyholeIcon size={12} aria-hidden="true" />
             Private document
           </div>
@@ -3296,7 +3294,7 @@ function DocumentPreviewDialog({
               variant="outline"
               onClick={onClose}
               className={
-                "h-9 rounded-lg px-4 text-xs font-semibold " + secondaryButton
+                "h-9 rounded-lg px-4 text-xs font-medium " + secondaryButton
               }
             >
               Close
@@ -3307,7 +3305,7 @@ function DocumentPreviewDialog({
               onClick={() => onDownload(document)}
               disabled={!url || downloading}
               className={
-                "h-9 rounded-lg px-4 text-xs font-semibold " + primaryButton
+                "h-9 rounded-lg px-4 text-xs font-medium " + primaryButton
               }
             >
               {downloading ? (
@@ -3372,22 +3370,22 @@ function IdentityDocumentManager({
       <div className="flex items-end justify-between gap-4">
         <div>
           <div className="flex flex-wrap items-center gap-2">
-            <p className="text-xs font-semibold text-foreground">
+            <p className="text-xs font-medium text-foreground">
               Identity verification
             </p>
             {!document && (
-              <span className="rounded-md bg-status-pending/[0.08] px-2 py-1 text-[10px] font-semibold text-status-pending-foreground ring-1 ring-inset ring-status-pending/15">
+              <span className="rounded-md bg-status-pending/[0.08] px-2 py-1 text-[11px] font-medium text-status-pending-foreground ring-1 ring-inset ring-status-pending/15">
                 Required for verification
               </span>
             )}
           </div>
-          <p className="mt-1 max-w-2xl text-[0.61rem] leading-5 text-muted-foreground">
+          <p className="mt-1 max-w-2xl text-[11px] leading-5 text-muted-foreground">
             Upload an identity document matching your ID number. Once reviewed,
             it can contribute to the verification status clients see on your
             profile.
           </p>
         </div>
-        <span className="shrink-0 text-[10px] font-medium text-muted-foreground">
+        <span className="shrink-0 text-[11px] font-medium text-muted-foreground">
           {document ? "1 of 1" : "0 of 1"}
         </span>
       </div>
@@ -3399,7 +3397,7 @@ function IdentityDocumentManager({
             variant="ghost"
             onClick={onRetry}
             className={
-              "h-8 rounded-lg px-3 text-xs font-semibold " + secondaryButton
+              "h-8 rounded-lg px-3 text-xs font-medium " + secondaryButton
             }
           >
             <RefreshCwIcon size={13} aria-hidden="true" />
@@ -3434,10 +3432,10 @@ function IdentityDocumentManager({
                 <ShieldCheckIcon size={15} aria-hidden="true" />
               </span>
               <div>
-                <p className="text-xs font-semibold text-foreground">
+                <p className="text-xs font-medium text-foreground">
                   Identity document not submitted
                 </p>
-                <p className="mt-1 max-w-lg text-[0.61rem] leading-5 text-muted-foreground">
+                <p className="mt-1 max-w-lg text-[11px] leading-5 text-muted-foreground">
                   Submit your identity document to begin account verification.
                   PDF, JPEG, PNG or WebP · Maximum 10 MB.
                 </p>
@@ -3449,7 +3447,7 @@ function IdentityDocumentManager({
               onClick={onChoose}
               disabled={uploading}
               className={
-                "h-9 shrink-0 rounded-lg px-4 text-xs font-semibold " +
+                "h-9 shrink-0 rounded-lg px-4 text-xs font-medium " +
                 secondaryButton
               }
             >
@@ -3470,7 +3468,7 @@ function IdentityDocumentManager({
         />
       )}
       {document && document.reviewStatus !== "Approved" && (
-        <p className="mt-2 text-[0.59rem] leading-5 text-muted-foreground">
+        <p className="mt-2 text-[11px] leading-5 text-muted-foreground">
           Documents are not edited in place. Remove this file first if you need
           to submit a different copy.
         </p>
@@ -3506,10 +3504,10 @@ function SelectedDocument({
           <FileTextIcon size={14} aria-hidden="true" />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="truncate text-xs font-semibold text-foreground">
+          <p className="truncate text-xs font-medium text-foreground">
             {file.name}
           </p>
-          <p className="mt-0.5 text-[0.61rem] text-muted-foreground">
+          <p className="mt-0.5 text-[11px] text-muted-foreground">
             {formatFileSize(file.size)} · {typeLabel}
           </p>
         </div>
@@ -3530,9 +3528,7 @@ function SelectedDocument({
           variant="ghost"
           onClick={onUpload}
           disabled={uploading}
-          className={
-            "h-8 rounded-lg px-3 text-xs font-semibold " + primaryButton
-          }
+          className={"h-8 rounded-lg px-3 text-xs font-medium " + primaryButton}
         >
           {uploading ? (
             <>
@@ -3650,7 +3646,7 @@ function CredentialDetailsDialog({
       }}
     >
       <DialogContent
-        className="max-h-[90dvh] overflow-y-auto rounded-2xl border-border/65 bg-card p-0 text-card-foreground sm:max-w-lg"
+        className="max-h-[90dvh] overflow-y-auto rounded-xl border-border/35 bg-card p-0 text-card-foreground sm:max-w-lg"
         onEscapeKeyDown={(event) => {
           if (busyRef.current) event.preventDefault();
         }}
@@ -3658,8 +3654,8 @@ function CredentialDetailsDialog({
           if (busyRef.current) event.preventDefault();
         }}
       >
-        <DialogHeader className="border-b border-border/50 px-5 py-5 pr-12 text-left sm:px-6">
-          <DialogTitle className="text-lg font-semibold tracking-[-0.025em]">
+        <DialogHeader className="border-b border-border/25 px-5 py-5 pr-12 text-left sm:px-6">
+          <DialogTitle className="text-lg font-medium tracking-[-0.025em]">
             {isQualification ? "Qualification details" : "Credential details"}
           </DialogTitle>
           <DialogDescription className="text-xs leading-6">
@@ -3673,7 +3669,7 @@ function CredentialDetailsDialog({
             <div>
               <Label
                 htmlFor="qualification-edit-title"
-                className="text-xs font-semibold"
+                className="text-xs font-medium"
               >
                 {isQualification
                   ? "Qualification title"
@@ -3700,7 +3696,7 @@ function CredentialDetailsDialog({
             <div>
               <Label
                 htmlFor="qualification-edit-institution"
-                className="text-xs font-semibold"
+                className="text-xs font-medium"
               >
                 Issuing institution{isQualification ? "" : " (optional)"}
               </Label>
@@ -3725,7 +3721,7 @@ function CredentialDetailsDialog({
             </p>
             {error && <InlineError message={error} />}
           </div>
-          <DialogFooter className="gap-2 border-t border-border/50 px-5 py-4 sm:px-6">
+          <DialogFooter className="gap-2 border-t border-border/25 px-5 py-4 sm:px-6">
             <Button
               type="button"
               variant="outline"
@@ -3793,7 +3789,7 @@ function DocumentRow({
       <div className="min-w-0 flex-1 basis-[140px]">
         <div className="flex flex-wrap items-center gap-2">
           <p
-            className="max-w-full truncate text-xs font-semibold text-foreground"
+            className="max-w-full truncate text-xs font-medium text-foreground"
             title={
               document.documentType !== "Identity"
                 ? document.title ||
@@ -3815,7 +3811,7 @@ function DocumentRow({
             {document.issuingInstitution || "Issuing institution not added"}
           </p>
         )}
-        <p className="mt-1 text-[0.6rem] leading-5 text-muted-foreground">
+        <p className="mt-1 text-[11px] leading-5 text-muted-foreground">
           {getDocumentTypeLabel(document.documentType)} ·{" "}
           {formatFileSize(document.sizeBytes)} ·{" "}
           {formatDocumentDate(document.createdAt)}
@@ -3913,7 +3909,7 @@ function DocumentStatusBadge({ status }: { status: UserDocumentReviewStatus }) {
   return (
     <span
       className={
-        "rounded-md px-2 py-1 text-[10px] font-semibold ring-1 ring-inset " +
+        "rounded-md px-2 py-1 text-[11px] font-medium ring-1 ring-inset " +
         className
       }
     >
@@ -3965,7 +3961,7 @@ function DeleteDocumentWarning({
         aria-modal="true"
         aria-labelledby="delete-document-title"
         aria-describedby="delete-document-description"
-        className="max-h-[90dvh] w-full max-w-md overflow-y-auto rounded-2xl border border-border/65 bg-card p-5 text-card-foreground shadow-lg shadow-black/5 sm:p-6 dark:border-border dark:bg-card"
+        className="max-h-[90dvh] w-full max-w-md overflow-y-auto rounded-xl border border-border/35 bg-card p-5 text-card-foreground shadow-lg shadow-black/5 sm:p-6 dark:border-border/35 dark:bg-card"
       >
         <div className="flex items-start gap-4">
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-destructive/[0.08] text-destructive">
@@ -3974,7 +3970,7 @@ function DeleteDocumentWarning({
           <div className="min-w-0 flex-1">
             <h2
               id="delete-document-title"
-              className="text-lg font-semibold tracking-[-0.025em] text-foreground"
+              className="text-lg font-medium tracking-[-0.025em] text-foreground"
             >
               Remove this document?
             </h2>
@@ -3989,14 +3985,14 @@ function DeleteDocumentWarning({
             </p>
           </div>
         </div>
-        <div className="mt-6 flex flex-col-reverse gap-2 border-t border-border/45 pt-5 sm:flex-row sm:justify-end">
+        <div className="mt-6 flex flex-col-reverse gap-2 border-t border-border/25 pt-5 sm:flex-row sm:justify-end">
           <Button
             type="button"
             variant="outline"
             onClick={onCancel}
             disabled={loading}
             className={
-              "h-10 rounded-lg px-4 text-xs font-semibold " + secondaryButton
+              "h-10 rounded-lg px-4 text-xs font-medium " + secondaryButton
             }
           >
             Cancel
@@ -4007,7 +4003,7 @@ function DeleteDocumentWarning({
             onClick={onConfirm}
             disabled={loading}
             className={
-              "h-10 rounded-lg border border-destructive/15 bg-destructive px-4 text-xs font-semibold text-destructive-foreground shadow-none transition-opacity duration-150 hover:bg-destructive hover:text-destructive-foreground hover:opacity-90 motion-reduce:transition-none " +
+              "h-10 rounded-lg border border-destructive/15 bg-destructive px-4 text-xs font-medium text-destructive-foreground shadow-none transition-opacity duration-150 hover:bg-destructive hover:text-destructive-foreground hover:opacity-90 motion-reduce:transition-none " +
               focus
             }
           >
@@ -4057,7 +4053,7 @@ function HideProfileWarning({
         aria-modal="true"
         aria-labelledby="hide-profile-title"
         aria-describedby="hide-profile-description"
-        className="max-h-[90dvh] w-full max-w-md overflow-y-auto rounded-2xl border border-border/65 bg-card p-5 text-card-foreground shadow-lg shadow-black/5 sm:p-6"
+        className="max-h-[90dvh] w-full max-w-md overflow-y-auto rounded-xl border border-border/35 bg-card p-5 text-card-foreground shadow-lg shadow-black/5 sm:p-6"
       >
         <div className="flex items-start gap-4">
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-status-pending/[0.10] text-status-pending-foreground">
@@ -4066,7 +4062,7 @@ function HideProfileWarning({
           <div>
             <h2
               id="hide-profile-title"
-              className="text-lg font-semibold tracking-[-0.025em] text-foreground"
+              className="text-lg font-medium tracking-[-0.025em] text-foreground"
             >
               Hide your professional profile?
             </h2>
@@ -4079,14 +4075,14 @@ function HideProfileWarning({
             </p>
           </div>
         </div>
-        <div className="mt-6 flex justify-end gap-2 border-t border-border/45 pt-5">
+        <div className="mt-6 flex justify-end gap-2 border-t border-border/25 pt-5">
           <Button
             type="button"
             variant="outline"
             onClick={onCancel}
             disabled={loading}
             className={
-              "h-10 rounded-lg px-4 text-xs font-semibold " + secondaryButton
+              "h-10 rounded-lg px-4 text-xs font-medium " + secondaryButton
             }
           >
             Keep visible
@@ -4097,7 +4093,7 @@ function HideProfileWarning({
             onClick={onConfirm}
             disabled={loading}
             className={
-              "h-10 rounded-lg bg-destructive px-4 text-xs font-semibold text-destructive-foreground shadow-none hover:bg-destructive hover:text-destructive-foreground hover:opacity-90 " +
+              "h-10 rounded-lg bg-destructive px-4 text-xs font-medium text-destructive-foreground shadow-none hover:bg-destructive hover:text-destructive-foreground hover:opacity-90 " +
               focus
             }
           >
@@ -4131,21 +4127,21 @@ function IncompleteAllocatSetup({
       <main className="container mx-auto px-4 py-8 sm:px-6 md:px-8 lg:py-12">
         <section className={"max-w-4xl p-5 sm:p-6 " + profileSurface}>
           <div className="flex items-center gap-5">
-            <Avatar className="h-20 w-20 border border-border/70">
+            <Avatar className="h-20 w-20 border border-border/35">
               <AvatarImage
                 src={accountProfile.avatarUrl ?? undefined}
                 alt={accountProfile.fullName}
                 className="object-cover"
               />
-              <AvatarFallback className="bg-brand-secondary-highlight/[0.08] text-xl font-semibold text-brand-secondary-highlight dark:bg-secondary/[0.08] dark:text-secondary">
+              <AvatarFallback className="bg-surface-2/65 text-xl font-medium text-foreground/75 dark:bg-surface-3/45">
                 {initials}
               </AvatarFallback>
             </Avatar>
             <div className="min-w-0">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-brand-secondary-highlight dark:text-secondary">
+              <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-brand-secondary-highlight dark:text-secondary">
                 Professional profile
               </p>
-              <h1 className="mt-2 break-words text-3xl font-semibold leading-[1.02] tracking-[-0.04em] text-foreground/95 sm:text-4xl">
+              <h1 className="mt-2 break-words text-2xl font-medium leading-tight tracking-[-0.035em] text-foreground/95 sm:text-3xl">
                 {accountProfile.fullName}
               </h1>
               <p className="mt-2 text-sm text-muted-foreground">
@@ -4159,10 +4155,10 @@ function IncompleteAllocatSetup({
                 <AlertCircleIcon size={17} aria-hidden="true" />
               </span>
               <div className="min-w-0 flex-1">
-                <p className="text-xs font-semibold uppercase tracking-[0.13em] text-status-pending-foreground">
+                <p className="text-xs font-medium uppercase tracking-[0.13em] text-status-pending-foreground">
                   Profile incomplete
                 </p>
-                <h2 className="mt-2 text-xl font-semibold tracking-[-0.025em] text-foreground sm:text-2xl">
+                <h2 className="mt-2 text-lg font-medium tracking-[-0.025em] text-foreground sm:text-xl">
                   Finish setting up your Allocat profile
                 </h2>
                 <p className="mt-3 max-w-2xl text-sm leading-7 text-muted-foreground">
@@ -4175,7 +4171,7 @@ function IncompleteAllocatSetup({
                   variant="ghost"
                   onClick={onContinue}
                   className={
-                    "mt-6 h-10 rounded-lg px-5 text-xs font-semibold " +
+                    "mt-6 h-10 rounded-lg px-5 text-xs font-medium " +
                     primaryButton
                   }
                 >
@@ -4205,14 +4201,14 @@ function IncompleteProfileWarning({
           <AlertCircleIcon size={15} aria-hidden="true" />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="text-xs font-semibold text-foreground">
+          <p className="text-xs font-medium text-foreground">
             Complete your professional profile
           </p>
           <p className="mt-1 max-w-2xl text-xs leading-6 text-muted-foreground">
             You still have {items.length} key{" "}
             {items.length === 1 ? "detail" : "details"} to add.
           </p>
-          <p className="mt-2 text-[0.62rem] leading-5 text-status-pending-foreground">
+          <p className="mt-2 text-[11px] leading-5 text-status-pending-foreground">
             Missing: {visibleItems.map((item) => item.label).join(", ")}
             {remaining > 0 ? ` and ${remaining} more` : ""}.
           </p>
@@ -4222,8 +4218,7 @@ function IncompleteProfileWarning({
           variant="ghost"
           onClick={onComplete}
           className={
-            "h-9 shrink-0 rounded-lg px-4 text-xs font-semibold " +
-            primaryButton
+            "h-9 shrink-0 rounded-lg px-4 text-xs font-medium " + primaryButton
           }
         >
           Complete profile
@@ -4246,7 +4241,7 @@ function ContrastProgress({
   return (
     <div
       className={
-        "h-1.5 w-full overflow-hidden rounded-full bg-white/[0.12] " + className
+        "h-1.5 w-full overflow-hidden rounded-full bg-surface-3/65 " + className
       }
       role="progressbar"
       aria-label="Professional score"
@@ -4255,7 +4250,7 @@ function ContrastProgress({
       aria-valuenow={Math.round(safeValue)}
     >
       <div
-        className="h-full rounded-full bg-secondary transition-[width] duration-300 ease-out motion-reduce:transition-none"
+        className="h-full rounded-full bg-brand-secondary-highlight transition-[width] duration-300 ease-out motion-reduce:transition-none dark:bg-secondary"
         style={{ width: `${safeValue}%` }}
       />
     </div>
@@ -4283,16 +4278,10 @@ function ProfileSection({
       <div className="p-5 sm:p-6">
         <div className="mb-6 flex items-start justify-between gap-5">
           <div>
-            <div className="flex items-center gap-2.5">
-              <span
-                aria-hidden="true"
-                className="h-1.5 w-5 rounded-full bg-brand-secondary-highlight dark:bg-secondary"
-              />
-              <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
-                {eyebrow}
-              </p>
-            </div>
-            <h2 className="mt-2.5 text-xl font-semibold tracking-[-0.025em] text-foreground sm:text-2xl">
+            <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
+              {eyebrow}
+            </p>
+            <h2 className="mt-2.5 text-lg font-medium tracking-[-0.025em] text-foreground sm:text-xl">
               {title}
             </h2>
           </div>
@@ -4338,15 +4327,13 @@ function SectionActions({
   submit?: boolean;
 }) {
   return (
-    <div className="mt-7 flex justify-end gap-2 border-t border-border/45 pt-5">
+    <div className="mt-7 flex justify-end gap-2 border-t border-border/25 pt-5">
       <Button
         type="button"
         variant="outline"
         onClick={onCancel}
         disabled={saving}
-        className={
-          "h-9 rounded-lg px-4 text-xs font-semibold " + secondaryButton
-        }
+        className={"h-9 rounded-lg px-4 text-xs font-medium " + secondaryButton}
       >
         Cancel
       </Button>
@@ -4355,7 +4342,7 @@ function SectionActions({
         variant="ghost"
         onClick={submit ? undefined : onSave}
         disabled={saving}
-        className={"h-9 rounded-lg px-4 text-xs font-semibold " + primaryButton}
+        className={"h-9 rounded-lg px-4 text-xs font-medium " + primaryButton}
       >
         {saving ? (
           <>
@@ -4385,7 +4372,7 @@ function ProfileField({
 }) {
   return (
     <div>
-      <Label className="text-xs font-semibold text-foreground">{label}</Label>
+      <Label className="text-xs font-medium text-foreground">{label}</Label>
       <div className="mt-2">{children}</div>
     </div>
   );
@@ -4408,7 +4395,7 @@ function ReadOnlyField({
   const missing = !value?.trim();
   return (
     <div>
-      <p className="text-[10px] font-semibold uppercase tracking-[0.13em] text-muted-foreground">
+      <p className="text-[11px] font-medium uppercase tracking-[0.13em] text-muted-foreground">
         {label}
       </p>
       {missing ? (
@@ -4429,7 +4416,7 @@ function ReadOnlyField({
         </p>
       )}
       {description && (
-        <p className="mt-1.5 text-[0.61rem] leading-5 text-muted-foreground">
+        <p className="mt-1.5 text-[11px] leading-5 text-muted-foreground">
           {description}
         </p>
       )}
@@ -4462,18 +4449,18 @@ function ProfileStat({
     <div
       className={
         "min-w-0 px-5 py-4 " +
-        (divided ? "border-t border-border/55 sm:border-l sm:border-t-0" : "")
+        (divided ? "border-t border-border/25 sm:border-t-0" : "")
       }
     >
-      <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+      <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
         {label}
       </p>
       <div className="mt-1.5 flex min-w-0 items-baseline gap-1.5">
-        <p className="truncate text-lg font-semibold tracking-[-0.03em] text-foreground sm:text-xl">
+        <p className="truncate text-sm font-medium tracking-[-0.015em] text-foreground sm:text-base">
           {value}
         </p>
         {suffix && (
-          <span className="truncate text-[0.6rem] font-medium text-muted-foreground">
+          <span className="truncate text-[11px] font-medium text-muted-foreground">
             {suffix}
           </span>
         )}
@@ -4509,12 +4496,12 @@ function DetailItem({
         <Icon size={14} aria-hidden="true" />
       </span>
       <div className="min-w-0">
-        <p className="text-[10px] text-muted-foreground">{label}</p>
+        <p className="text-[11px] text-muted-foreground">{label}</p>
         <div className="mt-0.5">
           {missing ? (
             <MissingValue>{value}</MissingValue>
           ) : (
-            <p className="truncate text-sm font-semibold text-foreground">
+            <p className="truncate text-sm font-medium text-foreground">
               {value}
             </p>
           )}
@@ -4551,7 +4538,7 @@ function VerificationItem({
         </span>
         <span
           className={
-            "text-[10px] font-semibold " +
+            "text-[11px] font-medium " +
             (verified
               ? "text-status-complete-foreground"
               : "text-status-pending-foreground")
@@ -4560,8 +4547,8 @@ function VerificationItem({
           {status}
         </span>
       </div>
-      <p className="mt-4 text-xs font-semibold text-foreground">{title}</p>
-      <p className="mt-1 truncate text-[0.62rem] leading-5 text-muted-foreground">
+      <p className="mt-4 text-xs font-medium text-foreground">{title}</p>
+      <p className="mt-1 truncate text-[11px] leading-5 text-muted-foreground">
         {description}
       </p>
     </div>
@@ -4584,7 +4571,7 @@ function SidebarDetail({
 }) {
   return (
     <div className="grid grid-cols-[92px_minmax(0,1fr)] items-center gap-3 py-3.5">
-      <p className="text-[0.61rem] leading-5 text-muted-foreground">{label}</p>
+      <p className="text-[11px] leading-5 text-muted-foreground">{label}</p>
       {missing ? (
         <div className="flex justify-end">
           <MissingValue>{value}</MissingValue>
@@ -4596,10 +4583,10 @@ function SidebarDetail({
             className={
               "break-words text-right text-xs " +
               (strong
-                ? "font-semibold text-brand-secondary-highlight dark:text-secondary"
+                ? "font-medium text-brand-secondary-highlight dark:text-secondary"
                 : muted
                   ? "font-medium text-muted-foreground"
-                  : "font-semibold text-foreground")
+                  : "font-medium text-foreground")
             }
           >
             {value}
@@ -4630,13 +4617,13 @@ function AvailabilityDot({
 }
 function EmptyHistory() {
   return (
-    <div className="rounded-xl border border-dashed border-border/65 p-5">
+    <div className="rounded-xl border border-dashed border-border/35 p-5">
       <div className="flex items-start gap-3">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-surface-3/70 text-muted-foreground ring-1 ring-inset ring-border/35 dark:bg-surface-2">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-surface-2/65 text-muted-foreground dark:bg-surface-3/45">
           <FolderCheckIcon size={15} aria-hidden="true" />
         </span>
         <div>
-          <p className="text-sm font-semibold text-foreground">
+          <p className="text-sm font-medium text-foreground">
             No completed projects yet
           </p>
           <p className="mt-1 max-w-lg text-xs leading-6 text-muted-foreground">
@@ -4678,7 +4665,7 @@ function AllocatProfileError({
           <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-destructive/[0.08] text-destructive">
             <AlertCircleIcon size={19} aria-hidden="true" />
           </span>
-          <h1 className="mt-5 text-2xl font-semibold tracking-[-0.03em] text-foreground">
+          <h1 className="mt-5 text-2xl font-medium tracking-[-0.03em] text-foreground">
             Could not load your profile
           </h1>
           <p className="mt-2 text-sm leading-7 text-muted-foreground">
@@ -4689,7 +4676,7 @@ function AllocatProfileError({
             variant="ghost"
             onClick={() => void onRetry()}
             className={
-              "mt-6 h-10 rounded-lg px-5 text-xs font-semibold " + primaryButton
+              "mt-6 h-10 rounded-lg px-5 text-xs font-medium " + primaryButton
             }
           >
             <RefreshCwIcon size={14} aria-hidden="true" />
@@ -4719,11 +4706,11 @@ function AllocatProfileSkeleton() {
               <Skeleton className="h-3 w-48 max-w-full" />
             </div>
           </div>
-          <div className="grid border-t border-border/55 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="grid border-t border-border/35 sm:grid-cols-2 xl:grid-cols-4">
             {Array.from({ length: 4 }).map((_, index) => (
               <div
                 key={index}
-                className="border-b border-border/55 px-5 py-4 last:border-b-0 sm:border-b-0 sm:border-r sm:last:border-r-0"
+                className="border-b border-border/35 px-5 py-4 last:border-b-0 sm:border-b-0"
               >
                 <Skeleton className="h-3 w-16" />
                 <Skeleton className="mt-3 h-6 w-24" />
@@ -4733,15 +4720,15 @@ function AllocatProfileSkeleton() {
         </div>
         <div className="mt-5 grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_300px]">
           <div className="space-y-5">
-            <Skeleton className="h-64 rounded-2xl" />
-            <Skeleton className="h-44 rounded-2xl" />
-            <Skeleton className="h-56 rounded-2xl" />
-            <Skeleton className="h-72 rounded-2xl" />
+            <Skeleton className="h-64 rounded-xl" />
+            <Skeleton className="h-44 rounded-xl" />
+            <Skeleton className="h-56 rounded-xl" />
+            <Skeleton className="h-72 rounded-xl" />
           </div>
           <div className="hidden space-y-5 xl:block">
-            <Skeleton className="h-52 rounded-2xl" />
-            <Skeleton className="h-64 rounded-2xl" />
-            <Skeleton className="h-48 rounded-2xl" />
+            <Skeleton className="h-52 rounded-xl" />
+            <Skeleton className="h-64 rounded-xl" />
+            <Skeleton className="h-48 rounded-xl" />
           </div>
         </div>
       </main>

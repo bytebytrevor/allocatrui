@@ -14,11 +14,13 @@ import {
   BanIcon,
   BriefcaseBusinessIcon,
   CheckCircle2Icon,
+  CheckIcon,
   CircleDotIcon,
   Clock3Icon,
   FolderOpenIcon,
   InboxIcon,
   LoaderCircleIcon,
+  MoreHorizontalIcon,
   PlusIcon,
   RefreshCwIcon,
   SearchIcon,
@@ -34,6 +36,12 @@ import WorkspaceDiscoverySidebar from "@/components/WorkspaceDiscoverySidebar";
 import LoadingState from "@/components/LoadingState";
 import { GridView, ListView } from "@/components/ProjectCard";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import ProjectInvitationDialog, {
   InvitationActions,
   type InvitationAction,
@@ -659,6 +667,7 @@ function ProjectsPage() {
               workCount={workCount}
               invitationCount={invitations.length}
               items={summaryItems}
+              onClearSearch={() => setSearch("")}
             />
             <motion.section
               className="mt-5 min-w-0 sm:mt-6"
@@ -678,7 +687,7 @@ function ProjectsPage() {
                 </p>
               </div>
 
-              <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-4">
+              <div className="mt-4 flex flex-col gap-3 pb-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-4 sm:pb-4">
                 <ProjectSearch
                   value={search}
                   onChange={setSearch}
@@ -976,6 +985,7 @@ function WorkspaceMasthead({
   workCount,
   invitationCount,
   items,
+  onClearSearch,
 }: {
   firstName: string;
   isAllocat: boolean;
@@ -985,7 +995,12 @@ function WorkspaceMasthead({
   workCount: number;
   invitationCount: number;
   items: SummaryItem[];
+  onClearSearch: () => void;
 }) {
+  const cancelledItem = items.find((item) => item.label === "Cancelled");
+  const primaryItems = items.filter((item) => item.label !== "Cancelled");
+  const cancelledLabel =
+    workspaceSection === "work" ? "Cancelled work" : "Cancelled projects";
   return (
     <motion.section
       initial={{ opacity: 0, y: 5 }}
@@ -1038,12 +1053,12 @@ function WorkspaceMasthead({
           </Button>
         </div>
       </div>
-      <div className="mt-5 flex min-w-0 flex-col gap-3 border-b border-border/55 pb-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between dark:border-border">
+      <div className="mt-5 flex min-w-0 flex-col gap-3 pb-1 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
         {isAllocat ? (
           <div
             role="group"
             aria-label="Workspace section"
-            className="inline-flex max-w-full items-center rounded-lg border border-border/55 bg-surface-2/25 p-0.5 dark:border-border"
+            className="inline-flex max-w-full items-center rounded-lg bg-brand-secondary-highlight/[0.06] p-1 dark:bg-surface-3/55"
           >
             <WorkspaceTab
               active={workspaceSection === "projects"}
@@ -1065,9 +1080,68 @@ function WorkspaceMasthead({
           aria-label="Filter by status"
           className="grid min-w-0 grid-cols-4 gap-1 sm:flex sm:items-center"
         >
-          {items.map((item) => (
+          {primaryItems.map((item) => (
             <WorkspaceMetric key={item.label} item={item} />
           ))}
+          {cancelledItem && (
+            <DropdownMenu modal={false}>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  aria-label={
+                    workspaceSection === "work"
+                      ? "More work options"
+                      : "More project options"
+                  }
+                  title={
+                    cancelledItem.active
+                      ? `Viewing ${cancelledLabel.toLowerCase()}`
+                      : "More views"
+                  }
+                  className={`inline-flex h-11 min-w-0 items-center justify-center rounded-md px-3 transition-colors sm:h-8 ${cancelledItem.active ? "bg-brand-secondary-highlight/[0.08] text-brand-secondary-highlight dark:bg-card dark:text-secondary" : "text-muted-foreground hover:bg-surface-2 hover:text-foreground dark:hover:bg-surface-3/55"} ${focusStyle}`}
+                >
+                  <MoreHorizontalIcon
+                    size={17}
+                    aria-hidden="true"
+                    className="text-muted-foreground"
+                  />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="end"
+                sideOffset={6}
+                collisionPadding={16}
+                className="z-[150] min-w-56 rounded-xl border border-border/70 bg-popover p-1.5 text-popover-foreground shadow-sm"
+              >
+                <DropdownMenuItem
+                  role="menuitemradio"
+                  aria-checked={Boolean(cancelledItem.active)}
+                  onSelect={() => {
+                    cancelledItem.onClick?.();
+                    onClearSearch();
+                  }}
+                  className="min-h-11 gap-3 rounded-lg px-3 py-2.5 text-xs font-medium outline-none focus:bg-surface-3/60"
+                >
+                  <BanIcon
+                    size={14}
+                    aria-hidden="true"
+                    className="text-muted-foreground"
+                  />
+                  <span className="flex-1">{cancelledLabel}</span>
+                  <span className="text-[11px] tabular-nums text-muted-foreground">
+                    {cancelledItem.value}
+                  </span>
+                  {cancelledItem.active && (
+                    <CheckIcon
+                      size={13}
+                      aria-hidden="true"
+                      className="text-brand-secondary-highlight dark:text-secondary"
+                    />
+                  )}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
       </div>
     </motion.section>
@@ -1088,24 +1162,14 @@ function WorkspaceMetric({ item }: { item: SummaryItem }) {
       aria-label={item.label + ": " + item.value}
       title={item.label}
       className={[
-        "relative flex h-11 min-w-0 flex-wrap content-center items-center justify-center gap-x-1.5 gap-y-1 rounded-md px-1.5 text-left sm:h-8 sm:flex-nowrap sm:gap-1.5 sm:px-2.5 ring-1 ring-inset",
+        "relative flex h-11 min-w-0 flex-wrap content-center items-center justify-center gap-x-1.5 gap-y-1 rounded-md px-1.5 text-left sm:h-8 sm:flex-nowrap sm:gap-1.5 sm:px-2.5",
         "transition-[background-color,color] duration-150 motion-reduce:transition-none",
         focusStyle,
         item.active
-          ? "bg-card text-foreground ring-border/60 dark:bg-surface-3/65 dark:text-foreground"
-          : "ring-transparent text-muted-foreground hover:bg-surface-2/70 hover:text-foreground/85 dark:hover:bg-surface-3/55 dark:hover:text-foreground",
+          ? "bg-brand-secondary-highlight/[0.08] text-brand-secondary-highlight dark:bg-card dark:text-secondary"
+          : "text-muted-foreground hover:bg-surface-2/70 hover:text-foreground/85 dark:hover:bg-surface-3/55 dark:hover:text-foreground",
       ].join(" ")}
     >
-      {item.active && (
-        <motion.span
-          layoutId="workspace-active-metric"
-          aria-hidden="true"
-          className={
-            "absolute inset-x-2 bottom-0 h-0.5 rounded-full " + appearance.line
-          }
-          transition={{ duration: 0.18, ease: "easeOut" }}
-        />
-      )}
       <span className="relative flex shrink-0 items-center">
         <Icon size={11} className={appearance.icon} />
       </span>
@@ -1152,7 +1216,7 @@ function WorkspaceTab({
         <motion.span
           layoutId="workspace-active-tab"
           aria-hidden="true"
-          className="absolute inset-0 rounded-md border border-border/45 bg-card shadow-none dark:border-border dark:bg-surface-3/70"
+          className="absolute inset-0 rounded-md bg-card dark:bg-card"
           transition={{ type: "spring", stiffness: 500, damping: 38 }}
         />
       )}
@@ -1339,7 +1403,7 @@ function ProjectGrid<T extends Project>({
         compactSpacing ? "mt-4" : "mt-5",
         view === "grid"
           ? "grid min-w-0 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-2 2xl:grid-cols-3"
-          : "flex min-w-0 flex-col divide-y divide-border/55 border-y border-border/55 dark:divide-border dark:border-border",
+          : "flex min-w-0 flex-col",
       ].join(" ")}
     >
       {projects.map((project) =>
@@ -1635,7 +1699,7 @@ function getMetricAppearance(emphasis?: SummaryItem["emphasis"]): {
       line: "bg-status-complete",
     };
   return {
-    icon: "text-brand-secondary-highlight dark:text-secondary",
+    icon: "text-brand-secondary-highlight",
     line: "bg-brand-secondary-highlight dark:bg-secondary",
   };
 }

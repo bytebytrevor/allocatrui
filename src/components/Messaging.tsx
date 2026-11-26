@@ -79,11 +79,13 @@ import {
 import {
   BusyIcon,
   menuItem,
-  menuSurface,
+  menuSurface as workspaceMenuSurface,
   primaryAction,
   quietAction,
-  secondaryAction,
+  secondaryAction as workspaceSecondaryAction,
 } from "@/components/workspace-ui";
+const secondaryAction = `${workspaceSecondaryAction} !border-border/35`;
+const menuSurface = `${workspaceMenuSurface} !border-border/35`;
 type Workspace = {
   currentProject: {
     id: string;
@@ -97,7 +99,7 @@ const conversationMenuReveal =
 const messageMenuReveal =
   "group-hover/message:opacity-100 group-hover/message:pointer-events-auto group-focus-within/message:opacity-100 group-focus-within/message:pointer-events-auto";
 const field =
-  "h-10 w-full rounded-lg border border-input bg-card px-3 text-base text-foreground outline-none placeholder:text-muted-foreground/70 focus-visible:border-ring/50 sm:text-sm";
+  "h-10 w-full rounded-lg border border-border/35 bg-surface-2/35 dark:bg-surface-2/40 px-3 text-base text-foreground outline-none placeholder:text-muted-foreground/70 focus-visible:border-ring/35 focus-visible:ring-2 focus-visible:ring-ring/10 sm:text-sm";
 const messageDateFormatter = new Intl.DateTimeFormat(undefined, {
   month: "short",
   day: "numeric",
@@ -122,9 +124,9 @@ function fullDate(value: string): string | undefined {
 }
 function Person({ name, url }: { name: string; url?: string | null }) {
   return (
-    <Avatar className="h-8 w-8 shrink-0 border border-border/70">
+    <Avatar className="h-8 w-8 shrink-0 border border-border/25">
       <AvatarImage src={url ?? undefined} alt="" className="object-cover" />
-      <AvatarFallback className="bg-surface-3 text-[10px] font-medium text-brand-secondary-highlight dark:text-secondary">
+      <AvatarFallback className="bg-surface-3 text-[11px] font-medium text-brand-secondary-highlight dark:text-secondary">
         {name
           .trim()
           .split(/\s+/)
@@ -396,7 +398,7 @@ function MessagingWorkspace({
   }, [projectId, userId]);
   return (
     <div className="min-w-0 pb-5">
-      <header className="mb-5 flex flex-wrap items-start justify-between gap-4 border-b border-border/70 pb-5">
+      <header className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
           <p className="truncate text-[11px] text-muted-foreground">
             {projectTitle}
@@ -405,7 +407,7 @@ function MessagingWorkspace({
             <MailIcon
               size={22}
               aria-hidden="true"
-              className="text-brand-secondary-highlight dark:text-secondary"
+              className="text-muted-foreground"
             />
             Messaging
           </h1>
@@ -452,12 +454,12 @@ function MessagingWorkspace({
           {pinError}
         </p>
       )}
-      <div className="grid min-w-0 items-stretch overflow-hidden rounded-xl border border-border/80 bg-card lg:h-[clamp(560px,calc(100dvh-var(--workspace-header-height,64px)-180px),900px)] lg:min-h-0 lg:grid-cols-[300px_minmax(0,1fr)] xl:grid-cols-[340px_minmax(0,1fr)]">
+      <div className="grid min-w-0 items-stretch overflow-hidden rounded-xl border border-border/35 bg-card lg:h-[clamp(560px,calc(100dvh-var(--workspace-header-height,64px)-180px),900px)] lg:min-h-0 lg:grid-cols-[300px_minmax(0,1fr)] xl:grid-cols-[340px_minmax(0,1fr)]">
         <section
           aria-label="Conversations"
-          className={`${conversationId ? "hidden lg:flex" : "flex"} min-h-0 min-w-0 flex-col lg:border-r lg:border-border/70`}
+          className={`${conversationId ? "hidden lg:flex" : "flex"} min-h-0 min-w-0 flex-col bg-surface-2/25 dark:bg-surface-2/20 lg:border-r lg:border-border/25`}
         >
-          <div className="shrink-0 border-b border-border/70 p-4">
+          <div className="shrink-0 border-b border-border/25 p-4 sm:p-5">
             <div className="relative">
               <SearchIcon
                 size={14}
@@ -492,7 +494,7 @@ function MessagingWorkspace({
             </div>
             <div
               aria-label="Conversation filters"
-              className="mt-3 flex gap-1 rounded-lg bg-surface-2 p-1"
+              className="mt-3 flex gap-1 rounded-lg bg-surface-2/60 p-1 dark:bg-surface-3/55"
             >
               {[
                 { value: "inbox", label: "Inbox", icon: InboxIcon },
@@ -510,21 +512,25 @@ function MessagingWorkspace({
                   }}
                   className={`flex min-h-10 flex-1 items-center justify-center gap-1.5 rounded-md px-1 text-[11px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35 ${filter === value ? "bg-card font-medium text-brand-secondary-highlight dark:text-secondary" : "text-muted-foreground hover:text-foreground"}`}
                 >
-                  <Icon size={12} aria-hidden="true" />
+                  <Icon
+                    size={12}
+                    aria-hidden="true"
+                    className="text-muted-foreground"
+                  />
                   {label}
                 </button>
               ))}
             </div>
             <p
               aria-live="polite"
-              className="mt-3 text-[10px] text-muted-foreground"
+              className="mt-3 text-[11px] text-muted-foreground"
             >
               {list
                 ? `${list.unreadCount.toLocaleString()} unread ${list.unreadCount === 1 ? "message" : "messages"}`
                 : "Project conversations"}
             </p>
           </div>
-          <div className="max-h-[65dvh] min-h-64 overflow-y-auto lg:max-h-none lg:min-h-0 lg:flex-1">
+          <div className="max-h-[65dvh] min-h-64 overflow-y-auto overscroll-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:max-h-none lg:min-h-0 lg:flex-1">
             {error && (
               <div role="alert" className="px-4 py-7">
                 <p className="text-xs leading-6 text-muted-foreground">
@@ -552,7 +558,7 @@ function MessagingWorkspace({
               list.items.map((item, index) => (
                 <Fragment key={item.id}>
                   {index === 0 && item.isPinned && (
-                    <div className="flex items-center gap-2 px-4 pb-2 pt-4 text-[10px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
+                    <div className="flex items-center gap-2 px-4 pb-2 pt-4 text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
                       <PinIcon size={11} aria-hidden="true" />
                       Pinned
                     </div>
@@ -565,20 +571,20 @@ function MessagingWorkspace({
                         role="separator"
                         aria-label="Other conversations"
                       >
-                        <span className="h-px flex-1 bg-border/65" />
-                        <span className="shrink-0 text-[10px] font-medium tracking-[0.02em] text-muted-foreground">
+                        <span className="h-px flex-1 bg-border/25" />
+                        <span className="shrink-0 text-[11px] font-medium tracking-[0.02em] text-muted-foreground">
                           Other conversations
                         </span>
-                        <span className="h-px flex-1 bg-border/65" />
+                        <span className="h-px flex-1 bg-border/25" />
                       </div>
                     )}
                   <div
-                    className={`group/conversation relative border-b border-border/60 ${conversationId === item.id ? "bg-brand-secondary-highlight/[0.085] dark:bg-secondary/[0.10]" : ""}`}
+                    className={`group/conversation relative border-b border-border/25 ${conversationId === item.id ? "bg-surface-2/65 dark:bg-card" : ""}`}
                   >
                     {conversationId === item.id && (
                       <span
                         aria-hidden="true"
-                        className="pointer-events-none absolute bottom-3 left-0 top-3 w-[3px] rounded-r-full bg-brand-secondary-highlight dark:bg-secondary"
+                        className="pointer-events-none absolute bottom-3 left-0 top-3 w-0.5 rounded-r-full bg-brand-secondary-highlight dark:bg-secondary"
                       />
                     )}
                     <button
@@ -588,7 +594,7 @@ function MessagingWorkspace({
                       }
                       disabled={busy}
                       onClick={() => openConversation(item.id)}
-                      className={`block w-full py-4 pl-4 pr-12 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring/35 ${conversationId === item.id ? "" : "hover:bg-surface-2/45"}`}
+                      className={`block w-full py-4 pl-4 pr-12 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring/35 ${conversationId === item.id ? "" : "hover:bg-surface-2/35 dark:hover:bg-surface-2/40"}`}
                     >
                       <div className="flex items-center gap-2">
                         {item.isPinned && (
@@ -600,7 +606,7 @@ function MessagingWorkspace({
                         )}
                         <span
                           title={item.subject}
-                          className={`min-w-0 flex-1 truncate text-xs ${conversationId === item.id ? "font-semibold text-brand-secondary-highlight dark:text-secondary" : item.unreadCount > 0 ? "font-semibold" : "font-medium"}`}
+                          className={`min-w-0 flex-1 truncate text-xs ${conversationId === item.id ? "font-medium text-brand-secondary-highlight dark:text-secondary" : item.unreadCount > 0 ? "font-semibold" : "font-medium"}`}
                         >
                           {item.subject}
                         </span>
@@ -609,7 +615,7 @@ function MessagingWorkspace({
                             <span
                               aria-hidden="true"
                               title={`${item.unreadCount.toLocaleString()} unread ${item.unreadCount === 1 ? "message" : "messages"}`}
-                              className="inline-flex min-w-5 shrink-0 items-center justify-center rounded-md bg-brand-secondary-highlight px-1.5 py-0.5 text-[10px] font-semibold tabular-nums text-white dark:bg-secondary dark:text-background"
+                              className="inline-flex min-w-5 shrink-0 items-center justify-center rounded-md bg-brand-secondary-highlight/[0.07] px-1.5 py-0.5 text-[11px] font-medium tabular-nums text-brand-secondary-highlight dark:bg-surface-3/55 dark:text-secondary"
                             >
                               {item.unreadCount.toLocaleString()}
                             </span>
@@ -620,7 +626,7 @@ function MessagingWorkspace({
                           </>
                         )}
                       </div>
-                      <div className="mt-2 flex items-center gap-1.5 text-[10px] text-muted-foreground">
+                      <div className="mt-2 flex items-center gap-1.5 text-[11px] text-muted-foreground">
                         {item.isProjectWide ? (
                           <UsersIcon size={11} />
                         ) : (
@@ -636,7 +642,7 @@ function MessagingWorkspace({
                             ? "Attachment"
                             : "No message text")}
                       </p>
-                      <div className="mt-2 flex min-w-0 items-center gap-2 text-[10px] text-muted-foreground">
+                      <div className="mt-2 flex min-w-0 items-center gap-2 text-[11px] text-muted-foreground">
                         <time
                           dateTime={item.updatedAt}
                           title={fullDate(item.updatedAt)}
@@ -777,7 +783,7 @@ function MessagingWorkspace({
             ) : null}
           </div>
           {list && list.totalCount > 30 && (
-            <div className="flex shrink-0 items-center justify-between border-t border-border/70 p-3">
+            <div className="flex shrink-0 items-center justify-between border-t border-border/25 p-3">
               <button
                 type="button"
                 disabled={page <= 1 || manualRefreshing || busy}
@@ -786,7 +792,7 @@ function MessagingWorkspace({
               >
                 Previous
               </button>
-              <span className="text-[10px] text-muted-foreground">
+              <span className="text-[11px] text-muted-foreground">
                 {page} / {Math.ceil(list.totalCount / 30)}
               </span>
               <button
@@ -1243,7 +1249,7 @@ function ConversationThread({
     );
   return (
     <div className="flex h-full min-h-0 min-w-0 flex-col">
-      <header className="shrink-0 border-b border-border/70 px-4 py-4 sm:px-5">
+      <header className="shrink-0 border-b border-border/25 px-4 py-4 sm:px-5">
         <div className="flex items-start gap-2">
           <button
             type="button"
@@ -1258,7 +1264,7 @@ function ConversationThread({
             <h2 className="break-words text-base font-medium leading-6">
               {detail.subject}
             </h2>
-            <p className="mt-2 flex items-center gap-1.5 text-[10px] text-muted-foreground">
+            <p className="mt-2 flex items-center gap-1.5 text-[11px] text-muted-foreground">
               {detail.isProjectWide ? (
                 <UsersIcon size={12} />
               ) : (
@@ -1316,11 +1322,11 @@ function ConversationThread({
             {detail.participants.length}{" "}
             {detail.participants.length === 1 ? "participant" : "participants"}
           </summary>
-          <ul className="mt-3 flex max-h-40 flex-wrap gap-2 overflow-y-auto">
+          <ul className="mt-3 flex max-h-40 flex-wrap gap-2 overflow-y-auto overscroll-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {detail.participants.map((p) => (
               <li
                 key={p.userId}
-                className="flex items-center gap-2 rounded-lg border border-border/60 px-2 py-1.5"
+                className="flex items-center gap-2 rounded-lg border border-border/25 px-2 py-1.5"
               >
                 <Person name={p.name} url={p.avatarUrl} />
                 <span className="break-words">
@@ -1343,7 +1349,7 @@ function ConversationThread({
       {!accessReady && !error && (
         <p
           role="status"
-          className="px-5 pt-3 text-[10px] text-muted-foreground"
+          className="px-5 pt-3 text-[11px] text-muted-foreground"
         >
           Checking for updates…
         </p>
@@ -1365,7 +1371,7 @@ function ConversationThread({
       )}
       <div
         ref={list}
-        className="max-h-[55dvh] min-h-64 overflow-y-auto overscroll-contain px-4 py-3 sm:px-5 lg:max-h-none lg:min-h-0 lg:flex-1"
+        className="max-h-[55dvh] min-h-64 overflow-y-auto overscroll-contain px-4 py-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:px-5 lg:max-h-none lg:min-h-0 lg:flex-1"
         onScroll={() => {
           const el = list.current;
           if (el) memory.scroll(id, el.scrollTop);
@@ -1388,7 +1394,7 @@ function ConversationThread({
         {detail.messages.map((message) => (
           <article
             key={message.id}
-            className="group/message flex min-w-0 gap-3 border-b border-border/60 py-4 last:border-b-0"
+            className="group/message flex min-w-0 gap-3 border-b border-border/25 py-5 last:border-b-0"
           >
             <Person name={message.senderName} url={message.avatarUrl} />
             <div className="min-w-0 flex-1">
@@ -1398,21 +1404,21 @@ function ConversationThread({
                     {message.senderName}
                   </p>
                   {message.senderId === userId && (
-                    <span className="text-[10px] text-brand-secondary-highlight dark:text-secondary">
+                    <span className="text-[11px] text-brand-secondary-highlight dark:text-secondary">
                       You
                     </span>
                   )}
                   <time
                     dateTime={message.createdAt}
                     title={fullDate(message.createdAt)}
-                    className="text-[10px] text-muted-foreground"
+                    className="text-[11px] text-muted-foreground"
                   >
                     {date(message.createdAt)}
                   </time>
                   {message.editedAt && !message.deletedAt && (
                     <span
                       title={`Edited ${date(message.editedAt)}`}
-                      className="text-[10px] text-muted-foreground"
+                      className="text-[11px] text-muted-foreground"
                     >
                       Edited
                     </span>
@@ -1483,7 +1489,7 @@ function ConversationThread({
               ) : (
                 <>
                   {message.forwardedFromName && (
-                    <div className="mt-3 rounded-lg border border-border/60 bg-surface-2/35 px-3 py-2 text-[11px] leading-6 text-muted-foreground">
+                    <div className="mt-3 rounded-lg border border-border/25 bg-surface-2/35 px-3 py-2 text-[11px] leading-6 text-muted-foreground">
                       <span className="flex items-center gap-1.5">
                         <ForwardIcon size={12} aria-hidden="true" />
                         Forwarded message
@@ -1514,7 +1520,7 @@ function ConversationThread({
                         ) : (
                           <div
                             key={file.id}
-                            className="flex min-h-14 w-[240px] min-w-0 max-w-full items-center gap-2 rounded-lg border border-border/65 bg-surface-2/35 px-3 py-2 text-muted-foreground"
+                            className="flex min-h-14 w-[240px] min-w-0 max-w-full items-center gap-2 rounded-lg border border-border/30 bg-surface-2/35 px-3 py-2 text-muted-foreground"
                           >
                             <PaperclipIcon
                               size={17}
@@ -1525,7 +1531,7 @@ function ConversationThread({
                               <span className="block truncate text-[11px] font-medium">
                                 {file.originalFileName}
                               </span>
-                              <span className="block text-[10px]">
+                              <span className="block text-[11px]">
                                 Checking access…
                               </span>
                             </span>
@@ -1541,7 +1547,7 @@ function ConversationThread({
                   )}
                   {message.body && (
                     <p
-                      className={`mt-2 whitespace-pre-wrap break-words text-sm leading-7 ${message.forwardedFromName ? "border-l-2 border-border/70 pl-3" : ""}`}
+                      className={`mt-2 whitespace-pre-wrap break-words text-sm leading-7 ${message.forwardedFromName ? "border-l-2 border-border/25 pl-3" : ""}`}
                     >
                       {message.body}
                     </p>
@@ -1566,12 +1572,12 @@ function ConversationThread({
       {readWarning && (
         <p
           role="status"
-          className="px-5 py-2 text-[10px] text-muted-foreground"
+          className="px-5 py-2 text-[11px] text-muted-foreground"
         >
           {readWarning}
         </p>
       )}
-      <div className="max-h-[42dvh] shrink-0 overflow-y-auto border-t border-border/70 bg-surface-2/40 p-4 sm:p-5">
+      <div className="max-h-[42dvh] shrink-0 overflow-y-auto overscroll-contain border-t border-border/25 bg-surface-2/20 dark:bg-surface-2/25 p-4 sm:p-5">
         <MessageComposer
           memory={memory}
           projectId={projectId}
@@ -1809,8 +1815,8 @@ function MessageActionDialog({
         if (!value && !lock.current) onClose();
       }}
     >
-      <DialogContent className="flex max-h-[90dvh] w-[calc(100vw-24px)] flex-col gap-0 overflow-hidden rounded-xl border-border bg-card p-0 text-card-foreground sm:max-w-xl">
-        <DialogHeader className="shrink-0 border-b border-border/70 px-5 py-5 pr-12 text-left">
+      <DialogContent className="flex max-h-[90dvh] w-[calc(100vw-24px)] flex-col gap-0 overflow-hidden rounded-xl border-border/35 bg-card p-0 text-card-foreground sm:max-w-xl">
+        <DialogHeader className="shrink-0 border-b border-border/25 px-5 py-5 pr-12 text-left">
           <DialogTitle className="text-lg font-medium">{title}</DialogTitle>
           <DialogDescription className="mt-1 text-xs leading-6">
             {kind === "delete"
@@ -1820,7 +1826,7 @@ function MessageActionDialog({
                 : "Send this message and its attachments in a new project conversation. Recipients cannot access the original thread."}
           </DialogDescription>
         </DialogHeader>
-        <div className="min-h-0 overflow-y-auto p-5">
+        <div className="min-h-0 overflow-y-auto overscroll-contain p-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {error && (
             <div
               role="alert"
@@ -1841,7 +1847,7 @@ function MessageActionDialog({
           {kind === "forward" && (
             <>
               <div
-                className="grid grid-cols-2 gap-2"
+                className="grid grid-cols-2 gap-1 rounded-lg bg-surface-2/60 p-1 dark:bg-surface-3/55"
                 aria-label="Forward audience"
               >
                 {[
@@ -1854,7 +1860,7 @@ function MessageActionDialog({
                     disabled={busy}
                     aria-pressed={everyone === item.value}
                     onClick={() => setEveryone(item.value)}
-                    className={`${secondaryAction} ${everyone === item.value ? "border-brand-secondary-highlight/30 bg-brand-secondary-highlight/[0.06] text-brand-secondary-highlight dark:border-secondary/30 dark:bg-secondary/[0.08] dark:text-secondary" : ""}`}
+                    className={`${secondaryAction} !border-transparent ${everyone === item.value ? "!bg-card text-brand-secondary-highlight dark:text-secondary" : "!bg-transparent text-muted-foreground"}`}
                   >
                     {item.label}
                   </button>
@@ -1893,10 +1899,10 @@ function MessageActionDialog({
                   disabled={busy}
                   maxLength={10000}
                   rows={3}
-                  className="mt-2 w-full resize-y rounded-lg border border-input bg-card p-3 text-base font-normal outline-none focus-visible:border-ring/50 sm:text-sm"
+                  className="mt-2 w-full resize-y rounded-lg border border-border/35 bg-surface-2/35 dark:bg-surface-2/40 p-3 text-base font-normal outline-none focus-visible:border-ring/35 focus-visible:ring-2 focus-visible:ring-ring/10 sm:text-sm"
                 />
               </label>
-              <div className="mt-4 rounded-lg border border-border/70 bg-surface-2/35 p-3">
+              <div className="mt-4 rounded-lg border border-border/25 bg-surface-2/35 p-3">
                 <p className="text-[11px] text-muted-foreground">
                   From {message.senderName} · {date(message.createdAt)}
                 </p>
@@ -1928,7 +1934,7 @@ function MessageActionDialog({
                   disabled={busy}
                   maxLength={10000}
                   rows={7}
-                  className="mt-2 w-full resize-y rounded-lg border border-input bg-card p-3 text-base font-normal outline-none focus-visible:border-ring/50 sm:text-sm"
+                  className="mt-2 w-full resize-y rounded-lg border border-border/35 bg-surface-2/35 dark:bg-surface-2/40 p-3 text-base font-normal outline-none focus-visible:border-ring/35 focus-visible:ring-2 focus-visible:ring-ring/10 sm:text-sm"
                 />
               </label>
               <p className="mt-2 text-[11px] text-muted-foreground">
@@ -1944,7 +1950,7 @@ function MessageActionDialog({
             </p>
           )}
         </div>
-        <div className="flex shrink-0 justify-end gap-2 border-t border-border/70 px-5 py-4">
+        <div className="flex shrink-0 justify-end gap-2 border-t border-border/25 px-5 py-4">
           <button
             type="button"
             disabled={busy}
@@ -2066,14 +2072,14 @@ function NewConversation({
         if (!value && !busyRef.current) onClose();
       }}
     >
-      <DialogContent className="flex max-h-[92dvh] w-[calc(100vw-24px)] flex-col overflow-hidden rounded-xl border-border bg-card p-0 text-card-foreground shadow-none sm:max-w-2xl">
-        <DialogHeader className="shrink-0 border-b border-border/70 px-5 py-5 pr-12 text-left">
+      <DialogContent className="flex max-h-[92dvh] w-[calc(100vw-24px)] flex-col overflow-hidden rounded-xl border-border/35 bg-card p-0 text-card-foreground shadow-none sm:max-w-2xl">
+        <DialogHeader className="shrink-0 border-b border-border/25 px-5 py-5 pr-12 text-left">
           <DialogTitle className="text-lg font-medium">New message</DialogTitle>
           <DialogDescription className="text-xs leading-6">
             Choose who can read and reply to this conversation.
           </DialogDescription>
         </DialogHeader>
-        <div className="min-h-0 overflow-y-auto p-5">
+        <div className="min-h-0 overflow-y-auto overscroll-contain p-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {error && (
             <div
               role="alert"
@@ -2091,7 +2097,7 @@ function NewConversation({
           )}
           <div
             aria-label="Conversation audience"
-            className="grid grid-cols-2 gap-2"
+            className="grid grid-cols-2 gap-1 rounded-lg bg-surface-2/60 p-1 dark:bg-surface-3/55"
           >
             {[
               { value: true, label: "Everyone", icon: UsersIcon },
@@ -2107,7 +2113,7 @@ function NewConversation({
                 disabled={busy}
                 aria-pressed={everyone === value}
                 onClick={() => setEveryone(value)}
-                className={`flex min-h-11 items-center justify-center gap-2 rounded-lg border px-3 text-xs font-medium ${everyone === value ? "border-brand-secondary-highlight/25 bg-brand-secondary-highlight/[0.045] text-brand-secondary-highlight dark:border-secondary/25 dark:bg-secondary/[0.055] dark:text-secondary" : "border-border/70 text-muted-foreground"}`}
+                className={`flex min-h-11 items-center justify-center gap-2 rounded-md px-3 text-xs font-medium ${everyone === value ? "bg-card text-brand-secondary-highlight dark:text-secondary" : "text-muted-foreground hover:text-foreground"}`}
               >
                 <Icon size={14} />
                 {label}
@@ -2269,7 +2275,7 @@ function RecipientPicker({
             type="button"
             disabled={disabled || loading}
             aria-label="Select recipients"
-            className="flex min-h-11 w-full min-w-0 items-center gap-2.5 rounded-lg border border-input bg-card px-3 text-left text-sm text-foreground outline-none transition-colors hover:border-ring/30 focus-visible:ring-2 focus-visible:ring-ring/35 disabled:opacity-60"
+            className="flex min-h-11 w-full min-w-0 items-center gap-2.5 rounded-lg border border-border/35 bg-surface-2/35 dark:bg-surface-2/40 px-3 text-left text-sm text-foreground outline-none transition-colors hover:border-ring/30 focus-visible:ring-2 focus-visible:ring-ring/35 disabled:opacity-60"
           >
             <UsersIcon
               size={15}
@@ -2347,14 +2353,14 @@ function RecipientPicker({
                         {member.name}
                       </span>
                       {member.isOwner && (
-                        <span className="mt-0.5 block text-[10px] text-muted-foreground">
+                        <span className="mt-0.5 block text-[11px] text-muted-foreground">
                           Project owner
                         </span>
                       )}
                     </span>
                     <span
                       aria-hidden="true"
-                      className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border ${checked ? "border-brand-secondary-highlight/30 bg-brand-secondary-highlight/[0.06] text-brand-secondary-highlight dark:border-secondary/30 dark:bg-secondary/[0.08] dark:text-secondary" : "border-border"}`}
+                      className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border ${checked ? "border-border/35 bg-surface-2/60 text-brand-secondary-highlight dark:border-border/35 dark:bg-card dark:text-secondary" : "border-border"}`}
                     >
                       {checked && <CheckIcon size={11} />}
                     </span>
@@ -2369,8 +2375,8 @@ function RecipientPicker({
               </p>
             )}
           </div>
-          <div className="mt-2 flex shrink-0 items-center justify-between gap-3 border-t border-border/70 px-2 pb-1 pt-2">
-            <p role="status" className="text-[10px] text-muted-foreground">
+          <div className="mt-2 flex shrink-0 items-center justify-between gap-3 border-t border-border/25 px-2 pb-1 pt-2">
+            <p role="status" className="text-[11px] text-muted-foreground">
               {value.length} selected
               {value.length >= 100 ? " · Limit reached" : ""}
             </p>
@@ -2396,7 +2402,7 @@ function RecipientPicker({
               disabled={disabled}
               aria-label={`Remove ${member?.name ?? "recipient"}`}
               onClick={() => toggle(value[index])}
-              className="inline-flex max-w-full items-center gap-1.5 rounded-md border border-border/70 bg-surface-2/50 px-2 py-1.5 text-[11px] text-foreground transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35 disabled:opacity-60"
+              className="inline-flex max-w-full items-center gap-1.5 rounded-md border border-border/25 bg-surface-2/50 px-2 py-1.5 text-[11px] text-foreground transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35 disabled:opacity-60"
             >
               <span className="max-w-40 truncate">
                 {member?.name ?? "Unavailable recipient"}

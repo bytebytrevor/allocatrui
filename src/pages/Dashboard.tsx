@@ -46,7 +46,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   menuItem,
-  menuSurface,
+  menuSurface as workspaceMenuSurface,
   primaryAction,
   ProjectStatus,
   quietAction,
@@ -59,6 +59,7 @@ import {
 } from "@/components/workspace-utils";
 import type { Project } from "@/Types/project";
 import type { ProjectWorkspaceContext } from "@/Types/projectWorkspaceContext";
+const menuSurface = `${workspaceMenuSurface} !border-border/35`;
 const managerLinks = [
   { label: "Manager", path: "", icon: BlocksIcon },
   { label: "Files", path: "files", icon: FolderOpenIcon },
@@ -163,14 +164,14 @@ export default function Dashboard() {
     >
       <header
         ref={headerRef}
-        className="sticky top-0 z-50 border-b border-border/70 bg-background"
+        className="sticky top-0 z-50 border-b border-border/35 bg-background"
       >
         <div className="mx-auto w-full max-w-[1800px] px-4 sm:px-6 lg:px-8">
           <DashboardMainNav />
         </div>
       </header>
-      <div className="sticky top-[var(--workspace-header-height)] z-40 border-b border-border/70 bg-background text-foreground lg:hidden">
-        <div className="flex min-h-14 items-center gap-3 px-4 sm:px-6">
+      <div className="sticky top-[var(--workspace-header-height)] z-40 border-b border-border/35 bg-background text-foreground lg:hidden">
+        <div className="flex items-center gap-4 px-4 py-3 sm:px-6 sm:py-4">
           <div className="min-w-0 flex-1">
             {loading ? (
               <p className="text-xs text-muted-foreground">
@@ -194,7 +195,7 @@ export default function Dashboard() {
                       ? `Open workspace navigation, ${unreadCount} unread messages`
                       : "Open workspace navigation"
                   }
-                  className={`${quietAction} h-10 w-10 px-0`}
+                  className={`${quietAction} h-10 w-10 shrink-0 px-0`}
                 >
                   <MenuIcon size={18} aria-hidden="true" />
                 </button>
@@ -205,7 +206,7 @@ export default function Dashboard() {
                 collisionPadding={12}
                 className={`${menuSurface} w-56`}
               >
-                <DropdownMenuLabel className="px-3 py-2 text-[10px] font-medium uppercase tracking-[0.1em] text-muted-foreground">
+                <DropdownMenuLabel className="px-3 py-2 text-[11px] font-medium uppercase tracking-[0.1em] text-muted-foreground">
                   Workspace
                 </DropdownMenuLabel>
                 <ProjectNavigation
@@ -220,10 +221,7 @@ export default function Dashboard() {
         </div>
       </div>
       <div className="mx-auto grid w-full max-w-[1800px] lg:grid-cols-[236px_minmax(0,1fr)] xl:grid-cols-[248px_minmax(0,1fr)]">
-        <aside
-          aria-label="Project navigation"
-          className="hidden border-r border-border/70 lg:block"
-        >
+        <aside aria-label="Project navigation" className="hidden lg:block">
           <div className="sticky top-[var(--workspace-header-height)] flex h-[calc(100dvh-var(--workspace-header-height))] min-h-0 flex-col px-4 py-5">
             <Link
               to="/projects"
@@ -232,7 +230,7 @@ export default function Dashboard() {
               <ArrowLeftIcon size={13} aria-hidden="true" />
               All projects
             </Link>
-            <div className="mb-5 mt-4 rounded-xl border border-border/70 p-1">
+            <div className="mb-6 mt-4">
               {loading ? (
                 <p className="px-3 py-4 text-xs text-muted-foreground">
                   Loading projects…
@@ -241,8 +239,8 @@ export default function Dashboard() {
                 switcher
               )}
             </div>
-            <div className="min-h-0 flex-1 overflow-y-auto">
-              <p className="mb-3 px-3 text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              <p className="mb-3 px-3 text-[11px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
                 Workspace
               </p>
               {!loading && canAccess ? (
@@ -258,8 +256,8 @@ export default function Dashboard() {
                 )
               )}
             </div>
-            <div className="mt-5 border-t border-border/70 px-3 pt-4">
-              <p className="text-[10px] font-medium uppercase tracking-[0.1em] text-muted-foreground">
+            <div className="mt-6 rounded-lg bg-surface-2/30 px-3 py-3 dark:bg-surface-2/25">
+              <p className="text-[11px] font-medium uppercase tracking-[0.1em] text-muted-foreground">
                 Your access
               </p>
               <p className="mt-1.5 text-xs text-foreground">
@@ -317,7 +315,7 @@ function ProjectNavigation({
         onClick={onNavigate}
         className={({ isActive }) =>
           menu
-            ? `flex min-h-10 items-center gap-3 px-3 py-2.5 text-xs ${isActive ? "text-brand-secondary-highlight dark:text-secondary" : "text-foreground"}`
+            ? `flex min-h-10 items-center gap-3 px-3 py-2.5 text-xs ${isActive ? "bg-card text-brand-secondary-highlight dark:text-secondary" : "text-muted-foreground"}`
             : `relative flex min-h-11 items-center gap-3 rounded-lg px-3 py-2.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35 motion-reduce:transition-none ${isActive ? "bg-card text-brand-secondary-highlight dark:text-secondary" : "text-muted-foreground hover:bg-card/70 hover:text-foreground"}`
         }
       >
@@ -332,7 +330,7 @@ function ProjectNavigation({
             <Icon
               size={16}
               aria-hidden="true"
-              className="shrink-0 text-inherit"
+              className="shrink-0 text-muted-foreground"
             />
             <span className="min-w-0 flex-1">{label}</span>
             {path === "messaging" &&
@@ -341,7 +339,7 @@ function ProjectNavigation({
                 <>
                   <span
                     aria-hidden="true"
-                    className="inline-flex min-w-6 shrink-0 items-center justify-center rounded-md border border-border/70 bg-surface-3/65 px-1.5 py-0.5 text-[10px] font-semibold tabular-nums text-brand-secondary-highlight dark:text-secondary"
+                    className="inline-flex min-w-6 shrink-0 items-center justify-center rounded-md bg-brand-secondary-highlight/[0.07] px-1.5 py-0.5 text-[11px] font-medium tabular-nums text-brand-secondary-highlight dark:bg-surface-3/55 dark:text-secondary"
                   >
                     {unreadCount.toLocaleString()}
                   </span>
@@ -426,7 +424,7 @@ function ProjectSwitcher({
         <button
           type="button"
           aria-label="Switch project"
-          className="flex min-h-12 w-full min-w-0 items-center gap-3 rounded-lg px-3 py-3 text-left transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35"
+          className="flex min-h-14 w-full min-w-0 items-center gap-3 rounded-lg border border-border/25 bg-card px-4 py-3.5 text-left lg:min-h-12 lg:px-3 lg:py-3 shadow-none outline-none transition-colors hover:bg-surface-1 dark:border-transparent dark:bg-surface-2/40 dark:hover:bg-surface-2/60 focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-ring/25 motion-reduce:transition-none"
         >
           <ArrowRightLeftIcon
             size={16}
@@ -460,7 +458,7 @@ function ProjectSwitcher({
         collisionPadding={12}
         className={`${menuSurface} w-[320px] max-w-[calc(100vw-24px)]`}
       >
-        <DropdownMenuLabel className="px-3 py-2 text-[10px] font-medium uppercase tracking-[0.1em] text-muted-foreground">
+        <DropdownMenuLabel className="px-3 py-2 text-[11px] font-medium uppercase tracking-[0.1em] text-muted-foreground">
           Open projects
         </DropdownMenuLabel>
         <div className="relative mx-1 mb-2">
@@ -475,7 +473,7 @@ function ProjectSwitcher({
             onChange={(event) => setQuery(event.target.value)}
             aria-label="Search projects"
             placeholder="Search projects"
-            className="h-10 w-full rounded-lg border border-input bg-surface-2 pl-9 pr-3 text-base outline-none focus-visible:border-ring/50 sm:text-xs"
+            className="h-10 w-full rounded-lg border border-border/35 bg-surface-2/40 pl-9 pr-3 text-base outline-none focus-visible:border-ring/35 focus-visible:ring-2 focus-visible:ring-ring/10 sm:text-xs"
             onKeyDown={(event) => {
               if (event.key === "Escape") return;
               if (event.key === "ArrowDown") {
@@ -489,7 +487,7 @@ function ProjectSwitcher({
             }}
           />
         </div>
-        <div className="max-h-72 overflow-y-auto">
+        <div className="max-h-72 overflow-y-auto overscroll-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {matches.length ? (
             matches.map((project) => (
               <DropdownMenuItem
@@ -507,7 +505,7 @@ function ProjectSwitcher({
                       {project.title}
                     </span>
                     <span className="mt-1.5 flex flex-wrap items-center gap-2">
-                      <span className="text-[10px] text-muted-foreground">
+                      <span className="text-[11px] text-muted-foreground">
                         {projectCode(project.projectCode)}
                       </span>
                       <ProjectStatus status={project.status} />

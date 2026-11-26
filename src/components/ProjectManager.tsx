@@ -1,13 +1,7 @@
-import ProjectLifecycleDialog from "./ProjectLifecycleDialog";
 import ProjectCancellationNotice from "./ProjectCancellationNotice";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import {
-  Link,
-  useNavigate,
-  useParams,
-  useSearchParams,
-} from "react-router-dom";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import {
   CalendarDaysIcon,
   CopyIcon,
@@ -51,7 +45,7 @@ import {
   primaryAction,
   ProjectStatus,
   quietAction,
-  secondaryAction,
+  secondaryAction as workspaceSecondaryAction,
 } from "./workspace-ui";
 import {
   formatDate,
@@ -65,6 +59,8 @@ import {
   WORKFLOW_STATUSES,
   type WorkflowStatus,
 } from "./workspace-utils";
+// Keep Manager controls aligned with the softer workspace surfaces.
+const secondaryAction = `${workspaceSecondaryAction} !border-border/35`;
 type ProjectPermissions = {
   isOwner: boolean;
   isAcceptedAllocat: boolean;
@@ -76,10 +72,6 @@ type StatusResult = {
 };
 export default function ProjectManager() {
   const { projectId } = useParams();
-  const navigate = useNavigate();
-  const [lifecycleAction, setLifecycleAction] = useState<
-    "cancel" | "leave" | null
-  >(null);
   const [searchParams, setSearchParams] = useSearchParams();
   const [project, setProject] = useState<Project>();
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -459,10 +451,7 @@ export default function ProjectManager() {
     );
   return (
     <div className="min-w-0 pb-4">
-      <section
-        aria-labelledby="project-title"
-        className="border-b border-border/70 pb-6"
-      >
+      <section aria-labelledby="project-title" className="pb-2">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2.5 text-[11px] text-muted-foreground">
@@ -504,19 +493,7 @@ export default function ProjectManager() {
               <EyeIcon size={14} aria-hidden="true" />
               Details
             </button>
-            {workOpen &&
-              (permissions.isOwner || permissions.isAcceptedAllocat) && (
-                <button
-                  type="button"
-                  disabled={busyTaskIds.size > 0 || activeTaskId !== null}
-                  onClick={() =>
-                    setLifecycleAction(permissions.isOwner ? "cancel" : "leave")
-                  }
-                  className={secondaryAction}
-                >
-                  {permissions.isOwner ? "Cancel project" : "Leave project"}
-                </button>
-              )}
+
             {canManageTasks && (
               <CreateTaskDialog
                 projectId={project.id}
@@ -535,7 +512,7 @@ export default function ProjectManager() {
             )}
           </div>
         </div>
-        <div className="mt-5 grid gap-0 overflow-hidden rounded-xl border border-border/80 bg-card sm:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] xl:grid-cols-[minmax(0,1.5fr)_repeat(3,minmax(0,0.65fr))]">
+        <div className="mt-6 grid gap-0 overflow-hidden rounded-xl border border-border/35 bg-card sm:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] xl:grid-cols-[minmax(0,1.5fr)_repeat(3,minmax(0,0.65fr))]">
           <div className="min-w-0 px-4 py-4 sm:px-5">
             <div className="flex items-center justify-between gap-4">
               <span className="text-[11px] font-medium text-muted-foreground">
@@ -584,33 +561,16 @@ export default function ProjectManager() {
       </section>
 
       <ProjectCancellationNotice project={project} />
-      {lifecycleAction && (
-        <ProjectLifecycleDialog
-          key={`${project.id}:${lifecycleAction}`}
-          project={project}
-          action={lifecycleAction}
-          open
-          onOpenChange={(value) => {
-            if (!value) setLifecycleAction(null);
-          }}
-          onProjectUpdated={(updated) => {
-            setProject(updated);
-            setPermissions((current) =>
-              current ? { ...current, canManageTasks: false } : current,
-            );
-          }}
-          onLeft={() => navigate("/projects", { replace: true })}
-        />
-      )}
-      <div ref={boardRef} className="min-w-0 pt-6">
-        <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+
+      <div ref={boardRef} className="min-w-0 pt-8 sm:pt-10">
+        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <div className="flex items-center gap-2.5">
               <h2 className="text-base font-medium tracking-[-0.02em]">
                 Task board
               </h2>
               {!canManageTasks && (
-                <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground">
+                <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
                   <EyeIcon size={11} aria-hidden="true" />
                   View &amp; comment
                 </span>
@@ -634,7 +594,7 @@ export default function ProjectManager() {
                 onChange={(event) => setSearch(event.target.value)}
                 aria-label="Search tasks"
                 placeholder="Search tasks"
-                className="h-10 w-full rounded-lg border border-input bg-card pl-9 pr-8 text-base outline-none focus-visible:border-ring/50 sm:text-xs"
+                className="h-10 w-full rounded-lg border border-border/35 bg-card pl-9 pr-8 text-base outline-none transition-colors focus-visible:border-ring/35 focus-visible:ring-2 focus-visible:ring-ring/10 sm:text-xs motion-reduce:transition-none"
               />
               {search && (
                 <button
@@ -651,7 +611,7 @@ export default function ProjectManager() {
               type="button"
               aria-pressed={overdueOnly}
               onClick={() => setOverdueOnly((value) => !value)}
-              className={`${secondaryAction} ${overdueOnly ? "border-ring/45 text-brand-secondary-highlight dark:text-secondary" : ""}`}
+              className={`${secondaryAction} ${overdueOnly ? "!border-border/35 bg-surface-2/50 text-brand-secondary-highlight dark:bg-card dark:text-secondary" : ""}`}
             >
               <SlidersHorizontalIcon size={13} aria-hidden="true" />
               Overdue
@@ -694,7 +654,7 @@ export default function ProjectManager() {
             <div
               role="tablist"
               aria-label="Task stages"
-              className="grid grid-cols-3 gap-1 rounded-lg border border-border/70 bg-surface-2 p-1"
+              className="grid grid-cols-3 gap-1 rounded-lg bg-surface-2/60 p-1 dark:bg-surface-3/55"
             >
               {WORKFLOW_STATUSES.map((status) => (
                 <button
@@ -726,17 +686,17 @@ export default function ProjectManager() {
                     }
                   }}
                   tabIndex={selectedLane === status ? 0 : -1}
-                  className={`flex min-h-10 items-center justify-center gap-1.5 rounded-md px-1.5 text-[11px] font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35 ${selectedLane === status ? "bg-card text-foreground" : "text-muted-foreground"}`}
+                  className={`flex min-h-10 items-center justify-center gap-1.5 rounded-md px-1.5 text-[11px] font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35 ${selectedLane === status ? "bg-card text-brand-secondary-highlight dark:text-secondary" : "text-muted-foreground hover:text-foreground"}`}
                 >
                   {laneAppearance[status].label}
-                  <span className="text-[10px] tabular-nums text-muted-foreground">
+                  <span className="text-[11px] tabular-nums text-muted-foreground">
                     {groups[status].length}
                   </span>
                 </button>
               ))}
             </div>
             {canManageTasks && (
-              <p className="mt-2 text-[10px] leading-5 text-muted-foreground">
+              <p className="mt-2 text-[11px] leading-5 text-muted-foreground">
                 Use a task’s menu to move it between stages.
               </p>
             )}
@@ -840,7 +800,7 @@ export default function ProjectManager() {
         />
       )}
       <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
-        <DialogContent className="max-h-[85dvh] overflow-y-auto border-border bg-card text-card-foreground shadow-none sm:max-w-lg">
+        <DialogContent className="max-h-[85dvh] overflow-y-auto overscroll-contain rounded-xl border-border/35 bg-card [scrollbar-width:none] [&::-webkit-scrollbar]:hidden text-card-foreground shadow-none sm:max-w-lg">
           <DialogHeader className="text-left">
             <DialogTitle className="break-words text-xl font-medium">
               {project.title}
@@ -849,7 +809,7 @@ export default function ProjectManager() {
               Project details and current delivery status.
             </DialogDescription>
           </DialogHeader>
-          <dl className="mt-2 divide-y divide-border/70">
+          <dl className="mt-2 divide-y divide-border/35">
             {[
               ["Project code", project.projectCode || "Not set"],
               ["Status", formatStatus(project.status)],
@@ -890,7 +850,7 @@ function SummaryItem({
   attention?: boolean;
 }) {
   return (
-    <div className="min-w-0 border-t border-border/70 px-4 py-4 sm:border-l sm:px-5 xl:border-t-0">
+    <div className="min-w-0 border-t border-border/25 px-4 py-4 sm:px-5 xl:border-t-0">
       <p className="text-[11px] text-muted-foreground">{label}</p>
       <p
         className={`mt-2 flex items-center gap-1.5 text-xs font-medium ${attention ? "text-status-overdue-foreground" : "text-foreground"}`}

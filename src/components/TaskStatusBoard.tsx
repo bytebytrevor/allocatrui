@@ -49,9 +49,9 @@ export default function TaskStatusBoard({
     <section
       ref={setNodeRef}
       aria-label={`${title}: ${tasks.length} tasks`}
-      className={`flex min-w-0 flex-col overflow-hidden rounded-xl border bg-surface-2/55 transition-[border-color] duration-150 motion-reduce:transition-none ${isOver && canManageTasks ? "border-brand-secondary-highlight/25 dark:border-secondary/25" : "border-border/70"} ${className}`}
+      className={`flex min-w-0 flex-col overflow-hidden rounded-xl border transition-[background-color,border-color] duration-150 motion-reduce:transition-none ${isOver && canManageTasks ? "border-brand-secondary-highlight/35 bg-surface-3/70 dark:border-secondary/30 dark:bg-surface-2/55" : "border-border/45 bg-surface-2 dark:border-border/35 dark:bg-surface-2/35"} ${className}`}
     >
-      <header className="flex h-14 shrink-0 items-center justify-between gap-3 border-b border-border/65 px-4">
+      <header className="flex h-14 shrink-0 items-center justify-between gap-3 border-b border-border/25 px-4">
         <div className="flex min-w-0 items-center gap-2">
           <Icon size={16} aria-hidden="true" className={appearance.text} />
           <h3 className="truncate text-xs font-medium text-foreground">
@@ -77,7 +77,7 @@ export default function TaskStatusBoard({
           />
         )}
       </header>
-      <div className="min-h-0 overflow-y-auto p-3">
+      <div className="min-h-0 overflow-y-auto overscroll-contain p-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {tasks.length ? (
           <div className="space-y-3">
             {tasks.map((task) => (
@@ -96,7 +96,7 @@ export default function TaskStatusBoard({
             <ListTodoIcon
               size={23}
               aria-hidden="true"
-              className="text-muted-foreground/70"
+              className="text-muted-foreground/55"
             />
             <p className="mt-4 text-xs font-medium">{description}</p>
             <p className="mt-1.5 max-w-[210px] text-[11px] leading-6 text-muted-foreground">

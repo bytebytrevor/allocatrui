@@ -121,7 +121,7 @@ type ProjectRatingsResponse =
       ratings?: ProjectRatingRecord[] | null;
     };
 const projectCardSurface =
-  "border-border/55 bg-card transition-[background-color,border-color] duration-200 hover:border-border/75 hover:bg-surface-2/55 dark:border-border dark:bg-card dark:hover:border-border dark:hover:bg-surface-2/60";
+  "border-border/35 bg-card transition-[border-color,box-shadow] duration-200 hover:border-brand-secondary-highlight/25 hover:shadow-[0_10px_28px_-20px_color-mix(in_srgb,var(--brand-charcoal)_30%,transparent)] focus-within:border-ring/40 dark:border-border/35 dark:hover:border-secondary/25 motion-reduce:transition-none";
 const projectIconSurface =
   "bg-surface-3/65 text-foreground/55 ring-1 ring-inset ring-border/35 dark:bg-surface-2/80 dark:text-brand-secondary-highlight dark:ring-border";
 const primaryActionButton =
@@ -394,6 +394,9 @@ export function GridView({ project, onProjectUpdated }: ViewProps) {
       ].join(" ")}
     >
       <span
+        role="img"
+        aria-label={status.label}
+        title={status.label}
         className={[
           "absolute left-5 top-0 h-[2px] w-10 rounded-full",
           status.rail,
@@ -405,11 +408,13 @@ export function GridView({ project, onProjectUpdated }: ViewProps) {
             "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
             projectIconSurface,
           ].join(" ")}
+          role="img"
+          aria-label={category.label}
+          title={category.label}
         >
           {getProjectIcon(category.iconCategory, 15)}
         </span>
         <div className="flex shrink-0 items-center gap-0.5">
-          <ProjectStatusDot status={currentProject.status} />
           <div className="transition-opacity duration-150 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
             <ProjectMenu
               project={currentProject}
@@ -420,40 +425,27 @@ export function GridView({ project, onProjectUpdated }: ViewProps) {
         </div>
       </div>
       <div className="mt-6 min-w-0">
-        <div className="flex min-w-0 items-center gap-2">
-          <p className="truncate text-[0.52rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-            {category.label}
-          </p>
-          {currentProject.projectCode && (
-            <>
-              <span className="h-0.5 w-0.5 shrink-0 rounded-full bg-muted-foreground/30" />
-              <span className="truncate text-[0.52rem] text-muted-foreground/65">
-                {currentProject.projectCode}
-              </span>
-            </>
-          )}
-        </div>
         <MotionLink
           to={`/projects/${currentProject.id}`}
-          className="mt-2.5 block min-w-0"
+          className="block min-w-0"
           whileTap={{ scale: 0.995 }}
         >
-          <h3 className="line-clamp-2 break-words text-sm font-semibold leading-[1.35] tracking-[-0.015em] text-foreground/85 transition-colors duration-150 group-hover:text-foreground sm:text-base">
+          <h3 className="line-clamp-2 break-words text-sm font-medium leading-[1.35] tracking-[-0.015em] text-foreground/85 transition-colors duration-150 group-hover:text-foreground sm:text-base">
             {currentProject.title}
           </h3>
         </MotionLink>
-        <p className="mt-2 min-h-10 line-clamp-2 text-[0.64rem] leading-5 text-muted-foreground/90">
+        <p className="mt-2 min-h-10 line-clamp-2 text-[11px] leading-5 text-muted-foreground/90">
           {currentProject.description || "No project description was provided."}
         </p>
         <ProjectCompletionNotice project={currentProject} compact />
       </div>
-      <div className="mt-auto flex items-center justify-between gap-4 border-t border-border/50 pt-4 dark:border-border">
+      <div className="mt-auto flex items-center justify-between gap-4 pt-4">
         <div className="flex min-w-0 items-center gap-3">
-          <span className="shrink-0 text-xs font-semibold tabular-nums text-foreground/75">
+          <span className="shrink-0 text-xs font-medium tabular-nums text-foreground/75">
             {progress}%
           </span>
           <span className="h-0.5 w-0.5 shrink-0 rounded-full bg-muted-foreground/30" />
-          <span className="flex min-w-0 items-center gap-1.5 text-[0.54rem] text-muted-foreground/75">
+          <span className="flex min-w-0 items-center gap-1.5 text-[11px] text-muted-foreground/75">
             <CalendarDaysIcon size={10} className="shrink-0" />
             <span className="truncate">
               {formatDate(currentProject.createdAt)}
@@ -489,57 +481,47 @@ export function ListView({ project, onProjectUpdated }: ViewProps) {
         y: { duration: 0.18, ease: "easeOut" },
         layout: { type: "spring", stiffness: 420, damping: 34, mass: 0.8 },
       }}
-      className="group relative min-w-0 bg-transparent transition-colors duration-150 hover:bg-surface-2/40 focus-within:bg-surface-2/40 dark:hover:bg-surface-2/35 dark:focus-within:bg-surface-2/35 motion-reduce:transition-none"
+      className="group relative min-w-0 border-t border-border/35 bg-transparent transition-colors duration-150 hover:bg-card/25 focus-within:bg-card/25 dark:hover:bg-surface-2/15 dark:focus-within:bg-surface-2/15 motion-reduce:transition-none"
     >
-      <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 py-4 pr-4 pl-0 sm:gap-4 sm:pr-5 md:hidden">
+      <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 py-4 pr-4 pl-3 sm:gap-4 sm:pr-5 md:hidden">
         <span
           className={[
             "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
             projectIconSurface,
           ].join(" ")}
+          role="img"
+          aria-label={category.label}
+          title={category.label}
         >
           {getProjectIcon(category.iconCategory, 14)}
         </span>
         <div className="min-w-0">
-          <div className="flex min-w-0 items-center gap-2">
-            <p className="truncate text-[0.5rem] font-semibold uppercase tracking-[0.13em] text-muted-foreground">
-              {category.label}
-            </p>
-            {currentProject.projectCode && (
-              <>
-                <span className="hidden h-0.5 w-0.5 shrink-0 rounded-full bg-muted-foreground/30 sm:block" />
-                <span className="hidden truncate text-[0.5rem] text-muted-foreground/65 sm:block">
-                  {currentProject.projectCode}
-                </span>
-              </>
-            )}
-          </div>
           <MotionLink
             to={`/projects/${currentProject.id}`}
-            className="mt-1.5 block min-w-0"
+            className="block min-w-0"
             whileTap={{ scale: 0.99 }}
           >
-            <h3 className="truncate text-sm font-semibold tracking-[-0.015em] text-foreground/85 transition-colors group-hover:text-foreground">
+            <h3 className="truncate text-sm font-medium tracking-[-0.015em] text-foreground/85 transition-colors group-hover:text-foreground">
               {currentProject.title}
             </h3>
           </MotionLink>
           <div className="mt-2 flex min-w-0 items-center gap-2.5">
-            <span className="shrink-0 text-[0.62rem] font-semibold tabular-nums text-foreground/70">
+            <span className="shrink-0 text-[11px] font-medium tabular-nums text-foreground/70">
               {progress}%
             </span>
             <span className="h-0.5 w-0.5 shrink-0 rounded-full bg-muted-foreground/30" />
-            <span className="truncate text-[0.56rem] text-muted-foreground/70">
+            <span className="truncate text-[11px] text-muted-foreground/70">
               {formatDate(currentProject.createdAt)}
             </span>
           </div>
           <ProjectCompletionNotice project={currentProject} compact />
         </div>
-        <div className="flex shrink-0 items-center gap-0.5">
+        <div className="flex shrink-0 items-center gap-2">
           <ProjectStatusDot status={currentProject.status} />
           <Link
             to={`/projects/${currentProject.id}`}
             aria-label={`Open ${currentProject.title}`}
-            className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-[background-color,color,transform] duration-150 hover:translate-x-0.5 hover:bg-surface-3/60 hover:text-foreground/85 dark:hover:bg-surface-3/70 dark:hover:text-secondary"
+            className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors duration-150 hover:bg-surface-3/60 hover:text-foreground/85 dark:hover:bg-surface-3/70 dark:hover:text-secondary"
           >
             <ArrowRightIcon size={11} />
           </Link>
@@ -550,41 +532,31 @@ export function ListView({ project, onProjectUpdated }: ViewProps) {
           />
         </div>
       </div>
-      <div className="hidden min-w-0 gap-6 py-5 pr-6 pl-0 md:grid md:items-center md:grid-cols-[minmax(0,1fr)_72px_150px_auto]">
+      <div className="hidden min-w-0 gap-6 py-5 pr-6 pl-3 md:grid md:items-center md:grid-cols-[minmax(0,1fr)_72px_150px_auto]">
         <div className="flex min-w-0 items-start gap-4">
           <span
             className={[
               "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
               projectIconSurface,
             ].join(" ")}
+            role="img"
+            aria-label={category.label}
+            title={category.label}
           >
             {getProjectIcon(category.iconCategory, 14)}
           </span>
           <div className="min-w-0">
-            <div className="flex min-w-0 items-center gap-2">
-              <p className="truncate text-[0.5rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                {category.label}
-              </p>
-              {currentProject.projectCode && (
-                <>
-                  <span className="h-0.5 w-0.5 shrink-0 rounded-full bg-muted-foreground/30" />
-                  <p className="truncate text-[0.5rem] text-muted-foreground/65">
-                    {currentProject.projectCode}
-                  </p>
-                </>
-              )}
-            </div>
             <MotionLink
               to={`/projects/${currentProject.id}`}
-              className="mt-2 block min-w-0"
+              className="block min-w-0"
               whileTap={{ scale: 0.99 }}
             >
-              <h3 className="truncate text-sm font-semibold tracking-[-0.015em] text-foreground/85 transition-colors group-hover:text-foreground">
+              <h3 className="truncate text-sm font-medium tracking-[-0.015em] text-foreground/85 transition-colors group-hover:text-foreground">
                 {currentProject.title}
               </h3>
             </MotionLink>
             {currentProject.description && (
-              <p className="mt-1.5 line-clamp-1 max-w-xl text-[0.62rem] leading-5 text-muted-foreground/90">
+              <p className="mt-1.5 line-clamp-1 max-w-xl text-[11px] leading-5 text-muted-foreground/90">
                 {currentProject.description}
               </p>
             )}
@@ -592,28 +564,28 @@ export function ListView({ project, onProjectUpdated }: ViewProps) {
           </div>
         </div>
         <div>
-          <p className="text-[0.48rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground/70">
+          <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground/70">
             Progress
           </p>
-          <p className="mt-1.5 text-sm font-semibold tabular-nums text-foreground/70">
+          <p className="mt-1.5 text-sm font-medium tabular-nums text-foreground/70">
             {progress}%
           </p>
         </div>
         <div>
-          <p className="text-[0.48rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground/70">
+          <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground/70">
             Created
           </p>
-          <p className="mt-1.5 flex items-center gap-1.5 text-[0.62rem] text-muted-foreground">
+          <p className="mt-1.5 flex items-center gap-1.5 text-[11px] text-muted-foreground">
             <CalendarDaysIcon size={10} />
             {formatDate(currentProject.createdAt)}
           </p>
         </div>
-        <div className="flex items-center justify-end gap-0.5">
+        <div className="flex items-center justify-end gap-2">
           <ProjectStatusDot status={currentProject.status} />
           <Link
             to={`/projects/${currentProject.id}`}
             aria-label={`Open ${currentProject.title}`}
-            className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-[background-color,color,transform] duration-150 hover:translate-x-0.5 hover:bg-surface-3/60 hover:text-foreground/85 dark:hover:bg-surface-3/70 dark:hover:text-secondary"
+            className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors duration-150 hover:bg-surface-3/60 hover:text-foreground/85 dark:hover:bg-surface-3/70 dark:hover:text-secondary"
           >
             <ArrowRightIcon size={12} />
           </Link>
@@ -2408,19 +2380,13 @@ function ProjectStatusDot({ status }: { status?: string }) {
   const appearance = getStatusAppearance(status);
   return (
     <span
-      className="flex h-7 w-7 shrink-0 items-center justify-center"
+      className={[
+        "inline-flex h-2 w-2 shrink-0 rounded-full",
+        appearance.dot,
+      ].join(" ")}
       aria-label={appearance.label}
       title={appearance.label}
-    >
-      <span
-        className={[
-          "h-2 w-2 rounded-full",
-          appearance.dot,
-          normalizeStatus(status) === "active"
-            ? "ring-4 ring-status-active/[0.08]"
-            : "",
-        ].join(" ")}
-      />
-    </span>
+      role="img"
+    />
   );
 }

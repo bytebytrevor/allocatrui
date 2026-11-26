@@ -12,7 +12,6 @@ import {
   DownloadIcon,
   EyeIcon,
   Grid2X2Icon,
-  ListIcon,
   PaperclipIcon,
   RefreshCwIcon,
   SearchIcon,
@@ -56,7 +55,7 @@ import {
   menuSurface,
   primaryAction,
   quietAction,
-  secondaryAction,
+  secondaryAction as workspaceSecondaryAction,
 } from "./workspace-ui";
 import {
   DropdownMenu,
@@ -69,6 +68,9 @@ import { FilePreviewDialog } from "./FilePreview";
 import MediaThumbnail from "./MediaThumbnail";
 import { getFilePresentation } from "./FileTypeIcon";
 import { Link } from "react-router-dom";
+import ViewModeToggle from "@/components/ViewModeToggle";
+const secondaryAction = `${workspaceSecondaryAction} !border-border/35`;
+
 export function notifyProjectFilesChanged(projectId: string, fileId?: string) {
   projectFileListCache.invalidateProject(projectId);
   if (fileId) thumbnailCache.invalidate(projectId, fileId);
@@ -182,7 +184,7 @@ export function FileAttachment({
   return (
     <>
       <article
-        className={`flex min-w-0 gap-3 rounded-xl border border-border/70 bg-card p-3 ${viewMode === "grid" ? "h-full flex-col" : "items-start"}`}
+        className={`group flex min-w-0 gap-3 motion-reduce:transition-none ${viewMode === "grid" ? "h-full flex-col rounded-xl border border-border/35 bg-card p-3 transition-[border-color,box-shadow] duration-200 hover:border-brand-secondary-highlight/25 hover:shadow-[0_10px_28px_-20px_color-mix(in_srgb,var(--brand-charcoal)_30%,transparent)] focus-within:border-ring/35 dark:hover:border-secondary/25" : "items-start border-t border-border/35 bg-transparent px-3 py-4 transition-colors duration-150 hover:bg-card/25 focus-within:bg-card/25 dark:hover:bg-surface-2/15 dark:focus-within:bg-surface-2/15"}`}
       >
         {viewMode === "grid" ? (
           <button
@@ -190,10 +192,10 @@ export function FileAttachment({
             disabled={disabled || !!busy}
             onClick={preview}
             aria-label={`Open preview of ${file.originalFileName}`}
-            className="relative flex h-32 w-full shrink-0 flex-col items-center justify-center gap-2 overflow-hidden rounded-lg border border-border/50 bg-surface-2/65 text-brand-secondary-highlight transition-colors hover:bg-surface-3/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35 dark:text-secondary"
+            className="relative flex h-32 w-full shrink-0 flex-col items-center justify-center gap-2 overflow-hidden rounded-lg border border-border/25 bg-surface-2/55 text-brand-secondary-highlight transition-colors hover:bg-surface-2/75 dark:hover:bg-surface-3/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35 dark:text-secondary"
           >
             <MediaThumbnail file={file} />
-            <span className="absolute bottom-2 right-2 rounded-md border border-border/50 bg-card/95 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-foreground/75">
+            <span className="absolute bottom-2 right-2 rounded-md bg-card/95 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-foreground/75">
               {getFilePresentation(file).label}
             </span>
           </button>
@@ -218,7 +220,7 @@ export function FileAttachment({
             {shortDate(file.createdAt)}
           </p>
           {!compact && (
-            <div className="mt-1 flex flex-wrap items-center gap-x-2 text-[10px] leading-5 text-muted-foreground">
+            <div className="mt-1 flex flex-wrap items-center gap-x-2 text-[11px] leading-5 text-muted-foreground">
               <span>
                 {source}
                 {file.taskTitle
@@ -238,7 +240,7 @@ export function FileAttachment({
           )}
         </div>
         <div
-          className={`flex shrink-0 items-center gap-0.5 ${viewMode === "grid" ? "mt-auto w-full justify-end border-t border-border/60 pt-2" : ""}`}
+          className={`flex shrink-0 items-center gap-0.5 ${viewMode === "grid" ? "mt-auto w-full justify-end border-t border-border/25 pt-2" : ""}`}
         >
           <button
             type="button"
@@ -291,7 +293,7 @@ export function FileAttachment({
           if (!lock.current) setConfirm(value);
         }}
       >
-        <AlertDialogContent className="rounded-xl border-border bg-card text-card-foreground shadow-none sm:max-w-md">
+        <AlertDialogContent className="rounded-xl border-border/35 bg-card text-card-foreground shadow-none sm:max-w-md">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-lg font-medium">
               Delete file?
@@ -299,7 +301,7 @@ export function FileAttachment({
             <AlertDialogDescription className="text-sm leading-7 text-muted-foreground">
               This file will be removed from its comment, task and project file
               lists. This cannot be undone.
-              <span className="mt-3 block break-all rounded-lg border border-border/70 bg-surface-2/50 px-3 py-2.5 text-xs font-medium text-foreground">
+              <span className="mt-3 block break-all rounded-lg border border-border/35 bg-surface-2/40 px-3 py-2.5 text-xs font-medium text-foreground">
                 {file.originalFileName}
               </span>
             </AlertDialogDescription>
@@ -641,7 +643,7 @@ function FileBrowser({
       <header
         className={
           workspaceHeader
-            ? "flex flex-col gap-4 border-b border-border/70 pb-5 sm:flex-row sm:items-start sm:justify-between"
+            ? "flex flex-col gap-4 pb-2 sm:flex-row sm:items-start sm:justify-between"
             : "flex flex-wrap items-center justify-between gap-3"
         }
       >
@@ -731,11 +733,11 @@ function FileBrowser({
           void upload(selected);
         }}
       />
-      <div className="mt-4 flex min-w-0 items-center justify-between gap-3 border-b border-border/70">
+      <div className="mt-6 flex min-w-0 items-center justify-between gap-3">
         <div
           role="tablist"
           aria-label="File categories"
-          className="grid min-w-0 flex-1 grid-cols-4 gap-1 sm:flex sm:flex-none"
+          className="grid min-w-0 flex-1 grid-cols-4 gap-1 rounded-lg bg-surface-2/60 p-1 dark:bg-surface-3/55 sm:flex sm:flex-none"
         >
           {FILE_TABS.map((tab, index) => (
             <button
@@ -767,9 +769,13 @@ function FileBrowser({
                   .getElementById(`${tabId}-${FILE_TABS[next].value}`)
                   ?.focus();
               }}
-              className={`flex min-h-11 min-w-0 items-center justify-center gap-2 border-b-2 px-2 py-3 text-xs sm:shrink-0 sm:px-4 font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring/35 ${kind === tab.value ? "border-brand-secondary-highlight text-brand-secondary-highlight dark:border-secondary dark:text-secondary" : "border-transparent text-muted-foreground hover:bg-surface-2/60 hover:text-foreground"}`}
+              className={`flex min-h-11 min-w-0 items-center justify-center gap-2 rounded-md px-2 py-2 text-xs sm:shrink-0 sm:px-4 font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring/35 ${kind === tab.value ? "bg-card text-brand-secondary-highlight dark:text-secondary" : "text-muted-foreground hover:text-foreground"}`}
             >
-              <tab.icon size={16} aria-hidden="true" className="shrink-0" />
+              <tab.icon
+                size={16}
+                aria-hidden="true"
+                className="shrink-0 text-muted-foreground"
+              />
               <span className="sr-only sm:not-sr-only">{tab.label}</span>
             </button>
           ))}
@@ -780,7 +786,7 @@ function FileBrowser({
             : `${visibleTotal} ${visibleTotal === 1 ? "file" : "files"}`}
         </p>
       </div>
-      <div className="mt-3 flex min-w-0 flex-col gap-2 md:flex-row md:items-center">
+      <div className="mt-4 flex min-w-0 flex-col gap-3 pb-2 sm:pb-3 md:flex-row md:items-center">
         <div className="relative w-full min-w-0 md:min-w-[160px] md:flex-1">
           <SearchIcon
             size={14}
@@ -793,7 +799,7 @@ function FileBrowser({
             onChange={(event) => setSearch(event.target.value)}
             aria-label="Search files"
             placeholder="Search files or uploaders"
-            className="h-11 w-full rounded-lg border border-input bg-card pl-9 pr-3 text-base outline-none focus-visible:border-ring/50 sm:h-10 sm:text-xs"
+            className="h-11 w-full rounded-lg border border-border/35 bg-card pl-9 pr-3 text-base outline-none transition-colors focus-visible:border-ring/35 focus-visible:ring-2 focus-visible:ring-ring/10 sm:h-10 sm:text-xs"
           />
         </div>
         <div className="flex min-w-0 items-center justify-end gap-2 md:shrink-0">
@@ -840,32 +846,11 @@ function FileBrowser({
               { value: "type-desc", label: "Type Z–A" },
             ]}
           />
-          <div
-            role="group"
-            aria-label="File view"
-            className="flex h-10 shrink-0 items-center gap-1 rounded-lg border border-border/70 bg-surface-2/50 p-1"
-          >
-            <button
-              type="button"
-              aria-label="Grid view"
-              title="Grid view"
-              aria-pressed={viewMode === "grid"}
-              onClick={() => setViewMode("grid")}
-              className={`flex h-8 w-8 items-center justify-center rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35 ${viewMode === "grid" ? "bg-brand-secondary-highlight text-primary-foreground dark:bg-secondary dark:text-secondary-foreground" : "text-muted-foreground hover:bg-surface-3/70"}`}
-            >
-              <Grid2X2Icon size={15} aria-hidden="true" />
-            </button>
-            <button
-              type="button"
-              aria-label="List view"
-              title="List view"
-              aria-pressed={viewMode === "list"}
-              onClick={() => setViewMode("list")}
-              className={`flex h-8 w-8 items-center justify-center rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35 ${viewMode === "list" ? "bg-brand-secondary-highlight text-primary-foreground dark:bg-secondary dark:text-secondary-foreground" : "text-muted-foreground hover:bg-surface-3/70"}`}
-            >
-              <ListIcon size={15} aria-hidden="true" />
-            </button>
-          </div>
+          <ViewModeToggle
+            value={viewMode}
+            onChange={setViewMode}
+            label="File view"
+          />
         </div>
       </div>
       {uploading && (
@@ -885,7 +870,7 @@ function FileBrowser({
       {error && (
         <div
           role="alert"
-          className="mt-4 rounded-lg border border-border p-4 text-xs leading-6"
+          className="mt-4 rounded-lg border border-border/35 bg-card p-4 text-xs leading-6"
         >
           <p>{error}</p>
           <button
@@ -905,7 +890,7 @@ function FileBrowser({
         className={
           viewMode === "grid"
             ? "mt-4 grid gap-3 [grid-template-columns:repeat(auto-fill,minmax(min(100%,220px),1fr))]"
-            : "mt-4 space-y-2"
+            : "mt-4"
         }
       >
         {visibleFiles.map((file) => (
@@ -932,7 +917,7 @@ function FileBrowser({
         </p>
       )}
       {!visibleLoading && !error && !visibleFiles.length && (
-        <p className="rounded-xl border border-dashed border-border px-4 py-7 text-center text-xs leading-6 text-muted-foreground">
+        <p className="rounded-xl border border-dashed border-border/35 bg-card px-4 py-9 text-center text-xs leading-6 text-muted-foreground">
           {search || source || selectedTask || kind !== "all"
             ? "No files match these filters."
             : "No files have been shared here yet."}
@@ -992,7 +977,7 @@ function FileFilterMenu({
           type="button"
           aria-label={`${label}: ${selected?.label || "All"}`}
           title={`${label}: ${selected?.label || "All"}`}
-          className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border/70 bg-surface-2/50 text-xs font-medium text-foreground/80 transition-colors hover:bg-surface-3/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35 data-[state=open]:bg-surface-3/60 sm:w-auto sm:min-w-[110px] sm:max-w-[136px] sm:justify-between sm:gap-2 sm:px-3"
+          className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border/35 bg-surface-2/40 text-xs font-medium text-foreground/80 transition-colors hover:bg-surface-2/75 dark:hover:bg-surface-3/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35 data-[state=open]:bg-surface-3/60 sm:w-auto sm:min-w-[110px] sm:max-w-[136px] sm:justify-between sm:gap-2 sm:px-3"
         >
           {Icon && (
             <Icon size={15} aria-hidden="true" className="shrink-0 sm:hidden" />
@@ -1016,7 +1001,7 @@ function FileFilterMenu({
       <DropdownMenuContent
         align="end"
         sideOffset={6}
-        className={`${menuSurface} max-h-[min(18rem,var(--radix-dropdown-menu-content-available-height))] w-64 max-w-[calc(100vw-3rem)] overflow-y-auto overscroll-contain p-1.5`}
+        className={`${menuSurface} !border-border/35 max-h-[min(18rem,var(--radix-dropdown-menu-content-available-height))] w-64 max-w-[calc(100vw-3rem)] overflow-y-auto overscroll-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden p-1.5`}
       >
         {options.map((option) => (
           <DropdownMenuItem
@@ -1024,7 +1009,7 @@ function FileFilterMenu({
             role="menuitemradio"
             aria-checked={value === option.value}
             onSelect={() => onChange(option.value)}
-            className={`${menuItem} flex items-center justify-between gap-3 rounded-lg px-2.5 py-2 ${value === option.value ? "bg-brand-secondary-highlight/[0.07] text-brand-secondary-highlight dark:bg-secondary/[0.07] dark:text-secondary" : "text-foreground/75"}`}
+            className={`${menuItem} flex items-center justify-between gap-3 rounded-lg px-2.5 py-2 ${value === option.value ? "bg-surface-2/60 text-brand-secondary-highlight dark:bg-card dark:text-secondary" : "text-foreground/75"}`}
           >
             <span className="min-w-0 break-words text-xs leading-5">
               {option.label}
