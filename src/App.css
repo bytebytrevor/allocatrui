@@ -1,78 +1,78 @@
 :root {
-  --ring: oklch(0.556 0 0);
-  --accent: #202020;
+    --ring: oklch(0.556 0 0);
+    --accent: #202020;
 }
 
 .scrollbar-thin::-webkit-scrollbar {
-  width: 10px;
+    width: 10px;
 }
 .scrollbar-thin::-webkit-scrollbar-track {
-  background: transparent;
-  margin: 4px; /* adds space above/below */
+    background: transparent;
+    margin: 4px; /* adds space above/below */
 }
 .scrollbar-thin::-webkit-scrollbar-thumb {
-  background-color: #555;
-  border-radius: 8px;
-  border: 2px solid transparent; /* creates spacing around thumb */
-  background-clip: content-box;
+    background-color: #555;
+    border-radius: 8px;
+    border: 2px solid transparent; /* creates spacing around thumb */
+    background-clip: content-box;
 }
 
 .search {
-  box-sizing: border-box;
-  /* border: 2px solid var(--ring); */
-  background-color: var(--muted);
-  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 22 22" fill="none" stroke="oklch(0.556 0 0)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search-icon lucide-search"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>');
-  background-position: 10px 10px;
-  background-repeat: no-repeat;
-  padding: 8px 20px 8px 30px;
+    box-sizing: border-box;
+    /* border: 2px solid var(--ring); */
+    background-color: var(--muted);
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 22 22" fill="none" stroke="oklch(0.556 0 0)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search-icon lucide-search"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>');
+    background-position: 10px 10px;
+    background-repeat: no-repeat;
+    padding: 8px 20px 8px 30px;
 }
 
 .new-project-bg {
-  /* background-image: url(./assets/space-cat.svg); */
-  background-image: url(./assets/baby-sitter-wide.svg);
-  /* background-image: url(./assets/drill-square.svg); */
-  /* background-image: url(./assets/electrician-wide.svg); */
-  /* background-image: url(./assets/manhattan.jpg); */
-  background-repeat: no-repeat;
-  /* background-attachment: fixed; */
-  background-size: cover;
-  background-position: center;
+    /* background-image: url(./assets/space-cat.svg); */
+    background-image: url(./assets/baby-sitter-wide.svg);
+    /* background-image: url(./assets/drill-square.svg); */
+    /* background-image: url(./assets/electrician-wide.svg); */
+    /* background-image: url(./assets/manhattan.jpg); */
+    background-repeat: no-repeat;
+    /* background-attachment: fixed; */
+    background-size: cover;
+    background-position: center;
 }
 
 /************** Radio Button ****************/
 input[type="radio"] {
-  appearance: none;
-  -webkit-appearance: none;
-  width: 16px;
-  height: 16px;
-  border: 2px solid var(--input, #ccc);
-  border-radius: 50%;
-  background-color: var(--input, #fff);
-  cursor: pointer;
-  display: inline-block;
-  position: relative;
+    appearance: none;
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--input, #ccc);
+    border-radius: 50%;
+    background-color: var(--input, #fff);
+    cursor: pointer;
+    display: inline-block;
+    position: relative;
 }
 
 /* Inner dot when checked */
 input[type="radio"]:checked::before {
-  content: "";
-  width: 8px;
-  height: 8px;
-  background-color: var(--primary);
-  border-radius: 50%;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+    content: "";
+    width: 8px;
+    height: 8px;
+    background-color: var(--primary);
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 }
 
 /* Optional hover state */
 input[type="radio"]:hover {
-  border-color: var(--primary-hover, var(--primary));
+    border-color: var(--primary-hover, var(--primary));
 }
 
 /* Disabled styling */
 input[type="radio"]:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+    opacity: 0.5;
+    cursor: not-allowed;
 }

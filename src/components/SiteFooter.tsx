@@ -11,296 +11,301 @@ type FooterLinkItem = { label: string; href: string; badge?: string };
 type SocialPlatform = "LinkedIn" | "Facebook" | "Instagram" | "X";
 // Replace each placeholder with Allocatr's public profile URL when ready.
 const SOCIAL_LINKS: { label: SocialPlatform; href: string }[] = [
-  { label: "LinkedIn", href: "#" },
-  { label: "Facebook", href: "#" },
-  { label: "Instagram", href: "#" },
-  { label: "X", href: "#" },
+    { label: "LinkedIn", href: "#" },
+    { label: "Facebook", href: "#" },
+    { label: "Instagram", href: "#" },
+    { label: "X", href: "#" },
 ];
 
 const platformLinks: FooterLinkItem[] = [
-  { label: "How it works", href: "/how-it-works" },
-  { label: "Project workspace", href: "/platform/workspace" },
-  { label: "Project management", href: "/platform/project-management" },
-  { label: "Review & approval", href: "/platform/review-and-approval" },
+    { label: "How it works", href: "/how-it-works" },
+    { label: "Project workspace", href: "/platform/workspace" },
+    { label: "Project management", href: "/platform/project-management" },
+    { label: "Review & approval", href: "/platform/review-and-approval" },
 ];
 const resourceLinks: FooterLinkItem[] = [
-  { label: "Getting started", href: "/getting-started" },
-  { label: "Help Centre", href: "/help" },
-  { label: "FAQs", href: "/faq" },
-  { label: "Trust & verification", href: "/trust" },
-  { label: "Safety", href: "/safety" },
+    { label: "Getting started", href: "/getting-started" },
+    { label: "Help Centre", href: "/help" },
+    { label: "FAQs", href: "/faq" },
+    { label: "Trust & verification", href: "/trust" },
+    { label: "Safety", href: "/safety" },
 ];
 const companyLinks: FooterLinkItem[] = [
-  { label: "About Allocatr", href: "/about" },
-  { label: "Contact", href: "/contact" },
+    { label: "About Allocatr", href: "/about" },
+    { label: "Contact", href: "/contact" },
 ];
 const legalLinks: FooterLinkItem[] = [
-  { label: "Terms", href: "/terms" },
-  { label: "Privacy", href: "/privacy" },
+    { label: "Terms", href: "/terms" },
+    { label: "Privacy", href: "/privacy" },
 ];
 
 // The landing footer matches the hero/nav, independent of the app's theme.
 const LANDING_FOOTER_TOKENS = {
-  colorScheme: "dark",
-  "--footer-canvas":
-    "var(--landing-hero-bg, color-mix(in srgb, var(--brand-charcoal) 34%, black))",
-  "--background": "var(--footer-canvas)",
-  "--foreground": "var(--primary-foreground)",
-  "--surface-1": "var(--footer-canvas)",
-  "--surface-2":
-    "color-mix(in srgb, var(--footer-canvas) 92%, var(--primary-foreground))",
-  "--muted-foreground":
-    "color-mix(in srgb, var(--primary-foreground) 68%, var(--footer-canvas))",
-  "--border":
-    "color-mix(in srgb, var(--primary-foreground) 16%, var(--footer-canvas))",
-  "--ring": "var(--brand-primary)",
+    colorScheme: "dark",
+    "--footer-canvas":
+        "var(--landing-hero-bg, color-mix(in srgb, var(--brand-charcoal) 34%, black))",
+    "--background": "var(--footer-canvas)",
+    "--foreground": "var(--primary-foreground)",
+    "--surface-1": "var(--footer-canvas)",
+    "--surface-2":
+        "color-mix(in srgb, var(--footer-canvas) 92%, var(--primary-foreground))",
+    "--muted-foreground":
+        "color-mix(in srgb, var(--primary-foreground) 68%, var(--footer-canvas))",
+    "--border":
+        "color-mix(in srgb, var(--primary-foreground) 16%, var(--footer-canvas))",
+    "--ring": "var(--brand-primary)",
 } as CSSProperties;
 
 export default function SiteFooter() {
-  const { user } = useAuth();
-  const { pathname } = useLocation();
-  const landing = pathname === "/";
-  const startLinks: FooterLinkItem[] = [
-    { label: "Find Allocats", href: "/discover" },
-    { label: "Post a project", href: user ? "/projects/new" : "/register" },
-    {
-      label: user?.isAllocat ? "View my work" : "Become an Allocat",
-      href: user?.isAllocat ? "/projects" : "/become-an-allocat",
-    },
-    { label: "For clients", href: "/for-clients" },
-    { label: "Allocatr Pro", href: "/pro", badge: "Coming soon" },
-  ];
-  return (
-    <footer
-      style={landing ? LANDING_FOOTER_TOKENS : undefined}
-      className={`relative isolate overflow-hidden border-t border-border/55 text-foreground ${landing ? "bg-background" : "bg-surface-1 dark:bg-sidebar"}`}
-    >
-      <div
-        className={`relative mx-auto w-full ${landing ? "max-w-[1440px] px-4 sm:px-8 lg:px-12 xl:px-16" : "max-w-7xl px-4 sm:px-6 md:px-8 xl:px-10"}`}
-      >
-        <div className="grid min-w-0 gap-10 py-10 sm:gap-12 sm:py-14 xl:grid-cols-[minmax(0,1fr)_minmax(0,2.6fr)] xl:gap-16 xl:py-16">
-          <div className="min-w-0 max-w-sm">
-            <Link
-              to="/"
-              aria-label="Allocatr home"
-              className="inline-flex rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:ring-offset-4 focus-visible:ring-offset-background"
+    const { user } = useAuth();
+    const { pathname } = useLocation();
+    const landing = pathname === "/";
+    const startLinks: FooterLinkItem[] = [
+        { label: "Find Allocats", href: "/discover" },
+        { label: "Post a project", href: user ? "/projects/new" : "/register" },
+        {
+            label: user?.isAllocat ? "View my work" : "Become an Allocat",
+            href: user?.isAllocat ? "/projects" : "/become-an-allocat",
+        },
+        { label: "For clients", href: "/for-clients" },
+        { label: "Allocatr Pro", href: "/pro", badge: "Coming soon" },
+    ];
+    return (
+        <footer
+            style={landing ? LANDING_FOOTER_TOKENS : undefined}
+            className={`relative isolate overflow-hidden border-t border-border/55 text-foreground ${landing ? "bg-background" : "bg-surface-1 dark:bg-sidebar"}`}
+        >
+            <div
+                className={`relative mx-auto w-full ${landing ? "max-w-[1440px] px-4 sm:px-8 lg:px-12 xl:px-16" : "max-w-7xl px-4 sm:px-6 md:px-8 xl:px-10"}`}
             >
-              {landing ? (
-                <img
-                  src={allocatrLogoLight}
-                  alt="Allocatr"
-                  className="h-7 max-w-full w-auto object-contain"
-                />
-              ) : (
-                <>
-                  <img
-                    src={allocatrLogoDark}
-                    alt="Allocatr"
-                    className="h-7 max-w-full w-auto object-contain dark:hidden"
-                  />
-                  <img
-                    src={allocatrLogoLight}
-                    alt="Allocatr"
-                    className="hidden h-7 max-w-full w-auto object-contain dark:block"
-                  />
-                </>
-              )}
-            </Link>
-            <p className="mt-4 max-w-[32ch] text-[13px] leading-7 text-muted-foreground">
-              Find the right capability. Bring people together. Keep the work
-              connected from brief to delivery.
-            </p>
-            <div className="mt-5 flex items-center gap-2">
-              <FooterPawMark />
-              <p className="text-[11px] font-normal tracking-[0.01em] text-muted-foreground">
-                Work, properly allocated
-              </p>
+                <div className="grid min-w-0 gap-10 py-10 sm:gap-12 sm:py-14 xl:grid-cols-[minmax(0,1fr)_minmax(0,2.6fr)] xl:gap-16 xl:py-16">
+                    <div className="min-w-0 max-w-sm">
+                        <Link
+                            to="/"
+                            aria-label="Allocatr home"
+                            className="inline-flex rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:ring-offset-4 focus-visible:ring-offset-background"
+                        >
+                            {landing ? (
+                                <img
+                                    src={allocatrLogoLight}
+                                    alt="Allocatr"
+                                    className="h-7 max-w-full w-auto object-contain"
+                                />
+                            ) : (
+                                <>
+                                    <img
+                                        src={allocatrLogoDark}
+                                        alt="Allocatr"
+                                        className="h-7 max-w-full w-auto object-contain dark:hidden"
+                                    />
+                                    <img
+                                        src={allocatrLogoLight}
+                                        alt="Allocatr"
+                                        className="hidden h-7 max-w-full w-auto object-contain dark:block"
+                                    />
+                                </>
+                            )}
+                        </Link>
+                        <p className="mt-4 max-w-[32ch] text-[13px] leading-7 text-muted-foreground">
+                            Find the right capability. Bring people together.
+                            Keep the work connected from brief to delivery.
+                        </p>
+                        <div className="mt-5 flex items-center gap-2">
+                            <FooterPawMark />
+                            <p className="text-[11px] font-normal tracking-[0.01em] text-muted-foreground">
+                                Work, properly allocated
+                            </p>
+                        </div>
+                        <nav
+                            aria-label="Social media"
+                            className="mt-4 flex flex-wrap items-center gap-2"
+                        >
+                            {SOCIAL_LINKS.map(({ label, href }) => (
+                                <a
+                                    key={label}
+                                    href={href}
+                                    aria-label={`Allocatr on ${label}`}
+                                    title={label}
+                                    className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-md text-muted-foreground no-underline transition-colors duration-150 hover:bg-surface-2 hover:text-foreground hover:no-underline focus-visible:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transition-none sm:h-9 sm:w-9"
+                                >
+                                    <SocialIcon platform={label} />
+                                </a>
+                            ))}
+                        </nav>
+                    </div>
+                    <div className="grid min-w-0 grid-cols-1 gap-x-6 gap-y-7 min-[360px]:grid-cols-2 sm:gap-x-8 sm:gap-y-9 md:grid-cols-4">
+                        <FooterColumn
+                            title="Platform"
+                            links={platformLinks}
+                            currentPath={pathname}
+                        />
+                        <FooterColumn
+                            title="Get started"
+                            links={startLinks}
+                            currentPath={pathname}
+                        />
+                        <FooterColumn
+                            title="Resources"
+                            links={resourceLinks}
+                            currentPath={pathname}
+                        />
+                        <FooterColumn
+                            title="Company"
+                            links={companyLinks}
+                            currentPath={pathname}
+                        />
+                    </div>
+                </div>
+                <div className="flex flex-col-reverse items-start gap-3 border-t border-border/50 py-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-x-6 sm:gap-y-2">
+                    <p className="text-[11px] leading-6 text-muted-foreground">
+                        © {new Date().getFullYear()} Allocatr. All rights
+                        reserved.
+                    </p>
+                    <nav
+                        aria-label="Legal"
+                        className="flex flex-wrap items-center gap-x-5 gap-y-1"
+                    >
+                        {legalLinks.map((item) => (
+                            <FooterLink
+                                key={item.href}
+                                {...item}
+                                currentPath={pathname}
+                                compact
+                            />
+                        ))}
+                    </nav>
+                </div>
             </div>
-            <nav
-              aria-label="Social media"
-              className="mt-4 flex flex-wrap items-center gap-2"
-            >
-              {SOCIAL_LINKS.map(({ label, href }) => (
-                <a
-                  key={label}
-                  href={href}
-                  aria-label={`Allocatr on ${label}`}
-                  title={label}
-                  className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-md text-muted-foreground no-underline transition-colors duration-150 hover:bg-surface-2 hover:text-foreground hover:no-underline focus-visible:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transition-none sm:h-9 sm:w-9"
-                >
-                  <SocialIcon platform={label} />
-                </a>
-              ))}
-            </nav>
-          </div>
-          <div className="grid min-w-0 grid-cols-1 gap-x-6 gap-y-7 min-[360px]:grid-cols-2 sm:gap-x-8 sm:gap-y-9 md:grid-cols-4">
-            <FooterColumn
-              title="Platform"
-              links={platformLinks}
-              currentPath={pathname}
-            />
-            <FooterColumn
-              title="Get started"
-              links={startLinks}
-              currentPath={pathname}
-            />
-            <FooterColumn
-              title="Resources"
-              links={resourceLinks}
-              currentPath={pathname}
-            />
-            <FooterColumn
-              title="Company"
-              links={companyLinks}
-              currentPath={pathname}
-            />
-          </div>
-        </div>
-        <div className="flex flex-col-reverse items-start gap-3 border-t border-border/50 py-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-x-6 sm:gap-y-2">
-          <p className="text-[11px] leading-6 text-muted-foreground">
-            © {new Date().getFullYear()} Allocatr. All rights reserved.
-          </p>
-          <nav
-            aria-label="Legal"
-            className="flex flex-wrap items-center gap-x-5 gap-y-1"
-          >
-            {legalLinks.map((item) => (
-              <FooterLink
-                key={item.href}
-                {...item}
-                currentPath={pathname}
-                compact
-              />
-            ))}
-          </nav>
-        </div>
-      </div>
-    </footer>
-  );
+        </footer>
+    );
 }
 
 function FooterColumn({
-  title,
-  links,
-  currentPath,
+    title,
+    links,
+    currentPath,
 }: {
-  title: string;
-  links: FooterLinkItem[];
-  currentPath: string;
+    title: string;
+    links: FooterLinkItem[];
+    currentPath: string;
 }) {
-  return (
-    <div className="min-w-0">
-      <FooterHeading>{title}</FooterHeading>
-      <nav
-        aria-label={title}
-        className="mt-2 flex flex-col items-start sm:mt-3"
-      >
-        {links.map((item) => (
-          <FooterLink key={item.href} {...item} currentPath={currentPath} />
-        ))}
-      </nav>
-    </div>
-  );
+    return (
+        <div className="min-w-0">
+            <FooterHeading>{title}</FooterHeading>
+            <nav
+                aria-label={title}
+                className="mt-2 flex flex-col items-start sm:mt-3"
+            >
+                {links.map((item) => (
+                    <FooterLink
+                        key={item.href}
+                        {...item}
+                        currentPath={currentPath}
+                    />
+                ))}
+            </nav>
+        </div>
+    );
 }
 
 function FooterHeading({ children }: { children: ReactNode }) {
-  return (
-    <h2 className="text-xs font-semibold tracking-[0.01em] text-foreground/90">
-      {children}
-    </h2>
-  );
+    return (
+        <h2 className="text-xs font-semibold tracking-[0.01em] text-foreground/90">
+            {children}
+        </h2>
+    );
 }
 
 function FooterLink({
-  href,
-  label,
-  badge,
-  currentPath,
-  compact = false,
+    href,
+    label,
+    badge,
+    currentPath,
+    compact = false,
 }: FooterLinkItem & {
-  currentPath: string;
-  compact?: boolean;
+    currentPath: string;
+    compact?: boolean;
 }) {
-  const active = currentPath === href;
-  return (
-    <Link
-      to={href}
-      aria-current={active ? "page" : undefined}
-      className={`inline-flex min-h-11 min-w-0 max-w-full flex-wrap items-center gap-x-2 gap-y-1 rounded-sm py-2 leading-6 no-underline transition-colors duration-150 hover:text-foreground hover:no-underline focus-visible:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transition-none ${compact ? "text-xs" : "text-[13px]"} ${active ? "text-foreground" : "text-muted-foreground"}`}
-    >
-      <span className="min-w-0 break-words [overflow-wrap:anywhere]">
-        {label}
-      </span>
-      {badge && (
-        <span className="max-w-full rounded bg-surface-2 px-1.5 py-0.5 text-[9px] font-medium leading-4 text-muted-foreground">
-          {badge}
-        </span>
-      )}
-    </Link>
-  );
+    const active = currentPath === href;
+    return (
+        <Link
+            to={href}
+            aria-current={active ? "page" : undefined}
+            className={`inline-flex min-h-11 min-w-0 max-w-full flex-wrap items-center gap-x-2 gap-y-1 rounded-sm py-2 leading-6 no-underline transition-colors duration-150 hover:text-foreground hover:no-underline focus-visible:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transition-none ${compact ? "text-xs" : "text-[13px]"} ${active ? "text-foreground" : "text-muted-foreground"}`}
+        >
+            <span className="min-w-0 break-words [overflow-wrap:anywhere]">
+                {label}
+            </span>
+            {badge && (
+                <span className="max-w-full rounded bg-surface-2 px-1.5 py-0.5 text-[9px] font-medium leading-4 text-muted-foreground">
+                    {badge}
+                </span>
+            )}
+        </Link>
+    );
 }
 
 function FooterPawMark() {
-  return (
-    <span
-      aria-hidden="true"
-      className={
-        "flex h-5 w-5 shrink-0 items-center justify-center text-muted-foreground"
-      }
-    >
-      <PawPrintIcon size={13} strokeWidth={1.8} className="-rotate-6" />
-    </span>
-  );
+    return (
+        <span
+            aria-hidden="true"
+            className={
+                "flex h-5 w-5 shrink-0 items-center justify-center text-muted-foreground"
+            }
+        >
+            <PawPrintIcon size={13} strokeWidth={1.8} className="-rotate-6" />
+        </span>
+    );
 }
 
 function SocialIcon({ platform }: { platform: SocialPlatform }) {
-  const artwork: Record<SocialPlatform, ReactNode> = {
-    LinkedIn: (
-      <>
-        <circle cx="5" cy="5" r="2" />
-        <path d="M3 9h4v12H3zM10 9h4v1.7c.8-1.3 2-2 3.7-2 3 0 4.3 1.9 4.3 5.3v7h-4v-6.4c0-1.8-.6-2.7-1.9-2.7-1.4 0-2.1 1-2.1 2.7V21h-4z" />
-      </>
-    ),
-    Facebook: (
-      <path d="M14 22v-9h3l.5-4H14V6.5c0-1.2.3-2 2-2h2V1.2c-.4-.1-1.6-.2-3-.2-3 0-5 1.8-5 5V9H7v4h3v9z" />
-    ),
-    Instagram: (
-      <>
-        <rect
-          x="3"
-          y="3"
-          width="18"
-          height="18"
-          rx="5"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.8"
-        />
-        <circle
-          cx="12"
-          cy="12"
-          r="4"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.8"
-        />
-        <circle cx="17.5" cy="6.5" r="1.1" />
-      </>
-    ),
-    X: (
-      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231 5.451-6.231zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77z" />
-    ),
-  };
-  return (
-    <svg
-      width="17"
-      height="17"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      aria-hidden="true"
-      focusable="false"
-    >
-      {artwork[platform]}
-    </svg>
-  );
+    const artwork: Record<SocialPlatform, ReactNode> = {
+        LinkedIn: (
+            <>
+                <circle cx="5" cy="5" r="2" />
+                <path d="M3 9h4v12H3zM10 9h4v1.7c.8-1.3 2-2 3.7-2 3 0 4.3 1.9 4.3 5.3v7h-4v-6.4c0-1.8-.6-2.7-1.9-2.7-1.4 0-2.1 1-2.1 2.7V21h-4z" />
+            </>
+        ),
+        Facebook: (
+            <path d="M14 22v-9h3l.5-4H14V6.5c0-1.2.3-2 2-2h2V1.2c-.4-.1-1.6-.2-3-.2-3 0-5 1.8-5 5V9H7v4h3v9z" />
+        ),
+        Instagram: (
+            <>
+                <rect
+                    x="3"
+                    y="3"
+                    width="18"
+                    height="18"
+                    rx="5"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                />
+                <circle
+                    cx="12"
+                    cy="12"
+                    r="4"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                />
+                <circle cx="17.5" cy="6.5" r="1.1" />
+            </>
+        ),
+        X: (
+            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231 5.451-6.231zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77z" />
+        ),
+    };
+    return (
+        <svg
+            width="17"
+            height="17"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            aria-hidden="true"
+            focusable="false"
+        >
+            {artwork[platform]}
+        </svg>
+    );
 }

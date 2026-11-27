@@ -1,18 +1,18 @@
 export type Task = {
-  id: string;
-  title: string;
-  description?: string | null;
+    id: string;
+    title: string;
+    description?: string | null;
 
-  status: "pending" | "active" | "complete" | "overdue";
+    status: "pending" | "active" | "complete" | "overdue";
 
-  priority: "standard" | "low" | "medium" | "high" | "urgent";
+    priority: "standard" | "low" | "medium" | "high" | "urgent";
 
-  dueDate?: string | null;
+    dueDate?: string | null;
 
-  assignedToId?: string | null;
-  assignedToName?: string | null;
-  assignedToAvatarUrl?: string | null;
+    assignedToId?: string | null;
+    assignedToName?: string | null;
+    assignedToAvatarUrl?: string | null;
 
-  createdByUserId: string;
-  createdByName?: string | null;
+    createdByUserId: string;
+    createdByName?: string | null;
 };

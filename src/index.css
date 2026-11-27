@@ -13,168 +13,168 @@
 ========================================================= */
 
 :root {
-  font-family:
-    Poppins, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, system-ui;
+    font-family:
+        Poppins, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, system-ui;
 
-  line-height: 1.5;
+    line-height: 1.5;
 
-  color-scheme: light;
+    color-scheme: light;
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 
-  --radius: 0.625rem;
+    --radius: 0.625rem;
 
-  /* =======================================================
+    /* =======================================================
      BRAND
   ======================================================= */
 
-  --brand-charcoal: #303638;
+    --brand-charcoal: #303638;
 
-  --brand-primary: #deda00;
-  --brand-secondary: #033d4f;
+    --brand-primary: #deda00;
+    --brand-secondary: #033d4f;
 
-  --brand-green: #38d200;
-  --brand-cyan: #00b1ea;
-  --brand-amber: #f0a23a;
-  --brand-red: #ad3a12;
+    --brand-green: #38d200;
+    --brand-cyan: #00b1ea;
+    --brand-amber: #f0a23a;
+    --brand-red: #ad3a12;
 
-  /* =======================================================
+    /* =======================================================
      BRAND SUPPORTING SCALE
   ======================================================= */
 
-  --brand-primary-soft: #f4f2c8;
-  --brand-primary-muted: #a7a400;
+    --brand-primary-soft: #f4f2c8;
+    --brand-primary-muted: #a7a400;
 
-  --brand-secondary-strong: #052f3b;
-  --brand-secondary-soft: #e6eff0;
-  --brand-secondary-muted: #afc1c7;
-  --brand-secondary-highlight: #315e6c;
+    --brand-secondary-strong: #052f3b;
+    --brand-secondary-soft: #e6eff0;
+    --brand-secondary-muted: #afc1c7;
+    --brand-secondary-highlight: #315e6c;
 
-  /* =======================================================
+    /* =======================================================
      SURFACES
   ======================================================= */
 
-  --surface-1: #fbfcf9;
-  --surface-2: #f3f5f2;
-  --surface-3: #e8ece9;
+    --surface-1: #fbfcf9;
+    --surface-2: #f3f5f2;
+    --surface-3: #e8ece9;
 
-  --surface-lime: #f6f5e7;
-  --surface-teal: #edf3f3;
+    --surface-lime: #f6f5e7;
+    --surface-teal: #edf3f3;
 
-  /* =======================================================
+    /* =======================================================
      CORE
   ======================================================= */
 
-  --background: #f1f3f0;
-  --foreground: #303638;
+    --background: #f1f3f0;
+    --foreground: #303638;
 
-  /* =======================================================
+    /* =======================================================
      CARDS
   ======================================================= */
 
-  --card: #fbfcf9;
-  --card-foreground: #303638;
+    --card: #fbfcf9;
+    --card-foreground: #303638;
 
-  /* =======================================================
+    /* =======================================================
      POPOVERS
   ======================================================= */
 
-  --popover: #fbfcf9;
-  --popover-foreground: #303638;
+    --popover: #fbfcf9;
+    --popover-foreground: #303638;
 
-  /* =======================================================
+    /* =======================================================
      ACTIONS
   ======================================================= */
 
-  --primary: #033d4f;
-  --primary-foreground: #ffffff;
+    --primary: #033d4f;
+    --primary-foreground: #ffffff;
 
-  --secondary: #deda00;
-  --secondary-foreground: #303638;
+    --secondary: #deda00;
+    --secondary-foreground: #303638;
 
-  /* =======================================================
+    /* =======================================================
      MUTED
   ======================================================= */
 
-  --muted: #e8ece9;
-  --muted-foreground: #667477;
+    --muted: #e8ece9;
+    --muted-foreground: #667477;
 
-  /* =======================================================
+    /* =======================================================
      ACCENT
   ======================================================= */
 
-  --accent: #e6eff0;
-  --accent-foreground: #033d4f;
+    --accent: #e6eff0;
+    --accent-foreground: #033d4f;
 
-  --accent-2: #38d200;
-  --accent-3: #00b1ea;
+    --accent-2: #38d200;
+    --accent-3: #00b1ea;
 
-  /* =======================================================
+    /* =======================================================
      FEEDBACK
   ======================================================= */
 
-  --destructive: #ad3a12;
-  --destructive-foreground: #ffffff;
+    --destructive: #ad3a12;
+    --destructive-foreground: #ffffff;
 
-  /* =======================================================
+    /* =======================================================
      WORKFLOW STATUS
   ======================================================= */
 
-  --status-pending: #b98645;
-  --status-pending-foreground: #8a632f;
+    --status-pending: #b98645;
+    --status-pending-foreground: #8a632f;
 
-  --status-active: #315e6c;
-  --status-active-foreground: #315e6c;
+    --status-active: #315e6c;
+    --status-active-foreground: #315e6c;
 
-  --status-complete: #568b5e;
-  --status-complete-foreground: #477a4f;
+    --status-complete: #568b5e;
+    --status-complete-foreground: #477a4f;
 
-  --status-overdue: var(--destructive);
-  --status-overdue-foreground: #9f3c1a;
+    --status-overdue: var(--destructive);
+    --status-overdue-foreground: #9f3c1a;
 
-  /* =======================================================
+    /* =======================================================
      BORDERS
   ======================================================= */
 
-  --border: #d9e1dd;
-  --input: #d2dbd6;
-  --ring: #315e6c;
+    --border: #d9e1dd;
+    --input: #d2dbd6;
+    --ring: #315e6c;
 
-  /* =======================================================
+    /* =======================================================
      CHARTS
   ======================================================= */
 
-  --chart-1: var(--brand-secondary);
-  --chart-2: var(--brand-primary);
-  --chart-3: var(--brand-green);
-  --chart-4: var(--brand-amber);
-  --chart-5: var(--brand-red);
+    --chart-1: var(--brand-secondary);
+    --chart-2: var(--brand-primary);
+    --chart-3: var(--brand-green);
+    --chart-4: var(--brand-amber);
+    --chart-5: var(--brand-red);
 
-  /* =======================================================
+    /* =======================================================
      SIDEBAR
   ======================================================= */
 
-  --sidebar: #edf1ee;
-  --sidebar-foreground: #303638;
+    --sidebar: #edf1ee;
+    --sidebar-foreground: #303638;
 
-  --sidebar-primary: #033d4f;
-  --sidebar-primary-foreground: #ffffff;
+    --sidebar-primary: #033d4f;
+    --sidebar-primary-foreground: #ffffff;
 
-  --sidebar-accent: #f4f2c8;
-  --sidebar-accent-foreground: #303638;
+    --sidebar-accent: #f4f2c8;
+    --sidebar-accent-foreground: #303638;
 
-  --sidebar-border: #d9e1dd;
-  --sidebar-ring: #315e6c;
+    --sidebar-border: #d9e1dd;
+    --sidebar-ring: #315e6c;
 
-  /* =======================================================
+    /* =======================================================
      DOCUMENT
   ======================================================= */
 
-  color: var(--foreground);
-  background-color: var(--background);
+    color: var(--foreground);
+    background-color: var(--background);
 }
 
 /* =========================================================
@@ -182,84 +182,84 @@
 ========================================================= */
 
 .dark {
-  color-scheme: dark;
+    color-scheme: dark;
 
-  /* =======================================================
+    /* =======================================================
      BASE
 
      Slightly deeper canvas to give cards and panels
      clearer elevation.
   ======================================================= */
 
-  --background: #0e1518;
-  --foreground: #e8ecec;
+    --background: #0e1518;
+    --foreground: #e8ecec;
 
-  /* =======================================================
+    /* =======================================================
      SURFACES
 
      Elevation:
      background -> surface-1 -> surface-2 -> surface-3
   ======================================================= */
 
-  --surface-1: #141d20;
-  --surface-2: #192429;
-  --surface-3: #223137;
+    --surface-1: #141d20;
+    --surface-2: #192429;
+    --surface-3: #223137;
 
-  --surface-lime: #20251a;
-  --surface-teal: #17262a;
+    --surface-lime: #20251a;
+    --surface-teal: #17262a;
 
-  /* =======================================================
+    /* =======================================================
      CARDS
   ======================================================= */
 
-  --card: #161f23;
-  --card-foreground: #e8ecec;
+    --card: #161f23;
+    --card-foreground: #e8ecec;
 
-  /* =======================================================
+    /* =======================================================
      POPOVERS
   ======================================================= */
 
-  --popover: #182328;
-  --popover-foreground: #e8ecec;
+    --popover: #182328;
+    --popover-foreground: #e8ecec;
 
-  /* =======================================================
+    /* =======================================================
      ACTIONS
   ======================================================= */
 
-  --primary: #315e6c;
-  --primary-foreground: #ffffff;
+    --primary: #315e6c;
+    --primary-foreground: #ffffff;
 
-  --secondary: #deda00;
-  --secondary-foreground: #303030;
+    --secondary: #deda00;
+    --secondary-foreground: #303030;
 
-  /* =======================================================
+    /* =======================================================
      MUTED
 
      Brighter than before so descriptions, project codes,
      labels and metadata remain easy to read.
   ======================================================= */
 
-  --muted: #202b2f;
-  --muted-foreground: #a5b0b2;
+    --muted: #202b2f;
+    --muted-foreground: #a5b0b2;
 
-  /* =======================================================
+    /* =======================================================
      ACCENT
   ======================================================= */
 
-  --accent: #1d3035;
-  --accent-foreground: #e8ecec;
+    --accent: #1d3035;
+    --accent-foreground: #e8ecec;
 
-  --accent-2: var(--brand-green);
-  --accent-3: var(--brand-cyan);
+    --accent-2: var(--brand-green);
+    --accent-3: var(--brand-cyan);
 
-  /* =======================================================
+    /* =======================================================
      FEEDBACK
   ======================================================= */
 
-  --destructive: #ad3a12;
-  --destructive-foreground: #ffffff;
+    --destructive: #ad3a12;
+    --destructive-foreground: #ffffff;
 
-  /* =======================================================
+    /* =======================================================
      WORKFLOW STATUS
 
      Pending     -> Amber
@@ -268,86 +268,86 @@
      Overdue     -> Red
   ======================================================= */
 
-  --status-pending: var(--brand-amber);
+    --status-pending: var(--brand-amber);
 
-  --status-pending-foreground: color-mix(
-    in srgb,
-    var(--status-pending) 76%,
-    white
-  );
+    --status-pending-foreground: color-mix(
+        in srgb,
+        var(--status-pending) 76%,
+        white
+    );
 
-  --status-active: var(--brand-primary);
+    --status-active: var(--brand-primary);
 
-  --status-active-foreground: color-mix(
-    in srgb,
-    var(--status-active) 88%,
-    white
-  );
+    --status-active-foreground: color-mix(
+        in srgb,
+        var(--status-active) 88%,
+        white
+    );
 
-  --status-complete: var(--brand-green);
+    --status-complete: var(--brand-green);
 
-  --status-complete-foreground: color-mix(
-    in srgb,
-    var(--status-complete) 70%,
-    white
-  );
+    --status-complete-foreground: color-mix(
+        in srgb,
+        var(--status-complete) 70%,
+        white
+    );
 
-  --status-overdue: var(--destructive);
+    --status-overdue: var(--destructive);
 
-  --status-overdue-foreground: color-mix(
-    in srgb,
-    var(--status-overdue) 48%,
-    white
-  );
+    --status-overdue-foreground: color-mix(
+        in srgb,
+        var(--status-overdue) 48%,
+        white
+    );
 
-  /* =======================================================
+    /* =======================================================
      BRAND SUPPORTING
   ======================================================= */
 
-  --brand-primary-soft: #353712;
-  --brand-primary-muted: #d7d339;
+    --brand-primary-soft: #353712;
+    --brand-primary-muted: #d7d339;
 
-  --brand-secondary-strong: #0b2027;
-  --brand-secondary-soft: #1a292d;
-  --brand-secondary-muted: #5a7983;
-  --brand-secondary-highlight: #7da6b1;
+    --brand-secondary-strong: #0b2027;
+    --brand-secondary-soft: #1a292d;
+    --brand-secondary-muted: #5a7983;
+    --brand-secondary-highlight: #7da6b1;
 
-  /* =======================================================
+    /* =======================================================
      BORDERS
 
      Slightly stronger because borders carry more visual
      structure than shadows in dark mode.
   ======================================================= */
 
-  --border: rgb(255 255 255 / 0.09);
-  --input: rgb(255 255 255 / 0.12);
-  --ring: #4d7c88;
+    --border: rgb(255 255 255 / 0.09);
+    --input: rgb(255 255 255 / 0.12);
+    --ring: #4d7c88;
 
-  /* =======================================================
+    /* =======================================================
      CHARTS
   ======================================================= */
 
-  --chart-1: var(--brand-secondary-highlight);
-  --chart-2: var(--brand-primary);
-  --chart-3: var(--brand-green);
-  --chart-4: var(--brand-amber);
-  --chart-5: var(--brand-red);
+    --chart-1: var(--brand-secondary-highlight);
+    --chart-2: var(--brand-primary);
+    --chart-3: var(--brand-green);
+    --chart-4: var(--brand-amber);
+    --chart-5: var(--brand-red);
 
-  /* =======================================================
+    /* =======================================================
      SIDEBAR
   ======================================================= */
 
-  --sidebar: #111a1d;
-  --sidebar-foreground: #e8ecec;
+    --sidebar: #111a1d;
+    --sidebar-foreground: #e8ecec;
 
-  --sidebar-primary: #315e6c;
-  --sidebar-primary-foreground: #ffffff;
+    --sidebar-primary: #315e6c;
+    --sidebar-primary-foreground: #ffffff;
 
-  --sidebar-accent: #1d3035;
-  --sidebar-accent-foreground: #e8ecec;
+    --sidebar-accent: #1d3035;
+    --sidebar-accent-foreground: #e8ecec;
 
-  --sidebar-border: rgb(255 255 255 / 0.09);
-  --sidebar-ring: #4d7c88;
+    --sidebar-border: rgb(255 255 255 / 0.09);
+    --sidebar-ring: #4d7c88;
 }
 
 /* =========================================================
@@ -355,170 +355,170 @@
 ========================================================= */
 
 @theme inline {
-  /* =======================================================
+    /* =======================================================
      RADII
   ======================================================= */
 
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+    --radius-sm: calc(var(--radius) - 4px);
+    --radius-md: calc(var(--radius) - 2px);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) + 4px);
 
-  /* =======================================================
+    /* =======================================================
      CORE
   ======================================================= */
 
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
 
-  /* =======================================================
+    /* =======================================================
      CARD
   ======================================================= */
 
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
 
-  /* =======================================================
+    /* =======================================================
      POPOVER
   ======================================================= */
 
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
 
-  /* =======================================================
+    /* =======================================================
      PRIMARY
   ======================================================= */
 
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
 
-  /* =======================================================
+    /* =======================================================
      SECONDARY
   ======================================================= */
 
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
 
-  /* =======================================================
+    /* =======================================================
      MUTED
   ======================================================= */
 
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
 
-  /* =======================================================
+    /* =======================================================
      ACCENT
   ======================================================= */
 
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
 
-  --color-accent-2: var(--accent-2);
-  --color-accent-3: var(--accent-3);
+    --color-accent-2: var(--accent-2);
+    --color-accent-3: var(--accent-3);
 
-  /* =======================================================
+    /* =======================================================
      FEEDBACK
   ======================================================= */
 
-  --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
+    --color-destructive: var(--destructive);
+    --color-destructive-foreground: var(--destructive-foreground);
 
-  /* =======================================================
+    /* =======================================================
      WORKFLOW STATUS
   ======================================================= */
 
-  --color-status-pending: var(--status-pending);
+    --color-status-pending: var(--status-pending);
 
-  --color-status-pending-foreground: var(--status-pending-foreground);
+    --color-status-pending-foreground: var(--status-pending-foreground);
 
-  --color-status-active: var(--status-active);
+    --color-status-active: var(--status-active);
 
-  --color-status-active-foreground: var(--status-active-foreground);
+    --color-status-active-foreground: var(--status-active-foreground);
 
-  --color-status-complete: var(--status-complete);
+    --color-status-complete: var(--status-complete);
 
-  --color-status-complete-foreground: var(--status-complete-foreground);
+    --color-status-complete-foreground: var(--status-complete-foreground);
 
-  --color-status-overdue: var(--status-overdue);
+    --color-status-overdue: var(--status-overdue);
 
-  --color-status-overdue-foreground: var(--status-overdue-foreground);
+    --color-status-overdue-foreground: var(--status-overdue-foreground);
 
-  /* =======================================================
+    /* =======================================================
      BORDER / INPUT / RING
   ======================================================= */
 
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
+    --color-border: var(--border);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
 
-  /* =======================================================
+    /* =======================================================
      CHARTS
   ======================================================= */
 
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
+    --color-chart-1: var(--chart-1);
+    --color-chart-2: var(--chart-2);
+    --color-chart-3: var(--chart-3);
+    --color-chart-4: var(--chart-4);
+    --color-chart-5: var(--chart-5);
 
-  /* =======================================================
+    /* =======================================================
      SIDEBAR
   ======================================================= */
 
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar: var(--sidebar);
+    --color-sidebar-foreground: var(--sidebar-foreground);
 
-  --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-primary: var(--sidebar-primary);
 
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
 
-  --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-accent: var(--sidebar-accent);
 
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
 
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-ring: var(--sidebar-ring);
 
-  /* =======================================================
+    /* =======================================================
      SURFACES
   ======================================================= */
 
-  --color-surface-1: var(--surface-1);
-  --color-surface-2: var(--surface-2);
-  --color-surface-3: var(--surface-3);
+    --color-surface-1: var(--surface-1);
+    --color-surface-2: var(--surface-2);
+    --color-surface-3: var(--surface-3);
 
-  --color-surface-lime: var(--surface-lime);
-  --color-surface-teal: var(--surface-teal);
+    --color-surface-lime: var(--surface-lime);
+    --color-surface-teal: var(--surface-teal);
 
-  /* =======================================================
+    /* =======================================================
      BRAND
   ======================================================= */
 
-  --color-dark-gray: var(--brand-charcoal);
+    --color-dark-gray: var(--brand-charcoal);
 
-  --color-brand-primary: var(--brand-primary);
+    --color-brand-primary: var(--brand-primary);
 
-  --color-brand-primary-soft: var(--brand-primary-soft);
+    --color-brand-primary-soft: var(--brand-primary-soft);
 
-  --color-brand-primary-muted: var(--brand-primary-muted);
+    --color-brand-primary-muted: var(--brand-primary-muted);
 
-  --color-brand-secondary: var(--brand-secondary);
+    --color-brand-secondary: var(--brand-secondary);
 
-  --color-brand-secondary-strong: var(--brand-secondary-strong);
+    --color-brand-secondary-strong: var(--brand-secondary-strong);
 
-  --color-brand-secondary-soft: var(--brand-secondary-soft);
+    --color-brand-secondary-soft: var(--brand-secondary-soft);
 
-  --color-brand-secondary-muted: var(--brand-secondary-muted);
+    --color-brand-secondary-muted: var(--brand-secondary-muted);
 
-  --color-brand-secondary-highlight: var(--brand-secondary-highlight);
+    --color-brand-secondary-highlight: var(--brand-secondary-highlight);
 
-  --color-brand-green: var(--brand-green);
+    --color-brand-green: var(--brand-green);
 
-  --color-brand-cyan: var(--brand-cyan);
+    --color-brand-cyan: var(--brand-cyan);
 
-  --color-brand-amber: var(--brand-amber);
+    --color-brand-amber: var(--brand-amber);
 
-  --color-brand-red: var(--brand-red);
+    --color-brand-red: var(--brand-red);
 }
 
 /* =========================================================
@@ -526,45 +526,45 @@
 ========================================================= */
 
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
+    * {
+        @apply border-border outline-ring/50;
+    }
 
-  html {
-    background-color: var(--background);
-  }
+    html {
+        background-color: var(--background);
+    }
 
-  body {
-    margin: 0;
+    body {
+        margin: 0;
 
-    min-width: 320px;
-    min-height: 100vh;
+        min-width: 320px;
+        min-height: 100vh;
 
-    background-color: var(--background);
-    color: var(--foreground);
-  }
+        background-color: var(--background);
+        color: var(--foreground);
+    }
 
-  h1,
-  h2,
-  h3,
-  h4 {
-    text-wrap: balance;
-  }
+    h1,
+    h2,
+    h3,
+    h4 {
+        text-wrap: balance;
+    }
 
-  p {
-    text-wrap: pretty;
-  }
+    p {
+        text-wrap: pretty;
+    }
 
-  button,
-  input,
-  textarea,
-  select {
-    font: inherit;
-  }
+    button,
+    input,
+    textarea,
+    select {
+        font: inherit;
+    }
 
-  ::selection {
-    color: var(--secondary-foreground);
+    ::selection {
+        color: var(--secondary-foreground);
 
-    background: color-mix(in srgb, var(--secondary) 58%, transparent);
-  }
+        background: color-mix(in srgb, var(--secondary) 58%, transparent);
+    }
 }

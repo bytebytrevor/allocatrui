@@ -1,11 +1,11 @@
 import type { AllocatProfile } from "./allocatProfile";
 
 export type MyAllocatProfile = AllocatProfile & {
-  email: string;
-  idNumber: string | null;
+    email: string;
+    idNumber: string | null;
 
-  isVisible: boolean;
+    isVisible: boolean;
 
-  createdAt: string;
-  updatedAt: string;
+    createdAt: string;
+    updatedAt: string;
 };

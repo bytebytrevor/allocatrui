@@ -40,86 +40,86 @@
 export type AllocatAvailability = "available" | "busy" | "unavailable";
 
 export type AllocatSkill = {
-  id: string;
-  name: string;
+    id: string;
+    name: string;
 };
 
 export type AllocatProjectSummary = {
-  id: string;
-  projectCode: string;
-  title: string;
-  category: string;
-  status: string;
+    id: string;
+    projectCode: string;
+    title: string;
+    category: string;
+    status: string;
 };
 
 export type AllocatProfile = {
-  allocatrUserId: string;
-  fullName: string;
-  avatarUrl: string | null;
+    allocatrUserId: string;
+    fullName: string;
+    avatarUrl: string | null;
 
-  bio: string | null;
-  headline: string | null;
-  title: string | null;
+    bio: string | null;
+    headline: string | null;
+    title: string | null;
 
-  skills: string[];
+    skills: string[];
 
-  rating: number;
-  ratingCount: number;
-  completedProjects: number;
+    rating: number;
+    ratingCount: number;
+    completedProjects: number;
 
-  availability: boolean;
-  availabilityStatus: AllocatAvailability;
-  verified: boolean;
+    availability: boolean;
+    availabilityStatus: AllocatAvailability;
+    verified: boolean;
 
-  location: string | null;
+    location: string | null;
 
-  hourlyRate: number | null;
-  currency: string;
+    hourlyRate: number | null;
+    currency: string;
 
-  responseTime: number | null;
-  level: number;
+    responseTime: number | null;
+    level: number;
 
-  yearsExperience: number | null;
-  professionalScore: number;
+    yearsExperience: number | null;
+    professionalScore: number;
 
-  joinedAt: string;
+    joinedAt: string;
 
-  projects: AllocatProjectSummary[];
+    projects: AllocatProjectSummary[];
 };
 
 export type MyAllocatProfile = Omit<AllocatProfile, "skills"> & {
-  email: string;
-  idNumber: string | null;
+    email: string;
+    idNumber: string | null;
 
-  skills: AllocatSkill[];
+    skills: AllocatSkill[];
 
-  isVisible: boolean;
+    isVisible: boolean;
 
-  createdAt: string;
-  updatedAt: string;
+    createdAt: string;
+    updatedAt: string;
 };
 
 export type SkillOption = {
-  id: string;
-  name: string;
-  categoryId: string;
-  category: string;
+    id: string;
+    name: string;
+    categoryId: string;
+    category: string;
 };
 
 export type CreateAllocatProfilePayload = {
-  idNumber: string;
+    idNumber: string;
 
-  title: string | null;
-  headline: string | null;
-  bio: string | null;
+    title: string | null;
+    headline: string | null;
+    bio: string | null;
 
-  hourlyRate: number | null;
-  currency: string;
+    hourlyRate: number | null;
+    currency: string;
 
-  availability: AllocatAvailability;
-  yearsExperience: number | null;
+    availability: AllocatAvailability;
+    yearsExperience: number | null;
 
-  skillIds: string[];
+    skillIds: string[];
 };
 
 export type UpdateAllocatProfilePayload = CreateAllocatProfilePayload;

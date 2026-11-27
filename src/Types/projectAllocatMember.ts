@@ -1,13 +1,13 @@
 import type { ProjectAllocatStatus } from "@/Types/enums";
 
 export type ProjectAllocatMember = {
-  allocatProfileId: string;
-  fullName: string;
-  avatarUrl?: string;
-  title?: string;
+    allocatProfileId: string;
+    fullName: string;
+    avatarUrl?: string;
+    title?: string;
 
-  status: ProjectAllocatStatus;
+    status: ProjectAllocatStatus;
 
-  invitedAt: string;
-  respondedAt: string | null;
+    invitedAt: string;
+    respondedAt: string | null;
 };

@@ -35,83 +35,93 @@ import "./App.css";
 
 // Create the router once, so an App render does not reset active navigation.
 const router = createBrowserRouter([
-  { path: "/", Component: LandingPage, errorElement: <NotFoundErrorPage /> },
-  { path: "/register", Component: Register },
-  { path: "/login", Component: Login },
-  { path: "/forgot-password", Component: ForgotPassword },
-  { path: "/reset-password", Component: ResetPassword },
-  { path: "/discover", Component: Discover },
-  { path: "/allocats/:profileId", Component: AllocatPublicProfilePage },
-  // The inbox has its own signed-in check; confirmation links remain public.
-  { path: "/verify-email", Component: VerifyEmail },
-  { path: "/check-email", Component: CheckEmail },
-  { path: "/about", Component: AboutPage, errorElement: <NotFoundErrorPage /> },
-  {
-    path: "/how-it-works",
-    Component: HowItWorksPage,
-    errorElement: <NotFoundErrorPage />,
-  },
-  {
-    path: "/plans",
-    Component: PricingPage,
-    errorElement: <NotFoundErrorPage />,
-  },
-  {
-    element: <RequireAuth />,
-    children: [
-      {
-        path: "/projects",
+    { path: "/", Component: LandingPage, errorElement: <NotFoundErrorPage /> },
+    { path: "/register", Component: Register },
+    { path: "/login", Component: Login },
+    { path: "/forgot-password", Component: ForgotPassword },
+    { path: "/reset-password", Component: ResetPassword },
+    { path: "/discover", Component: Discover },
+    { path: "/allocats/:profileId", Component: AllocatPublicProfilePage },
+    // The inbox has its own signed-in check; confirmation links remain public.
+    { path: "/verify-email", Component: VerifyEmail },
+    { path: "/check-email", Component: CheckEmail },
+    {
+        path: "/about",
+        Component: AboutPage,
+        errorElement: <NotFoundErrorPage />,
+    },
+    {
+        path: "/how-it-works",
+        Component: HowItWorksPage,
+        errorElement: <NotFoundErrorPage />,
+    },
+    {
+        path: "/plans",
+        Component: PricingPage,
+        errorElement: <NotFoundErrorPage />,
+    },
+    {
+        element: <RequireAuth />,
         children: [
-          { index: true, Component: Projects },
-          { path: "new", Component: CreateProject },
-          { path: ":projectId/allocats/find", Component: FindAllocats },
-          {
-            path: ":projectId",
-            Component: Dashboard,
-            children: [
-              { index: true, Component: ProjectManager },
-              { path: "calendar", Component: Calendar },
-              { path: "files", Component: ProjectFilesWorkspace },
-              { path: "messaging", Component: Messaging },
-              { path: "analytics", Component: Analytics },
-              { path: "transactions", Component: Transactions },
-            ],
-          },
+            {
+                path: "/projects",
+                children: [
+                    { index: true, Component: Projects },
+                    { path: "new", Component: CreateProject },
+                    {
+                        path: ":projectId/allocats/find",
+                        Component: FindAllocats,
+                    },
+                    {
+                        path: ":projectId",
+                        Component: Dashboard,
+                        children: [
+                            { index: true, Component: ProjectManager },
+                            { path: "calendar", Component: Calendar },
+                            { path: "files", Component: ProjectFilesWorkspace },
+                            { path: "messaging", Component: Messaging },
+                            { path: "analytics", Component: Analytics },
+                            { path: "transactions", Component: Transactions },
+                        ],
+                    },
+                ],
+            },
+            { path: "/notifications", Component: Notifications },
+            { path: "/profile", Component: Profile },
+            { path: "/allocats/profile", Component: AllocatProfilePage },
+            // RequireAuth enforces email confirmation. The setup page handles account
+            // type, existing profiles, creation and retrying final continuation.
+            {
+                path: "/allocats/profile/create",
+                Component: CreateAllocatProfile,
+            },
         ],
-      },
-      { path: "/notifications", Component: Notifications },
-      { path: "/profile", Component: Profile },
-      { path: "/allocats/profile", Component: AllocatProfilePage },
-      // RequireAuth enforces email confirmation. The setup page handles account
-      // type, existing profiles, creation and retrying final continuation.
-      { path: "/allocats/profile/create", Component: CreateAllocatProfile },
-    ],
-  },
+    },
 ]);
 
 function App() {
-  const theme = localStorage.getItem("theme") || "light";
-  useEffect(() => {
-    const root = document.documentElement;
-    if (theme === "light") {
-      root.classList.add("light");
-      root.classList.remove("dark");
-    } else {
-      root.classList.add("dark");
-      root.classList.remove("light");
-    }
-    localStorage.setItem("theme", theme);
-  }, [theme]);
+    const theme = localStorage.getItem("theme") || "light";
+    useEffect(() => {
+        const root = document.documentElement;
+        if (theme === "light") {
+            root.classList.add("light");
+            root.classList.remove("dark");
+        } else {
+            root.classList.add("dark");
+            root.classList.remove("light");
+        }
+        localStorage.setItem("theme", theme);
+    }, [theme]);
 
-  return (
-    <>
-      <AuthProvider>
-        <NotificationProvider>
-          <RouterProvider router={router} />
-        </NotificationProvider>
-      </AuthProvider>
-      <AppToaster />
-    </>
-  );
+    return (
+        <>
+            <AuthProvider>
+                <NotificationProvider>
+                    <RouterProvider router={router} />
+                </NotificationProvider>
+            </AuthProvider>
+            <AppToaster />
+        </>
+    );
 }
 export default App;

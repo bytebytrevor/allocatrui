@@ -1,32 +1,32 @@
 import {
-  type ComponentType,
-  type ReactNode,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
+    type ComponentType,
+    type ReactNode,
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
 } from "react";
 import { MotionConfig, motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import {
-  ArrowRightIcon,
-  BanIcon,
-  BriefcaseBusinessIcon,
-  CheckCircle2Icon,
-  CheckIcon,
-  CircleDotIcon,
-  Clock3Icon,
-  FolderOpenIcon,
-  InboxIcon,
-  LoaderCircleIcon,
-  MoreHorizontalIcon,
-  PlusIcon,
-  RefreshCwIcon,
-  SearchIcon,
-  SendIcon,
-  SparklesIcon,
-  XIcon,
+    ArrowRightIcon,
+    BanIcon,
+    BriefcaseBusinessIcon,
+    CheckCircle2Icon,
+    CheckIcon,
+    CircleDotIcon,
+    Clock3Icon,
+    FolderOpenIcon,
+    InboxIcon,
+    LoaderCircleIcon,
+    MoreHorizontalIcon,
+    PlusIcon,
+    RefreshCwIcon,
+    SearchIcon,
+    SendIcon,
+    SparklesIcon,
+    XIcon,
 } from "lucide-react";
 import { toast } from "sonner";
 import api from "@/api/axios";
@@ -37,14 +37,14 @@ import LoadingState from "@/components/LoadingState";
 import { GridView, ListView } from "@/components/ProjectCard";
 import { Button } from "@/components/ui/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import ProjectInvitationDialog, {
-  InvitationActions,
-  type InvitationAction,
+    InvitationActions,
+    type InvitationAction,
 } from "@/components/ProjectInvitationDialog";
 import ViewModeToggle from "@/components/ViewModeToggle";
 import SortDropdown from "@/components/SortDropdown";
@@ -59,41 +59,41 @@ type WorkspaceSection = "projects" | "work";
 type WorkFilter = "invitations" | "active" | "completed" | "cancelled";
 type ProjectSort = "newest" | "oldest" | "title-asc" | "title-desc";
 type WorkspaceIcon = ComponentType<{
-  size?: number;
-  className?: string;
+    size?: number;
+    className?: string;
 }>;
 type SummaryItem = {
-  label: string;
-  value: number;
-  icon: WorkspaceIcon;
-  emphasis?: "primary" | "warning" | "success" | "danger";
-  active?: boolean;
-  attention?: boolean;
-  onClick?: () => void;
+    label: string;
+    value: number;
+    icon: WorkspaceIcon;
+    emphasis?: "primary" | "warning" | "success" | "danger";
+    active?: boolean;
+    attention?: boolean;
+    onClick?: () => void;
 };
 type OwnedProjectGroups = Record<ProjectFilter, Project[]>;
 type SortOption = {
-  value: ProjectSort;
-  label: string;
+    value: ProjectSort;
+    label: string;
 };
 export type WorkProject = Project & {
-  projectAllocatStatus: ProjectAllocatStatus;
-  invitedAt?: string;
-  respondedAt?: string | null;
+    projectAllocatStatus: ProjectAllocatStatus;
+    invitedAt?: string;
+    respondedAt?: string | null;
 };
 type ProjectSearchGroup =
-  | {
-      key: string;
-      label: string;
-      kind: "projects";
-      projects: Project[];
-    }
-  | {
-      key: string;
-      label: string;
-      kind: "invitations";
-      projects: WorkProject[];
-    };
+    | {
+          key: string;
+          label: string;
+          kind: "projects";
+          projects: Project[];
+      }
+    | {
+          key: string;
+          label: string;
+          kind: "invitations";
+          projects: WorkProject[];
+      };
 /* =========================================================
    CONSTANTS
 ========================================================= */
@@ -101,1146 +101,1219 @@ const CLOSED_PROJECT_STATUSES = new Set(["closed", "complete", "completed"]);
 const CANCELLED_PROJECT_STATUSES = new Set(["cancelled", "canceled"]);
 const PAUSED_PROJECT_STATUSES = new Set(["paused", "onhold"]);
 const SORT_OPTIONS: SortOption[] = [
-  { value: "newest", label: "Newest first" },
-  { value: "oldest", label: "Oldest first" },
-  { value: "title-asc", label: "Title A–Z" },
-  { value: "title-desc", label: "Title Z–A" },
+    { value: "newest", label: "Newest first" },
+    { value: "oldest", label: "Oldest first" },
+    { value: "title-asc", label: "Title A–Z" },
+    { value: "title-desc", label: "Title Z–A" },
 ];
 /* =========================================================
    THEME — dashboard accents and semantic status tokens
 ========================================================= */
 const primaryActionButton = [
-  "border border-brand-secondary-highlight/20",
-  "bg-brand-secondary-highlight text-primary-foreground",
-  "hover:bg-brand-secondary-highlight hover:text-primary-foreground",
-  "dark:border-secondary/20 dark:bg-secondary",
-  "dark:text-secondary-foreground",
-  "dark:hover:bg-secondary dark:hover:text-secondary-foreground",
-  "transition-opacity duration-150 hover:opacity-90",
-  "focus-visible:ring-2 focus-visible:ring-ring/35",
-  "motion-reduce:transition-none",
+    "border border-brand-secondary-highlight/20",
+    "bg-brand-secondary-highlight text-primary-foreground",
+    "hover:bg-brand-secondary-highlight hover:text-primary-foreground",
+    "dark:border-secondary/20 dark:bg-secondary",
+    "dark:text-secondary-foreground",
+    "dark:hover:bg-secondary dark:hover:text-secondary-foreground",
+    "transition-opacity duration-150 hover:opacity-90",
+    "focus-visible:ring-2 focus-visible:ring-ring/35",
+    "motion-reduce:transition-none",
 ].join(" ");
 const secondaryActionButton = [
-  "border-border/70 bg-card text-foreground/85",
-  "hover:bg-card hover:text-foreground",
-  "transition-opacity duration-150 hover:opacity-75",
-  "focus-visible:ring-2 focus-visible:ring-ring/35",
-  "motion-reduce:transition-none",
+    "border-border/70 bg-card text-foreground/85",
+    "hover:bg-card hover:text-foreground",
+    "transition-opacity duration-150 hover:opacity-75",
+    "focus-visible:ring-2 focus-visible:ring-ring/35",
+    "motion-reduce:transition-none",
 ].join(" ");
 const softIconSurface = [
-  "bg-surface-3/65 text-brand-secondary-highlight",
-  "ring-1 ring-inset ring-border/35",
-  "dark:bg-surface-2/80 dark:text-secondary dark:ring-border",
+    "bg-surface-3/65 text-brand-secondary-highlight",
+    "ring-1 ring-inset ring-border/35",
+    "dark:bg-surface-2/80 dark:text-secondary dark:ring-border",
 ].join(" ");
 const focusStyle = [
-  "focus-visible:outline-none",
-  "focus-visible:ring-2 focus-visible:ring-ring/30",
+    "focus-visible:outline-none",
+    "focus-visible:ring-2 focus-visible:ring-ring/30",
 ].join(" ");
 /* =========================================================
    PAGE ENTRY
    Remount local project state when the account changes.
 ========================================================= */
 function Projects() {
-  const { user } = useAuth();
-  if (!user?.userId) return <WorkspaceLoading />;
-  return (
-    <MotionConfig reducedMotion="user">
-      <ProjectsPage key={user.userId + ":" + Boolean(user.isAllocat)} />
-    </MotionConfig>
-  );
+    const { user } = useAuth();
+    if (!user?.userId) return <WorkspaceLoading />;
+    return (
+        <MotionConfig reducedMotion="user">
+            <ProjectsPage key={user.userId + ":" + Boolean(user.isAllocat)} />
+        </MotionConfig>
+    );
 }
 /* =========================================================
    PAGE
 ========================================================= */
 function ProjectsPage() {
-  const { user } = useAuth();
-  const [workspaceSection, setWorkspaceSection] =
-    useState<WorkspaceSection>("projects");
-  const [view, setView] = useState<ProjectView>("grid");
-  const [filter, setFilter] = useState<ProjectFilter>("active");
-  const [workFilter, setWorkFilter] = useState<WorkFilter>("active");
-  const [sort, setSort] = useState<ProjectSort>("newest");
-  const [search, setSearch] = useState("");
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-  const [workProjects, setWorkProjects] = useState<WorkProject[]>([]);
-  const [workLoading, setWorkLoading] = useState(Boolean(user?.isAllocat));
-  const [workLoaded, setWorkLoaded] = useState(false);
-  const [workError, setWorkError] = useState<string | null>(null);
-  const mountedRef = useRef(false);
-  const projectsRequestRef = useRef(0);
-  const workRequestRef = useRef(0);
-  const respondingIdsRef = useRef(new Set<string>());
-  useEffect(() => {
-    mountedRef.current = true;
-    return () => {
-      mountedRef.current = false;
-      projectsRequestRef.current += 1;
-      workRequestRef.current += 1;
-    };
-  }, []);
-  /* LOAD OWN PROJECTS */
-  const fetchProjects = useCallback(async () => {
-    if (!mountedRef.current) return;
-    const request = ++projectsRequestRef.current;
-    setLoading(true);
-    setError(false);
-    try {
-      const response = await api.get<Project[]>("/projects/mine", {
-        withCredentials: true,
-      });
-      if (!mountedRef.current || request !== projectsRequestRef.current) return;
-      if (!Array.isArray(response.data))
-        throw new Error("Invalid projects response.");
-      setProjects(response.data);
-    } catch {
-      if (mountedRef.current && request === projectsRequestRef.current)
-        setError(true);
-    } finally {
-      if (mountedRef.current && request === projectsRequestRef.current)
-        setLoading(false);
-    }
-  }, []);
-  /* LOAD ALLOCAT WORK */
-  const fetchWorkProjects = useCallback(
-    async ({
-      notifyOnError = false,
-    }: {
-      notifyOnError?: boolean;
-    } = {}) => {
-      if (!user?.isAllocat || !mountedRef.current) return;
-      const request = ++workRequestRef.current;
-      setWorkLoading(true);
-      setWorkError(null);
-      try {
-        const response = await api.get<WorkProject[]>("/allocats/me/projects", {
-          withCredentials: true,
-        });
-        if (!mountedRef.current || request !== workRequestRef.current) return;
-        if (!Array.isArray(response.data))
-          throw new Error("Invalid client work response.");
-        setWorkProjects(response.data);
-        setWorkLoaded(true);
-      } catch {
-        if (!mountedRef.current || request !== workRequestRef.current) return;
-        setWorkError("Your client work could not be loaded.");
-        if (notifyOnError) toast.error("We could not load your work.");
-      } finally {
-        if (mountedRef.current && request === workRequestRef.current)
-          setWorkLoading(false);
-      }
-    },
-    [user?.isAllocat],
-  );
-  useEffect(() => {
-    void fetchProjects();
-  }, [fetchProjects]);
-  useEffect(() => {
-    if (user?.isAllocat) void fetchWorkProjects();
-  }, [user?.isAllocat, fetchWorkProjects]);
-  useEffect(() => {
-    const cancelled = (event: Event) => {
-      const project = (event as CustomEvent<Project>).detail;
-      if (
-        !project ||
-        typeof project.id !== "string" ||
-        project.status !== "cancelled"
-      )
-        return;
-      projectsRequestRef.current += 1;
-      setProjects((current) =>
-        current.map((item) =>
-          item.id === project.id ? { ...item, ...project } : item,
-        ),
-      );
-      setWorkProjects((current) =>
-        current.map((item) =>
-          item.id === project.id ? { ...item, ...project } : item,
-        ),
-      );
-      if (user?.isAllocat) void fetchWorkProjects();
-    };
-    const left = (event: Event) => {
-      const detail = (event as CustomEvent<{ projectId: string }>).detail;
-      if (!detail || typeof detail.projectId !== "string") return;
-      workRequestRef.current += 1;
-      setWorkProjects((current) =>
-        current.filter((item) => item.id !== detail.projectId),
-      );
-      if (user?.isAllocat) void fetchWorkProjects();
-    };
-    window.addEventListener("allocatr:project-cancelled", cancelled);
-    window.addEventListener("allocatr:project-left", left);
-    return () => {
-      window.removeEventListener("allocatr:project-cancelled", cancelled);
-      window.removeEventListener("allocatr:project-left", left);
-    };
-  }, [fetchWorkProjects, user?.isAllocat]);
-  /* PROJECT UPDATES */
-  const handleOwnedProjectUpdated = useCallback((updated: Project) => {
-    setProjects((current) =>
-      current.map((project) =>
-        project.id === updated.id ? { ...project, ...updated } : project,
-      ),
+    const { user } = useAuth();
+    const [workspaceSection, setWorkspaceSection] =
+        useState<WorkspaceSection>("projects");
+    const [view, setView] = useState<ProjectView>("grid");
+    const [filter, setFilter] = useState<ProjectFilter>("active");
+    const [workFilter, setWorkFilter] = useState<WorkFilter>("active");
+    const [sort, setSort] = useState<ProjectSort>("newest");
+    const [search, setSearch] = useState("");
+    const [projects, setProjects] = useState<Project[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(false);
+    const [workProjects, setWorkProjects] = useState<WorkProject[]>([]);
+    const [workLoading, setWorkLoading] = useState(Boolean(user?.isAllocat));
+    const [workLoaded, setWorkLoaded] = useState(false);
+    const [workError, setWorkError] = useState<string | null>(null);
+    const mountedRef = useRef(false);
+    const projectsRequestRef = useRef(0);
+    const workRequestRef = useRef(0);
+    const respondingIdsRef = useRef(new Set<string>());
+    useEffect(() => {
+        mountedRef.current = true;
+        return () => {
+            mountedRef.current = false;
+            projectsRequestRef.current += 1;
+            workRequestRef.current += 1;
+        };
+    }, []);
+    /* LOAD OWN PROJECTS */
+    const fetchProjects = useCallback(async () => {
+        if (!mountedRef.current) return;
+        const request = ++projectsRequestRef.current;
+        setLoading(true);
+        setError(false);
+        try {
+            const response = await api.get<Project[]>("/projects/mine", {
+                withCredentials: true,
+            });
+            if (!mountedRef.current || request !== projectsRequestRef.current)
+                return;
+            if (!Array.isArray(response.data))
+                throw new Error("Invalid projects response.");
+            setProjects(response.data);
+        } catch {
+            if (mountedRef.current && request === projectsRequestRef.current)
+                setError(true);
+        } finally {
+            if (mountedRef.current && request === projectsRequestRef.current)
+                setLoading(false);
+        }
+    }, []);
+    /* LOAD ALLOCAT WORK */
+    const fetchWorkProjects = useCallback(
+        async ({
+            notifyOnError = false,
+        }: {
+            notifyOnError?: boolean;
+        } = {}) => {
+            if (!user?.isAllocat || !mountedRef.current) return;
+            const request = ++workRequestRef.current;
+            setWorkLoading(true);
+            setWorkError(null);
+            try {
+                const response = await api.get<WorkProject[]>(
+                    "/allocats/me/projects",
+                    {
+                        withCredentials: true,
+                    },
+                );
+                if (!mountedRef.current || request !== workRequestRef.current)
+                    return;
+                if (!Array.isArray(response.data))
+                    throw new Error("Invalid client work response.");
+                setWorkProjects(response.data);
+                setWorkLoaded(true);
+            } catch {
+                if (!mountedRef.current || request !== workRequestRef.current)
+                    return;
+                setWorkError("Your client work could not be loaded.");
+                if (notifyOnError) toast.error("We could not load your work.");
+            } finally {
+                if (mountedRef.current && request === workRequestRef.current)
+                    setWorkLoading(false);
+            }
+        },
+        [user?.isAllocat],
     );
-  }, []);
-  const handleWorkProjectUpdated = useCallback((updated: Project) => {
-    setWorkProjects((current) =>
-      current.map((project) =>
-        project.id === updated.id ? { ...project, ...updated } : project,
-      ),
-    );
-  }, []);
-  function changeSection(section: WorkspaceSection) {
-    setWorkspaceSection(section);
-    setSearch("");
-  }
-  /* OWN PROJECT CLASSIFICATION */
-  const ownedProjectGroups = useMemo<OwnedProjectGroups>(() => {
-    const groups: OwnedProjectGroups = {
-      active: [],
-      pending: [],
-      closed: [],
-      cancelled: [],
-    };
-    for (const project of projects) {
-      const status = normalizeProjectStatus(project.status);
-      if (CANCELLED_PROJECT_STATUSES.has(status))
-        groups.cancelled.push(project);
-      else if (CLOSED_PROJECT_STATUSES.has(status)) groups.closed.push(project);
-      else if (PAUSED_PROJECT_STATUSES.has(status))
-        groups.pending.push(project);
-      else if (
-        status === "active" ||
-        status === "completionrequested" ||
-        project.hasAcceptedAllocat === true
-      )
-        groups.active.push(project);
-      else groups.pending.push(project);
+    useEffect(() => {
+        void fetchProjects();
+    }, [fetchProjects]);
+    useEffect(() => {
+        if (user?.isAllocat) void fetchWorkProjects();
+    }, [user?.isAllocat, fetchWorkProjects]);
+    useEffect(() => {
+        const cancelled = (event: Event) => {
+            const project = (event as CustomEvent<Project>).detail;
+            if (
+                !project ||
+                typeof project.id !== "string" ||
+                project.status !== "cancelled"
+            )
+                return;
+            projectsRequestRef.current += 1;
+            setProjects((current) =>
+                current.map((item) =>
+                    item.id === project.id ? { ...item, ...project } : item,
+                ),
+            );
+            setWorkProjects((current) =>
+                current.map((item) =>
+                    item.id === project.id ? { ...item, ...project } : item,
+                ),
+            );
+            if (user?.isAllocat) void fetchWorkProjects();
+        };
+        const left = (event: Event) => {
+            const detail = (event as CustomEvent<{ projectId: string }>).detail;
+            if (!detail || typeof detail.projectId !== "string") return;
+            workRequestRef.current += 1;
+            setWorkProjects((current) =>
+                current.filter((item) => item.id !== detail.projectId),
+            );
+            if (user?.isAllocat) void fetchWorkProjects();
+        };
+        window.addEventListener("allocatr:project-cancelled", cancelled);
+        window.addEventListener("allocatr:project-left", left);
+        return () => {
+            window.removeEventListener("allocatr:project-cancelled", cancelled);
+            window.removeEventListener("allocatr:project-left", left);
+        };
+    }, [fetchWorkProjects, user?.isAllocat]);
+    /* PROJECT UPDATES */
+    const handleOwnedProjectUpdated = useCallback((updated: Project) => {
+        setProjects((current) =>
+            current.map((project) =>
+                project.id === updated.id
+                    ? { ...project, ...updated }
+                    : project,
+            ),
+        );
+    }, []);
+    const handleWorkProjectUpdated = useCallback((updated: Project) => {
+        setWorkProjects((current) =>
+            current.map((project) =>
+                project.id === updated.id
+                    ? { ...project, ...updated }
+                    : project,
+            ),
+        );
+    }, []);
+    function changeSection(section: WorkspaceSection) {
+        setWorkspaceSection(section);
+        setSearch("");
     }
-    return groups;
-  }, [projects]);
-  const activeProjects = ownedProjectGroups.active;
-  const pendingProjects = ownedProjectGroups.pending;
-  const closedProjects = ownedProjectGroups.closed;
-  const cancelledProjects = ownedProjectGroups.cancelled;
-  const completionRequests = useMemo(
-    () =>
-      projects.filter(
-        (project) =>
-          normalizeProjectStatus(project.status) === "completionrequested",
-      ),
-    [projects],
-  );
-  const selectedProjects = ownedProjectGroups[filter];
-  const visibleProjects = useMemo(
-    () => sortProjectItems(selectedProjects, sort),
-    [selectedProjects, sort],
-  );
-  /* ALLOCAT WORK CLASSIFICATION */
-  const invitations = useMemo(
-    () =>
-      workProjects.filter(
-        (project) =>
-          normalizeProjectStatus(project.projectAllocatStatus) === "invited",
-      ),
-    [workProjects],
-  );
-  const activeWork = useMemo(
-    () =>
-      workProjects.filter(
-        (project) =>
-          normalizeProjectStatus(project.projectAllocatStatus) === "accepted" &&
-          !CLOSED_PROJECT_STATUSES.has(
-            normalizeProjectStatus(project.status),
-          ) &&
-          !CANCELLED_PROJECT_STATUSES.has(
-            normalizeProjectStatus(project.status),
-          ),
-      ),
-    [workProjects],
-  );
-  const completedWork = useMemo(
-    () =>
-      workProjects.filter(
-        (project) =>
-          normalizeProjectStatus(project.projectAllocatStatus) === "accepted" &&
-          CLOSED_PROJECT_STATUSES.has(normalizeProjectStatus(project.status)),
-      ),
-    [workProjects],
-  );
-  const cancelledWork = useMemo(
-    () =>
-      workProjects.filter(
-        (project) =>
-          normalizeProjectStatus(project.projectAllocatStatus) === "accepted" &&
-          CANCELLED_PROJECT_STATUSES.has(
-            normalizeProjectStatus(project.status),
-          ),
-      ),
-    [workProjects],
-  );
-  const selectedWork =
-    workFilter === "invitations"
-      ? invitations
-      : workFilter === "completed"
-        ? completedWork
-        : workFilter === "cancelled"
-          ? cancelledWork
-          : activeWork;
-  const visibleWork = useMemo(
-    () => sortProjectItems(selectedWork, sort),
-    [selectedWork, sort],
-  );
-  /* SEARCH ALL STATUSES WITHIN THE SELECTED WORKSPACE SECTION */
-  const searchGroups = useMemo<ProjectSearchGroup[]>(() => {
-    if (!search.trim()) return [];
-    function findMatches<T extends Project>(items: T[]): T[] {
-      return sortProjectItems(
-        items.filter((project) => matchesProjectSearch(project, search)),
+    /* OWN PROJECT CLASSIFICATION */
+    const ownedProjectGroups = useMemo<OwnedProjectGroups>(() => {
+        const groups: OwnedProjectGroups = {
+            active: [],
+            pending: [],
+            closed: [],
+            cancelled: [],
+        };
+        for (const project of projects) {
+            const status = normalizeProjectStatus(project.status);
+            if (CANCELLED_PROJECT_STATUSES.has(status))
+                groups.cancelled.push(project);
+            else if (CLOSED_PROJECT_STATUSES.has(status))
+                groups.closed.push(project);
+            else if (PAUSED_PROJECT_STATUSES.has(status))
+                groups.pending.push(project);
+            else if (
+                status === "active" ||
+                status === "completionrequested" ||
+                project.hasAcceptedAllocat === true
+            )
+                groups.active.push(project);
+            else groups.pending.push(project);
+        }
+        return groups;
+    }, [projects]);
+    const activeProjects = ownedProjectGroups.active;
+    const pendingProjects = ownedProjectGroups.pending;
+    const closedProjects = ownedProjectGroups.closed;
+    const cancelledProjects = ownedProjectGroups.cancelled;
+    const completionRequests = useMemo(
+        () =>
+            projects.filter(
+                (project) =>
+                    normalizeProjectStatus(project.status) ===
+                    "completionrequested",
+            ),
+        [projects],
+    );
+    const selectedProjects = ownedProjectGroups[filter];
+    const visibleProjects = useMemo(
+        () => sortProjectItems(selectedProjects, sort),
+        [selectedProjects, sort],
+    );
+    /* ALLOCAT WORK CLASSIFICATION */
+    const invitations = useMemo(
+        () =>
+            workProjects.filter(
+                (project) =>
+                    normalizeProjectStatus(project.projectAllocatStatus) ===
+                    "invited",
+            ),
+        [workProjects],
+    );
+    const activeWork = useMemo(
+        () =>
+            workProjects.filter(
+                (project) =>
+                    normalizeProjectStatus(project.projectAllocatStatus) ===
+                        "accepted" &&
+                    !CLOSED_PROJECT_STATUSES.has(
+                        normalizeProjectStatus(project.status),
+                    ) &&
+                    !CANCELLED_PROJECT_STATUSES.has(
+                        normalizeProjectStatus(project.status),
+                    ),
+            ),
+        [workProjects],
+    );
+    const completedWork = useMemo(
+        () =>
+            workProjects.filter(
+                (project) =>
+                    normalizeProjectStatus(project.projectAllocatStatus) ===
+                        "accepted" &&
+                    CLOSED_PROJECT_STATUSES.has(
+                        normalizeProjectStatus(project.status),
+                    ),
+            ),
+        [workProjects],
+    );
+    const cancelledWork = useMemo(
+        () =>
+            workProjects.filter(
+                (project) =>
+                    normalizeProjectStatus(project.projectAllocatStatus) ===
+                        "accepted" &&
+                    CANCELLED_PROJECT_STATUSES.has(
+                        normalizeProjectStatus(project.status),
+                    ),
+            ),
+        [workProjects],
+    );
+    const selectedWork =
+        workFilter === "invitations"
+            ? invitations
+            : workFilter === "completed"
+              ? completedWork
+              : workFilter === "cancelled"
+                ? cancelledWork
+                : activeWork;
+    const visibleWork = useMemo(
+        () => sortProjectItems(selectedWork, sort),
+        [selectedWork, sort],
+    );
+    /* SEARCH ALL STATUSES WITHIN THE SELECTED WORKSPACE SECTION */
+    const searchGroups = useMemo<ProjectSearchGroup[]>(() => {
+        if (!search.trim()) return [];
+        function findMatches<T extends Project>(items: T[]): T[] {
+            return sortProjectItems(
+                items.filter((project) =>
+                    matchesProjectSearch(project, search),
+                ),
+                sort,
+            );
+        }
+        const groups: ProjectSearchGroup[] =
+            workspaceSection === "projects"
+                ? [
+                      {
+                          key: "owned-active",
+                          label: "Active",
+                          kind: "projects",
+                          projects: findMatches(ownedProjectGroups.active),
+                      },
+                      {
+                          key: "owned-pending",
+                          label: "Pending",
+                          kind: "projects",
+                          projects: findMatches(ownedProjectGroups.pending),
+                      },
+                      {
+                          key: "owned-completed",
+                          label: "Completed",
+                          kind: "projects",
+                          projects: findMatches(ownedProjectGroups.closed),
+                      },
+                      {
+                          key: "owned-cancelled",
+                          label: "Cancelled",
+                          kind: "projects",
+                          projects: findMatches(ownedProjectGroups.cancelled),
+                      },
+                  ]
+                : [
+                      {
+                          key: "work-active",
+                          label: "Active work",
+                          kind: "projects",
+                          projects: findMatches(activeWork),
+                      },
+                      {
+                          key: "work-invitations",
+                          label: "Invitations",
+                          kind: "invitations",
+                          projects: findMatches(invitations),
+                      },
+                      {
+                          key: "work-completed",
+                          label: "Completed work",
+                          kind: "projects",
+                          projects: findMatches(completedWork),
+                      },
+                      {
+                          key: "work-cancelled",
+                          label: "Cancelled work",
+                          kind: "projects",
+                          projects: findMatches(cancelledWork),
+                      },
+                  ];
+        return groups.filter((group) => group.projects.length > 0);
+    }, [
+        workspaceSection,
+        search,
         sort,
-      );
+        ownedProjectGroups,
+        activeWork,
+        invitations,
+        completedWork,
+        cancelledWork,
+    ]);
+    /* INVITATION RESPONSES */
+    async function respondToInvitation(
+        projectId: string,
+        action: InvitationAction,
+    ): Promise<boolean> {
+        if (respondingIdsRef.current.has(projectId)) return false;
+        respondingIdsRef.current.add(projectId);
+        try {
+            await api.patch(
+                "/projects/" + projectId + "/allocats/invite/" + action,
+                {},
+                { withCredentials: true },
+            );
+        } catch {
+            respondingIdsRef.current.delete(projectId);
+            if (mountedRef.current) {
+                toast.error(
+                    action === "accept"
+                        ? "The invitation could not be accepted."
+                        : "The invitation could not be declined.",
+                );
+            }
+            return false;
+        }
+        respondingIdsRef.current.delete(projectId);
+        if (!mountedRef.current) return false;
+        // Invalidate reads started before this mutation so they cannot restore
+        // an invitation that has already been accepted or declined.
+        workRequestRef.current += 1;
+        if (action === "accept") {
+            setWorkProjects((current) =>
+                current.map((project) =>
+                    project.id === projectId
+                        ? {
+                              ...project,
+                              projectAllocatStatus: "Accepted",
+                              respondedAt: new Date().toISOString(),
+                          }
+                        : project,
+                ),
+            );
+            toast.success("Project invitation accepted.");
+        } else {
+            setWorkProjects((current) =>
+                current.filter((project) => project.id !== projectId),
+            );
+            toast.success("Project invitation declined.");
+        }
+        void fetchWorkProjects();
+        return true;
     }
-    const groups: ProjectSearchGroup[] =
-      workspaceSection === "projects"
+    /* PAGE STATE */
+    if (loading) return <WorkspaceLoading />;
+    if (error) return <WorkspaceError onRetry={fetchProjects} />;
+    const firstName = user?.fullName?.trim().split(/\s+/)[0] || "there";
+    const showNewClientState = projects.length === 0 && !user?.isAllocat;
+    const isWorkSection = workspaceSection === "work";
+    const isInvitationSection = isWorkSection && workFilter === "invitations";
+    const searchActive = Boolean(search.trim());
+    const workCount =
+        invitations.length +
+        activeWork.length +
+        completedWork.length +
+        cancelledWork.length;
+    const currentCount = isWorkSection ? workCount : projects.length;
+    const visibleCount = searchGroups.reduce(
+        (total, group) => total + group.projects.length,
+        0,
+    );
+    const summaryItems: SummaryItem[] = !isWorkSection
         ? [
-            {
-              key: "owned-active",
-              label: "Active",
-              kind: "projects",
-              projects: findMatches(ownedProjectGroups.active),
-            },
-            {
-              key: "owned-pending",
-              label: "Pending",
-              kind: "projects",
-              projects: findMatches(ownedProjectGroups.pending),
-            },
-            {
-              key: "owned-completed",
-              label: "Completed",
-              kind: "projects",
-              projects: findMatches(ownedProjectGroups.closed),
-            },
-            {
-              key: "owned-cancelled",
-              label: "Cancelled",
-              kind: "projects",
-              projects: findMatches(ownedProjectGroups.cancelled),
-            },
+              {
+                  label: "Active",
+                  value: activeProjects.length,
+                  icon: CircleDotIcon,
+                  emphasis: "primary",
+                  active: filter === "active",
+                  attention: completionRequests.length > 0,
+                  onClick: () => setFilter("active"),
+              },
+              {
+                  label: "Pending",
+                  value: pendingProjects.length,
+                  icon: Clock3Icon,
+                  emphasis: "warning",
+                  active: filter === "pending",
+                  attention: pendingProjects.length > 0,
+                  onClick: () => setFilter("pending"),
+              },
+              {
+                  label: "Completed",
+                  value: closedProjects.length,
+                  icon: CheckCircle2Icon,
+                  emphasis: "success",
+                  active: filter === "closed",
+                  onClick: () => setFilter("closed"),
+              },
+              {
+                  label: "Cancelled",
+                  value: cancelledProjects.length,
+                  icon: BanIcon,
+                  emphasis: "danger",
+                  active: filter === "cancelled",
+                  onClick: () => setFilter("cancelled"),
+              },
           ]
         : [
-            {
-              key: "work-active",
-              label: "Active work",
-              kind: "projects",
-              projects: findMatches(activeWork),
-            },
-            {
-              key: "work-invitations",
-              label: "Invitations",
-              kind: "invitations",
-              projects: findMatches(invitations),
-            },
-            {
-              key: "work-completed",
-              label: "Completed work",
-              kind: "projects",
-              projects: findMatches(completedWork),
-            },
-            {
-              key: "work-cancelled",
-              label: "Cancelled work",
-              kind: "projects",
-              projects: findMatches(cancelledWork),
-            },
+              {
+                  label: "Invitations",
+                  value: invitations.length,
+                  icon: InboxIcon,
+                  emphasis: "warning",
+                  active: workFilter === "invitations",
+                  attention: invitations.length > 0,
+                  onClick: () => setWorkFilter("invitations"),
+              },
+              {
+                  label: "Active",
+                  value: activeWork.length,
+                  icon: BriefcaseBusinessIcon,
+                  emphasis: "primary",
+                  active: workFilter === "active",
+                  onClick: () => setWorkFilter("active"),
+              },
+              {
+                  label: "Completed",
+                  value: completedWork.length,
+                  icon: CheckCircle2Icon,
+                  emphasis: "success",
+                  active: workFilter === "completed",
+                  onClick: () => setWorkFilter("completed"),
+              },
+              {
+                  label: "Cancelled",
+                  value: cancelledWork.length,
+                  icon: BanIcon,
+                  emphasis: "danger",
+                  active: workFilter === "cancelled",
+                  onClick: () => setWorkFilter("cancelled"),
+              },
           ];
-    return groups.filter((group) => group.projects.length > 0);
-  }, [
-    workspaceSection,
-    search,
-    sort,
-    ownedProjectGroups,
-    activeWork,
-    invitations,
-    completedWork,
-    cancelledWork,
-  ]);
-  /* INVITATION RESPONSES */
-  async function respondToInvitation(
-    projectId: string,
-    action: InvitationAction,
-  ): Promise<boolean> {
-    if (respondingIdsRef.current.has(projectId)) return false;
-    respondingIdsRef.current.add(projectId);
-    try {
-      await api.patch(
-        "/projects/" + projectId + "/allocats/invite/" + action,
-        {},
-        { withCredentials: true },
-      );
-    } catch {
-      respondingIdsRef.current.delete(projectId);
-      if (mountedRef.current) {
-        toast.error(
-          action === "accept"
-            ? "The invitation could not be accepted."
-            : "The invitation could not be declined.",
-        );
-      }
-      return false;
-    }
-    respondingIdsRef.current.delete(projectId);
-    if (!mountedRef.current) return false;
-    // Invalidate reads started before this mutation so they cannot restore
-    // an invitation that has already been accepted or declined.
-    workRequestRef.current += 1;
-    if (action === "accept") {
-      setWorkProjects((current) =>
-        current.map((project) =>
-          project.id === projectId
-            ? {
-                ...project,
-                projectAllocatStatus: "Accepted",
-                respondedAt: new Date().toISOString(),
-              }
-            : project,
-        ),
-      );
-      toast.success("Project invitation accepted.");
-    } else {
-      setWorkProjects((current) =>
-        current.filter((project) => project.id !== projectId),
-      );
-      toast.success("Project invitation declined.");
-    }
-    void fetchWorkProjects();
-    return true;
-  }
-  /* PAGE STATE */
-  if (loading) return <WorkspaceLoading />;
-  if (error) return <WorkspaceError onRetry={fetchProjects} />;
-  const firstName = user?.fullName?.trim().split(/\s+/)[0] || "there";
-  const showNewClientState = projects.length === 0 && !user?.isAllocat;
-  const isWorkSection = workspaceSection === "work";
-  const isInvitationSection = isWorkSection && workFilter === "invitations";
-  const searchActive = Boolean(search.trim());
-  const workCount =
-    invitations.length +
-    activeWork.length +
-    completedWork.length +
-    cancelledWork.length;
-  const currentCount = isWorkSection ? workCount : projects.length;
-  const visibleCount = searchGroups.reduce(
-    (total, group) => total + group.projects.length,
-    0,
-  );
-  const summaryItems: SummaryItem[] = !isWorkSection
-    ? [
-        {
-          label: "Active",
-          value: activeProjects.length,
-          icon: CircleDotIcon,
-          emphasis: "primary",
-          active: filter === "active",
-          attention: completionRequests.length > 0,
-          onClick: () => setFilter("active"),
-        },
-        {
-          label: "Pending",
-          value: pendingProjects.length,
-          icon: Clock3Icon,
-          emphasis: "warning",
-          active: filter === "pending",
-          attention: pendingProjects.length > 0,
-          onClick: () => setFilter("pending"),
-        },
-        {
-          label: "Completed",
-          value: closedProjects.length,
-          icon: CheckCircle2Icon,
-          emphasis: "success",
-          active: filter === "closed",
-          onClick: () => setFilter("closed"),
-        },
-        {
-          label: "Cancelled",
-          value: cancelledProjects.length,
-          icon: BanIcon,
-          emphasis: "danger",
-          active: filter === "cancelled",
-          onClick: () => setFilter("cancelled"),
-        },
-      ]
-    : [
-        {
-          label: "Invitations",
-          value: invitations.length,
-          icon: InboxIcon,
-          emphasis: "warning",
-          active: workFilter === "invitations",
-          attention: invitations.length > 0,
-          onClick: () => setWorkFilter("invitations"),
-        },
-        {
-          label: "Active",
-          value: activeWork.length,
-          icon: BriefcaseBusinessIcon,
-          emphasis: "primary",
-          active: workFilter === "active",
-          onClick: () => setWorkFilter("active"),
-        },
-        {
-          label: "Completed",
-          value: completedWork.length,
-          icon: CheckCircle2Icon,
-          emphasis: "success",
-          active: workFilter === "completed",
-          onClick: () => setWorkFilter("completed"),
-        },
-        {
-          label: "Cancelled",
-          value: cancelledWork.length,
-          icon: BanIcon,
-          emphasis: "danger",
-          active: workFilter === "cancelled",
-          onClick: () => setWorkFilter("cancelled"),
-        },
-      ];
-  const sectionTitle =
-    !isWorkSection && filter === "cancelled"
-      ? "Cancelled projects"
-      : isWorkSection && workFilter === "cancelled"
-        ? "Cancelled work"
-        : !isWorkSection
-          ? filter === "pending"
-            ? "Pending projects"
-            : filter === "closed"
-              ? "Completed projects"
-              : "Active projects"
-          : workFilter === "invitations"
-            ? "Invitations"
-            : workFilter === "completed"
-              ? "Completed work"
-              : "Active work";
-  const sectionDescription =
-    (!isWorkSection && filter === "cancelled") ||
-    (isWorkSection && workFilter === "cancelled")
-      ? "Cancelled projects remain available for history and discussion."
-      : !isWorkSection
-        ? filter === "pending"
-          ? "Projects waiting for an Allocat or the next step."
-          : filter === "closed"
-            ? "Your completed and closed projects."
-            : "The projects currently moving through your workspace."
-        : workFilter === "invitations"
-          ? "Projects clients have invited you to join."
-          : workFilter === "completed"
-            ? "Your completed and closed client projects."
-            : "The client work currently on your plate.";
-  return (
-    <div className="flex min-h-screen flex-col bg-background text-foreground xl:grid xl:h-dvh xl:min-h-0 xl:grid-rows-[auto_minmax(0,1fr)] xl:overflow-hidden">
-      <WorkspaceHeader />
+    const sectionTitle =
+        !isWorkSection && filter === "cancelled"
+            ? "Cancelled projects"
+            : isWorkSection && workFilter === "cancelled"
+              ? "Cancelled work"
+              : !isWorkSection
+                ? filter === "pending"
+                    ? "Pending projects"
+                    : filter === "closed"
+                      ? "Completed projects"
+                      : "Active projects"
+                : workFilter === "invitations"
+                  ? "Invitations"
+                  : workFilter === "completed"
+                    ? "Completed work"
+                    : "Active work";
+    const sectionDescription =
+        (!isWorkSection && filter === "cancelled") ||
+        (isWorkSection && workFilter === "cancelled")
+            ? "Cancelled projects remain available for history and discussion."
+            : !isWorkSection
+              ? filter === "pending"
+                  ? "Projects waiting for an Allocat or the next step."
+                  : filter === "closed"
+                    ? "Your completed and closed projects."
+                    : "The projects currently moving through your workspace."
+              : workFilter === "invitations"
+                ? "Projects clients have invited you to join."
+                : workFilter === "completed"
+                  ? "Your completed and closed client projects."
+                  : "The client work currently on your plate.";
+    return (
+        <div className="flex min-h-screen flex-col bg-background text-foreground xl:grid xl:h-dvh xl:min-h-0 xl:grid-rows-[auto_minmax(0,1fr)] xl:overflow-hidden">
+            <WorkspaceHeader />
 
-      {showNewClientState ? (
-        <main className="container mx-auto flex flex-1 items-center justify-center px-4 py-10 sm:px-5 sm:py-14 md:px-8 xl:min-h-0 xl:overflow-y-auto">
-          <NewClientWelcome firstName={firstName} />
-        </main>
-      ) : (
-        <main className="container mx-auto grid flex-1 items-start gap-8 px-4 pb-28 pt-4 sm:px-5 sm:pb-28 sm:pt-5 md:px-8 lg:pt-6 xl:h-full xl:min-h-0 xl:grid-cols-[minmax(0,1fr)_288px] xl:grid-rows-[minmax(0,1fr)] xl:items-stretch xl:overflow-hidden xl:pb-0 xl:pt-0 2xl:gap-10">
-          <div
-            role="region"
-            aria-label="Projects workspace"
-            tabIndex={0}
-            className={
-              "min-w-0 xl:min-h-0 xl:overflow-y-auto xl:overscroll-contain xl:pb-10 xl:pt-6 focus-visible:ring-inset [scrollbar-width:none] [&::-webkit-scrollbar]:hidden " +
-              focusStyle
-            }
-          >
-            <WorkspaceMasthead
-              firstName={firstName}
-              isAllocat={Boolean(user?.isAllocat)}
-              workspaceSection={workspaceSection}
-              onSectionChange={changeSection}
-              projectCount={projects.length}
-              workCount={workCount}
-              invitationCount={invitations.length}
-              items={summaryItems}
-              onClearSearch={() => setSearch("")}
-            />
-            <motion.section
-              className="mt-5 min-w-0 sm:mt-6"
-              initial={{ opacity: 0, y: 7 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.04, duration: 0.3, ease: "easeOut" }}
-            >
-              <div className="min-w-0">
-                <SectionEyebrow>
-                  {isWorkSection ? "Client work" : "Your workspace"}
-                </SectionEyebrow>
-                <h2 className="mt-2 text-lg font-semibold leading-snug tracking-[-0.02em] text-foreground/90 sm:text-xl dark:text-foreground">
-                  {sectionTitle}
-                </h2>
-                <p className="mt-2 max-w-2xl text-[13px] leading-6 text-muted-foreground sm:text-sm">
-                  {sectionDescription}
-                </p>
-              </div>
-
-              <div className="mt-4 flex flex-col gap-3 pb-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-4 sm:pb-4">
-                <ProjectSearch
-                  value={search}
-                  onChange={setSearch}
-                  placeholder={
-                    isWorkSection
-                      ? "Search all client work"
-                      : "Search all projects"
-                  }
-                />
-                {(!isInvitationSection || searchActive) && (
-                  <ProjectControls
-                    sort={sort}
-                    setSort={setSort}
-                    view={view}
-                    setView={setView}
-                  />
-                )}
-              </div>
-              {searchActive && (!isWorkSection || workLoaded) && (
-                <p
-                  role="status"
-                  aria-live="polite"
-                  aria-atomic="true"
-                  className="mt-3 text-[11px] leading-5 text-muted-foreground"
-                >
-                  {visibleCount} of {currentCount}{" "}
-                  {isWorkSection ? "client projects" : "projects"} found across
-                  all statuses
-                </p>
-              )}
-
-              {!isWorkSection &&
-                (searchActive ? (
-                  <ProjectSearchResults
-                    groups={searchGroups}
-                    view={view}
-                    onClearSearch={() => setSearch("")}
-                    onProjectUpdated={handleOwnedProjectUpdated}
-                    onRespond={respondToInvitation}
-                  />
-                ) : (
-                  <ProjectResults
-                    projects={visibleProjects}
-                    view={view}
-                    emptyLabel={filter === "closed" ? "completed" : filter}
-                    onProjectUpdated={handleOwnedProjectUpdated}
-                  />
-                ))}
-
-              {isWorkSection && user?.isAllocat && (
-                <>
-                  {workLoading && !workLoaded ? (
-                    <WorkSectionLoading />
-                  ) : workError && !workLoaded ? (
-                    <WorkLoadError
-                      onRetry={() =>
-                        void fetchWorkProjects({ notifyOnError: true })
-                      }
-                    />
-                  ) : (
-                    <>
-                      {workError && workLoaded && (
-                        <div
-                          role="alert"
-                          className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border/60 bg-surface-2/40 px-4 py-3 dark:border-border"
+            {showNewClientState ? (
+                <main className="container mx-auto flex flex-1 items-center justify-center px-4 py-10 sm:px-5 sm:py-14 md:px-8 xl:min-h-0 xl:overflow-y-auto">
+                    <NewClientWelcome firstName={firstName} />
+                </main>
+            ) : (
+                <main className="container mx-auto grid flex-1 items-start gap-8 px-4 pb-28 pt-4 sm:px-5 sm:pb-28 sm:pt-5 md:px-8 lg:pt-6 xl:h-full xl:min-h-0 xl:grid-cols-[minmax(0,1fr)_288px] xl:grid-rows-[minmax(0,1fr)] xl:items-stretch xl:overflow-hidden xl:pb-0 xl:pt-0 2xl:gap-10">
+                    <div
+                        role="region"
+                        aria-label="Projects workspace"
+                        tabIndex={0}
+                        className={
+                            "min-w-0 xl:min-h-0 xl:overflow-y-auto xl:overscroll-contain xl:pb-10 xl:pt-6 focus-visible:ring-inset [scrollbar-width:none] [&::-webkit-scrollbar]:hidden " +
+                            focusStyle
+                        }
+                    >
+                        <WorkspaceMasthead
+                            firstName={firstName}
+                            isAllocat={Boolean(user?.isAllocat)}
+                            workspaceSection={workspaceSection}
+                            onSectionChange={changeSection}
+                            projectCount={projects.length}
+                            workCount={workCount}
+                            invitationCount={invitations.length}
+                            items={summaryItems}
+                            onClearSearch={() => setSearch("")}
+                        />
+                        <motion.section
+                            className="mt-5 min-w-0 sm:mt-6"
+                            initial={{ opacity: 0, y: 7 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{
+                                delay: 0.04,
+                                duration: 0.3,
+                                ease: "easeOut",
+                            }}
                         >
-                          <p className="text-xs leading-5 text-muted-foreground">
-                            Your work could not be refreshed. Your last loaded
-                            projects are still shown.
-                          </p>
-                          <button
-                            type="button"
-                            disabled={workLoading}
-                            onClick={() =>
-                              void fetchWorkProjects({ notifyOnError: true })
-                            }
-                            className={
-                              "rounded text-xs font-medium text-brand-secondary-highlight disabled:opacity-50 dark:text-secondary " +
-                              focusStyle
-                            }
-                          >
-                            Try again
-                          </button>
-                        </div>
-                      )}
+                            <div className="min-w-0">
+                                <SectionEyebrow>
+                                    {isWorkSection
+                                        ? "Client work"
+                                        : "Your workspace"}
+                                </SectionEyebrow>
+                                <h2 className="mt-2 text-lg font-semibold leading-snug tracking-[-0.02em] text-foreground/90 sm:text-xl dark:text-foreground">
+                                    {sectionTitle}
+                                </h2>
+                                <p className="mt-2 max-w-2xl text-[13px] leading-6 text-muted-foreground sm:text-sm">
+                                    {sectionDescription}
+                                </p>
+                            </div>
 
-                      {searchActive ? (
-                        <ProjectSearchResults
-                          groups={searchGroups}
-                          view={view}
-                          onClearSearch={() => setSearch("")}
-                          onProjectUpdated={handleWorkProjectUpdated}
-                          onRespond={respondToInvitation}
-                        />
-                      ) : isInvitationSection ? (
-                        visibleWork.length > 0 ? (
-                          <div className="mt-6 grid gap-3">
-                            {visibleWork.map((project) => (
-                              <InvitationCard
-                                key={project.id}
-                                project={project}
-                                onRespond={(action) =>
-                                  respondToInvitation(project.id, action)
-                                }
-                              />
-                            ))}
-                          </div>
-                        ) : (
-                          <EmptyCollection
-                            title="No invitations"
-                            description="New project invitations will appear here when a client invites you to join their work."
-                            icon={InboxIcon}
-                          />
-                        )
-                      ) : visibleWork.length > 0 ? (
-                        <ProjectGrid
-                          projects={visibleWork}
-                          view={view}
-                          onProjectUpdated={handleWorkProjectUpdated}
-                        />
-                      ) : (
-                        <EmptyCollection
-                          title={
-                            workFilter === "cancelled"
-                              ? "No cancelled work"
-                              : workFilter === "completed"
-                                ? "No completed work"
-                                : "No active work"
-                          }
-                          description={
-                            workFilter === "cancelled"
-                              ? "Cancelled client projects will appear here."
-                              : workFilter === "completed"
-                                ? "Completed and closed client projects will appear here."
-                                : "Projects you accept from clients will appear here."
-                          }
-                          icon={BriefcaseBusinessIcon}
-                        />
-                      )}
-                    </>
-                  )}
-                </>
-              )}
-            </motion.section>
-          </div>
-          <WorkspaceDiscoverySidebar excludeUserId={user?.userId} />
-        </main>
-      )}
-    </div>
-  );
+                            <div className="mt-4 flex flex-col gap-3 pb-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-4 sm:pb-4">
+                                <ProjectSearch
+                                    value={search}
+                                    onChange={setSearch}
+                                    placeholder={
+                                        isWorkSection
+                                            ? "Search all client work"
+                                            : "Search all projects"
+                                    }
+                                />
+                                {(!isInvitationSection || searchActive) && (
+                                    <ProjectControls
+                                        sort={sort}
+                                        setSort={setSort}
+                                        view={view}
+                                        setView={setView}
+                                    />
+                                )}
+                            </div>
+                            {searchActive && (!isWorkSection || workLoaded) && (
+                                <p
+                                    role="status"
+                                    aria-live="polite"
+                                    aria-atomic="true"
+                                    className="mt-3 text-[11px] leading-5 text-muted-foreground"
+                                >
+                                    {visibleCount} of {currentCount}{" "}
+                                    {isWorkSection
+                                        ? "client projects"
+                                        : "projects"}{" "}
+                                    found across all statuses
+                                </p>
+                            )}
+
+                            {!isWorkSection &&
+                                (searchActive ? (
+                                    <ProjectSearchResults
+                                        groups={searchGroups}
+                                        view={view}
+                                        onClearSearch={() => setSearch("")}
+                                        onProjectUpdated={
+                                            handleOwnedProjectUpdated
+                                        }
+                                        onRespond={respondToInvitation}
+                                    />
+                                ) : (
+                                    <ProjectResults
+                                        projects={visibleProjects}
+                                        view={view}
+                                        emptyLabel={
+                                            filter === "closed"
+                                                ? "completed"
+                                                : filter
+                                        }
+                                        onProjectUpdated={
+                                            handleOwnedProjectUpdated
+                                        }
+                                    />
+                                ))}
+
+                            {isWorkSection && user?.isAllocat && (
+                                <>
+                                    {workLoading && !workLoaded ? (
+                                        <WorkSectionLoading />
+                                    ) : workError && !workLoaded ? (
+                                        <WorkLoadError
+                                            onRetry={() =>
+                                                void fetchWorkProjects({
+                                                    notifyOnError: true,
+                                                })
+                                            }
+                                        />
+                                    ) : (
+                                        <>
+                                            {workError && workLoaded && (
+                                                <div
+                                                    role="alert"
+                                                    className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border/60 bg-surface-2/40 px-4 py-3 dark:border-border"
+                                                >
+                                                    <p className="text-xs leading-5 text-muted-foreground">
+                                                        Your work could not be
+                                                        refreshed. Your last
+                                                        loaded projects are
+                                                        still shown.
+                                                    </p>
+                                                    <button
+                                                        type="button"
+                                                        disabled={workLoading}
+                                                        onClick={() =>
+                                                            void fetchWorkProjects(
+                                                                {
+                                                                    notifyOnError: true,
+                                                                },
+                                                            )
+                                                        }
+                                                        className={
+                                                            "rounded text-xs font-medium text-brand-secondary-highlight disabled:opacity-50 dark:text-secondary " +
+                                                            focusStyle
+                                                        }
+                                                    >
+                                                        Try again
+                                                    </button>
+                                                </div>
+                                            )}
+
+                                            {searchActive ? (
+                                                <ProjectSearchResults
+                                                    groups={searchGroups}
+                                                    view={view}
+                                                    onClearSearch={() =>
+                                                        setSearch("")
+                                                    }
+                                                    onProjectUpdated={
+                                                        handleWorkProjectUpdated
+                                                    }
+                                                    onRespond={
+                                                        respondToInvitation
+                                                    }
+                                                />
+                                            ) : isInvitationSection ? (
+                                                visibleWork.length > 0 ? (
+                                                    <div className="mt-6 grid gap-3">
+                                                        {visibleWork.map(
+                                                            (project) => (
+                                                                <InvitationCard
+                                                                    key={
+                                                                        project.id
+                                                                    }
+                                                                    project={
+                                                                        project
+                                                                    }
+                                                                    onRespond={(
+                                                                        action,
+                                                                    ) =>
+                                                                        respondToInvitation(
+                                                                            project.id,
+                                                                            action,
+                                                                        )
+                                                                    }
+                                                                />
+                                                            ),
+                                                        )}
+                                                    </div>
+                                                ) : (
+                                                    <EmptyCollection
+                                                        title="No invitations"
+                                                        description="New project invitations will appear here when a client invites you to join their work."
+                                                        icon={InboxIcon}
+                                                    />
+                                                )
+                                            ) : visibleWork.length > 0 ? (
+                                                <ProjectGrid
+                                                    projects={visibleWork}
+                                                    view={view}
+                                                    onProjectUpdated={
+                                                        handleWorkProjectUpdated
+                                                    }
+                                                />
+                                            ) : (
+                                                <EmptyCollection
+                                                    title={
+                                                        workFilter ===
+                                                        "cancelled"
+                                                            ? "No cancelled work"
+                                                            : workFilter ===
+                                                                "completed"
+                                                              ? "No completed work"
+                                                              : "No active work"
+                                                    }
+                                                    description={
+                                                        workFilter ===
+                                                        "cancelled"
+                                                            ? "Cancelled client projects will appear here."
+                                                            : workFilter ===
+                                                                "completed"
+                                                              ? "Completed and closed client projects will appear here."
+                                                              : "Projects you accept from clients will appear here."
+                                                    }
+                                                    icon={BriefcaseBusinessIcon}
+                                                />
+                                            )}
+                                        </>
+                                    )}
+                                </>
+                            )}
+                        </motion.section>
+                    </div>
+                    <WorkspaceDiscoverySidebar excludeUserId={user?.userId} />
+                </main>
+            )}
+        </div>
+    );
 }
 /* =========================================================
    HEADER
 ========================================================= */
 function WorkspaceHeader() {
-  return (
-    <header className="sticky top-0 z-50 shrink-0 border-b border-border/60 bg-background dark:border-border">
-      <div className="container mx-auto px-4 sm:px-5 md:px-8">
-        <DashboardMainNav />
-      </div>
-    </header>
-  );
+    return (
+        <header className="sticky top-0 z-50 shrink-0 border-b border-border/60 bg-background dark:border-border">
+            <div className="container mx-auto px-4 sm:px-5 md:px-8">
+                <DashboardMainNav />
+            </div>
+        </header>
+    );
 }
 /* =========================================================
    PROJECT SEARCH
 ========================================================= */
 function ProjectSearch({
-  value,
-  onChange,
-  placeholder,
+    value,
+    onChange,
+    placeholder,
 }: {
-  value: string;
-  onChange: (value: string) => void;
-  placeholder: string;
+    value: string;
+    onChange: (value: string) => void;
+    placeholder: string;
 }) {
-  const inputRef = useRef<HTMLInputElement>(null);
-  return (
-    <div className="flex min-h-10 w-full min-w-0 items-center gap-2.5 rounded-lg border border-border/70 bg-card px-3 transition-[border-color,box-shadow] duration-150 focus-within:border-ring/50 focus-within:ring-2 focus-within:ring-ring/15 motion-reduce:transition-none sm:w-auto sm:flex-1 sm:basis-56 sm:max-w-sm dark:border-border dark:bg-surface-2/45">
-      <SearchIcon
-        size={14}
-        aria-hidden="true"
-        className="shrink-0 text-muted-foreground"
-      />
-      <input
-        ref={inputRef}
-        type="search"
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        onKeyDown={(event) => {
-          if (event.key === "Escape" && value) {
-            event.preventDefault();
-            onChange("");
-          }
-        }}
-        placeholder={placeholder}
-        aria-label={placeholder}
-        autoComplete="off"
-        className="h-10 min-w-0 flex-1 bg-transparent text-base text-foreground outline-none placeholder:text-muted-foreground/65 sm:text-sm [&::-webkit-search-cancel-button]:appearance-none"
-      />
-      {value && (
-        <button
-          type="button"
-          onClick={() => {
-            onChange("");
-            inputRef.current?.focus();
-          }}
-          aria-label="Clear project search"
-          className={
-            "flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:text-foreground " +
-            focusStyle
-          }
-        >
-          <XIcon size={13} aria-hidden="true" />
-        </button>
-      )}
-    </div>
-  );
+    const inputRef = useRef<HTMLInputElement>(null);
+    return (
+        <div className="flex min-h-10 w-full min-w-0 items-center gap-2.5 rounded-lg border border-border/70 bg-card px-3 transition-[border-color,box-shadow] duration-150 focus-within:border-ring/50 focus-within:ring-2 focus-within:ring-ring/15 motion-reduce:transition-none sm:w-auto sm:flex-1 sm:basis-56 sm:max-w-sm dark:border-border dark:bg-surface-2/45">
+            <SearchIcon
+                size={14}
+                aria-hidden="true"
+                className="shrink-0 text-muted-foreground"
+            />
+            <input
+                ref={inputRef}
+                type="search"
+                value={value}
+                onChange={(event) => onChange(event.target.value)}
+                onKeyDown={(event) => {
+                    if (event.key === "Escape" && value) {
+                        event.preventDefault();
+                        onChange("");
+                    }
+                }}
+                placeholder={placeholder}
+                aria-label={placeholder}
+                autoComplete="off"
+                className="h-10 min-w-0 flex-1 bg-transparent text-base text-foreground outline-none placeholder:text-muted-foreground/65 sm:text-sm [&::-webkit-search-cancel-button]:appearance-none"
+            />
+            {value && (
+                <button
+                    type="button"
+                    onClick={() => {
+                        onChange("");
+                        inputRef.current?.focus();
+                    }}
+                    aria-label="Clear project search"
+                    className={
+                        "flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:text-foreground " +
+                        focusStyle
+                    }
+                >
+                    <XIcon size={13} aria-hidden="true" />
+                </button>
+            )}
+        </div>
+    );
 }
 /* =========================================================
    NEW CLIENT WELCOME
 ========================================================= */
 function NewClientWelcome({ firstName }: { firstName: string }) {
-  return (
-    <motion.section
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, ease: "easeOut" }}
-      className="w-full max-w-xl text-center"
-    >
-      <span
-        className={
-          "mx-auto flex h-10 w-10 items-center justify-center rounded-xl " +
-          softIconSurface
-        }
-      >
-        <SparklesIcon size={16} aria-hidden="true" />
-      </span>
-      <p className="mt-6 text-[10px] font-semibold uppercase tracking-[0.17em] text-muted-foreground">
-        Welcome to Allocatr
-      </p>
-      <h1 className="mt-2.5 text-2xl font-medium leading-[1.12] tracking-[-0.03em] text-foreground/90 sm:text-3xl dark:text-foreground">
-        What would you like to do first, {firstName}?
-      </h1>
-      <p className="mx-auto mt-3 max-w-md text-sm leading-7 text-muted-foreground">
-        Create a project if you already know what needs to be done, or discover
-        Allocats and find the right person first.
-      </p>
-      <div className="mt-8 flex flex-col justify-center gap-2.5 sm:flex-row sm:items-center">
-        <Button
-          asChild
-          className={
-            "group h-10 rounded-lg px-5 text-xs font-semibold shadow-none " +
-            primaryActionButton
-          }
+    return (
+        <motion.section
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.35, ease: "easeOut" }}
+            className="w-full max-w-xl text-center"
         >
-          <Link to="/projects/new">
-            <PlusIcon size={14} aria-hidden="true" />
-            Create a project
-            <ArrowRightIcon
-              size={12}
-              aria-hidden="true"
-              className="transition-transform duration-200 group-hover:translate-x-0.5 motion-reduce:transform-none motion-reduce:transition-none"
-            />
-          </Link>
-        </Button>
-        <Button
-          asChild
-          variant="outline"
-          className={
-            "h-10 rounded-lg px-5 text-xs font-semibold shadow-none " +
-            secondaryActionButton
-          }
-        >
-          <Link to="/discover">
-            <SearchIcon size={14} aria-hidden="true" />
-            Discover Allocats
-          </Link>
-        </Button>
-      </div>
-      <p className="mt-5 text-[0.66rem] text-muted-foreground/70">
-        You can do either at any time.
-      </p>
-    </motion.section>
-  );
+            <span
+                className={
+                    "mx-auto flex h-10 w-10 items-center justify-center rounded-xl " +
+                    softIconSurface
+                }
+            >
+                <SparklesIcon size={16} aria-hidden="true" />
+            </span>
+            <p className="mt-6 text-[10px] font-semibold uppercase tracking-[0.17em] text-muted-foreground">
+                Welcome to Allocatr
+            </p>
+            <h1 className="mt-2.5 text-2xl font-medium leading-[1.12] tracking-[-0.03em] text-foreground/90 sm:text-3xl dark:text-foreground">
+                What would you like to do first, {firstName}?
+            </h1>
+            <p className="mx-auto mt-3 max-w-md text-sm leading-7 text-muted-foreground">
+                Create a project if you already know what needs to be done, or
+                discover Allocats and find the right person first.
+            </p>
+            <div className="mt-8 flex flex-col justify-center gap-2.5 sm:flex-row sm:items-center">
+                <Button
+                    asChild
+                    className={
+                        "group h-10 rounded-lg px-5 text-xs font-semibold shadow-none " +
+                        primaryActionButton
+                    }
+                >
+                    <Link to="/projects/new">
+                        <PlusIcon size={14} aria-hidden="true" />
+                        Create a project
+                        <ArrowRightIcon
+                            size={12}
+                            aria-hidden="true"
+                            className="transition-transform duration-200 group-hover:translate-x-0.5 motion-reduce:transform-none motion-reduce:transition-none"
+                        />
+                    </Link>
+                </Button>
+                <Button
+                    asChild
+                    variant="outline"
+                    className={
+                        "h-10 rounded-lg px-5 text-xs font-semibold shadow-none " +
+                        secondaryActionButton
+                    }
+                >
+                    <Link to="/discover">
+                        <SearchIcon size={14} aria-hidden="true" />
+                        Discover Allocats
+                    </Link>
+                </Button>
+            </div>
+            <p className="mt-5 text-[0.66rem] text-muted-foreground/70">
+                You can do either at any time.
+            </p>
+        </motion.section>
+    );
 }
 /* =========================================================
    WORKSPACE MASTHEAD
 ========================================================= */
 function WorkspaceMasthead({
-  firstName,
-  isAllocat,
-  workspaceSection,
-  onSectionChange,
-  projectCount,
-  workCount,
-  invitationCount,
-  items,
-  onClearSearch,
+    firstName,
+    isAllocat,
+    workspaceSection,
+    onSectionChange,
+    projectCount,
+    workCount,
+    invitationCount,
+    items,
+    onClearSearch,
 }: {
-  firstName: string;
-  isAllocat: boolean;
-  workspaceSection: WorkspaceSection;
-  onSectionChange: (section: WorkspaceSection) => void;
-  projectCount: number;
-  workCount: number;
-  invitationCount: number;
-  items: SummaryItem[];
-  onClearSearch: () => void;
+    firstName: string;
+    isAllocat: boolean;
+    workspaceSection: WorkspaceSection;
+    onSectionChange: (section: WorkspaceSection) => void;
+    projectCount: number;
+    workCount: number;
+    invitationCount: number;
+    items: SummaryItem[];
+    onClearSearch: () => void;
 }) {
-  const cancelledItem = items.find((item) => item.label === "Cancelled");
-  const primaryItems = items.filter((item) => item.label !== "Cancelled");
-  const cancelledLabel =
-    workspaceSection === "work" ? "Cancelled work" : "Cancelled projects";
-  return (
-    <motion.section
-      initial={{ opacity: 0, y: 5 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.28, ease: "easeOut" }}
-      aria-label="Workspace overview"
-    >
-      <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-5">
-        <div className="min-w-0">
-          <h1 className="break-words text-2xl font-medium leading-[1.2] tracking-[-0.03em] text-foreground/95 sm:text-3xl dark:text-foreground">
-            Hi,{" "}
-            <span className="text-brand-secondary-highlight dark:text-secondary">
-              {firstName}
-            </span>{" "}
-            <span role="img" aria-label="waving hand" className="text-[0.8em]">
-              👋
-            </span>
-          </h1>
-          <p className="mt-1.5 max-w-xl text-xs leading-6 text-muted-foreground">
-            {workspaceSection === "projects"
-              ? "Your active, pending and completed projects."
-              : "Your client work, active jobs and invitations."}
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <Button
-            asChild
-            className={
-              "group h-10 rounded-lg px-4 text-xs font-medium shadow-none " +
-              primaryActionButton
-            }
-          >
-            <Link to="/projects/new" aria-label="New project">
-              <PlusIcon size={13} aria-hidden="true" />
-              New project
-            </Link>
-          </Button>
-          <Button
-            asChild
-            variant="outline"
-            className={
-              "h-10 rounded-lg px-4 text-xs font-medium shadow-none " +
-              secondaryActionButton
-            }
-          >
-            <Link to="/discover" aria-label="Discover Allocats">
-              <SearchIcon size={13} aria-hidden="true" />
-              Discover Allocats
-            </Link>
-          </Button>
-        </div>
-      </div>
-      <div className="mt-5 flex min-w-0 flex-col gap-3 pb-1 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-        {isAllocat ? (
-          <div
-            role="group"
-            aria-label="Workspace section"
-            className="inline-flex max-w-full items-center rounded-lg bg-brand-secondary-highlight/[0.06] p-1 dark:bg-surface-3/55"
-          >
-            <WorkspaceTab
-              active={workspaceSection === "projects"}
-              onClick={() => onSectionChange("projects")}
-              label="My projects"
-              count={projectCount}
-            />
-            <WorkspaceTab
-              active={workspaceSection === "work"}
-              onClick={() => onSectionChange("work")}
-              label="My work"
-              count={workCount}
-              attention={invitationCount > 0}
-            />
-          </div>
-        ) : null}
-        <div
-          role="group"
-          aria-label="Filter by status"
-          className="grid min-w-0 grid-cols-4 gap-1 sm:flex sm:items-center"
+    const cancelledItem = items.find((item) => item.label === "Cancelled");
+    const primaryItems = items.filter((item) => item.label !== "Cancelled");
+    const cancelledLabel =
+        workspaceSection === "work" ? "Cancelled work" : "Cancelled projects";
+    return (
+        <motion.section
+            initial={{ opacity: 0, y: 5 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.28, ease: "easeOut" }}
+            aria-label="Workspace overview"
         >
-          {primaryItems.map((item) => (
-            <WorkspaceMetric key={item.label} item={item} />
-          ))}
-          {cancelledItem && (
-            <DropdownMenu modal={false}>
-              <DropdownMenuTrigger asChild>
-                <button
-                  type="button"
-                  aria-label={
-                    workspaceSection === "work"
-                      ? "More work options"
-                      : "More project options"
-                  }
-                  title={
-                    cancelledItem.active
-                      ? `Viewing ${cancelledLabel.toLowerCase()}`
-                      : "More views"
-                  }
-                  className={`inline-flex h-11 min-w-0 items-center justify-center rounded-md px-3 transition-colors sm:h-8 ${cancelledItem.active ? "bg-brand-secondary-highlight/[0.08] text-brand-secondary-highlight dark:bg-card dark:text-secondary" : "text-muted-foreground hover:bg-surface-2 hover:text-foreground dark:hover:bg-surface-3/55"} ${focusStyle}`}
+            <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-5">
+                <div className="min-w-0">
+                    <h1 className="break-words text-2xl font-medium leading-[1.2] tracking-[-0.03em] text-foreground/95 sm:text-3xl dark:text-foreground">
+                        Hi,{" "}
+                        <span className="text-brand-secondary-highlight dark:text-secondary">
+                            {firstName}
+                        </span>{" "}
+                        <span
+                            role="img"
+                            aria-label="waving hand"
+                            className="text-[0.8em]"
+                        >
+                            👋
+                        </span>
+                    </h1>
+                    <p className="mt-1.5 max-w-xl text-xs leading-6 text-muted-foreground">
+                        {workspaceSection === "projects"
+                            ? "Your active, pending and completed projects."
+                            : "Your client work, active jobs and invitations."}
+                    </p>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                    <Button
+                        asChild
+                        className={
+                            "group h-10 rounded-lg px-4 text-xs font-medium shadow-none " +
+                            primaryActionButton
+                        }
+                    >
+                        <Link to="/projects/new" aria-label="New project">
+                            <PlusIcon size={13} aria-hidden="true" />
+                            New project
+                        </Link>
+                    </Button>
+                    <Button
+                        asChild
+                        variant="outline"
+                        className={
+                            "h-10 rounded-lg px-4 text-xs font-medium shadow-none " +
+                            secondaryActionButton
+                        }
+                    >
+                        <Link to="/discover" aria-label="Discover Allocats">
+                            <SearchIcon size={13} aria-hidden="true" />
+                            Discover Allocats
+                        </Link>
+                    </Button>
+                </div>
+            </div>
+            <div className="mt-5 flex min-w-0 flex-col gap-3 pb-1 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+                {isAllocat ? (
+                    <div
+                        role="group"
+                        aria-label="Workspace section"
+                        className="inline-flex max-w-full items-center rounded-lg bg-brand-secondary-highlight/[0.06] p-1 dark:bg-surface-3/55"
+                    >
+                        <WorkspaceTab
+                            active={workspaceSection === "projects"}
+                            onClick={() => onSectionChange("projects")}
+                            label="My projects"
+                            count={projectCount}
+                        />
+                        <WorkspaceTab
+                            active={workspaceSection === "work"}
+                            onClick={() => onSectionChange("work")}
+                            label="My work"
+                            count={workCount}
+                            attention={invitationCount > 0}
+                        />
+                    </div>
+                ) : null}
+                <div
+                    role="group"
+                    aria-label="Filter by status"
+                    className="grid min-w-0 grid-cols-4 gap-1 sm:flex sm:items-center"
                 >
-                  <MoreHorizontalIcon
-                    size={17}
-                    aria-hidden="true"
-                    className="text-muted-foreground"
-                  />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                align="end"
-                sideOffset={6}
-                collisionPadding={16}
-                className="z-[150] min-w-56 rounded-xl border border-border/70 bg-popover p-1.5 text-popover-foreground shadow-sm"
-              >
-                <DropdownMenuItem
-                  role="menuitemradio"
-                  aria-checked={Boolean(cancelledItem.active)}
-                  onSelect={() => {
-                    cancelledItem.onClick?.();
-                    onClearSearch();
-                  }}
-                  className="min-h-11 gap-3 rounded-lg px-3 py-2.5 text-xs font-medium outline-none focus:bg-surface-3/60"
-                >
-                  <BanIcon
-                    size={14}
-                    aria-hidden="true"
-                    className="text-muted-foreground"
-                  />
-                  <span className="flex-1">{cancelledLabel}</span>
-                  <span className="text-[11px] tabular-nums text-muted-foreground">
-                    {cancelledItem.value}
-                  </span>
-                  {cancelledItem.active && (
-                    <CheckIcon
-                      size={13}
-                      aria-hidden="true"
-                      className="text-brand-secondary-highlight dark:text-secondary"
-                    />
-                  )}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
-        </div>
-      </div>
-    </motion.section>
-  );
+                    {primaryItems.map((item) => (
+                        <WorkspaceMetric key={item.label} item={item} />
+                    ))}
+                    {cancelledItem && (
+                        <DropdownMenu modal={false}>
+                            <DropdownMenuTrigger asChild>
+                                <button
+                                    type="button"
+                                    aria-label={
+                                        workspaceSection === "work"
+                                            ? "More work options"
+                                            : "More project options"
+                                    }
+                                    title={
+                                        cancelledItem.active
+                                            ? `Viewing ${cancelledLabel.toLowerCase()}`
+                                            : "More views"
+                                    }
+                                    className={`inline-flex h-11 min-w-0 items-center justify-center rounded-md px-3 transition-colors sm:h-8 ${cancelledItem.active ? "bg-brand-secondary-highlight/[0.08] text-brand-secondary-highlight dark:bg-card dark:text-secondary" : "text-muted-foreground hover:bg-surface-2 hover:text-foreground dark:hover:bg-surface-3/55"} ${focusStyle}`}
+                                >
+                                    <MoreHorizontalIcon
+                                        size={17}
+                                        aria-hidden="true"
+                                        className="text-muted-foreground"
+                                    />
+                                </button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent
+                                align="end"
+                                sideOffset={6}
+                                collisionPadding={16}
+                                className="z-[150] min-w-56 rounded-xl border border-border/70 bg-popover p-1.5 text-popover-foreground shadow-sm"
+                            >
+                                <DropdownMenuItem
+                                    role="menuitemradio"
+                                    aria-checked={Boolean(cancelledItem.active)}
+                                    onSelect={() => {
+                                        cancelledItem.onClick?.();
+                                        onClearSearch();
+                                    }}
+                                    className="min-h-11 gap-3 rounded-lg px-3 py-2.5 text-xs font-medium outline-none focus:bg-surface-3/60"
+                                >
+                                    <BanIcon
+                                        size={14}
+                                        aria-hidden="true"
+                                        className="text-muted-foreground"
+                                    />
+                                    <span className="flex-1">
+                                        {cancelledLabel}
+                                    </span>
+                                    <span className="text-[11px] tabular-nums text-muted-foreground">
+                                        {cancelledItem.value}
+                                    </span>
+                                    {cancelledItem.active && (
+                                        <CheckIcon
+                                            size={13}
+                                            aria-hidden="true"
+                                            className="text-brand-secondary-highlight dark:text-secondary"
+                                        />
+                                    )}
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    )}
+                </div>
+            </div>
+        </motion.section>
+    );
 }
 
 /* =========================================================
    WORKSPACE METRIC AND TAB
 ========================================================= */
 function WorkspaceMetric({ item }: { item: SummaryItem }) {
-  const Icon = item.icon;
-  const appearance = getMetricAppearance(item.emphasis);
-  return (
-    <button
-      type="button"
-      onClick={item.onClick}
-      aria-pressed={item.active}
-      aria-label={item.label + ": " + item.value}
-      title={item.label}
-      className={[
-        "relative flex h-11 min-w-0 flex-wrap content-center items-center justify-center gap-x-1.5 gap-y-1 rounded-md px-1.5 text-left sm:h-8 sm:flex-nowrap sm:gap-1.5 sm:px-2.5",
-        "transition-[background-color,color] duration-150 motion-reduce:transition-none",
-        focusStyle,
-        item.active
-          ? "bg-brand-secondary-highlight/[0.08] text-brand-secondary-highlight dark:bg-card dark:text-secondary"
-          : "text-muted-foreground hover:bg-surface-2/70 hover:text-foreground/85 dark:hover:bg-surface-3/55 dark:hover:text-foreground",
-      ].join(" ")}
-    >
-      <span className="relative flex shrink-0 items-center">
-        <Icon size={11} className={appearance.icon} />
-      </span>
-      <span className="text-[11px] font-semibold tabular-nums sm:text-xs">
-        {item.value}
-      </span>
-      <span className="flex w-full items-center justify-center gap-2 sm:w-auto">
-        <span className="text-[10px] font-medium leading-3 sm:text-[11px]">
-          {item.label}
-        </span>
-        {item.attention && <AttentionDot />}
-      </span>
-    </button>
-  );
+    const Icon = item.icon;
+    const appearance = getMetricAppearance(item.emphasis);
+    return (
+        <button
+            type="button"
+            onClick={item.onClick}
+            aria-pressed={item.active}
+            aria-label={item.label + ": " + item.value}
+            title={item.label}
+            className={[
+                "relative flex h-11 min-w-0 flex-wrap content-center items-center justify-center gap-x-1.5 gap-y-1 rounded-md px-1.5 text-left sm:h-8 sm:flex-nowrap sm:gap-1.5 sm:px-2.5",
+                "transition-[background-color,color] duration-150 motion-reduce:transition-none",
+                focusStyle,
+                item.active
+                    ? "bg-brand-secondary-highlight/[0.08] text-brand-secondary-highlight dark:bg-card dark:text-secondary"
+                    : "text-muted-foreground hover:bg-surface-2/70 hover:text-foreground/85 dark:hover:bg-surface-3/55 dark:hover:text-foreground",
+            ].join(" ")}
+        >
+            <span className="relative flex shrink-0 items-center">
+                <Icon size={11} className={appearance.icon} />
+            </span>
+            <span className="text-[11px] font-semibold tabular-nums sm:text-xs">
+                {item.value}
+            </span>
+            <span className="flex w-full items-center justify-center gap-2 sm:w-auto">
+                <span className="text-[10px] font-medium leading-3 sm:text-[11px]">
+                    {item.label}
+                </span>
+                {item.attention && <AttentionDot />}
+            </span>
+        </button>
+    );
 }
 function WorkspaceTab({
-  active,
-  onClick,
-  label,
-  count,
-  attention = false,
+    active,
+    onClick,
+    label,
+    count,
+    attention = false,
 }: {
-  active: boolean;
-  onClick: () => void;
-  label: string;
-  count?: number;
-  attention?: boolean;
+    active: boolean;
+    onClick: () => void;
+    label: string;
+    count?: number;
+    attention?: boolean;
 }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      className={[
-        "relative flex h-11 min-w-0 flex-1 items-center justify-center gap-2 rounded-md px-3 text-xs sm:h-8 sm:flex-none font-medium",
-        "transition-colors duration-200 motion-reduce:transition-none",
-        focusStyle,
-        active
-          ? "text-brand-secondary-highlight dark:text-secondary"
-          : "text-muted-foreground hover:text-foreground/85 dark:hover:text-foreground",
-      ].join(" ")}
-    >
-      {active && (
-        <motion.span
-          layoutId="workspace-active-tab"
-          aria-hidden="true"
-          className="absolute inset-0 rounded-md bg-card dark:bg-card"
-          transition={{ type: "spring", stiffness: 500, damping: 38 }}
-        />
-      )}
-      <span className="relative z-10 flex items-center gap-2">
-        <span>{label}</span>
-        {typeof count === "number" && count > 0 && (
-          <span
-            className={
-              "text-[10px] font-semibold tabular-nums " +
-              (active
-                ? "text-brand-secondary-highlight/65 dark:text-secondary/65"
-                : attention
-                  ? "text-status-pending-foreground"
-                  : "text-muted-foreground/55")
-            }
-          >
-            {count}
-          </span>
-        )}
+    return (
+        <button
+            type="button"
+            onClick={onClick}
+            aria-pressed={active}
+            className={[
+                "relative flex h-11 min-w-0 flex-1 items-center justify-center gap-2 rounded-md px-3 text-xs sm:h-8 sm:flex-none font-medium",
+                "transition-colors duration-200 motion-reduce:transition-none",
+                focusStyle,
+                active
+                    ? "text-brand-secondary-highlight dark:text-secondary"
+                    : "text-muted-foreground hover:text-foreground/85 dark:hover:text-foreground",
+            ].join(" ")}
+        >
+            {active && (
+                <motion.span
+                    layoutId="workspace-active-tab"
+                    aria-hidden="true"
+                    className="absolute inset-0 rounded-md bg-card dark:bg-card"
+                    transition={{ type: "spring", stiffness: 500, damping: 38 }}
+                />
+            )}
+            <span className="relative z-10 flex items-center gap-2">
+                <span>{label}</span>
+                {typeof count === "number" && count > 0 && (
+                    <span
+                        className={
+                            "text-[10px] font-semibold tabular-nums " +
+                            (active
+                                ? "text-brand-secondary-highlight/65 dark:text-secondary/65"
+                                : attention
+                                  ? "text-status-pending-foreground"
+                                  : "text-muted-foreground/55")
+                        }
+                    >
+                        {count}
+                    </span>
+                )}
 
-        {attention && !active && <AttentionDot />}
-      </span>
-    </button>
-  );
+                {attention && !active && <AttentionDot />}
+            </span>
+        </button>
+    );
 }
 // function AttentionDot({ className }: { className: string }) {
 //   return (
@@ -1254,509 +1327,520 @@ function WorkspaceTab({
 // }
 
 function AttentionDot({ className = "" }: { className?: string }) {
-  return (
-    <span
-      aria-hidden="true"
-      className={"relative inline-flex h-1.5 w-1.5 shrink-0 " + className}
-    >
-      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand-secondary-highlight opacity-60 dark:bg-secondary motion-reduce:hidden" />
-      <span className="relative inline-flex h-full w-full rounded-full bg-brand-secondary-highlight dark:bg-secondary" />
-    </span>
-  );
+    return (
+        <span
+            aria-hidden="true"
+            className={"relative inline-flex h-1.5 w-1.5 shrink-0 " + className}
+        >
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand-secondary-highlight opacity-60 dark:bg-secondary motion-reduce:hidden" />
+            <span className="relative inline-flex h-full w-full rounded-full bg-brand-secondary-highlight dark:bg-secondary" />
+        </span>
+    );
 }
 function SectionEyebrow({ children }: { children: ReactNode }) {
-  return (
-    <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-      {children}
-    </p>
-  );
+    return (
+        <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            {children}
+        </p>
+    );
 }
 /* =========================================================
    SORT AND VIEW CONTROLS
 ========================================================= */
 function ProjectControls({
-  sort,
-  setSort,
-  view,
-  setView,
+    sort,
+    setSort,
+    view,
+    setView,
 }: {
-  sort: ProjectSort;
-  setSort: (value: ProjectSort) => void;
-  view: ProjectView;
-  setView: (value: ProjectView) => void;
+    sort: ProjectSort;
+    setSort: (value: ProjectSort) => void;
+    view: ProjectView;
+    setView: (value: ProjectView) => void;
 }) {
-  return (
-    <div className="flex shrink-0 items-center gap-2 self-end sm:self-auto">
-      <SortDropdown
-        value={sort}
-        onChange={setSort}
-        options={SORT_OPTIONS}
-        label="Sort projects"
-      />
-      <ViewModeToggle value={view} onChange={setView} label="Project layout" />
-    </div>
-  );
+    return (
+        <div className="flex shrink-0 items-center gap-2 self-end sm:self-auto">
+            <SortDropdown
+                value={sort}
+                onChange={setSort}
+                options={SORT_OPTIONS}
+                label="Sort projects"
+            />
+            <ViewModeToggle
+                value={view}
+                onChange={setView}
+                label="Project layout"
+            />
+        </div>
+    );
 }
 /* =========================================================
    PROJECT RESULTS
 ========================================================= */
 function ProjectSearchResults({
-  groups,
-  view,
-  onClearSearch,
-  onProjectUpdated,
-  onRespond,
+    groups,
+    view,
+    onClearSearch,
+    onProjectUpdated,
+    onRespond,
 }: {
-  groups: ProjectSearchGroup[];
-  view: ProjectView;
-  onClearSearch: () => void;
-  onProjectUpdated: (project: Project) => void;
-  onRespond: (projectId: string, action: InvitationAction) => Promise<boolean>;
+    groups: ProjectSearchGroup[];
+    view: ProjectView;
+    onClearSearch: () => void;
+    onProjectUpdated: (project: Project) => void;
+    onRespond: (
+        projectId: string,
+        action: InvitationAction,
+    ) => Promise<boolean>;
 }) {
-  if (groups.length === 0) return <SearchEmptyState onClear={onClearSearch} />;
-  return (
-    <div className="mt-6 space-y-8">
-      {groups.map((group) => (
-        <section
-          key={group.key}
-          aria-label={"Search results in " + group.label}
-        >
-          <div className="flex items-center gap-3">
-            <h3 className="shrink-0 text-xs font-medium text-muted-foreground">
-              Found in{" "}
-              <span className="font-semibold text-foreground/85">
-                {group.label}
-              </span>
-            </h3>
-            <span className="shrink-0 rounded-md border border-border/60 bg-surface-2/45 px-1.5 py-0.5 text-[10px] tabular-nums text-muted-foreground dark:border-border">
-              {group.projects.length}
-            </span>
-            <span
-              aria-hidden="true"
-              className="h-px min-w-0 flex-1 bg-border/60"
-            />
-          </div>
-          {group.kind === "invitations" ? (
-            <div className="mt-4 grid gap-3">
-              {group.projects.map((project) => (
-                <InvitationCard
-                  key={project.id}
-                  project={project}
-                  onRespond={(action) => onRespond(project.id, action)}
-                />
-              ))}
-            </div>
-          ) : (
-            <ProjectGrid
-              projects={group.projects}
-              view={view}
-              onProjectUpdated={onProjectUpdated}
-              compactSpacing
-            />
-          )}
-        </section>
-      ))}
-    </div>
-  );
+    if (groups.length === 0)
+        return <SearchEmptyState onClear={onClearSearch} />;
+    return (
+        <div className="mt-6 space-y-8">
+            {groups.map((group) => (
+                <section
+                    key={group.key}
+                    aria-label={"Search results in " + group.label}
+                >
+                    <div className="flex items-center gap-3">
+                        <h3 className="shrink-0 text-xs font-medium text-muted-foreground">
+                            Found in{" "}
+                            <span className="font-semibold text-foreground/85">
+                                {group.label}
+                            </span>
+                        </h3>
+                        <span className="shrink-0 rounded-md border border-border/60 bg-surface-2/45 px-1.5 py-0.5 text-[10px] tabular-nums text-muted-foreground dark:border-border">
+                            {group.projects.length}
+                        </span>
+                        <span
+                            aria-hidden="true"
+                            className="h-px min-w-0 flex-1 bg-border/60"
+                        />
+                    </div>
+                    {group.kind === "invitations" ? (
+                        <div className="mt-4 grid gap-3">
+                            {group.projects.map((project) => (
+                                <InvitationCard
+                                    key={project.id}
+                                    project={project}
+                                    onRespond={(action) =>
+                                        onRespond(project.id, action)
+                                    }
+                                />
+                            ))}
+                        </div>
+                    ) : (
+                        <ProjectGrid
+                            projects={group.projects}
+                            view={view}
+                            onProjectUpdated={onProjectUpdated}
+                            compactSpacing
+                        />
+                    )}
+                </section>
+            ))}
+        </div>
+    );
 }
 function ProjectResults({
-  projects,
-  view,
-  emptyLabel,
-  onProjectUpdated,
+    projects,
+    view,
+    emptyLabel,
+    onProjectUpdated,
 }: {
-  projects: Project[];
-  view: ProjectView;
-  emptyLabel: string;
-  onProjectUpdated: (project: Project) => void;
+    projects: Project[];
+    view: ProjectView;
+    emptyLabel: string;
+    onProjectUpdated: (project: Project) => void;
 }) {
-  if (projects.length === 0)
+    if (projects.length === 0)
+        return (
+            <EmptyCollection
+                title={"No " + emptyLabel + " projects"}
+                description="Projects matching this status will appear here."
+                icon={FolderOpenIcon}
+            />
+        );
     return (
-      <EmptyCollection
-        title={"No " + emptyLabel + " projects"}
-        description="Projects matching this status will appear here."
-        icon={FolderOpenIcon}
-      />
+        <ProjectGrid
+            projects={projects}
+            view={view}
+            onProjectUpdated={onProjectUpdated}
+        />
     );
-  return (
-    <ProjectGrid
-      projects={projects}
-      view={view}
-      onProjectUpdated={onProjectUpdated}
-    />
-  );
 }
 function ProjectGrid<T extends Project>({
-  projects,
-  view,
-  onProjectUpdated,
-  compactSpacing = false,
+    projects,
+    view,
+    onProjectUpdated,
+    compactSpacing = false,
 }: {
-  projects: T[];
-  view: ProjectView;
-  onProjectUpdated?: (project: Project) => void;
-  compactSpacing?: boolean;
+    projects: T[];
+    view: ProjectView;
+    onProjectUpdated?: (project: Project) => void;
+    compactSpacing?: boolean;
 }) {
-  return (
-    <div
-      className={[
-        compactSpacing ? "mt-4" : "mt-5",
-        view === "grid"
-          ? "grid min-w-0 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-2 2xl:grid-cols-3"
-          : "flex min-w-0 flex-col",
-      ].join(" ")}
-    >
-      {projects.map((project) =>
-        view === "grid" ? (
-          <GridView
-            key={project.id}
-            project={project}
-            onProjectUpdated={onProjectUpdated}
-          />
-        ) : (
-          <ListView
-            key={project.id}
-            project={project}
-            onProjectUpdated={onProjectUpdated}
-          />
-        ),
-      )}
-    </div>
-  );
+    return (
+        <div
+            className={[
+                compactSpacing ? "mt-4" : "mt-5",
+                view === "grid"
+                    ? "grid min-w-0 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-2 2xl:grid-cols-3"
+                    : "flex min-w-0 flex-col",
+            ].join(" ")}
+        >
+            {projects.map((project) =>
+                view === "grid" ? (
+                    <GridView
+                        key={project.id}
+                        project={project}
+                        onProjectUpdated={onProjectUpdated}
+                    />
+                ) : (
+                    <ListView
+                        key={project.id}
+                        project={project}
+                        onProjectUpdated={onProjectUpdated}
+                    />
+                ),
+            )}
+        </div>
+    );
 }
 /* =========================================================
    INVITATION CARD
 ========================================================= */
 function InvitationCard({
-  project,
-  onRespond,
+    project,
+    onRespond,
 }: {
-  project: WorkProject;
-  onRespond: (action: InvitationAction) => Promise<boolean>;
+    project: WorkProject;
+    onRespond: (action: InvitationAction) => Promise<boolean>;
 }) {
-  const [detailsOpen, setDetailsOpen] = useState(false);
-  const [responding, setResponding] = useState<InvitationAction | null>(null);
-  const busyRef = useRef(false);
-  const mountedRef = useRef(false);
-  useEffect(() => {
-    mountedRef.current = true;
-    return () => {
-      mountedRef.current = false;
-    };
-  }, []);
-  async function respond(action: InvitationAction) {
-    if (busyRef.current) return;
-    busyRef.current = true;
-    setResponding(action);
-    try {
-      const saved = await onRespond(action);
-      if (saved && mountedRef.current) setDetailsOpen(false);
-    } finally {
-      busyRef.current = false;
-      if (mountedRef.current) setResponding(null);
+    const [detailsOpen, setDetailsOpen] = useState(false);
+    const [responding, setResponding] = useState<InvitationAction | null>(null);
+    const busyRef = useRef(false);
+    const mountedRef = useRef(false);
+    useEffect(() => {
+        mountedRef.current = true;
+        return () => {
+            mountedRef.current = false;
+        };
+    }, []);
+    async function respond(action: InvitationAction) {
+        if (busyRef.current) return;
+        busyRef.current = true;
+        setResponding(action);
+        try {
+            const saved = await onRespond(action);
+            if (saved && mountedRef.current) setDetailsOpen(false);
+        } finally {
+            busyRef.current = false;
+            if (mountedRef.current) setResponding(null);
+        }
     }
-  }
-  return (
-    <>
-      <article className="relative overflow-hidden rounded-xl border border-border/65 bg-card p-5 sm:p-6 dark:border-border">
-        <span
-          aria-hidden="true"
-          className="absolute inset-y-5 left-0 w-[2px] rounded-full bg-status-pending/80"
-        />
-        <div className="grid gap-5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
-          <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.15em] text-status-pending-foreground">
-                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-status-pending/10">
-                  <SendIcon size={11} aria-hidden="true" />
-                </span>
-                Project invitation
-              </span>
-              {project.invitedAt && (
-                <span className="text-[11px] text-muted-foreground/80">
-                  {formatShortDate(project.invitedAt)}
-                </span>
-              )}
-            </div>
-            <h2 className="mt-4 break-words text-base font-semibold leading-tight tracking-[-0.02em] text-foreground/90 sm:text-lg dark:text-foreground">
-              {project.title}
-            </h2>
-            <p className="mt-2 line-clamp-2 max-w-2xl text-xs leading-6 text-muted-foreground sm:text-sm">
-              {project.description || "No project description was provided."}
-            </p>
-            <button
-              type="button"
-              onClick={() => setDetailsOpen(true)}
-              className={
-                "mt-3 inline-flex min-h-9 items-center gap-2 rounded-md text-xs font-semibold text-brand-secondary-highlight transition-opacity hover:opacity-75 dark:text-secondary " +
-                focusStyle
-              }
-            >
-              Review project
-              <ArrowRightIcon size={12} aria-hidden="true" />
-            </button>
-          </div>
-          <InvitationActions
-            responding={responding}
-            onAccept={async () => {
-              setDetailsOpen(true);
-            }}
-            onDecline={() => respond("decline")}
-          />
-        </div>
-      </article>
-      <ProjectInvitationDialog
-        project={project}
-        open={detailsOpen}
-        onOpenChange={(nextOpen) => {
-          if (!busyRef.current) setDetailsOpen(nextOpen);
-        }}
-        responding={responding}
-        onAccept={() => respond("accept")}
-        onDecline={() => respond("decline")}
-      />
-    </>
-  );
+    return (
+        <>
+            <article className="relative overflow-hidden rounded-xl border border-border/65 bg-card p-5 sm:p-6 dark:border-border">
+                <span
+                    aria-hidden="true"
+                    className="absolute inset-y-5 left-0 w-[2px] rounded-full bg-status-pending/80"
+                />
+                <div className="grid gap-5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+                    <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-3">
+                            <span className="inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.15em] text-status-pending-foreground">
+                                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-status-pending/10">
+                                    <SendIcon size={11} aria-hidden="true" />
+                                </span>
+                                Project invitation
+                            </span>
+                            {project.invitedAt && (
+                                <span className="text-[11px] text-muted-foreground/80">
+                                    {formatShortDate(project.invitedAt)}
+                                </span>
+                            )}
+                        </div>
+                        <h2 className="mt-4 break-words text-base font-semibold leading-tight tracking-[-0.02em] text-foreground/90 sm:text-lg dark:text-foreground">
+                            {project.title}
+                        </h2>
+                        <p className="mt-2 line-clamp-2 max-w-2xl text-xs leading-6 text-muted-foreground sm:text-sm">
+                            {project.description ||
+                                "No project description was provided."}
+                        </p>
+                        <button
+                            type="button"
+                            onClick={() => setDetailsOpen(true)}
+                            className={
+                                "mt-3 inline-flex min-h-9 items-center gap-2 rounded-md text-xs font-semibold text-brand-secondary-highlight transition-opacity hover:opacity-75 dark:text-secondary " +
+                                focusStyle
+                            }
+                        >
+                            Review project
+                            <ArrowRightIcon size={12} aria-hidden="true" />
+                        </button>
+                    </div>
+                    <InvitationActions
+                        responding={responding}
+                        onAccept={async () => {
+                            setDetailsOpen(true);
+                        }}
+                        onDecline={() => respond("decline")}
+                    />
+                </div>
+            </article>
+            <ProjectInvitationDialog
+                project={project}
+                open={detailsOpen}
+                onOpenChange={(nextOpen) => {
+                    if (!busyRef.current) setDetailsOpen(nextOpen);
+                }}
+                responding={responding}
+                onAccept={() => respond("accept")}
+                onDecline={() => respond("decline")}
+            />
+        </>
+    );
 }
 /* =========================================================
    LOADING, ERROR AND EMPTY STATES
 ========================================================= */
 function WorkSectionLoading() {
-  return (
-    <section
-      role="status"
-      className="mt-6 flex min-h-[200px] items-center justify-center rounded-xl border border-border/55 bg-surface-2/60 dark:border-border dark:bg-surface-1"
-    >
-      <div className="flex items-center gap-2.5 text-sm text-muted-foreground">
-        <LoaderCircleIcon
-          size={16}
-          aria-hidden="true"
-          className="animate-spin"
-        />
-        Loading client work
-      </div>
-    </section>
-  );
+    return (
+        <section
+            role="status"
+            className="mt-6 flex min-h-[200px] items-center justify-center rounded-xl border border-border/55 bg-surface-2/60 dark:border-border dark:bg-surface-1"
+        >
+            <div className="flex items-center gap-2.5 text-sm text-muted-foreground">
+                <LoaderCircleIcon
+                    size={16}
+                    aria-hidden="true"
+                    className="animate-spin"
+                />
+                Loading client work
+            </div>
+        </section>
+    );
 }
 function WorkLoadError({ onRetry }: { onRetry: () => void }) {
-  return (
-    <section
-      role="alert"
-      className="mt-6 overflow-hidden rounded-xl border border-border/60 bg-card p-6 sm:p-8 dark:border-border dark:bg-surface-1"
-    >
-      <div className="max-w-md">
-        <span
-          className={
-            "flex h-10 w-10 items-center justify-center rounded-lg " +
-            softIconSurface
-          }
+    return (
+        <section
+            role="alert"
+            className="mt-6 overflow-hidden rounded-xl border border-border/60 bg-card p-6 sm:p-8 dark:border-border dark:bg-surface-1"
         >
-          <RefreshCwIcon size={17} aria-hidden="true" />
-        </span>
-        <h2 className="mt-5 text-lg font-semibold tracking-[-0.02em] text-foreground/90 dark:text-foreground">
-          Your work could not be loaded.
-        </h2>
-        <p className="mt-2 text-sm leading-7 text-muted-foreground">
-          We couldn't retrieve your client projects and invitations.
-        </p>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onRetry}
-          className={
-            "mt-5 h-9 rounded-lg px-4 text-xs font-semibold shadow-none " +
-            secondaryActionButton
-          }
-        >
-          <RefreshCwIcon size={13} aria-hidden="true" />
-          Try again
-        </Button>
-      </div>
-    </section>
-  );
+            <div className="max-w-md">
+                <span
+                    className={
+                        "flex h-10 w-10 items-center justify-center rounded-lg " +
+                        softIconSurface
+                    }
+                >
+                    <RefreshCwIcon size={17} aria-hidden="true" />
+                </span>
+                <h2 className="mt-5 text-lg font-semibold tracking-[-0.02em] text-foreground/90 dark:text-foreground">
+                    Your work could not be loaded.
+                </h2>
+                <p className="mt-2 text-sm leading-7 text-muted-foreground">
+                    We couldn't retrieve your client projects and invitations.
+                </p>
+                <Button
+                    type="button"
+                    variant="outline"
+                    onClick={onRetry}
+                    className={
+                        "mt-5 h-9 rounded-lg px-4 text-xs font-semibold shadow-none " +
+                        secondaryActionButton
+                    }
+                >
+                    <RefreshCwIcon size={13} aria-hidden="true" />
+                    Try again
+                </Button>
+            </div>
+        </section>
+    );
 }
 function SearchEmptyState({ onClear }: { onClear: () => void }) {
-  return (
-    <EmptyCollection
-      title="No matching projects"
-      description="No projects matched across any status. Try another name, project code or keyword."
-      icon={SearchIcon}
-      action={
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onClear}
-          className={
-            "mt-5 h-9 rounded-lg px-4 text-xs font-semibold shadow-none " +
-            secondaryActionButton
-          }
-        >
-          <XIcon size={13} aria-hidden="true" />
-          Clear search
-        </Button>
-      }
-    />
-  );
+    return (
+        <EmptyCollection
+            title="No matching projects"
+            description="No projects matched across any status. Try another name, project code or keyword."
+            icon={SearchIcon}
+            action={
+                <Button
+                    type="button"
+                    variant="outline"
+                    onClick={onClear}
+                    className={
+                        "mt-5 h-9 rounded-lg px-4 text-xs font-semibold shadow-none " +
+                        secondaryActionButton
+                    }
+                >
+                    <XIcon size={13} aria-hidden="true" />
+                    Clear search
+                </Button>
+            }
+        />
+    );
 }
 function EmptyCollection({
-  title,
-  description,
-  icon: Icon,
-  action,
+    title,
+    description,
+    icon: Icon,
+    action,
 }: {
-  title: string;
-  description: string;
-  icon: WorkspaceIcon;
-  action?: ReactNode;
+    title: string;
+    description: string;
+    icon: WorkspaceIcon;
+    action?: ReactNode;
 }) {
-  return (
-    <section className="mt-6 overflow-hidden rounded-xl border border-border/55 bg-surface-2/60 px-6 py-9 sm:px-8 sm:py-10 dark:border-border dark:bg-surface-1">
-      <div className="max-w-md">
-        <span
-          className={
-            "flex h-10 w-10 items-center justify-center rounded-lg " +
-            softIconSurface
-          }
-        >
-          <Icon size={17} />
-        </span>
-        <h2 className="mt-5 text-lg font-semibold tracking-[-0.02em] text-foreground/90 sm:text-xl dark:text-foreground">
-          {title}.
-        </h2>
-        <p className="mt-2 text-sm leading-7 text-muted-foreground">
-          {description}
-        </p>
-        {action}
-      </div>
-    </section>
-  );
+    return (
+        <section className="mt-6 overflow-hidden rounded-xl border border-border/55 bg-surface-2/60 px-6 py-9 sm:px-8 sm:py-10 dark:border-border dark:bg-surface-1">
+            <div className="max-w-md">
+                <span
+                    className={
+                        "flex h-10 w-10 items-center justify-center rounded-lg " +
+                        softIconSurface
+                    }
+                >
+                    <Icon size={17} />
+                </span>
+                <h2 className="mt-5 text-lg font-semibold tracking-[-0.02em] text-foreground/90 sm:text-xl dark:text-foreground">
+                    {title}.
+                </h2>
+                <p className="mt-2 text-sm leading-7 text-muted-foreground">
+                    {description}
+                </p>
+                {action}
+            </div>
+        </section>
+    );
 }
 function WorkspaceLoading() {
-  return (
-    <div className="flex min-h-screen flex-col bg-background text-foreground">
-      <WorkspaceHeader />
-      <main className="container mx-auto flex flex-1 px-5 md:px-8">
-        <LoadingState
-          label="Loading your workspace"
-          className="min-h-[calc(100vh-5rem)]"
-        />
-      </main>
-    </div>
-  );
+    return (
+        <div className="flex min-h-screen flex-col bg-background text-foreground">
+            <WorkspaceHeader />
+            <main className="container mx-auto flex flex-1 px-5 md:px-8">
+                <LoadingState
+                    label="Loading your workspace"
+                    className="min-h-[calc(100vh-5rem)]"
+                />
+            </main>
+        </div>
+    );
 }
 function WorkspaceError({ onRetry }: { onRetry: () => Promise<void> }) {
-  return (
-    <div className="flex min-h-screen flex-col bg-background text-foreground">
-      <WorkspaceHeader />
-      <main className="container mx-auto flex flex-1 items-center px-5 py-20 md:px-8">
-        <div className="max-w-lg">
-          <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-status-overdue/[0.08] text-status-overdue-foreground">
-            <FolderOpenIcon size={20} aria-hidden="true" />
-          </span>
-          <h1 className="mt-6 text-3xl font-semibold leading-tight tracking-[-0.03em] text-foreground/90 dark:text-foreground">
-            We could not load your workspace.
-          </h1>
-          <p className="mt-3 text-sm leading-7 text-muted-foreground">
-            Something interrupted the connection. Try loading the projects
-            again.
-          </p>
-          <Button
-            type="button"
-            onClick={() => void onRetry()}
-            className={
-              "mt-7 h-11 rounded-lg px-6 font-semibold shadow-none " +
-              primaryActionButton
-            }
-          >
-            <RefreshCwIcon size={15} aria-hidden="true" />
-            Try again
-          </Button>
+    return (
+        <div className="flex min-h-screen flex-col bg-background text-foreground">
+            <WorkspaceHeader />
+            <main className="container mx-auto flex flex-1 items-center px-5 py-20 md:px-8">
+                <div className="max-w-lg">
+                    <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-status-overdue/[0.08] text-status-overdue-foreground">
+                        <FolderOpenIcon size={20} aria-hidden="true" />
+                    </span>
+                    <h1 className="mt-6 text-3xl font-semibold leading-tight tracking-[-0.03em] text-foreground/90 dark:text-foreground">
+                        We could not load your workspace.
+                    </h1>
+                    <p className="mt-3 text-sm leading-7 text-muted-foreground">
+                        Something interrupted the connection. Try loading the
+                        projects again.
+                    </p>
+                    <Button
+                        type="button"
+                        onClick={() => void onRetry()}
+                        className={
+                            "mt-7 h-11 rounded-lg px-6 font-semibold shadow-none " +
+                            primaryActionButton
+                        }
+                    >
+                        <RefreshCwIcon size={15} aria-hidden="true" />
+                        Try again
+                    </Button>
+                </div>
+            </main>
         </div>
-      </main>
-    </div>
-  );
+    );
 }
 /* =========================================================
    HELPERS
 ========================================================= */
 function getMetricAppearance(emphasis?: SummaryItem["emphasis"]): {
-  icon: string;
-  line: string;
+    icon: string;
+    line: string;
 } {
-  if (emphasis === "danger")
+    if (emphasis === "danger")
+        return {
+            icon: "text-status-overdue-foreground",
+            line: "bg-status-overdue",
+        };
+    if (emphasis === "warning")
+        return {
+            icon: "text-status-pending-foreground",
+            line: "bg-status-pending",
+        };
+    if (emphasis === "success")
+        return {
+            icon: "text-status-complete-foreground",
+            line: "bg-status-complete",
+        };
     return {
-      icon: "text-status-overdue-foreground",
-      line: "bg-status-overdue",
+        icon: "text-brand-secondary-highlight",
+        line: "bg-brand-secondary-highlight dark:bg-secondary",
     };
-  if (emphasis === "warning")
-    return {
-      icon: "text-status-pending-foreground",
-      line: "bg-status-pending",
-    };
-  if (emphasis === "success")
-    return {
-      icon: "text-status-complete-foreground",
-      line: "bg-status-complete",
-    };
-  return {
-    icon: "text-brand-secondary-highlight",
-    line: "bg-brand-secondary-highlight dark:bg-secondary",
-  };
 }
 function normalizeProjectStatus(status?: string | null) {
-  return String(status ?? "")
-    .trim()
-    .toLowerCase()
-    .replace(/[\s_-]/g, "");
+    return String(status ?? "")
+        .trim()
+        .toLowerCase()
+        .replace(/[\s_-]/g, "");
 }
 function matchesProjectSearch(project: Project, query: string) {
-  const normalizedQuery = query.trim().toLowerCase();
-  if (!normalizedQuery) return true;
-  const searchableText = [
-    project.title,
-    project.description ?? "",
-    project.projectCode ?? "",
-    project.category ?? "",
-  ]
-    .join(" ")
-    .toLowerCase();
-  return normalizedQuery
-    .split(/\s+/)
-    .every((term) => searchableText.includes(term));
+    const normalizedQuery = query.trim().toLowerCase();
+    if (!normalizedQuery) return true;
+    const searchableText = [
+        project.title,
+        project.description ?? "",
+        project.projectCode ?? "",
+        project.category ?? "",
+    ]
+        .join(" ")
+        .toLowerCase();
+    return normalizedQuery
+        .split(/\s+/)
+        .every((term) => searchableText.includes(term));
 }
 function getProjectDateValue(project: Project) {
-  if (!project.createdAt) return 0;
-  const value = new Date(project.createdAt).getTime();
-  return Number.isFinite(value) ? value : 0;
+    if (!project.createdAt) return 0;
+    const value = new Date(project.createdAt).getTime();
+    return Number.isFinite(value) ? value : 0;
 }
 function sortProjectItems<T extends Project>(
-  items: T[],
-  sort: ProjectSort,
+    items: T[],
+    sort: ProjectSort,
 ): T[] {
-  return [...items].sort((first, second) => {
-    if (sort === "oldest")
-      return getProjectDateValue(first) - getProjectDateValue(second);
-    if (sort === "title-asc")
-      return first.title.localeCompare(second.title, undefined, {
-        sensitivity: "base",
-      });
-    if (sort === "title-desc")
-      return second.title.localeCompare(first.title, undefined, {
-        sensitivity: "base",
-      });
-    return getProjectDateValue(second) - getProjectDateValue(first);
-  });
+    return [...items].sort((first, second) => {
+        if (sort === "oldest")
+            return getProjectDateValue(first) - getProjectDateValue(second);
+        if (sort === "title-asc")
+            return first.title.localeCompare(second.title, undefined, {
+                sensitivity: "base",
+            });
+        if (sort === "title-desc")
+            return second.title.localeCompare(first.title, undefined, {
+                sensitivity: "base",
+            });
+        return getProjectDateValue(second) - getProjectDateValue(first);
+    });
 }
 function formatShortDate(value: string) {
-  const match = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-  const date = match
-    ? new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]))
-    : new Date(value);
-  if (!Number.isFinite(date.getTime())) return "";
-  return new Intl.DateTimeFormat("en", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  }).format(date);
+    const match = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    const date = match
+        ? new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]))
+        : new Date(value);
+    if (!Number.isFinite(date.getTime())) return "";
+    return new Intl.DateTimeFormat("en", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+    }).format(date);
 }
 export default Projects;

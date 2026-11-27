@@ -9,13 +9,13 @@ import rhombusIcon from "./rhombus-icon.png";
 import deliverySquare from "./delivery-square.svg";
 
 export default {
-  allocatrLightLogo,
-  allocatrNegLightLogo,
-  allocatrIcon,
-  laptop,
-  computerPhone,
-  lShapeIcon,
-  crossShapeIcon,
-  rhombusIcon,
-  deliverySquare,
+    allocatrLightLogo,
+    allocatrNegLightLogo,
+    allocatrIcon,
+    laptop,
+    computerPhone,
+    lShapeIcon,
+    crossShapeIcon,
+    rhombusIcon,
+    deliverySquare,
 };
